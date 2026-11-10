@@ -314,6 +314,31 @@
           "name": "VusionGroup"
         }
       ]
+    },
+    {
+      "name": "Crypto",
+      "items": [
+        {
+          "yahoo": "BTC-USD",
+          "tv": "COINBASE:BTCUSD",
+          "name": "Bitcoin"
+        },
+        {
+          "yahoo": "ETH-USD",
+          "tv": "COINBASE:ETHUSD",
+          "name": "Ethereum"
+        },
+        {
+          "yahoo": "SOL-USD",
+          "tv": "COINBASE:SOLUSD",
+          "name": "Solana"
+        },
+        {
+          "yahoo": "XRP-USD",
+          "tv": "COINBASE:XRPUSD",
+          "name": "XRP"
+        }
+      ]
     }
   ]
 }
