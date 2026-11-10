@@ -204,6 +204,7 @@
         <div class="cfg-row wide"><span>Échelles des niveaux</span><div class="seg" id="lvSeg"></div></div>
         <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
           <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
+        <div class="cfg-row wide"><span>Contacts pris en compte</span><div class="seg" id="roleSeg"></div></div>
         <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
         <div class="cfg-row"><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
         <div class="cfg-row"><span>Réticule</span><div class="seg" id="crossSeg"></div></div>
@@ -277,7 +278,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2, theme:"auto", cross:"free" };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2, theme:"auto", cross:"free", role:false };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -595,7 +596,7 @@ async function openDetail(item, info) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Niveaux calculés à partir des sommets et creux touchés au moins deux fois, à l'écart près réglé avec « Précision des contacts » : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -603,7 +604,7 @@ async function openDetail(item, info) {
 
   ovItem = info;
   ovData = await getSeries(info);
-  ovLevels = computeLevels(ovData, info.last, tolPct());
+  ovLevels = computeLevels(ovData, info.last, tolPct(), !!prefs.role);
   drawDetail();
 }
 
@@ -704,7 +705,7 @@ const LV_ORDER = ["D","W","M","Q"];
 /* Niveaux recalculés dans la page avec la précision choisie (même méthode que le script) */
 const TF_PARAMS = { D:{ lookback:250, window:5 }, W:{ lookback:156, window:3 }, M:{ lookback:120, window:2 }, Q:{ lookback:40, window:1 } };
 let ovLevels = null;
-function computeLevels(data, last, pct) {
+function computeLevels(data, last, pct, roleChange) {
   const out = {};
   LV_ORDER.forEach(tf => {
     const { lookback, window:w } = TF_PARAMS[tf];
@@ -720,20 +721,34 @@ function computeLevels(data, last, pct) {
       if (isH) piv.push([d[i][2], i, "H"]);
       if (isL) piv.push([d[i][3], i, "L"]);
     }
-    piv.sort((a, b) => a[0] - b[0]);
-    const cl = [];
-    for (const [p, i, k] of piv) {
-      const c = cl[cl.length - 1];
-      if (c && Math.abs(p - c.mean) <= tol) { c.items.push([p, i, k]); c.mean = c.items.reduce((s, x) => s + x[0], 0) / c.items.length; }
-      else cl.push({ items:[[p, i, k]], mean:p });
+    /* Regroupe les pivots proches (à tol près) en niveaux */
+    const cluster = list => {
+      const cl = [];
+      for (const [p, i, k] of list.slice().sort((a, b) => a[0] - b[0])) {
+        const c = cl[cl.length - 1];
+        if (c && Math.abs(p - c.mean) <= tol) { c.items.push([p, i, k]); c.mean = c.items.reduce((s, x) => s + x[0], 0) / c.items.length; }
+        else cl.push({ items:[[p, i, k]], mean:p });
+      }
+      return cl.filter(c => c.items.length >= 2).map(c => {
+        const hits = c.items.slice().sort((a, b) => a[1] - b[1]);
+        return { price:c.mean, touches:hits.length, last:d[hits[hits.length - 1][1]][0], tol,
+                 hits:hits.map(([p, i, k]) => [d[i][0], p, k]) };
+      });
+    };
+    let supLv, resLv;
+    if (roleChange) {
+      /* Mode « changements de rôle » : sommets et creux mélangés (une ancienne résistance peut devenir support) */
+      const all = cluster(piv);
+      supLv = all.filter(l => l.price < price);
+      resLv = all.filter(l => l.price > price);
+    } else {
+      /* Mode strict : un support n'est formé que de creux (le cours a rebondi vers le haut),
+         une résistance que de sommets (le cours a été rejeté vers le bas) */
+      supLv = cluster(piv.filter(x => x[2] === "L")).filter(l => l.price < price);
+      resLv = cluster(piv.filter(x => x[2] === "H")).filter(l => l.price > price);
     }
-    const levels = cl.filter(c => c.items.length >= 2).map(c => {
-      const hits = c.items.slice().sort((a, b) => a[1] - b[1]);
-      return { price:c.mean, touches:hits.length, last:d[hits[hits.length - 1][1]][0], tol,
-               hits:hits.map(([p, i, k]) => [d[i][0], p, k]) };
-    });
-    res.supports = levels.filter(l => l.price < price).sort((a, b) => b.price - a.price).slice(0, 3);
-    res.resistances = levels.filter(l => l.price > price).sort((a, b) => a.price - b.price).slice(0, 3);
+    res.supports = supLv.sort((a, b) => b.price - a.price).slice(0, 3);
+    res.resistances = resLv.sort((a, b) => a.price - b.price).slice(0, 3);
     if (!res.supports.length) {
       let i = 0; d.forEach((r, j) => { if (r[3] < d[i][3]) i = j; });
       if (d[i][3] < price) res.supports = [{ price:d[i][3], touches:1, last:d[i][0], tol, extreme:true, hits:[[d[i][0], d[i][3], "L"]] }];
@@ -806,7 +821,7 @@ $("tolRange").addEventListener("input", e => {
   clearTimeout(tolTimer);
   tolTimer = setTimeout(() => {
     savePrefs();
-    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct()); refreshLevels(); }
+    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), !!prefs.role); refreshLevels(); }
   }, 120);
 });
 function renderToggles() {
@@ -821,6 +836,10 @@ function renderToggles() {
   renderSeg("crossSeg", [["free","Libre"],["magnet","Sur le cours"]], prefs.cross === "magnet" ? "magnet" : "free", v => {
     prefs.cross = v; savePrefs(); renderToggles();
     [ovChart, rsiChart, lvChart].forEach(c => { if (c) c.applyOptions({ crosshair:crossOpt() }); });
+  });
+  renderSeg("roleSeg", [[false,"Rebonds et rejets seulement"],[true,"+ changements de rôle"]], !!prefs.role, v => {
+    prefs.role = v; savePrefs();
+    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), v); refreshLevels(); }
   });
   renderSeg("themeSeg", THEMES, prefs.theme || "auto", v => { renderToggles(); setTheme(v); });
   renderSeg("rsiSeg", [[false,"Aucun"],[true,"RSI 14"]], !!prefs.rsi, v => { prefs.rsi = v; savePrefs(); renderToggles(); drawRsi(); });

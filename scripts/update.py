@@ -86,34 +86,36 @@ def support_resistance(df: pd.DataFrame, lookback: int, window: int, pct: float)
         if lows[i] == lows[i - w:i + w + 1].min():
             pivots.append((float(lows[i]), i, "L"))
 
-    # Regroupement des pivots proches en un même niveau
-    pivots.sort()
-    clusters = []
-    for p, i, kind in pivots:
-        if clusters and abs(p - clusters[-1]["mean"]) <= tol:
-            c = clusters[-1]
-            c["prices"].append(p)
-            c["idx"].append(i)
-            c["kinds"].append(kind)
-            c["mean"] = sum(c["prices"]) / len(c["prices"])
-        else:
-            clusters.append({"prices": [p], "idx": [i], "kinds": [kind], "mean": p})
+    def cluster(items):
+        """Regroupe les pivots proches (à tol près) en niveaux d'au moins MIN_TOUCHES contacts."""
+        clusters = []
+        for p, i, kind in sorted(items):
+            if clusters and abs(p - clusters[-1]["mean"]) <= tol:
+                c = clusters[-1]
+                c["prices"].append(p); c["idx"].append(i); c["kinds"].append(kind)
+                c["mean"] = sum(c["prices"]) / len(c["prices"])
+            else:
+                clusters.append({"prices": [p], "idx": [i], "kinds": [kind], "mean": p})
+        out = []
+        for c in clusters:
+            if len(c["prices"]) < MIN_TOUCHES:
+                continue
+            hits = sorted(zip(c["idx"], c["prices"], c["kinds"]))
+            out.append({
+                "price": round(c["mean"], 4),
+                "touches": len(c["prices"]),
+                "last": str(d["Date"].iloc[max(c["idx"])])[:10],
+                "tol": round(tol, 4),
+                "hits": [[str(d["Date"].iloc[i])[:10], round(p, 4), k] for i, p, k in hits],
+            })
+        return out
 
-    levels = []
-    for c in clusters:
-        if len(c["prices"]) < MIN_TOUCHES:
-            continue
-        hits = sorted(zip(c["idx"], c["prices"], c["kinds"]))
-        levels.append({
-            "price": round(c["mean"], 4),
-            "touches": len(c["prices"]),
-            "last": str(d["Date"].iloc[max(c["idx"])])[:10],
-            "tol": round(tol, 4),
-            "hits": [[str(d["Date"].iloc[i])[:10], round(p, 4), k] for i, p, k in hits],
-        })
+    # Mode strict : support = creux répétés (rebond vers le haut), résistance = sommets répétés (rejet vers le bas)
+    sup_levels = [l for l in cluster([x for x in pivots if x[2] == "L"]) if l["price"] < price]
+    res_levels = [l for l in cluster([x for x in pivots if x[2] == "H"]) if l["price"] > price]
 
-    supports = sorted([l for l in levels if l["price"] < price], key=lambda l: -l["price"])[:MAX_LEVELS]
-    resistances = sorted([l for l in levels if l["price"] > price], key=lambda l: l["price"])[:MAX_LEVELS]
+    supports = sorted(sup_levels, key=lambda l: -l["price"])[:MAX_LEVELS]
+    resistances = sorted(res_levels, key=lambda l: l["price"])[:MAX_LEVELS]
 
     # S'il n'y a aucun niveau répété d'un côté, on montre l'extrême de la période
     if not supports:
