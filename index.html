@@ -10,8 +10,13 @@
           --up:#16a34a; --down:#dc2626; --sup:#16a34a; --res:#dc2626; --grid:#f0f1f3;
           --s-D:#4ade80; --s-W:#0d9488; --s-M:#15803d; --s-Q:#14532d;
           --r-D:#fb923c; --r-W:#e11d48; --r-M:#b91c1c; --r-Q:#7f1d1d; }
+  :root { color-scheme:light; }
+  :root[data-theme="dark"] { color-scheme:dark; --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
+            --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
+            --s-D:#bbf7d0; --s-W:#2dd4bf; --s-M:#22c55e; --s-Q:#15803d;
+            --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
+    :root:not([data-theme="light"]) { color-scheme:dark; --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
             --s-D:#bbf7d0; --s-W:#2dd4bf; --s-M:#22c55e; --s-Q:#15803d;
             --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; }
@@ -39,6 +44,8 @@
   .legend i { display:inline-block; width:14px; border-top:2px dashed; vertical-align:middle; margin-right:4px; }
 
   .spacer { flex:1; }
+  header { position:relative; }
+  .theme-btn { position:absolute; right:0; top:12px; padding:5px 10px; font-size:12px; }
   .btn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:9px; padding:6px 11px; font-size:13px; font-weight:600; cursor:pointer; }
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
   .btn.danger { background:var(--down); border-color:var(--down); color:#fff; }
@@ -160,6 +167,7 @@
 <div class="wrap">
   <header>
     <h1>Mes actions</h1>
+    <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
   <div class="demo" id="demo">Données simulées (test). Les vrais cours apparaîtront après la première mise à jour automatique.</div>
@@ -192,13 +200,15 @@
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
       <div class="cfg-head"><strong>Réglages</strong><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
       <div class="cfg-grid">
-        <div class="cfg-row"><span>Supports / résistances</span><div class="seg" id="kindSeg"></div></div>
-        <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
+        <div class="cfg-row wide"><span>Supports / résistances</span><div class="seg" id="kindSeg"></div></div>
         <div class="cfg-row wide"><span>Échelles des niveaux</span><div class="seg" id="lvSeg"></div></div>
         <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
           <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
         <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
         <div class="cfg-row"><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
+        <div class="cfg-row"><span>Réticule</span><div class="seg" id="crossSeg"></div></div>
+        <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
+        <div class="cfg-row wide"><span>Thème</span><div class="seg" id="themeSeg"></div></div>
       </div>
     </div>
     </div>
@@ -267,7 +277,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2 };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2, theme:"auto", cross:"free" };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -317,6 +327,29 @@ function addLevels(series, info, labels) {
     axisLabelVisible:labels, title: labels ? "R" + (i + 1) : ""
   }));
 }
+
+/* ---------- Thème ---------- */
+const THEMES = [["auto","Auto"],["light","Clair"],["dark","Sombre"]];
+function applyTheme() {
+  const t = prefs.theme === "light" || prefs.theme === "dark" ? prefs.theme : "auto";
+  if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  const lbl = { auto:"◐ Auto", light:"☀ Clair", dark:"☾ Sombre" }[t];
+  if ($("themeBtn")) $("themeBtn").textContent = lbl;
+}
+function setTheme(t) {
+  prefs.theme = t; savePrefs(); applyTheme();
+  if (!cfg) return;
+  render();                                   // cartes redessinées aux nouvelles couleurs
+  if ($("ov").classList.contains("show") && ovData) drawDetail();
+}
+applyTheme();
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if ((prefs.theme || "auto") === "auto") setTheme("auto"); }); } catch (e) {}
+$("themeBtn").onclick = () => {
+  const order = ["auto","light","dark"], i = order.indexOf(prefs.theme || "auto");
+  setTheme(order[(i + 1) % 3]);
+};
+/* Réticule : libre (suit le doigt / la souris) ou aimanté (suit les cours) */
+const crossOpt = () => ({ mode: prefs.cross === "magnet" ? LW.CrosshairMode.Magnet : LW.CrosshairMode.Normal });
 
 function baseOptions(small) {
   return {
@@ -421,7 +454,7 @@ function renderGrid() {
       if (nr) {
         const el = card.querySelector(".near");
         el.className = "near " + (nr.kind === "S" ? "s" : "r");
-        const pctTxt = nr.dist.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %";
+        const pctTxt = nr.dist < 0.05 ? "< 0,1 %" : nr.dist.toLocaleString("fr-FR", { minimumFractionDigits:1, maximumFractionDigits:1 }) + " %";
         el.textContent = prefs.cols >= 3
           ? (nr.kind === "S" ? "▲ S·" : "▼ R·") + LV[nr.tf].short + " à " + pctTxt
           : (nr.kind === "S" ? "▲ Proche support " + { D:"journalier", W:"hebdomadaire", M:"mensuel", Q:"trimestriel" }[nr.tf]
@@ -785,13 +818,18 @@ function renderToggles() {
   $("cfgCount").textContent = n ? String(n) : "";
   multiSeg("maSeg", MA_PERIODS.map(p => [p, String(p)]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); }, v => MA_COL[v], "Toutes");
   renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
+  renderSeg("crossSeg", [["free","Libre"],["magnet","Sur le cours"]], prefs.cross === "magnet" ? "magnet" : "free", v => {
+    prefs.cross = v; savePrefs(); renderToggles();
+    [ovChart, rsiChart, lvChart].forEach(c => { if (c) c.applyOptions({ crosshair:crossOpt() }); });
+  });
+  renderSeg("themeSeg", THEMES, prefs.theme || "auto", v => { renderToggles(); setTheme(v); });
   renderSeg("rsiSeg", [[false,"Aucun"],[true,"RSI 14"]], !!prefs.rsi, v => { prefs.rsi = v; savePrefs(); renderToggles(); drawRsi(); });
   paint($("rsiSeg").children[1], RSI_COL);
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
   KINDS.forEach(([k, label]) => {
     const b = document.createElement("button");
-    b.textContent = k === "S" ? "Sup" : "Rés"; b.title = label; if (selK.includes(k)) b.className = "on";
+    b.textContent = label; if (selK.includes(k)) b.className = "on";
     paint(b, css(k === "S" ? "--sup" : "--res"));
     b.onclick = () => { const cur = selectedKinds(); prefs.kinds = cur.includes(k) ? cur.filter(x => x !== k) : cur.concat(k); savePrefs(); refreshLevels(); };
     ks.appendChild(b);
@@ -914,6 +952,7 @@ function drawRsi() {
   if (!prefs.rsi) return;
   const rows = barsFor(ovData, prefs.iv || "D");
   rsiChart = LW.createChart(box, Object.assign(baseOptions(false), {
+    crosshair:crossOpt(),
     rightPriceScale:{ borderVisible:false, minimumWidth:72, scaleMargins:{ top:0.1, bottom:0.1 } },
     handleScale:{ axisPressedMouseMove:false },
   }));
@@ -1013,7 +1052,7 @@ function drawDetail() {
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = [];
   const rows = barsFor(ovData, iv);
-  ovChart = LW.createChart($("ovChart"), baseOptions(false));
+  ovChart = LW.createChart($("ovChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
   ovChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.14, bottom:0.08 }, minimumWidth:72 });
   ovChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
     if (!range || syncing || !rsiChart) return;
@@ -1135,7 +1174,7 @@ function openLevel(info, tf, p, i) {
 
   if (lvChart) { lvChart.remove(); lvChart = null; }
   const rows = barsFor(ovData, tf);
-  lvChart = LW.createChart($("lvChart"), baseOptions(false));
+  lvChart = LW.createChart($("lvChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
   lvChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.08, bottom:0.08 }, minimumWidth:72 });
   const c = lvChart.addCandlestickSeries({
     upColor:css("--up"), downColor:css("--down"), borderVisible:false, wickUpColor:css("--up"), wickDownColor:css("--down"),
