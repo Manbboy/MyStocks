@@ -1,0 +1,73 @@
+{
+  "portfolios": [
+    {
+      "name": "Action FR",
+      "items": [
+        { "yahoo": "IWDA.AS",  "tv": "EURONEXT:IWDA",  "name": "iShares MSCI World" },
+        { "yahoo": "STMPA.PA", "tv": "EURONEXT:STMPA", "name": "STMicroelectronics" },
+        { "yahoo": "MC.PA",    "tv": "EURONEXT:MC",    "name": "LVMH" },
+        { "yahoo": "SAN.PA",   "tv": "EURONEXT:SAN",   "name": "Sanofi" },
+        { "yahoo": "ZAL.DE",   "tv": "XETR:ZAL",       "name": "Zalando" },
+        { "yahoo": "CA.PA",    "tv": "EURONEXT:CA",    "name": "Carrefour" },
+        { "yahoo": "RCO.PA",   "tv": "EURONEXT:RCO",   "name": "Rémy Cointreau" },
+        { "yahoo": "FDJU.PA",  "tv": "EURONEXT:FDJU",  "name": "FDJ United" },
+        { "yahoo": "DSY.PA",   "tv": "EURONEXT:DSY",   "name": "Dassault Systèmes" },
+        { "yahoo": "RNO.PA",   "tv": "EURONEXT:RNO",   "name": "Renault" },
+        { "yahoo": "VLTSA.PA", "tv": "EURONEXT:VLTSA", "name": "Voltalia" },
+        { "yahoo": "EL.PA",    "tv": "EURONEXT:EL",    "name": "EssilorLuxottica" },
+        { "yahoo": "HO.PA",    "tv": "EURONEXT:HO",    "name": "Thales" },
+        { "yahoo": "ABI.BR",   "tv": "EURONEXT:ABI",   "name": "AB InBev" },
+        { "yahoo": "AF.PA",    "tv": "EURONEXT:AF",    "name": "Air France-KLM" },
+        { "yahoo": "AMG.AS",   "tv": "EURONEXT:AMG",   "name": "AMG Critical Materials" },
+        { "yahoo": "AMP.MI",   "tv": "MIL:AMP",        "name": "Amplifon" },
+        { "yahoo": "CS.PA",    "tv": "EURONEXT:CS",    "name": "AXA" },
+        { "yahoo": "DG.PA",    "tv": "EURONEXT:DG",    "name": "Vinci" },
+        { "yahoo": "ENGI.PA",  "tv": "EURONEXT:ENGI",  "name": "Engie" },
+        { "yahoo": "GLE.PA",   "tv": "EURONEXT:GLE",   "name": "Société Générale" },
+        { "yahoo": "HEIA.AS",  "tv": "EURONEXT:HEIA",  "name": "Heineken" },
+        { "yahoo": "KER.PA",   "tv": "EURONEXT:KER",   "name": "Kering" },
+        { "yahoo": "KGX.DE",   "tv": "XETR:KGX",       "name": "KION Group" },
+        { "yahoo": "NRO.PA",   "tv": "EURONEXT:NRO",   "name": "Neurones" },
+        { "yahoo": "RYA.IR",   "tv": "EURONEXT:RYA",   "name": "Ryanair" },
+        { "yahoo": "SAP.DE",   "tv": "XETR:SAP",       "name": "SAP" },
+        { "yahoo": "SK.PA",    "tv": "EURONEXT:SK",    "name": "SEB" },
+        { "yahoo": "SPIE.PA",  "tv": "EURONEXT:SPIE",  "name": "SPIE" },
+        { "yahoo": "SU.PA",    "tv": "EURONEXT:SU",    "name": "Schneider Electric" }
+      ]
+    },
+    {
+      "name": "Actions US",
+      "items": [
+        { "yahoo": "NKE",      "tv": "NYSE:NKE",       "name": "Nike" },
+        { "yahoo": "NFLX",     "tv": "NASDAQ:NFLX",    "name": "Netflix" },
+        { "yahoo": "PYPL",     "tv": "NASDAQ:PYPL",    "name": "PayPal" },
+        { "yahoo": "ADBE",     "tv": "NASDAQ:ADBE",    "name": "Adobe" },
+        { "yahoo": "FISV",     "tv": "NASDAQ:FISV",    "name": "Fiserv" },
+        { "yahoo": "^GSPC",    "tv": "SP:SPX",         "name": "S&P 500" },
+        { "yahoo": "NVDA",     "tv": "NASDAQ:NVDA",    "name": "NVIDIA" },
+        { "yahoo": "AAPL",     "tv": "NASDAQ:AAPL",    "name": "Apple" },
+        { "yahoo": "BABA",     "tv": "NYSE:BABA",      "name": "Alibaba" },
+        { "yahoo": "TSLA",     "tv": "NASDAQ:TSLA",    "name": "Tesla" },
+        { "yahoo": "AVGO",     "tv": "NASDAQ:AVGO",    "name": "Broadcom" },
+        { "yahoo": "DIS",      "tv": "NYSE:DIS",       "name": "Disney" },
+        { "yahoo": "UNH",      "tv": "NYSE:UNH",       "name": "UnitedHealth" },
+        { "yahoo": "AMD",      "tv": "NASDAQ:AMD",     "name": "AMD" },
+        { "yahoo": "KO",       "tv": "NYSE:KO",        "name": "Coca-Cola" },
+        { "yahoo": "SNAP",     "tv": "NYSE:SNAP",      "name": "Snap" },
+        { "yahoo": "IT",       "tv": "NYSE:IT",        "name": "Gartner" },
+        { "yahoo": "BZ=F",     "tv": "TVC:UKOIL",      "name": "Brent" },
+        { "yahoo": "COO",      "tv": "NASDAQ:COO",     "name": "Cooper Companies" },
+        { "yahoo": "DECK",     "tv": "NYSE:DECK",      "name": "Deckers Outdoor" },
+        { "yahoo": "MSFT",     "tv": "NASDAQ:MSFT",    "name": "Microsoft" },
+        { "yahoo": "META",     "tv": "NASDAQ:META",    "name": "Meta" },
+        { "yahoo": "SNOW",     "tv": "NYSE:SNOW",      "name": "Snowflake" },
+        { "yahoo": "DELL",     "tv": "NYSE:DELL",      "name": "Dell" },
+        { "yahoo": "RIVN",     "tv": "NASDAQ:RIVN",    "name": "Rivian" },
+        { "yahoo": "FDX",      "tv": "NYSE:FDX",       "name": "FedEx" },
+        { "yahoo": "MCD",      "tv": "NYSE:MCD",       "name": "McDonald's" },
+        { "yahoo": "ORCL",     "tv": "NYSE:ORCL",      "name": "Oracle" },
+        { "yahoo": "NANO.PA",  "tv": "EURONEXT:NANO",  "name": "Nanobiotix" }
+      ]
+    }
+  ]
+}

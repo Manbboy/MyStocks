@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mes actions</title>
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#16181d; --muted:#6b7280; --border:#e5e7eb; --accent:#2563eb; --chip:#eef0f3;
+          --up:#16a34a; --down:#dc2626; --sup:#16a34a; --res:#dc2626; --grid:#f0f1f3; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
+            --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width:1400px; margin:0 auto; padding:0 12px; }
+  header { padding:16px 0 4px; display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  h1 { margin:0; font-size:20px; }
+  .sub { color:var(--muted); font-size:12px; margin:0; }
+  .demo { background:#fef3c7; color:#92400e; border-radius:8px; padding:6px 10px; font-size:12px; margin:6px 0; display:none; }
+
+  .tabs { display:flex; gap:6px; overflow-x:auto; padding:6px 0; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { flex:0 0 auto; border:0; background:none; color:var(--muted); font-size:15px; font-weight:600; padding:8px 14px; border-radius:10px; cursor:pointer; }
+  .tab.active { background:var(--chip); color:var(--text); }
+
+  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 0; border-bottom:1px solid var(--border); }
+  .group { display:flex; align-items:center; gap:4px; }
+  .group label { font-size:12px; color:var(--muted); margin-right:2px; }
+  .seg { display:flex; background:var(--chip); border-radius:8px; padding:2px; }
+  .seg button { border:0; background:none; color:var(--muted); font-size:13px; padding:5px 9px; border-radius:6px; cursor:pointer; }
+  .seg button.on { background:var(--card); color:var(--text); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .legend { font-size:12px; color:var(--muted); display:flex; gap:10px; }
+  .legend i { display:inline-block; width:14px; border-top:2px dashed; vertical-align:middle; margin-right:4px; }
+
+  .grid { display:grid; gap:8px; padding:12px 0 40px; grid-template-columns:repeat(var(--cols,3), minmax(0,1fr)); }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; }
+  .card-head { padding:7px 9px 0; }
+  .row1 { display:flex; justify-content:space-between; gap:6px; align-items:baseline; }
+  .nm { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .px { font-size:13px; font-weight:600; white-space:nowrap; }
+  .row2 { display:flex; justify-content:space-between; gap:6px; font-size:11px; color:var(--muted); margin-top:1px; }
+  .chg { white-space:nowrap; }
+  .up { color:var(--up); } .down { color:var(--down); }
+  .chart { height:var(--h,150px); }
+  .msg { color:var(--muted); font-size:12px; padding:20px 10px; text-align:center; }
+  .compact .row1 .px { display:none; }
+  .row2 .px2 { display:none; color:var(--text); font-weight:600; }
+  .compact .row2 .px2 { display:inline; }
+  .compact .row2 .sym { display:none; }
+  .compact .nm { font-size:12px; }
+  .credit { font-size:11px; color:var(--muted); margin:0 0 30px; }
+  .credit a { color:var(--muted); }
+
+  /* Vue détaillée */
+  .ov { position:fixed; inset:0; background:var(--bg); z-index:20; display:none; flex-direction:column; }
+  .ov.show { display:flex; }
+  .ov-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border-bottom:1px solid var(--border); }
+  .ov-title { font-size:17px; font-weight:700; }
+  .ov-sub { font-size:13px; color:var(--muted); }
+  .close { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer; }
+  .ov-body { flex:1; overflow:auto; padding:12px; max-width:1100px; width:100%; margin:0 auto; }
+  .ov-chart { height:min(60vh,480px); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .levels { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px; }
+  .lv { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
+  .lv h3 { margin:0 0 6px; font-size:13px; }
+  .lv .it { font-size:14px; font-weight:600; padding:4px 0; }
+  .lv .it span { white-space:nowrap; }
+  .lv small { display:block; color:var(--muted); font-weight:400; font-size:12px; }
+  .ov-foot { font-size:12px; color:var(--muted); margin:12px 0 30px; line-height:1.5; }
+  .ov-foot a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Mes actions</h1>
+    <p class="sub" id="updated"></p>
+  </header>
+  <div class="demo" id="demo">Données simulées (test). Les vrais cours apparaîtront après la première mise à jour automatique.</div>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="bar">
+    <div class="group"><label>Par ligne</label><div class="seg" id="colsSeg"></div></div>
+    <div class="group"><label>Période</label><div class="seg" id="rangeSeg"></div></div>
+    <div class="legend"><span><i style="color:var(--sup)"></i>Support</span><span><i style="color:var(--res)"></i>Résistance</span></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <p class="credit">Graphiques : <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a> · Données : Yahoo Finance</p>
+</div>
+
+<div class="ov" id="ov">
+  <div class="ov-head">
+    <div><div class="ov-title" id="ovTitle"></div><div class="ov-sub" id="ovSub"></div></div>
+    <button class="close" id="ovClose">Fermer</button>
+  </div>
+  <div class="ov-body">
+    <div class="ov-chart" id="ovChart"></div>
+    <div class="levels">
+      <div class="lv"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
+      <div class="lv"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
+    </div>
+    <p class="ov-foot" id="ovFoot"></p>
+  </div>
+</div>
+
+<script>
+const LW = window.LightweightCharts;
+const PREFS = "mes-actions-prefs-v1";
+const COLS = [1,2,3,4,5,6];
+const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
+const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",9999]];
+
+let prefs = { active:0, cols:3, range:"6M" };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
+const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
+
+let cfg = null, summary = null;
+const seriesCache = {};
+const charts = [];
+const $ = id => document.getElementById(id);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+const CUR = { EUR:"€", USD:"$", GBP:"£", GBp:"p", CHF:"CHF" };
+function fmt(v, cur) {
+  if (v == null || isNaN(v)) return "–";
+  const d = Math.abs(v) < 20 ? 3 : 2;
+  const s = v.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:d });
+  return cur && CUR[cur] ? s + " " + CUR[cur] : s;
+}
+function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:2 }) + " %"; }
+
+async function getSeries(info) {
+  if (!seriesCache[info.file]) {
+    seriesCache[info.file] = fetch("data/" + info.file + "?v=" + encodeURIComponent(summary.updated)).then(r => r.json());
+  }
+  return seriesCache[info.file];
+}
+
+/* Inclut le support et la résistance les plus proches dans l'échelle */
+function autoscaleWith(info) {
+  const extra = [];
+  if (info.supports && info.supports[0]) extra.push(info.supports[0].price);
+  if (info.resistances && info.resistances[0]) extra.push(info.resistances[0].price);
+  return original => {
+    const r = original();
+    if (!r || !extra.length) return r;
+    r.priceRange.minValue = Math.min(r.priceRange.minValue, ...extra);
+    r.priceRange.maxValue = Math.max(r.priceRange.maxValue, ...extra);
+    return r;
+  };
+}
+
+function addLevels(series, info, labels) {
+  (info.supports || []).forEach((l, i) => series.createPriceLine({
+    price:l.price, color:css("--sup"), lineWidth:1, lineStyle:LW.LineStyle.Dashed,
+    axisLabelVisible:labels, title: labels ? "S" + (i + 1) : ""
+  }));
+  (info.resistances || []).forEach((l, i) => series.createPriceLine({
+    price:l.price, color:css("--res"), lineWidth:1, lineStyle:LW.LineStyle.Dashed,
+    axisLabelVisible:labels, title: labels ? "R" + (i + 1) : ""
+  }));
+}
+
+function baseOptions(small) {
+  return {
+    autoSize:true,
+    layout:{ background:{ type:"solid", color:"transparent" }, textColor:css("--muted"), fontSize: small ? 9 : 11, attributionLogo:false },
+    grid:{ vertLines:{ visible:false }, horzLines:{ color:css("--grid") } },
+    rightPriceScale:{ borderVisible:false },
+    timeScale:{ borderVisible:false },
+    localization:{ locale:"fr-FR" },
+  };
+}
+
+async function drawCard(el, info) {
+  const data = await getSeries(info);
+  const n = RANGES.find(r => r[0] === prefs.range)[2];
+  const rows = data.rows.slice(-n);
+  const up = rows.length > 1 && rows[rows.length - 1][4] >= rows[0][4];
+  const col = up ? css("--up") : css("--down");
+  const small = prefs.cols >= 3;
+  const chart = LW.createChart(el, Object.assign(baseOptions(small), {
+    handleScroll:false, handleScale:false,
+    rightPriceScale:{ borderVisible:false, visible: prefs.cols <= 2 },
+    timeScale:{ borderVisible:false, visible: prefs.cols <= 2 },
+    crosshair:{ horzLine:{ visible:false }, vertLine:{ visible:false } },
+  }));
+  const s = chart.addAreaSeries({
+    lineColor:col, topColor:col + "33", bottomColor:col + "00", lineWidth: small ? 1.5 : 2,
+    priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false,
+    autoscaleInfoProvider: autoscaleWith(info),
+  });
+  s.setData(rows.map(r => ({ time:r[0], value:r[4] })));
+  addLevels(s, info, prefs.cols <= 2);
+  chart.timeScale().fitContent();
+  charts.push(chart);
+}
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    io.unobserve(e.target);
+    const info = summary.symbols[e.target.dataset.sym];
+    drawCard(e.target, info).catch(() => { e.target.innerHTML = '<div class="msg">Graphique indisponible</div>'; });
+  });
+}, { rootMargin:"300px" });
+
+function renderTabs() {
+  const t = $("tabs"); t.innerHTML = "";
+  cfg.portfolios.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.className = "tab" + (i === prefs.active ? " active" : "");
+    b.textContent = p.name;
+    b.onclick = () => { prefs.active = i; savePrefs(); render(); };
+    t.appendChild(b);
+  });
+}
+function renderSeg(id, opts, cur, pick) {
+  const s = $(id); s.innerHTML = "";
+  opts.forEach(([v, label]) => {
+    const b = document.createElement("button");
+    b.textContent = label; if (v === cur) b.className = "on";
+    b.onclick = () => pick(v); s.appendChild(b);
+  });
+}
+
+function renderGrid() {
+  io.disconnect();
+  charts.splice(0).forEach(c => c.remove());
+  const g = $("grid"); g.innerHTML = "";
+  g.style.setProperty("--cols", prefs.cols);
+  g.style.setProperty("--h", HEIGHTS[prefs.cols] + "px");
+  g.classList.toggle("compact", prefs.cols >= 3);
+  const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
+  pf.items.forEach(item => {
+    const info = summary.symbols[item.yahoo] || { error:"absente des données" };
+    const card = document.createElement("div"); card.className = "card";
+    const pct = info.changePct;
+    const cls = pct == null ? "" : pct >= 0 ? "up" : "down";
+    card.innerHTML =
+      '<div class="card-head"><div class="row1"><span class="nm"></span><span class="px"></span></div>' +
+      '<div class="row2"><span class="sym"></span><span class="px2"></span><span class="chg ' + cls + '"></span></div></div>' +
+      '<div class="chart"></div>';
+    card.querySelector(".nm").textContent = item.name;
+    card.querySelector(".sym").textContent = item.yahoo;
+    const chartEl = card.querySelector(".chart");
+    if (info.error) {
+      card.querySelector(".px").textContent = "–";
+      chartEl.innerHTML = '<div class="msg">Données indisponibles</div>';
+    } else {
+      card.querySelector(".px").textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
+      card.querySelector(".px2").textContent = fmt(info.last, null);
+      card.querySelector(".chg").textContent = fmtPct(pct);
+      chartEl.dataset.sym = item.yahoo;
+      io.observe(chartEl);
+      card.onclick = () => openDetail(item, info);
+    }
+    g.appendChild(card);
+  });
+}
+
+function render() {
+  renderTabs();
+  renderSeg("colsSeg", COLS.map(c => [c, String(c)]), prefs.cols, v => { prefs.cols = v; savePrefs(); render(); });
+  renderSeg("rangeSeg", RANGES, prefs.range, v => { prefs.range = v; savePrefs(); render(); });
+  renderGrid();
+}
+
+/* ---------- Vue détaillée ---------- */
+let ovChart = null;
+async function openDetail(item, info) {
+  $("ov").classList.add("show");
+  document.body.style.overflow = "hidden";
+  $("ovTitle").textContent = item.name;
+  const pct = info.changePct;
+  $("ovSub").innerHTML = "";
+  const sub = document.createElement("span");
+  sub.textContent = fmt(info.last, info.currency) + "  ";
+  const ch = document.createElement("span");
+  ch.className = pct >= 0 ? "up" : "down"; ch.textContent = fmtPct(pct);
+  const dt = document.createElement("span");
+  dt.textContent = "  · clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
+  $("ovSub").append(sub, ch, dt);
+
+  const list = (arr, id, prefix) => {
+    $(id).innerHTML = "";
+    if (!arr || !arr.length) { $(id).innerHTML = "<small>Aucun niveau</small>"; return; }
+    arr.forEach((l, i) => {
+      const d = document.createElement("div"); d.className = "it";
+      const dist = (l.price / info.last - 1) * 100;
+      const a = document.createElement("span");
+      a.textContent = prefix + (i + 1) + "  " + fmt(l.price, info.currency);
+      const b = document.createElement("small");
+      b.textContent = l.extreme ? "extrême 1 an" : l.touches + " contacts · " + fmtPct(Math.round(dist * 100) / 100);
+      d.append(a, b); $(id).appendChild(d);
+    });
+  };
+  list(info.resistances, "ovRes", "R");
+  list(info.supports, "ovSup", "S");
+
+  $("ovFoot").innerHTML = "";
+  const t = document.createTextNode("Niveaux calculés automatiquement sur 1 an à partir des sommets et creux touchés au moins deux fois. Indicatif, pas un conseil d'investissement. ");
+  const a = document.createElement("a");
+  a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
+  a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
+  $("ovFoot").append(t, a);
+
+  if (ovChart) { ovChart.remove(); ovChart = null; }
+  const data = await getSeries(info);
+  ovChart = LW.createChart($("ovChart"), baseOptions(false));
+  const c = ovChart.addCandlestickSeries({
+    upColor:css("--up"), downColor:css("--down"), borderVisible:false,
+    wickUpColor:css("--up"), wickDownColor:css("--down"),
+    autoscaleInfoProvider: autoscaleWith(info),
+  });
+  c.setData(data.rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
+  const v = ovChart.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
+  ovChart.priceScale("").applyOptions({ scaleMargins:{ top:0.82, bottom:0 } });
+  v.setData(data.rows.map(r => ({ time:r[0], value:r[5] })));
+  addLevels(c, info, true);
+  const n = RANGES.find(r => r[0] === prefs.range)[2];
+  const from = data.rows[Math.max(0, data.rows.length - n)][0];
+  ovChart.timeScale().setVisibleRange({ from, to:data.rows[data.rows.length - 1][0] });
+}
+function closeDetail() {
+  $("ov").classList.remove("show");
+  document.body.style.overflow = "";
+  if (ovChart) { ovChart.remove(); ovChart = null; }
+}
+$("ovClose").onclick = closeDetail;
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
+
+/* ---------- Démarrage ---------- */
+(async function init() {
+  try {
+    const [c, s] = await Promise.all([
+      fetch("portfolios.json?t=" + Date.now()).then(r => r.json()),
+      fetch("data/summary.json?t=" + Date.now()).then(r => r.json()),
+    ]);
+    cfg = c; summary = s;
+  } catch (e) {
+    $("grid").innerHTML = '<div class="msg">Impossible de charger les données. La première mise à jour a-t-elle tourné ?</div>';
+    return;
+  }
+  if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
+  $("updated").textContent = "Mis à jour le " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " · cours de clôture (Yahoo Finance)";
+  if (summary.demo) $("demo").style.display = "block";
+  render();
+})();
+</script>
+</body>
+</html>
