@@ -808,7 +808,7 @@ function layoutIcon() {
   const side = n === 2 && matchMedia("(min-width:600px)").matches;   // 2 graphiques côte à côte sur grand écran
   const icon = side ? '<rect x="1.5" y="1.5" width="7.8" height="13" rx="1.5"/><rect x="10.7" y="1.5" width="7.8" height="13" rx="1.5"/>' : LAYOUT_ICON[n];
   $("quadBtn").innerHTML = '<svg width="20" height="16" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' + icon + "</svg><small>" + n + "</small>";
-  $("quadBtn").title = { 1:"1 graphique · toucher pour 2 (jour + semaine)", 2:"2 graphiques · toucher pour 4 (jour, semaine, mois, trimestre)", 4:"4 graphiques · toucher pour revenir à 1" }[n];
+  $("quadBtn").title = { 1:"1 graphique · toucher pour 2 (semaine, jour)", 2:"2 graphiques · toucher pour 4 (trimestre, mois, semaine, jour)", 4:"4 graphiques · toucher pour revenir à 1" }[n];
 }
 function clearQuad() { quadCharts.forEach(c => c.remove()); quadCharts = []; $("quad").innerHTML = ""; }
 function applyQuad() {
@@ -827,7 +827,8 @@ function drawQuad() {
   clearQuad();
   $("quad").style.height = $("ovChart").offsetHeight + "px";
   const names = { D:"Jour", W:"Semaine", M:"Mois", Q:"Trimestre" };
-  (splitN() === 2 ? ["D","W"] : LV_ORDER).forEach(tf => {
+  /* du plus long au plus court terme : la tendance de fond d'abord, puis le détail */
+  (splitN() === 2 ? ["W","D"] : ["Q","M","W","D"]).forEach(tf => {
     const cell = document.createElement("div"); cell.className = "qcell";
     const lab = document.createElement("button"); lab.className = "qlab"; lab.innerHTML = { D:"J", W:"S", M:"M", Q:"T" }[tf] + "<small>" + names[tf] + "</small> ↗";
     lab.title = "Ouvrir en grand";
