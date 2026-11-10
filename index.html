@@ -102,12 +102,15 @@
   .tb { display:flex; justify-content:space-between; align-items:center; gap:6px; margin:-12px -12px 8px; padding:8px 12px; position:sticky; top:-12px; z-index:8; background:var(--bg); border-bottom:1px solid transparent; }
   .tb.stuck { border-bottom-color:var(--border); box-shadow:0 4px 10px rgba(0,0,0,.06); }
   .tb .seg button { padding:6px 8px; }
-  .mmb { flex:0 0 auto; display:inline-flex; flex-direction:column; align-items:center; gap:2px; border:1px solid var(--border); background:var(--card); color:var(--muted); border-radius:10px; padding:5px 8px 4px; font-size:13px; font-weight:700; cursor:pointer; line-height:1; }
+  .mmb { flex:0 0 auto; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:1px solid var(--border); background:var(--card); color:var(--muted); border-radius:9px; padding:5px 6px 4px; font-size:12px; font-weight:700; cursor:pointer; line-height:1; min-width:34px; height:36px; }
+  .mmb .mmdots { align-items:flex-end; height:5px; }
+  #ivSeg button { padding:6px 7px; }
   .mmb .mmdots { display:flex; gap:2px; opacity:.35; }
   .mmb .mmdots i { width:6px; height:3px; border-radius:2px; display:block; }
   .mmb.on { color:var(--text); border-color:var(--text); }
   .mmb.on .mmdots { opacity:1; }
-  #ivSeg button { min-width:30px; font-weight:600; }
+  #ivSeg button { min-width:26px; font-weight:600; }
+  #ov .tb { gap:4px; }
   .cfg-btn { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:7px 9px; font-size:13px; font-weight:600; cursor:pointer; }
   .cfg-btn[aria-expanded="true"] { background:var(--text); color:var(--bg); border-color:var(--text); }
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
@@ -162,9 +165,15 @@
   .ov-id .ov-title, .ov-id .ov-sub { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #ov .ov-head { padding:10px 10px 10px 12px; gap:8px; }
   .ov-nav .close { padding:8px 10px; }
+  .close .short { display:none; }
   @media (max-width:400px) {
     #ov .ov-title { font-size:16px; }
-    .navb { width:30px; height:34px; }
+    #ov .ov-sub { font-size:12px; }
+    #ov .ov-nav { gap:2px; }
+    #ov .ov-nav span { min-width:28px; font-size:10px; }
+    #ov .ov-nav .close { padding:7px 11px; margin-left:2px; }
+    #ov .close .full { display:none; } #ov .close .short { display:inline; }
+    .navb { width:28px; height:34px; }
     .cfg-btn .lbl { display:none; }
     .cfg-btn { padding:7px 8px; }
   }
@@ -277,7 +286,7 @@
       <button class="navb" id="ovPrev" aria-label="Action précédente">‹</button>
       <span id="ovPos"></span>
       <button class="navb" id="ovNext" aria-label="Action suivante">›</button>
-      <button class="close" id="ovClose">Fermer</button>
+      <button class="close" id="ovClose" aria-label="Fermer"><span class="full">Fermer</span><span class="short">✕</span></button>
     </div>
   </div>
   <div class="ov-body">
@@ -286,6 +295,8 @@
       <div class="seg" id="ivSeg"></div>
       <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
+      <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
+      <button class="mmb" id="volBtn" aria-pressed="false" title="Afficher / masquer les volumes">Vol<span class="mmdots"><i style="background:var(--muted);width:3px;height:5px"></i><i style="background:var(--muted);width:3px;height:3px;margin-top:2px"></i><i style="background:var(--muted);width:3px;height:5px"></i></span></button>
       <span class="spacer"></span>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="lbl">Réglages</span><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
@@ -302,6 +313,7 @@
         <div class="cfg-row"><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
         <div class="cfg-row"><span>Réticule</span><div class="seg" id="crossSeg"></div></div>
         <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
+        <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
       </div>
     </div>
     </div>
@@ -379,7 +391,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2, theme:"auto", cross:"free", role:false };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2, theme:"auto", cross:"free", role:false, vol:true };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -714,6 +726,13 @@ $("srBtn").onclick = () => {
   hiKey = null;
   savePrefs(); refreshLevels();
 };
+function setVol(on) {
+  prefs.vol = on; savePrefs();
+  if (ovVol) ovVol.applyOptions({ visible:on });
+  renderToggles();
+}
+$("volBtn").onclick = () => setVol(prefs.vol === false);
+$("rsiBtn").onclick = () => { prefs.rsi = !prefs.rsi; savePrefs(); renderToggles(); drawRsi(); };
 $("mmBtn").onclick = () => {
   prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
   savePrefs(); refreshLevels();
@@ -757,7 +776,7 @@ async function openDetail(item, info, pos) {
   const ch = document.createElement("span");
   ch.className = pct >= 0 ? "up" : "down"; ch.textContent = fmtPct(pct);
   const dt = document.createElement("span");
-  dt.textContent = "  · " + new Date(info.date).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" });
+  dt.textContent = "  · " + new Date(info.date).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"numeric" });
   dt.title = "Clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
   $("ovSub").append(sub, ch, dt);
 
@@ -996,6 +1015,10 @@ $("tolRange").addEventListener("input", e => {
 function renderToggles() {
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
+  const volOn = prefs.vol !== false;
+  $("volBtn").classList.toggle("on", volOn); $("volBtn").setAttribute("aria-pressed", volOn ? "true" : "false");
+  $("rsiBtn").classList.toggle("on", !!prefs.rsi); $("rsiBtn").setAttribute("aria-pressed", prefs.rsi ? "true" : "false");
+  renderSeg("volSeg", [[true,"Afficher"],[false,"Masquer"]], volOn, v => setVol(v));
   const mmOn = selMaP().length > 0;
   $("mmBtn").classList.toggle("on", mmOn); $("mmBtn").setAttribute("aria-pressed", mmOn ? "true" : "false");
   $("tolRange").value = tolPct();
@@ -1365,6 +1388,7 @@ function drawDetail() {
   c.setData(rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
   const v = ovChart.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
   ovVol = v;
+  v.applyOptions({ visible:prefs.vol !== false });
   ovChart.priceScale("").applyOptions({ scaleMargins:{ top:0.82, bottom:0 } });
   v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
   ovCandles = c;
