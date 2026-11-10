@@ -178,7 +178,9 @@
   .stat small { display:block; color:var(--muted); font-size:11px; }
   .stat b { font-size:15px; }
   .lv .it.link { cursor:pointer; position:relative; padding-right:18px; border-radius:8px; }
-  .lv .it.link::after { content:"›"; position:absolute; right:2px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:20px; font-weight:400; }
+  .lv .it.link { padding-right:28px; }
+  .lv .it .go { position:absolute; right:0; top:0; bottom:0; width:28px; border:0; border-left:1px solid var(--border); background:none; color:var(--muted); font-size:22px; cursor:pointer; border-radius:0 8px 8px 0; }
+  .lv .it .go:active, .lv .it .go:hover { background:var(--chip); color:var(--text); }
   .lv .it.link:active { background:var(--chip); }
   .rsi-chart { height:130px; margin-top:6px; background:var(--card); border:1px solid var(--border); border-radius:12px; display:none; }
   .rsi-chart.show { display:block; }
@@ -305,7 +307,7 @@
     </div>
     <div class="ov-side">
     <div class="lgd" id="ovLegend"></div>
-    <p class="tip">Touche un support ou une résistance pour le mettre en évidence sur le graphique, puis touche-le à nouveau pour son détail.</p>
+    <p class="tip">Touche un niveau pour l'afficher seul sur le graphique avec ses contacts, touche-le à nouveau pour revenir à l'affichage normal. La flèche › ouvre son détail.</p>
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
@@ -383,7 +385,7 @@ function fmt(v, cur) {
   const s = v.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:d });
   return cur && CUR[cur] ? s + " " + CUR[cur] : s;
 }
-function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:2 }) + " %"; }
+function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:2 }) + "\u202f%"; }
 
 async function getSeries(info) {
   if (!seriesCache[info.file]) {
@@ -1174,10 +1176,10 @@ function applyHighlight() {
   if (!ovCandles) return;
   const sel = lineMeta.find(m => m.key === hiKey);
   lineMeta.forEach(m => {
-    if (!sel) m.line.applyOptions(m.opts);
-    else if (m === sel) m.line.applyOptions(Object.assign({}, m.opts, {
+    if (!sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts));
+    else if (m === sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, {
       lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid }));
-    else m.line.applyOptions(Object.assign({}, m.opts, { color:fade(m.opts.color) }));
+    else m.line.applyOptions(Object.assign({}, m.opts, { lineVisible:false }));
   });
   if (!sel) { ovCandles.setMarkers([]); return; }
   /* chaque contact est placé sur le chandelier affiché qui contient sa date */
@@ -1218,10 +1220,10 @@ function updateTags() {
 
 function onLevelTap(info, tf, p, i, el) {
   const key = tf + "|" + p + "|" + i;
-  if (hiKey === key) { openLevel(info, tf, p, i); return; }      // 2e toucher : page de détail
+  document.querySelectorAll("#ovRes .it.sel, #ovSup .it.sel").forEach(x => x.classList.remove("sel"));
+  if (hiKey === key) { hiKey = null; applyHighlight(); return; }   // 2e toucher : on désactive
   hiKey = key;
   applyHighlight();
-  document.querySelectorAll("#ovRes .it.sel, #ovSup .it.sel").forEach(x => x.classList.remove("sel"));
   el.classList.add("sel");
   const ch = $("ovChart").getBoundingClientRect();
   if (ch.bottom < 60) $("ovChart").scrollIntoView({ behavior:"smooth", block:"start" });
@@ -1262,6 +1264,9 @@ function renderLevelLists(info) {
       arr.forEach((l, i) => {
         const d = document.createElement("div"); d.className = "it link";
         d.onclick = () => onLevelTap(info, tf, p, i, d);
+        const go = document.createElement("button");
+        go.className = "go"; go.textContent = "›"; go.setAttribute("aria-label", "Détail du niveau");
+        go.onclick = e => { e.stopPropagation(); openLevel(info, tf, p, i); };
         d.style.setProperty("--c", colorOf(p.toLowerCase(), tf));
         if (hiKey === tf + "|" + p + "|" + i) d.classList.add("sel");
         const dist = (l.price / info.last - 1) * 100;
@@ -1269,7 +1274,7 @@ function renderLevelLists(info) {
         a.textContent = p + (i + 1) + "·" + LV[tf].short + "  " + fmt(l.price, info.currency);
         const b = document.createElement("small");
         b.textContent = (l.extreme ? "extrême de la période" : l.touches + " contacts") + " · " + fmtPct(Math.round(dist * 100) / 100);
-        d.append(a, b); box.appendChild(d);
+        d.append(a, b, go); box.appendChild(d);
       });
     });
   });
