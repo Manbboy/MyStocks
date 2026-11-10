@@ -314,7 +314,8 @@
           <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
         <div class="cfg-row wide"><span>Contacts pris en compte</span><div class="seg" id="roleSeg"></div></div>
         <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
-        <div class="cfg-row"><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
+        <div class="cfg-row wide"><span>Indicateur sous le graphique</span><div class="seg" id="rsiSeg"></div></div>
+        <div class="cfg-row wide" id="trendRow"><span>RSI Trends · chandeliers (vert : RSI &gt; 60 · rouge : &lt; 40 · gris : entre les deux)</span><div class="seg" id="trendSeg"></div></div>
         <div class="cfg-row"><span>Réticule</span><div class="seg" id="crossSeg"></div></div>
         <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
         <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
@@ -737,7 +738,7 @@ function setVol(on) {
   renderToggles();
 }
 $("volBtn").onclick = () => setVol(prefs.vol === false);
-$("rsiBtn").onclick = () => { prefs.rsi = !prefs.rsi; savePrefs(); renderToggles(); drawRsi(); };
+$("rsiBtn").onclick = () => setInd(indMode() === "none" ? (prefs.indLast || "rsi") : "none");
 $("mmBtn").onclick = () => {
   prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
   savePrefs(); refreshLevels();
@@ -786,7 +787,7 @@ async function openDetail(item, info, pos) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 au-dessus de 60 = tendance haussière (chandeliers verts), sous 40 = tendance baissière (rouges), entre les deux = sans tendance (gris) ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -1073,7 +1074,8 @@ function renderToggles() {
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
   const volOn = prefs.vol !== false;
   $("volBtn").classList.toggle("on", volOn); $("volBtn").setAttribute("aria-pressed", volOn ? "true" : "false");
-  $("rsiBtn").classList.toggle("on", !!prefs.rsi); $("rsiBtn").setAttribute("aria-pressed", prefs.rsi ? "true" : "false");
+  $("rsiBtn").classList.toggle("on", indMode() !== "none"); $("rsiBtn").setAttribute("aria-pressed", indMode() !== "none" ? "true" : "false");
+  $("rsiBtn").firstChild.textContent = indMode() === "trend" ? "RSI·T" : "RSI";
   renderSeg("volSeg", [[true,"Afficher"],[false,"Masquer"]], volOn, v => setVol(v));
   const mmOn = selMaP().length > 0;
   $("mmBtn").classList.toggle("on", mmOn); $("mmBtn").setAttribute("aria-pressed", mmOn ? "true" : "false");
@@ -1095,8 +1097,11 @@ function renderToggles() {
   });
   renderSeg("themeSeg", [["auto","Auto"],["light","☀"],["dark","☾"]], prefs.theme || "auto", v => { renderToggles(); setTheme(v); });
   [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème automatique", "Thème clair", "Thème sombre"][i]);
-  renderSeg("rsiSeg", [[false,"Aucun"],[true,"RSI 14"]], !!prefs.rsi, v => { prefs.rsi = v; savePrefs(); renderToggles(); drawRsi(); });
+  renderSeg("rsiSeg", [["none","Aucun"],["rsi","RSI 14"],["trend","RSI Trends"]], indMode(), v => setInd(v));
   paint($("rsiSeg").children[1], RSI_COL);
+  paint($("rsiSeg").children[2], RSI_COL);
+  $("trendRow").style.display = indMode() === "trend" ? "" : "none";
+  renderSeg("trendSeg", [[true,"Colorer"],[false,"Normaux"]], prefs.trendBars !== false, v => { prefs.trendBars = v; savePrefs(); renderToggles(); setCandles(); });
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
   KINDS.forEach(([k, label]) => {
@@ -1199,6 +1204,36 @@ function drawMas() {
   }));
   applyHighlight();
 }
+/* Indicateur sous le graphique : "none", "rsi" (RSI 14 classique) ou "trend" (RSI Trends, d'après zzzcrypto123) */
+const TREND = { len:14, ob:60, os:40 };
+const indMode = () => prefs.ind === "rsi" || prefs.ind === "trend" ? prefs.ind : (prefs.ind === "none" ? "none" : (prefs.rsi ? "rsi" : "none"));
+function setInd(mode) {
+  prefs.ind = mode; prefs.rsi = mode !== "none";
+  if (mode !== "none") prefs.indLast = mode;
+  savePrefs(); renderToggles(); drawRsi(); setCandles();
+}
+const trendOn = () => indMode() === "trend" && prefs.trendBars !== false;
+/* État RSI Trends de chaque chandelier : 1 haussier (RSI > 60), -1 baissier (RSI < 40), 0 sans tendance */
+function trendStates(rows) {
+  return rsiValues(rows, TREND.len).map(d => d.value == null ? null : d.value > TREND.ob ? 1 : d.value < TREND.os ? -1 : 0);
+}
+/* Données des chandeliers, colorés selon RSI Trends si activé, estompés si une mise en évidence est en cours */
+function candleData(rows, faded) {
+  const st = trendOn() ? trendStates(rows) : null;
+  const col = { 1:css("--up"), "-1":css("--down"), 0:css("--muted") };
+  return rows.map((r, i) => {
+    const d = { time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] };
+    if (st && st[i] != null) { const c = faded ? dim(col[st[i]]) : col[st[i]]; d.color = c; d.wickColor = c; }
+    return d;
+  });
+}
+function setCandles() {
+  if (!ovCandles || !ovData) return;
+  const lr = ovChart.timeScale().getVisibleLogicalRange();
+  ovCandles.setData(candleData(barsFor(ovData, prefs.iv || "D"), !!(hiKey || hiMa)));
+  if (lr) ovChart.timeScale().setVisibleLogicalRange(lr);
+}
+
 /* RSI 14 (lissage de Wilder), dans l'unité des chandeliers */
 function rsiValues(rows, n = 14) {
   const out = rows.map(r => ({ time:r[0] }));
@@ -1231,14 +1266,16 @@ function drawRsi() {
     rightPriceScale:{ borderVisible:false, minimumWidth:72, scaleMargins:{ top:0.1, bottom:0.1 } },
     handleScale:{ axisPressedMouseMove:false },
   }));
+  const trend = indMode() === "trend";
   rsiSeries = rsiChart.addLineSeries({
-    color:RSI_COL, lineWidth:2, priceLineVisible:false, lastValueVisible:true, title:"RSI 14",
+    color:RSI_COL, lineWidth:2, priceLineVisible:false, lastValueVisible:true, title: trend ? "RSI Trends" : "RSI 14",
     autoscaleInfoProvider: () => ({ priceRange:{ minValue:0, maxValue:100 } }),
   });
-  const data = rsiValues(rows);
+  const data = rsiValues(rows, trend ? TREND.len : 14);
+  if (trend) data.forEach(d => { if (d.value != null) d.color = d.value > TREND.ob ? css("--up") : d.value < TREND.os ? css("--down") : css("--muted"); });
   rsiSeries.setData(data);
   data.forEach(d => { if (d.value != null) rsiMap.set(d.time, d.value); });
-  [[70, css("--res")], [30, css("--sup")]].forEach(([v, col]) =>
+  (trend ? [[TREND.ob, css("--up")], [TREND.os, css("--down")]] : [[70, css("--res")], [30, css("--sup")]]).forEach(([v, col]) =>
     rsiSeries.createPriceLine({ price:v, color:col, lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));
   const r = ovChart.timeScale().getVisibleLogicalRange();
   if (r) rsiChart.timeScale().setVisibleLogicalRange(r);
@@ -1293,6 +1330,7 @@ function applyHighlight() {
   ovCandles.applyOptions(any
     ? { upColor:dim(up), downColor:dim(down), wickUpColor:dim(up), wickDownColor:dim(down) }
     : { upColor:up, downColor:down, wickUpColor:up, wickDownColor:down });
+  if (trendOn() && ovCandles._faded !== any) { ovCandles._faded = any; setCandles(); }
   if (ovVol) ovVol.applyOptions({ color:css("--muted") + (any ? "26" : "55") });
   /* moyennes mobiles */
   ovMa.forEach(s => s.applyOptions(s._n === maSel
@@ -1465,7 +1503,7 @@ function drawDetail() {
     wickUpColor:css("--up"), wickDownColor:css("--down"),
     autoscaleInfoProvider: autoscaleDetail(info),
   });
-  c.setData(rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
+  c.setData(candleData(rows, false));
   const v = ovChart.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
   ovVol = v;
   v.applyOptions({ visible:prefs.vol !== false });
