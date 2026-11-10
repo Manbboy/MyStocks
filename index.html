@@ -230,7 +230,7 @@
   .lv .it.link { cursor:pointer; position:relative; padding-right:18px; border-radius:8px; }
   .lv .it.link { padding-right:28px; }
   .lv .it.pick { cursor:pointer; border-radius:8px; }
-  #boxFlip { grid-column:1 / -1; }
+  #boxFlip, #boxGeo { grid-column:1 / -1; }
   .lv .it.pick:active { background:var(--chip); }
   .lv .it .go { position:absolute; right:0; top:0; bottom:0; width:28px; border:0; border-left:1px solid var(--border); background:none; color:var(--muted); font-size:22px; cursor:pointer; border-radius:0 8px 8px 0; }
   .lv .it .go:active, .lv .it .go:hover { background:var(--chip); color:var(--text); }
@@ -335,6 +335,8 @@
       <div class="seg" id="ivSeg"></div>
       <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
+      <button class="mmb" id="chanBtn" aria-pressed="false" title="Canaux : deux obliques parallèles qui encadrent le cours">Canal<span class="mmdots"><i style="background:#0891b2;width:12px;transform:rotate(-18deg)"></i></span></button>
+      <button class="mmb" id="tlBtn" aria-pressed="false" title="Obliques : lignes de tendance (supports et résistances en diagonale)">Obl.<span class="mmdots"><i style="background:#f97316;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="flipBtn" aria-pressed="false" title="Bascules de rôle : résistance devenue support (ou l'inverse)">R⇄S<span class="mmdots"><i style="background:var(--res)"></i><i style="background:var(--sup)"></i></span></button>
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
       <button class="mmb" id="rtBtn" aria-pressed="false" title="Afficher / masquer RSI Trends (chandeliers colorés)">RT<span class="mmdots"><i style="background:#4CAF50"></i><i style="background:#787B86"></i><i style="background:#FF5252"></i></span></button>
@@ -385,6 +387,7 @@
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
+      <div class="lv" id="boxGeo"><h3>Canaux et obliques</h3><div id="ovGeoList"></div></div>
       <div class="lv" id="boxFlip"><h3>Bascules R⇄S</h3><div id="ovFlipList"></div></div>
       <div class="lv" id="boxMa"><h3>Moyennes mobiles</h3><div id="ovMaList"></div></div>
     </div>
@@ -771,6 +774,8 @@ function goTo(dir) {
   ov.classList.add(dir > 0 ? "go-next" : "go-prev");
   openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
 }
+$("chanBtn").onclick = () => { prefs.chan = !prefs.chan; hiGeo = null; savePrefs(); drawGeo(); applyHighlight(); renderToggles(); refreshMulti(); };
+$("tlBtn").onclick = () => { prefs.tl = !prefs.tl; hiGeo = null; savePrefs(); drawGeo(); applyHighlight(); renderToggles(); refreshMulti(); };
 $("flipBtn").onclick = () => { prefs.flip = !prefs.flip; hiFlip = null; savePrefs(); drawFlips(); applyHighlight(); renderToggles(); refreshMulti(); };
 $("srBtn").onclick = () => {
   const on = selectedKinds().length > 0 && selectedLv().length > 0;
@@ -875,8 +880,10 @@ function drawQuad() {
       KINDS.filter(([k]) => selectedKinds().includes(k)).forEach(([p, , k, cc]) =>
         L[k].forEach(l => c.createPriceLine({ price:l.price, color:colorOf(cc, tf), lineWidth:st.width, lineStyle:st.style, axisLabelVisible:false, title:"" })));
     }
-    if (prefs.flip) {
-      const fl = flipLevels(rows, tf, tolPct()), lastT = rows[rows.length - 1][0], marks = [];
+    const geoIt = (prefs.chan || prefs.tl) ? geoItems(rows, tf) : [];
+    if (geoIt.length) drawGeoOn(ch, geoIt, null);
+    if (prefs.flip || geoIt.length) {
+      const fl = prefs.flip ? flipLevels(rows, tf, tolPct()) : [], lastT = rows[rows.length - 1][0], marks = geoMarks(geoIt, null);
       fl.forEach(f => {
         const s = ch.addLineSeries({ color:FLIP_COL[f.type], lineWidth:2, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
         s.setData([{ time:f.pivotTime, value:f.price }, { time:lastT, value:f.price }]);
@@ -969,7 +976,7 @@ async function openDetail(item, info, pos) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine (●) et ▲/▼ marquent chaque retest réussi ; le prix du niveau est dans la liste. Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine (●) et ▲/▼ marquent chaque retest réussi ; le prix du niveau est dans la liste. Canaux : deux obliques parallèles avec au moins deux contacts de chaque côté (●) et le cours contenu entre elles ; pointillés = milieu du canal. Obliques : lignes de tendance reliant au moins trois creux (support, orange) ou trois sommets (résistance, violet) sans clôture nette de l'autre côté. Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -1089,6 +1096,218 @@ function flipLevels(rows, iv, pct) {
   for (let q = merged.length - 1; q >= 0; q--) if (!merged[q].retests.length) merged.splice(q, 1);
   merged.forEach(m => m.score = m.pre + m.retests.length);
   return merged.sort((a, b) => b.score - a.score || a.pivot - b.pivot).slice(0, FLIP_MAX).sort((a, b) => b.price - a.price);
+}
+
+/* ---------- Obliques (lignes de tendance) et canaux ----------
+   Oblique de support : droite qui relie au moins 3 creux sans que le cours clôture nettement sous elle entre-temps.
+   Oblique de résistance : idem par les sommets.
+   Canal : une oblique et sa parallèle de l'autre côté, avec au moins 2 contacts sur chaque bord et le cours contenu entre les deux. */
+const GEO_PARAMS = { D:{ w:6, lb:750, k:1 }, W:{ w:3, lb:420, k:1.25 }, M:{ w:2, lb:240, k:1.5 }, Q:{ w:1, lb:80, k:2 } };
+function geoPivots(rows, start, w) {
+  const hi = [], lo = [], len = rows.length;
+  for (let i = Math.max(start, w); i < len - w; i++) {
+    let isH = true, isL = true;
+    for (let k = i - w; k <= i + w; k++) { if (rows[k][2] > rows[i][2]) isH = false; if (rows[k][3] < rows[i][3]) isL = false; }
+    if (isH) hi.push(i);
+    if (isL) lo.push(i);
+  }
+  // le dernier creux / sommet récent (moins de w chandeliers) compte aussi : utile pour un rebond en cours
+  return { hi, lo };
+}
+function trendLines(rows, iv, pct) {
+  const P = GEO_PARAMS[iv] || GEO_PARAMS.D, len = rows.length, start = Math.max(0, len - P.lb);
+  const tol = pct / 100 * P.k, { hi, lo } = geoPivots(rows, start, P.w);
+  const out = [];
+  [["sup", lo, 3], ["res", hi, 2]].forEach(([kind, piv, col]) => {
+    const sup = kind === "sup";
+    const val = i => sup ? rows[i][3] : rows[i][2];
+    for (let x = 0; x < piv.length; x++) for (let y = x + 1; y < piv.length; y++) {
+      const a = piv[x], b = piv[y];
+      if (b - a < 2 * P.w) continue;
+      const m = (val(b) - val(a)) / (b - a), line = i => val(a) + m * (i - a);
+      if (line(len - 1) <= 0) continue;
+      // aucune clôture nettement de l'autre côté entre a et b ; ensuite, la ligne s'arrête à la première cassure
+      let ok = true, end = len - 1, broken = false;
+      for (let k = a; k < len; k++) {
+        const L = line(k), c = rows[k][4];
+        const bad = sup ? c < L * (1 - tol) : c > L * (1 + tol);
+        if (bad) { if (k <= b) { ok = false; break; } end = k; broken = true; break; }
+      }
+      if (!ok) continue;
+      const touches = piv.filter(p => p >= a && p <= end && Math.abs(val(p) - line(p)) <= line(p) * tol);
+      if (touches.length < 3) continue;
+      if (touches[touches.length - 1] < a + 0.6 * (end - a)) continue;            // la ligne doit encore être testée récemment
+      if (!broken && Math.abs(rows[len - 1][4] - line(len - 1)) > rows[len - 1][4] * 0.3) continue;   // encore pertinente aujourd'hui
+      const span = end - a;
+      out.push({ kind, a, b, m, base:val(a), end, broken, touches, score: touches.length * 10 + span / P.lb * 8 + (broken ? 0 : 6) });
+    }
+  });
+  // une seule ligne par « faisceau » de droites presque identiques
+  out.sort((p, q) => q.score - p.score);
+  const keep = [];
+  for (const t of out) {
+    const at = i => t.base + t.m * (i - t.a);
+    /* doublon : même type, périodes qui se recouvrent, et droites proches aux deux bouts de ce recouvrement */
+    const dup = keep.some(k => {
+      if (k.kind !== t.kind) return false;
+      const s0 = Math.max(k.a, t.a), s1 = Math.min(k.end, t.end);
+      if (s1 - s0 < 0.5 * Math.min(k.end - k.a, t.end - t.a)) return false;
+      const kAt = i => k.base + k.m * (i - k.a);
+      return Math.abs(kAt(s0) - at(s0)) <= at(s0) * tol * 5 && Math.abs(kAt(s1) - at(s1)) <= at(s1) * tol * 5;
+    });
+    if (!dup) keep.push(t);
+  }
+  const pick = kind => keep.filter(t => t.kind === kind).slice(0, 2);
+  return pick("sup").concat(pick("res")).map(t => Object.assign(t, {
+    from:rows[t.a][0], to:rows[t.end][0], v0:t.base, v1:t.base + t.m * (t.end - t.a),
+    touchTimes:t.touches.map(i => rows[i][0]), now: t.broken ? null : t.base + t.m * (len - 1 - t.a),
+  }));
+}
+function channels(rows, iv, pct) {
+  const P = GEO_PARAMS[iv] || GEO_PARAMS.D, len = rows.length, start = Math.max(0, len - P.lb);
+  const { hi, lo } = geoPivots(rows, start, P.w), tol = pct / 100 * P.k;
+  const H = i => rows[i][2], L = i => rows[i][3], C = i => rows[i][4];
+  const ends = hi.concat(lo).sort((x, y) => x - y);
+  const out = [];
+  [["lo", lo], ["hi", hi]].forEach(([side, piv]) => {
+    for (let x = 0; x < piv.length; x++) for (let y = x + 1; y < piv.length; y++) {
+      const a = piv[x], b = piv[y];
+      if (b - a < 3 * P.w) continue;
+      const v = i => side === "lo" ? L(i) : H(i);
+      const m = (v(b) - v(a)) / (b - a), base = i => v(a) + m * (i - a);
+      // on fait grandir le canal jusqu'à chaque sommet/creux suivant ; largeur = plus grand écart opposé à la droite de base
+      let width = 0, rH = -Infinity, rL = Infinity, k = a, best = null;
+      for (const e of ends) {
+        if (e <= b) continue;
+        for (; k <= e; k++) {
+          width = Math.max(width, side === "lo" ? H(k) - base(k) : base(k) - L(k));
+          rH = Math.max(rH, H(k)); rL = Math.min(rL, L(k));
+        }
+        const span = e - a;
+        if (span < 8 * P.w || !(width > 0)) continue;
+        const range = rH - rL;
+        if (width > range * 0.65) break;                                        // plus un canal, mais une zone trop large
+        const lower = i => side === "lo" ? base(i) : base(i) - width, upper = i => side === "lo" ? base(i) + width : base(i);
+        const midP = Math.abs((upper((a + e) / 2) + lower((a + e) / 2)) / 2);
+        const band = Math.max(width * 0.07, midP * tol);
+        let inside = 0;
+        for (let q = a; q <= e; q++) if (C(q) <= upper(q) + band && C(q) >= lower(q) - band) inside++;
+        if (inside / (span + 1) < 0.93) break;                                  // le cours est sorti : inutile d'allonger
+        const upT = hi.filter(p => p >= a && p <= e && Math.abs(H(p) - upper(p)) <= band);
+        const loT = lo.filter(p => p >= a && p <= e && Math.abs(L(p) - lower(p)) <= band);
+        if (upT.length < 2 || loT.length < 2 || upT.length + loT.length < 5) continue;
+        const allT = upT.concat(loT), t0 = Math.min(...allT), t1 = Math.max(...allT);
+        if (t1 - t0 < 0.6 * span) continue;
+        /* un bon canal a beaucoup de contacts des deux côtés et colle au cours : la largeur est pénalisée */
+        const score = Math.min(upT.length, 8) * 10 + Math.min(loT.length, 8) * 10 + span / P.lb * 6 - width / range * 45;
+        if (!best || score > best.score) best = { e, width, upT, loT, lower, upper, band, score };
+      }
+      if (!best) continue;
+      // prolongement après le dernier contact, jusqu'à la première clôture nettement hors du canal
+      let end = len - 1, broken = null;
+      for (let q = best.e + 1; q < len; q++) {
+        if (C(q) > best.upper(q) + best.band) { end = q; broken = "up"; break; }
+        if (C(q) < best.lower(q) - best.band) { end = q; broken = "down"; break; }
+      }
+      out.push({ a, end, m, side, broken, upT:best.upT, loT:best.loT, lowerAt:best.lower, upperAt:best.upper, score:best.score + (broken ? 0 : 4) });
+    }
+  });
+  out.sort((p, q) => q.score - p.score);
+  const keep = [];
+  for (const c of out) {
+    /* deux canaux de même sens ne se superposent pas ; un canal de sens inverse (correction dans une tendance) est accepté */
+    const overlap = keep.some(k => (k.m > 0) === (c.m > 0) && Math.min(k.end, c.end) - Math.max(k.a, c.a) > 0.4 * Math.min(k.end - k.a, c.end - c.a));
+    if (!overlap) keep.push(c);
+    if (keep.length >= 2) break;
+  }
+  return keep.map(c => ({
+    dir: c.m > 0 ? "up" : "down", from:rows[c.a][0], to:rows[c.end][0], broken:c.broken,
+    lo0:c.lowerAt(c.a), lo1:c.lowerAt(c.end), up0:c.upperAt(c.a), up1:c.upperAt(c.end),
+    upTimes:c.upT.map(i => rows[i][0]), loTimes:c.loT.map(i => rows[i][0]),
+    slopePct: c.m / ((c.lowerAt(c.a) + c.upperAt(c.a)) / 2) * 100, bars:c.end - c.a,
+    pos: c.broken ? null : (rows[len - 1][4] - c.lowerAt(len - 1)) / (c.upperAt(len - 1) - c.lowerAt(len - 1)),
+  }));
+}
+
+const CHAN_COL = "#0891b2", TL_COL = { sup:"#f97316", res:"#c026d3" };
+let ovGeo = [], geoSeries = [], hiGeo = null, geoRaw = null;
+/* une droite entre deux dates, en segment indépendant */
+function addSegment(chart, t0, v0, t1, v1, color, width, style) {
+  const s = chart.addLineSeries({ color, lineWidth:width, lineStyle:style || 0, priceLineVisible:false, lastValueVisible:false,
+    crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+  s.setData(t0 === t1 ? [{ time:t0, value:v0 }] : [{ time:t0, value:v0 }, { time:t1, value:v1 }]);
+  return s;
+}
+function geoItems(rows, iv) {
+  const items = [];
+  if (prefs.chan) channels(rows, iv, tolPct()).forEach(c => items.push(Object.assign({ g:"chan" }, c)));
+  if (prefs.tl) trendLines(rows, iv, tolPct()).forEach(t => items.push(Object.assign({ g:"tl" }, t)));
+  return items;
+}
+function drawGeoOn(chart, items, sel) {
+  const series = [];
+  items.forEach((it, n) => {
+    const on = sel == null || sel === n, w = sel === n ? 3 : 2;
+    if (it.g === "chan") {
+      const col = on ? CHAN_COL : dim(CHAN_COL);
+      [ [it.up0, it.up1], [it.lo0, it.lo1] ].forEach(([a, b]) => { const s = addSegment(chart, it.from, a, it.to, b, col, w); s._geo = n; series.push(s); });
+      const s = addSegment(chart, it.from, (it.up0 + it.lo0) / 2, it.to, (it.up1 + it.lo1) / 2, col, 1, LW.LineStyle.Dashed); s._geo = n; series.push(s);
+    } else {
+      const col = on ? TL_COL[it.kind] : dim(TL_COL[it.kind]);
+      const s = addSegment(chart, it.from, it.v0, it.to, it.v1, col, w); s._geo = n; series.push(s);
+    }
+  });
+  return series;
+}
+function geoMarks(items, sel) {
+  const marks = [];
+  items.forEach((it, n) => {
+    if (sel != null && sel !== n) return;
+    if (it.g === "chan") {
+      it.upTimes.forEach(t => marks.push({ time:t, position:"aboveBar", shape:"circle", color:CHAN_COL }));
+      it.loTimes.forEach(t => marks.push({ time:t, position:"belowBar", shape:"circle", color:CHAN_COL }));
+    } else it.touchTimes.forEach(t => marks.push({ time:t, position: it.kind === "sup" ? "belowBar" : "aboveBar", shape:"circle", color:TL_COL[it.kind] }));
+  });
+  return marks.sort((a, b) => a.time < b.time ? -1 : 1);
+}
+function drawGeo() {
+  geoSeries.forEach(s => ovChart && ovChart.removeSeries(s));
+  geoSeries = []; ovGeo = [];
+  if ((!prefs.chan && !prefs.tl) || !ovChart || !ovData) { renderGeoList(); return; }
+  const iv = prefs.iv || "D";
+  ovGeo = geoItems(barsFor(ovData, iv), iv);
+  if (hiGeo != null && hiGeo >= ovGeo.length) hiGeo = null;
+  geoSeries = drawGeoOn(ovChart, ovGeo, hiGeo);
+  renderGeoList();
+}
+function renderGeoList() {
+  const box = $("ovGeoList"); if (!box) return;
+  $("boxGeo").style.display = prefs.chan || prefs.tl ? "" : "none";
+  box.innerHTML = "";
+  if (!prefs.chan && !prefs.tl) return;
+  if (!ovGeo.length) { box.innerHTML = "<small>Aucun canal ni oblique net dans cette unité avec cette précision.</small>"; return; }
+  const short = d => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { month:"short", year:"numeric", timeZone:"UTC" });
+  ovGeo.forEach((it, n) => {
+    const d = document.createElement("div"); d.className = "it pick";
+    const col = it.g === "chan" ? CHAN_COL : TL_COL[it.kind];
+    d.style.setProperty("--c", col);
+    if (hiGeo === n) d.classList.add("sel");
+    d.onclick = () => { hiGeo = hiGeo === n ? null : n; if (hiGeo != null) { hiKey = null; hiMa = null; hiFlip = null; } drawGeo(); drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight(); };
+    const a = document.createElement("span"); a.style.color = col;
+    const b = document.createElement("small");
+    if (it.g === "chan") {
+      a.textContent = "Canal " + (it.dir === "up" ? "ascendant ↗" : "descendant ↘");
+      b.textContent = short(it.from) + " → " + (it.broken ? short(it.to) + " (sortie par le " + (it.broken === "up" ? "haut" : "bas") + ")" : "aujourd'hui") +
+        " · " + it.upTimes.length + " contacts en haut, " + it.loTimes.length + " en bas" +
+        (it.pos != null ? " · cours à " + Math.round(it.pos * 100) + " % de la hauteur du canal" : "");
+    } else {
+      const now = it.now;
+      a.textContent = (it.kind === "sup" ? "Oblique de support " : "Oblique de résistance ") + (it.m >= 0 ? "↗" : "↘");
+      b.textContent = it.touches.length + " contacts · depuis " + short(it.from) + (it.broken ? " · cassée " + short(it.to)
+        : " · aujourd'hui à " + fmt(now, ovItem.currency) + " (cours " + fmtPct(Math.round((ovItem.last / now - 1) * 10000) / 100) + ")");
+    }
+    d.append(a, b); box.appendChild(d);
+  });
 }
 
 let ovFlips = [], flipSeries = [], hiFlip = null;
@@ -1396,10 +1615,12 @@ $("tolRange").addEventListener("input", e => {
   clearTimeout(tolTimer);
   tolTimer = setTimeout(() => {
     savePrefs();
-    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), !!prefs.role); refreshLevels(); drawFlips(); applyHighlight(); }
+    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), !!prefs.role); refreshLevels(); drawFlips(); drawGeo(); applyHighlight(); }
   }, 120);
 });
 function renderToggles() {
+  $("chanBtn").classList.toggle("on", !!prefs.chan); $("chanBtn").setAttribute("aria-pressed", prefs.chan ? "true" : "false");
+  $("tlBtn").classList.toggle("on", !!prefs.tl); $("tlBtn").setAttribute("aria-pressed", prefs.tl ? "true" : "false");
   $("flipBtn").classList.toggle("on", !!prefs.flip); $("flipBtn").setAttribute("aria-pressed", prefs.flip ? "true" : "false");
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
@@ -1677,7 +1898,8 @@ function applyHighlight() {
   const sel = lineMeta.find(m => m.key === hiKey);
   const maSel = hiMa && ovMa.some(s => s._n === hiMa) ? hiMa : null;
   const flipSel = hiFlip != null && ovFlips[hiFlip] ? hiFlip : null;
-  const any = !!(sel || maSel || flipSel != null);
+  const geoSel = hiGeo != null && ovGeo[hiGeo] ? hiGeo : null;
+  const any = !!(sel || maSel || flipSel != null || geoSel != null);
   flipSeries.forEach(s => s.applyOptions(s._flip === flipSel ? { lineWidth:4, color:FLIP_COL[ovFlips[s._flip].type] }
     : { lineWidth:2, color: any ? dim(FLIP_COL[ovFlips[s._flip].type]) : FLIP_COL[ovFlips[s._flip].type] }));
   /* chandeliers et volumes */
@@ -1697,14 +1919,19 @@ function applyHighlight() {
       if (m === sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, {
         lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid }));
       else m.line.applyOptions(Object.assign({}, m.opts, { lineVisible:false }));
-    } else m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, (maSel || flipSel != null) ? { color:dim(m.opts.color) } : {}));
+    } else m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, (maSel || flipSel != null || geoSel != null) ? { color:dim(m.opts.color) } : {}));
   });
   if (!sel) {
     ovMaReact = maSel ? maReactions(ovData, prefs.iv || "D", maSel, tolPct()) : null;
     ovCandles.setMarkers(ovMaReact ? ovMaReact.events.map((e, j) => ({
       time:e.time, position:e.type === "up" ? "belowBar" : "aboveBar", shape:e.type === "up" ? "arrowUp" : "arrowDown",
       color:MA_COL[maSel], text:String(j + 1) })) : []);
-    if (!ovMaReact) setFlipMarks(prefs.flip ? flipMarkers(flipSel) : null); else flipRaw = null;
+    if (!ovMaReact) {
+      const gm = (prefs.chan || prefs.tl) && (geoSel != null || flipSel == null) ? geoMarks(ovGeo, geoSel) : [];
+      const fm = prefs.flip && geoSel == null ? flipMarkers(flipSel) : [];
+      const all = gm.concat(fm).sort((a, b) => a.time < b.time ? -1 : 1);
+      setFlipMarks(all.length ? all : null);
+    } else flipRaw = null;
     return;
   }
   ovMaReact = null; flipRaw = null;
@@ -1759,7 +1986,7 @@ function onLevelTap(info, tf, p, i, el) {
   document.querySelectorAll("#ovRes .it.sel, #ovSup .it.sel").forEach(x => x.classList.remove("sel"));
   if (hiKey === key) { hiKey = null; applyHighlight(); return; }   // 2e toucher : on désactive
   if (hiMa) { hiMa = null; drawMas(); renderMaList(info); }
-  hiKey = key;
+  hiKey = key; hiGeo = null; drawGeo();
   applyHighlight();
   el.classList.add("sel");
   const ch = $("ovChart").getBoundingClientRect();
@@ -1895,7 +2122,7 @@ function drawDetail(keep) {
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = [];
-  if (ovItem !== lastDrawnItem) { hiKey = null; hiMa = null; hiFlip = null; }
+  if (ovItem !== lastDrawnItem) { hiKey = null; hiMa = null; hiFlip = null; hiGeo = null; }
   lastDrawnItem = ovItem;
   const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
@@ -1924,9 +2151,10 @@ function drawDetail(keep) {
   ovCandles = c;
   ovLines = addDetailLevels(c, info);
   ovMa = [];
-  flipSeries = [];
+  flipSeries = []; geoSeries = [];
   drawMas();
   drawFlips();
+  drawGeo();
   applyHighlight();
   const bySeries = new Map(rows.map(r => [r[0], r]));
   const showOhlc = row => {
