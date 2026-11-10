@@ -24,10 +24,18 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 SERIES = DATA / "series"
 
-PIVOT_WINDOW = 5        # un sommet/creux doit dominer 5 séances de chaque côté
-LOOKBACK = 250          # ~1 an de séances pour chercher les niveaux
 MAX_LEVELS = 3          # niveaux affichés de chaque côté du cours
 MIN_TOUCHES = 2         # un niveau doit avoir été touché au moins 2 fois
+
+# Paramètres par échelle de temps :
+#   lookback = nombre de chandeliers analysés, window = un sommet/creux doit dominer
+#   ce nombre de chandeliers de chaque côté, pct = écart minimal pour fusionner deux pivots
+TIMEFRAMES = {
+    "D": {"rule": None, "lookback": 250, "window": 5, "pct": 0.012, "label": "1 an de séances"},
+    "W": {"rule": "W", "lookback": 156, "window": 3, "pct": 0.02,  "label": "3 ans de semaines"},
+    "M": {"rule": "M", "lookback": 120, "window": 2, "pct": 0.03,  "label": "10 ans de mois"},
+    "Q": {"rule": "Q", "lookback": 40,  "window": 1, "pct": 0.04,  "label": "10 ans de trimestres"},
+}
 
 
 def safe_name(sym: str) -> str:
@@ -41,16 +49,34 @@ def atr(df: pd.DataFrame, n: int = 14) -> float:
     return float(v) if not math.isnan(v) else float((h - l).mean())
 
 
-def support_resistance(df: pd.DataFrame):
+def resample(df: pd.DataFrame, rule):
+    """Regroupe les séances en chandeliers semaine / mois / trimestre."""
+    if rule is None:
+        return df.reset_index(drop=True)
+    dt = pd.to_datetime(df["Date"])
+    key = dt.dt.to_period(rule)
+    g = df.groupby(key, sort=True)
+    out = pd.DataFrame({
+        "Date": g["Date"].first(),
+        "Open": g["Open"].first(),
+        "High": g["High"].max(),
+        "Low": g["Low"].min(),
+        "Close": g["Close"].last(),
+        "Volume": g["Volume"].sum(),
+    })
+    return out.reset_index(drop=True)
+
+
+def support_resistance(df: pd.DataFrame, lookback: int, window: int, pct: float):
     """Repère les sommets et creux répétés et les regroupe en niveaux."""
-    d = df.tail(LOOKBACK).reset_index(drop=True)
+    d = df.tail(lookback).reset_index(drop=True)
     n = len(d)
-    if n < PIVOT_WINDOW * 2 + 5:
+    if n < window * 2 + 3:
         return [], []
     price = float(d["Close"].iloc[-1])
-    tol = max(0.012 * price, 0.6 * atr(d))
+    tol = max(pct * price, 0.5 * atr(d))
 
-    w = PIVOT_WINDOW
+    w = window
     pivots = []  # (prix, index)
     highs, lows = d["High"].values, d["Low"].values
     for i in range(w, n - w):
@@ -73,30 +99,35 @@ def support_resistance(df: pd.DataFrame):
 
     levels = []
     for c in clusters:
-        touches = len(c["prices"])
-        if touches < MIN_TOUCHES:
+        if len(c["prices"]) < MIN_TOUCHES:
             continue
-        last = max(c["idx"])
         levels.append({
             "price": round(c["mean"], 4),
-            "touches": touches,
-            "last": str(df.tail(LOOKBACK)["Date"].iloc[last])[:10],
-            "recent": last >= n - 60,
+            "touches": len(c["prices"]),
+            "last": str(d["Date"].iloc[max(c["idx"])])[:10],
         })
 
     supports = sorted([l for l in levels if l["price"] < price], key=lambda l: -l["price"])[:MAX_LEVELS]
     resistances = sorted([l for l in levels if l["price"] > price], key=lambda l: l["price"])[:MAX_LEVELS]
 
-    # S'il n'y a aucun niveau répété d'un côté, on montre l'extrême sur 1 an
+    # S'il n'y a aucun niveau répété d'un côté, on montre l'extrême de la période
     if not supports:
-        lo = float(d["Low"].min())
-        if lo < price:
-            supports = [{"price": round(lo, 4), "touches": 1, "last": str(df.tail(LOOKBACK)["Date"].iloc[int(d["Low"].idxmin())])[:10], "recent": False, "extreme": True}]
+        i = int(d["Low"].idxmin())
+        if d["Low"].iloc[i] < price:
+            supports = [{"price": round(float(d["Low"].iloc[i]), 4), "touches": 1, "last": str(d["Date"].iloc[i])[:10], "extreme": True}]
     if not resistances:
-        hi = float(d["High"].max())
-        if hi > price:
-            resistances = [{"price": round(hi, 4), "touches": 1, "last": str(df.tail(LOOKBACK)["Date"].iloc[int(d["High"].idxmax())])[:10], "recent": False, "extreme": True}]
+        i = int(d["High"].idxmax())
+        if d["High"].iloc[i] > price:
+            resistances = [{"price": round(float(d["High"].iloc[i]), 4), "touches": 1, "last": str(d["Date"].iloc[i])[:10], "extreme": True}]
     return supports, resistances
+
+
+def all_levels(df: pd.DataFrame):
+    out = {}
+    for tf, p in TIMEFRAMES.items():
+        sup, res = support_resistance(resample(df, p["rule"]), p["lookback"], p["window"], p["pct"])
+        out[tf] = {"supports": sup, "resistances": res}
+    return out
 
 
 def fetch_real(sym: str):
@@ -138,7 +169,7 @@ def main():
     symbols = sorted({it["yahoo"] for p in cfg["portfolios"] for it in p["items"]})
 
     SERIES.mkdir(parents=True, exist_ok=True)
-    summary = {"updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "demo": demo, "symbols": {}}
+    summary = {"timeframes": {k: v["label"] for k, v in TIMEFRAMES.items()}, "updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "demo": demo, "symbols": {}}
     errors = []
 
     for sym in symbols:
@@ -147,7 +178,8 @@ def main():
             if len(df) < 2:
                 raise RuntimeError("historique trop court")
             last, prev = float(df["Close"].iloc[-1]), float(df["Close"].iloc[-2])
-            sup, res = support_resistance(df)
+            levels = all_levels(df)
+            sup, res = levels["D"]["supports"], levels["D"]["resistances"]
             rows = [[r.Date, round(r.Open, 4), round(r.High, 4), round(r.Low, 4), round(r.Close, 4), int(r.Volume or 0)]
                     for r in df.itertuples()]
             fname = safe_name(sym) + ".json"
@@ -161,8 +193,9 @@ def main():
                 "currency": currency,
                 "supports": sup,
                 "resistances": res,
+                "levels": levels,
             }
-            print(f"OK   {sym:10s} {last:>10.2f}  S={[l['price'] for l in sup]}  R={[l['price'] for l in res]}")
+            print(f"OK   {sym:10s} {last:>10.2f}  " + "  ".join(f"{tf}:{len(v['supports'])}S/{len(v['resistances'])}R" for tf, v in levels.items()))
         except Exception as e:
             errors.append(sym)
             summary["symbols"][sym] = {"error": str(e)[:200]}

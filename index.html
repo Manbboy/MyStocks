@@ -67,6 +67,8 @@
   .levels { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px; }
   .lv { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
   .lv h3 { margin:0 0 6px; font-size:13px; }
+  .lv h4 { margin:8px 0 2px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .lv h4:first-of-type { margin-top:0; }
   .lv .it { font-size:14px; font-weight:600; padding:4px 0; }
   .lv .it span { white-space:nowrap; }
   .lv small { display:block; color:var(--muted); font-weight:400; font-size:12px; }
@@ -101,6 +103,7 @@
   </div>
   <div class="ov-body">
     <div class="ov-ctrl"><span class="freq" id="ovFreq"></span><div class="seg" id="ivSeg"></div></div>
+    <div class="ov-ctrl"><span class="freq">Supports / résistances</span><div class="seg" id="lvSeg"></div></div>
     <div class="ov-chart" id="ovChart"></div>
     <div class="levels">
       <div class="lv"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
@@ -117,7 +120,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D" };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"] };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -289,24 +292,8 @@ async function openDetail(item, info) {
   dt.textContent = "  · clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
   $("ovSub").append(sub, ch, dt);
 
-  const list = (arr, id, prefix) => {
-    $(id).innerHTML = "";
-    if (!arr || !arr.length) { $(id).innerHTML = "<small>Aucun niveau</small>"; return; }
-    arr.forEach((l, i) => {
-      const d = document.createElement("div"); d.className = "it";
-      const dist = (l.price / info.last - 1) * 100;
-      const a = document.createElement("span");
-      a.textContent = prefix + (i + 1) + "  " + fmt(l.price, info.currency);
-      const b = document.createElement("small");
-      b.textContent = l.extreme ? "extrême 1 an" : l.touches + " contacts · " + fmtPct(Math.round(dist * 100) / 100);
-      d.append(a, b); $(id).appendChild(d);
-    });
-  };
-  list(info.resistances, "ovRes", "R");
-  list(info.supports, "ovSup", "S");
-
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Supports et résistances calculés sur la dernière année de cours journaliers (sommets et creux touchés au moins deux fois) ; ils restent les mêmes quelle que soit la taille des chandeliers. Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Lignes : pointillés fins = jour, tirets = semaine, grands tirets = mois, trait plein = trimestre. Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -340,9 +327,88 @@ function aggregate(rows, iv) {
   return out;
 }
 
+/* ---------- Niveaux par échelle de temps ---------- */
+const LV = {
+  D: { short:"J", name:"Journaliers",    style:1, width:1 },
+  W: { short:"S", name:"Hebdomadaires",  style:2, width:1 },
+  M: { short:"M", name:"Mensuels",       style:3, width:2 },
+  Q: { short:"T", name:"Trimestriels",   style:0, width:2 },
+};
+const LV_ORDER = ["D","W","M","Q"];
+function levelsOf(info, tf) {
+  if (info.levels && info.levels[tf]) return info.levels[tf];
+  return tf === "D" ? { supports:info.supports || [], resistances:info.resistances || [] } : { supports:[], resistances:[] };
+}
+function selectedLv() {
+  const s = Array.isArray(prefs.lvs) ? prefs.lvs.filter(t => LV[t]) : ["D"];
+  return LV_ORDER.filter(t => s.includes(t));
+}
+function renderToggles() {
+  const s = $("lvSeg"); s.innerHTML = "";
+  const sel = selectedLv();
+  LV_ORDER.forEach(tf => {
+    const b = document.createElement("button");
+    b.textContent = { D:"Jour", W:"Semaine", M:"Mois", Q:"Trimestre" }[tf];
+    if (sel.includes(tf)) b.className = "on";
+    b.onclick = () => {
+      const cur = selectedLv();
+      prefs.lvs = cur.includes(tf) ? cur.filter(t => t !== tf) : cur.concat(tf);
+      savePrefs(); drawDetail();
+    };
+    s.appendChild(b);
+  });
+}
+function autoscaleDetail(info) {
+  const extra = [];
+  selectedLv().forEach(tf => {
+    const L = levelsOf(info, tf);
+    if (L.supports[0]) extra.push(L.supports[0].price);
+    if (L.resistances[0]) extra.push(L.resistances[0].price);
+  });
+  return original => {
+    const r = original();
+    if (!r || !extra.length) return r;
+    r.priceRange.minValue = Math.min(r.priceRange.minValue, ...extra);
+    r.priceRange.maxValue = Math.max(r.priceRange.maxValue, ...extra);
+    return r;
+  };
+}
+function addDetailLevels(series, info) {
+  selectedLv().forEach(tf => {
+    const L = levelsOf(info, tf), st = LV[tf];
+    [["supports","--sup","S"],["resistances","--res","R"]].forEach(([k, col, p]) =>
+      L[k].forEach((l, i) => series.createPriceLine({
+        price:l.price, color:css(col), lineWidth:st.width, lineStyle:st.style,
+        axisLabelVisible:true, title:p + (i + 1) + "·" + st.short,
+      })));
+  });
+}
+function renderLevelLists(info) {
+  const sel = selectedLv();
+  [["resistances","ovRes","R"],["supports","ovSup","S"]].forEach(([k, id, p]) => {
+    const box = $(id); box.innerHTML = "";
+    if (!sel.length) { box.innerHTML = "<small>Aucune échelle sélectionnée</small>"; return; }
+    sel.forEach(tf => {
+      const h4 = document.createElement("h4"); h4.textContent = LV[tf].name; box.appendChild(h4);
+      const arr = levelsOf(info, tf)[k];
+      if (!arr.length) { const s = document.createElement("small"); s.textContent = "Aucun niveau"; box.appendChild(s); return; }
+      arr.forEach((l, i) => {
+        const d = document.createElement("div"); d.className = "it";
+        const dist = (l.price / info.last - 1) * 100;
+        const a = document.createElement("span");
+        a.textContent = p + (i + 1) + "·" + LV[tf].short + "  " + fmt(l.price, info.currency);
+        const b = document.createElement("small");
+        b.textContent = (l.extreme ? "extrême de la période" : l.touches + " contacts") + " · " + fmtPct(Math.round(dist * 100) / 100);
+        d.append(a, b); box.appendChild(d);
+      });
+    });
+  });
+}
+
 function drawDetail() {
   const info = ovItem, iv = prefs.iv || "D";
   renderSeg("ivSeg", INTERVALS, iv, v => { prefs.iv = v; savePrefs(); drawDetail(); });
+  renderToggles();
   const ivInfo = INTERVALS.find(x => x[0] === iv);
   $("ovFreq").textContent = "Chandeliers " + ivInfo[2];
   if (ovChart) { ovChart.remove(); ovChart = null; }
@@ -351,13 +417,14 @@ function drawDetail() {
   const c = ovChart.addCandlestickSeries({
     upColor:css("--up"), downColor:css("--down"), borderVisible:false,
     wickUpColor:css("--up"), wickDownColor:css("--down"),
-    autoscaleInfoProvider: autoscaleWith(info),
+    autoscaleInfoProvider: autoscaleDetail(info),
   });
   c.setData(rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
   const v = ovChart.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
   ovChart.priceScale("").applyOptions({ scaleMargins:{ top:0.82, bottom:0 } });
   v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
-  addLevels(c, info, true);
+  addDetailLevels(c, info);
+  renderLevelLists(info);
   const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
   if (rows.length > show) {
     ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
