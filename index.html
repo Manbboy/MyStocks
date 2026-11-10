@@ -1300,7 +1300,7 @@ function drawRsi() {
   rsiChart = LW.createChart(box, Object.assign(baseOptions(false), {
     crosshair:crossOpt(),
     rightPriceScale:{ borderVisible:false, minimumWidth:72, scaleMargins:{ top:0.1, bottom:0.1 } },
-    handleScale:{ axisPressedMouseMove:false },
+    handleScale:{ axisPressedMouseMove:{ time:true, price:true }, axisDoubleClickReset:true, mouseWheel:true, pinch:true },
   }));
   const trend = indMode() === "trend";
   rsiSeries = rsiChart.addLineSeries({
@@ -1542,6 +1542,7 @@ function defaultView(rows, iv) {
 function resetView() {
   if (!ovChart || !ovData) return;
   ovChart.priceScale("right").applyOptions({ autoScale:true });
+  if (rsiChart) rsiChart.priceScale("right").applyOptions({ autoScale:true });
   defaultView(barsFor(ovData, prefs.iv || "D"), prefs.iv || "D");
   toast("Vue réinitialisée", 1200);
 }
