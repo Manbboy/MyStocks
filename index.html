@@ -185,6 +185,8 @@
   .stat b { font-size:15px; }
   .lv .it.link { cursor:pointer; position:relative; padding-right:18px; border-radius:8px; }
   .lv .it.link { padding-right:28px; }
+  .lv .it.pick { cursor:pointer; border-radius:8px; }
+  .lv .it.pick:active { background:var(--chip); }
   .lv .it .go { position:absolute; right:0; top:0; bottom:0; width:28px; border:0; border-left:1px solid var(--border); background:none; color:var(--muted); font-size:22px; cursor:pointer; border-radius:0 8px 8px 0; }
   .lv .it .go:active, .lv .it .go:hover { background:var(--chip); color:var(--text); }
   .lv .it.link:active { background:var(--chip); }
@@ -316,7 +318,7 @@
     </div>
     <div class="ov-side">
     <div class="lgd" id="ovLegend"></div>
-    <p class="tip">Touche un niveau pour l'afficher seul sur le graphique avec ses contacts, touche-le à nouveau pour revenir à l'affichage normal. La flèche › ouvre son détail.</p>
+    <p class="tip">Touche un niveau ou une moyenne mobile pour le mettre en évidence (le reste du graphique s'estompe), touche-le à nouveau pour revenir à l'affichage normal. La flèche › d'un niveau ouvre son détail.</p>
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
@@ -1102,7 +1104,9 @@ function drawMas() {
   ovMa.forEach(s => ovChart.removeSeries(s));
   ovMa = [];
   const iv = prefs.iv || "D";
-  [iv].forEach(tf => selMaP().forEach(n => {
+  const shown = selMaP().slice();
+  if (hiMa && !shown.includes(hiMa)) shown.push(hiMa);
+  [iv].forEach(tf => shown.forEach(n => {
     const pts = maSeries(ovData, tf, n, iv);
     if (!pts.length) return;
     const s = ovChart.addLineSeries({
@@ -1114,6 +1118,7 @@ function drawMas() {
     s._n = n;
     ovMa.push(s);
   }));
+  applyHighlight();
 }
 /* RSI 14 (lissage de Wilder), dans l'unité des chandeliers */
 function rsiValues(rows, n = 14) {
@@ -1174,7 +1179,9 @@ function drawRsi() {
 }
 
 let lineMeta = [];          // [{ line, key, opts }] pour pouvoir mettre une ligne en évidence
-let hiKey = null;           // niveau actuellement mis en évidence ("D|S|0")
+let hiKey = null;
+let hiMa = null;            // moyenne mobile mise en évidence (20, 50 ou 200)
+let ovVol = null;           // niveau actuellement mis en évidence ("D|S|0")
 function addDetailLevels(series, info) {
   const lines = [];
   lineMeta = [];
@@ -1196,14 +1203,29 @@ function addDetailLevels(series, info) {
 }
 const fade = c => /^#[0-9a-f]{6}$/i.test(c) ? c + "40" : c;
 /* Met en évidence un niveau : trait épais, étiquette sur l'axe, flèches sur ses contacts ; les autres s'estompent */
+const dim = (c, a = "59") => /^#[0-9a-f]{6}$/i.test(c) ? c + a : c;   // ~35 % d'opacité
 function applyHighlight() {
   if (!ovCandles) return;
   const sel = lineMeta.find(m => m.key === hiKey);
+  const maSel = hiMa && ovMa.some(s => s._n === hiMa) ? hiMa : null;
+  const any = !!(sel || maSel);
+  /* chandeliers et volumes */
+  const up = css("--up"), down = css("--down");
+  ovCandles.applyOptions(any
+    ? { upColor:dim(up), downColor:dim(down), wickUpColor:dim(up), wickDownColor:dim(down) }
+    : { upColor:up, downColor:down, wickUpColor:up, wickDownColor:down });
+  if (ovVol) ovVol.applyOptions({ color:css("--muted") + (any ? "26" : "55") });
+  /* moyennes mobiles */
+  ovMa.forEach(s => s.applyOptions(s._n === maSel
+    ? { color:MA_COL[s._n], lineWidth:4 }
+    : { color:any ? dim(MA_COL[s._n]) : MA_COL[s._n], lineWidth:2 }));
+  /* supports / résistances : le niveau choisi seul ; si une moyenne est choisie, les niveaux s'estompent */
   lineMeta.forEach(m => {
-    if (!sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts));
-    else if (m === sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, {
-      lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid }));
-    else m.line.applyOptions(Object.assign({}, m.opts, { lineVisible:false }));
+    if (sel) {
+      if (m === sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, {
+        lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid }));
+      else m.line.applyOptions(Object.assign({}, m.opts, { lineVisible:false }));
+    } else m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, maSel ? { color:dim(m.opts.color) } : {}));
   });
   if (!sel) { ovCandles.setMarkers([]); return; }
   /* chaque contact est placé sur le chandelier affiché qui contient sa date */
@@ -1229,9 +1251,10 @@ function updateTags() {
   if (!prefs.axis || !ovChart || !ovCandles || !$("ov").classList.contains("show")) { if (box.childElementCount) box.innerHTML = ""; return; }
   const H = $("ovChart").clientHeight, sw = ovChart.priceScale("right").width();
   const items = [];
-  if (!hiKey) lineMeta.forEach(m => items.push({ y:ovCandles.priceToCoordinate(m.opts.price), c:m.opts.color,
+  if (!hiKey && !hiMa) lineMeta.forEach(m => items.push({ y:ovCandles.priceToCoordinate(m.opts.price), c:m.opts.color,
     t:m.p + (m.i + 1) + "·" + LV[m.tf].short + " " + fmt(m.opts.price) }));
   ovMa.forEach(s => {
+    if ((hiKey || hiMa) && s._n !== hiMa) return;
     const d = s.data ? s.data() : null, last = d && d.length ? d[d.length - 1].value : null;
     if (last != null) items.push({ y:s.priceToCoordinate(last), c:MA_COL[s._n], t:"MM" + s._n + " " + fmt(last) });
   });
@@ -1246,6 +1269,7 @@ function onLevelTap(info, tf, p, i, el) {
   const key = tf + "|" + p + "|" + i;
   document.querySelectorAll("#ovRes .it.sel, #ovSup .it.sel").forEach(x => x.classList.remove("sel"));
   if (hiKey === key) { hiKey = null; applyHighlight(); return; }   // 2e toucher : on désactive
+  if (hiMa) { hiMa = null; drawMas(); renderMaList(info); }
   hiKey = key;
   applyHighlight();
   el.classList.add("sel");
@@ -1258,7 +1282,14 @@ function renderMaList(info) {
   const unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
   MA_PERIODS.forEach(n => {
     const pts = maSeries(ovData, iv, n, iv);
-    const d = document.createElement("div"); d.className = "it";
+    const d = document.createElement("div"); d.className = "it" + (pts.length ? " pick" : "");
+    d.style.setProperty("--c", MA_COL[n]);
+    if (hiMa === n) d.classList.add("sel");
+    if (pts.length) d.onclick = () => {
+      hiMa = hiMa === n ? null : n;
+      if (hiMa) { hiKey = null; document.querySelectorAll("#ovRes .it.sel, #ovSup .it.sel").forEach(x => x.classList.remove("sel")); }
+      drawMas(); renderMaList(info);
+    };
     const a = document.createElement("span"); a.style.color = MA_COL[n];
     const b = document.createElement("small");
     if (!pts.length) { a.textContent = "MM" + n; b.textContent = "historique insuffisant (" + n + " " + unit + ")"; }
@@ -1317,7 +1348,7 @@ function drawDetail() {
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = [];
-  if (ovItem !== lastDrawnItem) hiKey = null;
+  if (ovItem !== lastDrawnItem) { hiKey = null; hiMa = null; }
   lastDrawnItem = ovItem;
   const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
@@ -1333,6 +1364,7 @@ function drawDetail() {
   });
   c.setData(rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
   const v = ovChart.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
+  ovVol = v;
   ovChart.priceScale("").applyOptions({ scaleMargins:{ top:0.82, bottom:0 } });
   v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
   ovCandles = c;
