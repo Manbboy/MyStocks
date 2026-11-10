@@ -2,7 +2,7 @@
 Met à jour les données de la page « Mes actions ».
 
 - Lit portfolios.json
-- Télécharge 2 ans de cours journaliers par action (Yahoo Finance, via yfinance)
+- Télécharge 10 ans de cours journaliers par action (Yahoo Finance, via yfinance)
 - Calcule les supports et résistances
 - Écrit data/summary.json et data/series/<symbole>.json
 
@@ -102,7 +102,7 @@ def support_resistance(df: pd.DataFrame):
 def fetch_real(sym: str):
     import yfinance as yf
     t = yf.Ticker(sym)
-    df = t.history(period="2y", interval="1d", auto_adjust=True)
+    df = t.history(period="10y", interval="1d", auto_adjust=True)
     if df is None or df.empty:
         raise RuntimeError("aucune donnée")
     df = df.reset_index()
@@ -118,7 +118,7 @@ def fetch_real(sym: str):
 def fetch_demo(sym: str):
     """Cours simulés (marche aléatoire avec zones de rebond) pour tester hors ligne."""
     rng = np.random.default_rng(abs(hash(sym)) % (2**32))
-    days = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=500)
+    days = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=2500)
     base = rng.uniform(10, 400)
     x = np.cumsum(rng.normal(0, 0.015, len(days)))
     x += 0.15 * np.sin(np.linspace(0, 12, len(days)))

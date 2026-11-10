@@ -61,6 +61,8 @@
   .ov-sub { font-size:13px; color:var(--muted); }
   .close { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer; }
   .ov-body { flex:1; overflow:auto; padding:12px; max-width:1100px; width:100%; margin:0 auto; }
+  .ov-ctrl { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .freq { font-size:13px; font-weight:600; }
   .ov-chart { height:min(60vh,480px); background:var(--card); border:1px solid var(--border); border-radius:12px; }
   .levels { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px; }
   .lv { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
@@ -98,6 +100,7 @@
     <button class="close" id="ovClose">Fermer</button>
   </div>
   <div class="ov-body">
+    <div class="ov-ctrl"><span class="freq" id="ovFreq"></span><div class="seg" id="ivSeg"></div></div>
     <div class="ov-chart" id="ovChart"></div>
     <div class="levels">
       <div class="lv"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
@@ -112,9 +115,9 @@ const LW = window.LightweightCharts;
 const PREFS = "mes-actions-prefs-v1";
 const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
-const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",9999]];
+const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M" };
+let prefs = { active:0, cols:3, range:"6M", iv:"D" };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -303,28 +306,64 @@ async function openDetail(item, info) {
   list(info.supports, "ovSup", "S");
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Niveaux calculés automatiquement sur 1 an à partir des sommets et creux touchés au moins deux fois. Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Supports et résistances calculés sur la dernière année de cours journaliers (sommets et creux touchés au moins deux fois) ; ils restent les mêmes quelle que soit la taille des chandeliers. Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
   $("ovFoot").append(t, a);
 
+  ovItem = info;
+  ovData = await getSeries(info);
+  drawDetail();
+}
+
+const INTERVALS = [["D","Jour","journaliers"],["W","Semaine","hebdomadaires"],["M","Mois","mensuels"],["Q","Trimestre","trimestriels"]];
+let ovItem = null, ovData = null;
+
+/* Regroupe les séances journalières en chandeliers semaine / mois / trimestre */
+function aggregate(rows, iv) {
+  if (iv === "D") return rows;
+  const key = d => {
+    const dt = new Date(d + "T00:00:00Z");
+    if (iv === "W") { const day = (dt.getUTCDay() + 6) % 7; dt.setUTCDate(dt.getUTCDate() - day); return dt.toISOString().slice(0, 10); }
+    if (iv === "M") return d.slice(0, 7);
+    return d.slice(0, 4) + "-Q" + Math.floor((+d.slice(5, 7) - 1) / 3);
+  };
+  const out = [];
+  let cur = null, k0 = null;
+  for (const r of rows) {
+    const k = key(r[0]);
+    if (k !== k0) { if (cur) out.push(cur); cur = [r[0], r[1], r[2], r[3], r[4], r[5]]; k0 = k; }
+    else { cur[2] = Math.max(cur[2], r[2]); cur[3] = Math.min(cur[3], r[3]); cur[4] = r[4]; cur[5] += r[5]; }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
+function drawDetail() {
+  const info = ovItem, iv = prefs.iv || "D";
+  renderSeg("ivSeg", INTERVALS, iv, v => { prefs.iv = v; savePrefs(); drawDetail(); });
+  const ivInfo = INTERVALS.find(x => x[0] === iv);
+  $("ovFreq").textContent = "Chandeliers " + ivInfo[2];
   if (ovChart) { ovChart.remove(); ovChart = null; }
-  const data = await getSeries(info);
+  const rows = aggregate(ovData.rows, iv);
   ovChart = LW.createChart($("ovChart"), baseOptions(false));
   const c = ovChart.addCandlestickSeries({
     upColor:css("--up"), downColor:css("--down"), borderVisible:false,
     wickUpColor:css("--up"), wickDownColor:css("--down"),
     autoscaleInfoProvider: autoscaleWith(info),
   });
-  c.setData(data.rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
+  c.setData(rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
   const v = ovChart.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
   ovChart.priceScale("").applyOptions({ scaleMargins:{ top:0.82, bottom:0 } });
-  v.setData(data.rows.map(r => ({ time:r[0], value:r[5] })));
+  v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
   addLevels(c, info, true);
-  const n = RANGES.find(r => r[0] === prefs.range)[2];
-  const from = data.rows[Math.max(0, data.rows.length - n)][0];
-  ovChart.timeScale().setVisibleRange({ from, to:data.rows[data.rows.length - 1][0] });
+  const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
+  if (rows.length > show) {
+    ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
+  } else {
+    ovChart.timeScale().fitContent();
+  }
 }
 function closeDetail() {
   $("ov").classList.remove("show");
