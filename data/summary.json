@@ -1,124 +1,119 @@
 {
- "updated": "2026-11-10T18:34+00:00",
- "demo": true,
+ "updated": "2026-11-10T18:49+00:00",
+ "demo": false,
  "symbols": {
   "AAPL": {
    "file": "series/AAPL.json",
    "date": "2026-11-10",
-   "last": 36.7721,
-   "change": 0.1975,
-   "changePct": 0.54,
+   "last": 347.91,
+   "change": -2.78,
+   "changePct": -0.79,
    "currency": "USD",
    "supports": [
     {
-     "price": 35.8901,
-     "touches": 5,
-     "last": "2026-07-20",
-     "recent": false
-    },
-    {
-     "price": 35.139,
-     "touches": 4,
-     "last": "2026-10-19",
+     "price": 345.921,
+     "touches": 3,
+     "last": "2026-10-13",
      "recent": true
     },
     {
-     "price": 34.1701,
-     "touches": 4,
-     "last": "2026-08-04",
-     "recent": false
+     "price": 336.7007,
+     "touches": 2,
+     "last": "2026-10-20",
+     "recent": true
+    },
+    {
+     "price": 325.57,
+     "touches": 2,
+     "last": "2026-11-03",
+     "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 37.711,
-     "touches": 2,
-     "last": "2026-06-24",
-     "recent": false
+     "price": 355.38,
+     "touches": 1,
+     "last": "2026-11-05",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "ABI.BR": {
    "file": "series/ABI_BR.json",
    "date": "2026-11-10",
-   "last": 97.4538,
-   "change": 1.4783,
-   "changePct": 1.54,
+   "last": 76.78,
+   "change": 1.26,
+   "changePct": 1.67,
    "currency": "EUR",
    "supports": [
     {
-     "price": 93.6894,
-     "touches": 1,
-     "last": "2026-11-03",
-     "recent": false,
-     "extreme": true
+     "price": 76.24,
+     "touches": 2,
+     "last": "2026-10-23",
+     "recent": true
+    },
+    {
+     "price": 69.4467,
+     "touches": 6,
+     "last": "2026-10-29",
+     "recent": true
+    },
+    {
+     "price": 67.0893,
+     "touches": 5,
+     "last": "2026-09-09",
+     "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 124.8939,
-     "touches": 2,
-     "last": "2026-08-21",
-     "recent": true
-    },
-    {
-     "price": 154.9743,
-     "touches": 3,
-     "last": "2026-06-09",
-     "recent": false
-    },
-    {
-     "price": 156.8818,
-     "touches": 2,
-     "last": "2026-04-07",
-     "recent": false
+     "price": 76.92,
+     "touches": 1,
+     "last": "2026-11-10",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "ADBE": {
    "file": "series/ADBE.json",
    "date": "2026-11-10",
-   "last": 349.8588,
-   "change": 2.2896,
-   "changePct": 0.66,
+   "last": 233.84,
+   "change": -3.48,
+   "changePct": -1.47,
    "currency": "USD",
    "supports": [
     {
-     "price": 349.4785,
-     "touches": 2,
-     "last": "2026-06-02",
+     "price": 233.77,
+     "touches": 4,
+     "last": "2026-05-28",
      "recent": false
     },
     {
-     "price": 332.1434,
-     "touches": 5,
-     "last": "2026-10-13",
-     "recent": true
-    },
-    {
-     "price": 318.3163,
-     "touches": 2,
-     "last": "2026-10-20",
+     "price": 225.2667,
+     "touches": 3,
+     "last": "2026-10-07",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 357.432,
-     "touches": 2,
-     "last": "2026-05-04",
-     "recent": false
-    },
-    {
-     "price": 369.7119,
-     "touches": 4,
-     "last": "2026-10-30",
+     "price": 241.98,
+     "touches": 3,
+     "last": "2026-09-11",
      "recent": true
     },
     {
-     "price": 401.9914,
-     "touches": 3,
-     "last": "2026-03-20",
+     "price": 249.51,
+     "touches": 4,
+     "last": "2026-10-01",
+     "recent": true
+    },
+    {
+     "price": 259.095,
+     "touches": 2,
+     "last": "2026-05-07",
      "recent": false
     }
    ]
@@ -126,77 +121,72 @@
   "AF.PA": {
    "file": "series/AF_PA.json",
    "date": "2026-11-10",
-   "last": 204.6252,
-   "change": 4.7151,
-   "changePct": 2.36,
+   "last": 14.4,
+   "change": 0.47,
+   "changePct": 3.37,
    "currency": "EUR",
    "supports": [
     {
-     "price": 202.1494,
-     "touches": 2,
-     "last": "2026-09-04",
-     "recent": true
-    },
-    {
-     "price": 189.4822,
-     "touches": 2,
-     "last": "2026-09-11",
-     "recent": true
-    },
-    {
-     "price": 185.385,
+     "price": 12.5317,
      "touches": 3,
-     "last": "2026-10-26",
+     "last": "2026-08-26",
+     "recent": true
+    },
+    {
+     "price": 12.0517,
+     "touches": 3,
+     "last": "2026-09-22",
+     "recent": true
+    },
+    {
+     "price": 11.25,
+     "touches": 9,
+     "last": "2026-09-16",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 211.786,
-     "touches": 4,
-     "last": "2026-06-15",
-     "recent": false
-    },
-    {
-     "price": 236.0095,
-     "touches": 3,
-     "last": "2026-05-28",
-     "recent": false
+     "price": 14.43,
+     "touches": 1,
+     "last": "2026-07-07",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "AMD": {
    "file": "series/AMD.json",
    "date": "2026-11-10",
-   "last": 76.7102,
-   "change": -1.1695,
-   "changePct": -1.5,
+   "last": 511.185,
+   "change": 2.605,
+   "changePct": 0.51,
    "currency": "USD",
    "supports": [
     {
-     "price": 74.7186,
-     "touches": 3,
-     "last": "2026-10-23",
+     "price": 500.914,
+     "touches": 5,
+     "last": "2026-10-22",
      "recent": true
+    },
+    {
+     "price": 449.3429,
+     "touches": 7,
+     "last": "2026-09-03",
+     "recent": true
+    },
+    {
+     "price": 206.3725,
+     "touches": 12,
+     "last": "2026-03-30",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 77.6506,
-     "touches": 2,
-     "last": "2026-09-29",
-     "recent": true
-    },
-    {
-     "price": 79.9437,
-     "touches": 2,
+     "price": 559.0683,
+     "touches": 6,
      "last": "2026-10-28",
-     "recent": true
-    },
-    {
-     "price": 81.7872,
-     "touches": 2,
-     "last": "2026-09-25",
      "recent": true
     }
    ]
@@ -204,77 +194,84 @@
   "AMG.AS": {
    "file": "series/AMG_AS.json",
    "date": "2026-11-10",
-   "last": 449.9054,
-   "change": -3.0178,
-   "changePct": -0.67,
+   "last": 23.64,
+   "change": -0.32,
+   "changePct": -1.34,
    "currency": "EUR",
    "supports": [
     {
-     "price": 448.8034,
-     "touches": 5,
-     "last": "2026-07-28",
-     "recent": false
-    },
-    {
-     "price": 427.3796,
-     "touches": 3,
-     "last": "2026-05-05",
-     "recent": false
-    },
-    {
-     "price": 414.5786,
-     "touches": 4,
-     "last": "2026-07-10",
-     "recent": false
+     "price": 22.34,
+     "touches": 1,
+     "last": "2026-10-23",
+     "recent": false,
+     "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 460.0769,
+     "price": 27.8115,
      "touches": 2,
-     "last": "2026-06-25",
-     "recent": false
+     "last": "2026-09-28",
+     "recent": true
+    },
+    {
+     "price": 28.8044,
+     "touches": 2,
+     "last": "2026-09-15",
+     "recent": true
+    },
+    {
+     "price": 30.798,
+     "touches": 5,
+     "last": "2026-09-23",
+     "recent": true
     }
    ]
   },
   "AMP.MI": {
    "file": "series/AMP_MI.json",
    "date": "2026-11-10",
-   "last": 48.6051,
-   "change": -0.3029,
-   "changePct": -0.62,
+   "last": 12.085,
+   "change": -0.03,
+   "changePct": -0.25,
    "currency": "EUR",
    "supports": [
     {
-     "price": 48.5547,
-     "touches": 2,
-     "last": "2026-10-15",
+     "price": 11.5582,
+     "touches": 3,
+     "last": "2026-08-20",
      "recent": true
     },
     {
-     "price": 45.5965,
-     "touches": 2,
-     "last": "2026-10-09",
+     "price": 11.042,
+     "touches": 5,
+     "last": "2026-10-30",
      "recent": true
+    },
+    {
+     "price": 10.0851,
+     "touches": 3,
+     "last": "2026-05-20",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 49.6118,
-     "touches": 2,
-     "last": "2026-10-01",
+     "price": 12.4972,
+     "touches": 8,
+     "last": "2026-08-31",
      "recent": true
     },
     {
-     "price": 68.5907,
-     "touches": 2,
-     "last": "2026-05-04",
-     "recent": false
+     "price": 13.0738,
+     "touches": 5,
+     "last": "2026-10-29",
+     "recent": true
     },
     {
-     "price": 70.6205,
-     "touches": 3,
-     "last": "2026-05-26",
+     "price": 13.8707,
+     "touches": 4,
+     "last": "2026-02-10",
      "recent": false
     }
    ]
@@ -282,191 +279,216 @@
   "AVGO": {
    "file": "series/AVGO.json",
    "date": "2026-11-10",
-   "last": 168.4851,
-   "change": 1.7584,
-   "changePct": 1.05,
+   "last": 328.315,
+   "change": 8.835,
+   "changePct": 2.77,
    "currency": "USD",
    "supports": [
     {
-     "price": 167.138,
-     "touches": 6,
-     "last": "2026-10-20",
-     "recent": true
-    },
-    {
-     "price": 162.6492,
-     "touches": 4,
-     "last": "2026-05-07",
+     "price": 323.8681,
+     "touches": 2,
+     "last": "2026-01-08",
      "recent": false
     },
     {
-     "price": 156.4385,
+     "price": 308.2412,
+     "touches": 3,
+     "last": "2026-03-19",
+     "recent": false
+    },
+    {
+     "price": 291.3285,
      "touches": 2,
-     "last": "2026-07-02",
+     "last": "2026-03-30",
      "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 176.3432,
+     "price": 345.2201,
+     "touches": 8,
+     "last": "2026-10-28",
+     "recent": true
+    },
+    {
+     "price": 362.6888,
+     "touches": 8,
+     "last": "2026-09-22",
+     "recent": true
+    },
+    {
+     "price": 378.3727,
      "touches": 2,
-     "last": "2026-04-15",
-     "recent": false
+     "last": "2026-10-06",
+     "recent": true
     }
    ]
   },
   "BABA": {
    "file": "series/BABA.json",
    "date": "2026-11-10",
-   "last": 114.1889,
-   "change": -2.7002,
-   "changePct": -2.31,
+   "last": 102.555,
+   "change": -2.825,
+   "changePct": -2.68,
    "currency": "USD",
    "supports": [
     {
-     "price": 110.8507,
-     "touches": 2,
-     "last": "2026-08-17",
-     "recent": false
+     "price": 91.99,
+     "touches": 1,
+     "last": "2026-06-26",
+     "recent": false,
+     "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 129.5253,
+     "price": 105.695,
+     "touches": 2,
+     "last": "2026-10-08",
+     "recent": true
+    },
+    {
+     "price": 112.197,
+     "touches": 2,
+     "last": "2026-10-14",
+     "recent": true
+    },
+    {
+     "price": 120.9406,
      "touches": 4,
-     "last": "2026-07-17",
-     "recent": false
-    },
-    {
-     "price": 134.7844,
-     "touches": 2,
-     "last": "2026-06-26",
-     "recent": false
-    },
-    {
-     "price": 138.326,
-     "touches": 2,
-     "last": "2026-06-16",
-     "recent": false
+     "last": "2026-09-22",
+     "recent": true
     }
    ]
   },
   "BZ=F": {
    "file": "series/BZ_F.json",
    "date": "2026-11-10",
-   "last": 391.0297,
-   "change": 2.594,
-   "changePct": 0.67,
+   "last": 91.42,
+   "change": -1.15,
+   "changePct": -1.24,
    "currency": "USD",
    "supports": [
     {
-     "price": 386.3193,
-     "touches": 4,
-     "last": "2026-10-15",
-     "recent": true
-    },
-    {
-     "price": 370.7806,
+     "price": 90.735,
      "touches": 2,
-     "last": "2026-08-20",
+     "last": "2026-05-29",
+     "recent": false
+    },
+    {
+     "price": 85.78,
+     "touches": 2,
+     "last": "2026-08-26",
      "recent": true
     },
     {
-     "price": 359.1055,
-     "touches": 3,
-     "last": "2026-11-03",
-     "recent": true
+     "price": 67.436,
+     "touches": 5,
+     "last": "2026-07-02",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 405.8332,
+     "price": 96.21,
      "touches": 5,
-     "last": "2026-08-14",
-     "recent": false
+     "last": "2026-10-01",
+     "recent": true
     },
     {
-     "price": 432.4321,
-     "touches": 2,
-     "last": "2026-06-22",
-     "recent": false
-    },
-    {
-     "price": 449.6374,
+     "price": 110.5633,
      "touches": 3,
-     "last": "2026-01-22",
-     "recent": false
+     "last": "2026-09-28",
+     "recent": true
+    },
+    {
+     "price": 118.9475,
+     "touches": 4,
+     "last": "2026-10-30",
+     "recent": true
     }
    ]
   },
   "CA.PA": {
    "file": "series/CA_PA.json",
    "date": "2026-11-10",
-   "last": 203.165,
-   "change": 5.128,
-   "changePct": 2.59,
+   "last": 13.93,
+   "change": 0.345,
+   "changePct": 2.54,
    "currency": "EUR",
    "supports": [
     {
-     "price": 195.7869,
+     "price": 13.8837,
      "touches": 2,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-03-23",
+     "recent": false
+    },
+    {
+     "price": 13.4671,
+     "touches": 2,
+     "last": "2026-01-08",
+     "recent": false
+    },
+    {
+     "price": 12.668,
+     "touches": 3,
+     "last": "2026-01-30",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 203.7103,
+     "price": 14.7286,
      "touches": 2,
-     "last": "2026-10-08",
-     "recent": true
-    },
-    {
-     "price": 215.4922,
-     "touches": 2,
-     "last": "2026-09-15",
-     "recent": true
-    },
-    {
-     "price": 289.1657,
-     "touches": 2,
-     "last": "2025-12-29",
+     "last": "2026-03-17",
      "recent": false
+    },
+    {
+     "price": 15.0172,
+     "touches": 4,
+     "last": "2026-07-24",
+     "recent": false
+    },
+    {
+     "price": 15.3896,
+     "touches": 5,
+     "last": "2026-10-05",
+     "recent": true
     }
    ]
   },
   "COO": {
    "file": "series/COO.json",
    "date": "2026-11-10",
-   "last": 39.5427,
-   "change": 0.7459,
-   "changePct": 1.92,
+   "last": 63.32,
+   "change": -0.61,
+   "changePct": -0.95,
    "currency": "USD",
    "supports": [
     {
-     "price": 37.333,
-     "touches": 9,
-     "last": "2026-09-01",
-     "recent": true
-    },
-    {
-     "price": 35.7868,
-     "touches": 3,
-     "last": "2026-08-27",
-     "recent": true
-    },
-    {
-     "price": 35.2306,
+     "price": 59.015,
      "touches": 2,
-     "last": "2026-09-25",
-     "recent": true
+     "last": "2026-06-02",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 40.1022,
+     "price": 68.9175,
      "touches": 4,
-     "last": "2026-05-05",
+     "last": "2026-07-23",
+     "recent": false
+    },
+    {
+     "price": 72.59,
+     "touches": 2,
+     "last": "2026-04-14",
+     "recent": false
+    },
+    {
+     "price": 74.2,
+     "touches": 2,
+     "last": "2026-07-17",
      "recent": false
     }
    ]
@@ -474,71 +496,72 @@
   "CS.PA": {
    "file": "series/CS_PA.json",
    "date": "2026-11-10",
-   "last": 281.1798,
-   "change": -0.4551,
-   "changePct": -0.16,
+   "last": 46.08,
+   "change": 0.72,
+   "changePct": 1.59,
    "currency": "EUR",
    "supports": [
     {
-     "price": 273.4083,
-     "touches": 4,
-     "last": "2026-09-01",
+     "price": 45.4967,
+     "touches": 3,
+     "last": "2026-09-17",
      "recent": true
     },
     {
-     "price": 264.5953,
-     "touches": 2,
-     "last": "2026-09-15",
+     "price": 44.4767,
+     "touches": 3,
+     "last": "2026-09-04",
      "recent": true
     },
     {
-     "price": 257.4174,
+     "price": 42.585,
      "touches": 2,
-     "last": "2026-11-02",
+     "last": "2026-09-09",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 290.6131,
-     "touches": 2,
-     "last": "2026-10-13",
-     "recent": true
+     "price": 46.37,
+     "touches": 1,
+     "last": "2026-11-10",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "DECK": {
    "file": "series/DECK.json",
    "date": "2026-11-10",
-   "last": 58.3041,
-   "change": 0.1094,
-   "changePct": 0.19,
+   "last": 89.775,
+   "change": -0.655,
+   "changePct": -0.72,
    "currency": "USD",
    "supports": [
     {
-     "price": 55.7335,
+     "price": 77.5633,
      "touches": 3,
-     "last": "2026-11-02",
+     "last": "2026-10-23",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 59.4353,
-     "touches": 2,
-     "last": "2026-10-22",
+     "price": 92.44,
+     "touches": 4,
+     "last": "2026-08-24",
      "recent": true
     },
     {
-     "price": 68.2556,
-     "touches": 2,
-     "last": "2026-08-07",
+     "price": 98.258,
+     "touches": 5,
+     "last": "2026-06-30",
      "recent": false
     },
     {
-     "price": 93.1582,
-     "touches": 3,
-     "last": "2026-02-25",
+     "price": 105.158,
+     "touches": 5,
+     "last": "2026-07-29",
      "recent": false
     }
    ]
@@ -546,47 +569,47 @@
   "DELL": {
    "file": "series/DELL.json",
    "date": "2026-11-10",
-   "last": 52.383,
-   "change": 1.2486,
-   "changePct": 2.44,
+   "last": 327.34,
+   "change": -18.97,
+   "changePct": -5.48,
    "currency": "USD",
    "supports": [
     {
-     "price": 50.7577,
-     "touches": 4,
-     "last": "2026-10-26",
-     "recent": true
-    },
-    {
-     "price": 49.3288,
+     "price": 223.7049,
      "touches": 2,
-     "last": "2026-09-04",
-     "recent": true
+     "last": "2026-05-19",
+     "recent": false
     },
     {
-     "price": 46.2674,
+     "price": 187.1341,
      "touches": 3,
-     "last": "2026-10-20",
-     "recent": true
+     "last": "2026-04-30",
+     "recent": false
+    },
+    {
+     "price": 148.4331,
+     "touches": 4,
+     "last": "2026-03-31",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 56.0774,
-     "touches": 2,
-     "last": "2026-04-09",
-     "recent": false
-    },
-    {
-     "price": 57.9339,
-     "touches": 3,
-     "last": "2026-06-24",
-     "recent": false
-    },
-    {
-     "price": 61.0687,
+     "price": 364.7295,
      "touches": 4,
-     "last": "2026-05-22",
+     "last": "2026-07-28",
+     "recent": false
+    },
+    {
+     "price": 431.7186,
+     "touches": 4,
+     "last": "2026-10-20",
+     "recent": true
+    },
+    {
+     "price": 461.4211,
+     "touches": 3,
+     "last": "2026-07-23",
      "recent": false
     }
    ]
@@ -594,35 +617,47 @@
   "DG.PA": {
    "file": "series/DG_PA.json",
    "date": "2026-11-10",
-   "last": 345.7619,
-   "change": 1.9891,
-   "changePct": 0.58,
+   "last": 114.75,
+   "change": 1.05,
+   "changePct": 0.92,
    "currency": "EUR",
    "supports": [
     {
-     "price": 336.9526,
+     "price": 114.2143,
      "touches": 2,
-     "last": "2026-10-21",
+     "last": "2026-01-02",
+     "recent": false
+    },
+    {
+     "price": 112.5156,
+     "touches": 3,
+     "last": "2026-09-17",
+     "recent": true
+    },
+    {
+     "price": 108.7223,
+     "touches": 4,
+     "last": "2026-10-15",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 430.2116,
+     "price": 116.177,
      "touches": 4,
-     "last": "2026-06-25",
+     "last": "2026-07-27",
      "recent": false
     },
     {
-     "price": 439.5435,
-     "touches": 4,
-     "last": "2026-06-10",
-     "recent": false
-    },
-    {
-     "price": 459.796,
+     "price": 119.7878,
      "touches": 6,
-     "last": "2026-07-06",
+     "last": "2026-07-17",
+     "recent": false
+    },
+    {
+     "price": 125.9739,
+     "touches": 2,
+     "last": "2026-08-06",
      "recent": false
     }
    ]
@@ -630,151 +665,158 @@
   "DIS": {
    "file": "series/DIS.json",
    "date": "2026-11-10",
-   "last": 44.3034,
-   "change": -0.5755,
-   "changePct": -1.28,
+   "last": 118.86,
+   "change": -0.26,
+   "changePct": -0.22,
    "currency": "USD",
    "supports": [
     {
-     "price": 41.7371,
+     "price": 112.8903,
      "touches": 3,
-     "last": "2026-10-14",
+     "last": "2026-10-22",
      "recent": true
     },
     {
-     "price": 39.5208,
-     "touches": 3,
-     "last": "2026-10-19",
+     "price": 109.3972,
+     "touches": 7,
+     "last": "2026-10-28",
      "recent": true
     },
     {
-     "price": 38.177,
-     "touches": 3,
-     "last": "2026-09-22",
+     "price": 106.4378,
+     "touches": 2,
+     "last": "2026-09-28",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 54.7513,
-     "touches": 3,
-     "last": "2026-02-27",
-     "recent": false
-    },
-    {
-     "price": 59.3429,
-     "touches": 2,
-     "last": "2026-03-12",
-     "recent": false
+     "price": 120.8,
+     "touches": 1,
+     "last": "2026-11-05",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "DSY.PA": {
    "file": "series/DSY_PA.json",
    "date": "2026-11-10",
-   "last": 6.7435,
-   "change": 0.0361,
-   "changePct": 0.54,
+   "last": 25.26,
+   "change": -0.49,
+   "changePct": -1.9,
    "currency": "EUR",
    "supports": [
     {
-     "price": 6.7036,
-     "touches": 3,
-     "last": "2026-09-29",
-     "recent": true
+     "price": 23.9526,
+     "touches": 2,
+     "last": "2026-01-29",
+     "recent": false
     },
     {
-     "price": 6.3475,
-     "touches": 3,
-     "last": "2026-09-04",
+     "price": 22.6333,
+     "touches": 4,
+     "last": "2026-08-07",
+     "recent": false
+    },
+    {
+     "price": 20.1649,
+     "touches": 6,
+     "last": "2026-10-01",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 6.8472,
-     "touches": 2,
-     "last": "2026-07-30",
-     "recent": false
-    },
-    {
-     "price": 7.0162,
-     "touches": 2,
-     "last": "2026-09-17",
-     "recent": true
-    },
-    {
-     "price": 7.1745,
-     "touches": 3,
-     "last": "2026-10-23",
-     "recent": true
+     "price": 26.39,
+     "touches": 1,
+     "last": "2026-11-09",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "EL.PA": {
    "file": "series/EL_PA.json",
    "date": "2026-11-10",
-   "last": 80.0969,
-   "change": 0.5112,
-   "changePct": 0.64,
+   "last": 187.6,
+   "change": -3.0,
+   "changePct": -1.57,
    "currency": "EUR",
    "supports": [
     {
-     "price": 66.6643,
-     "touches": 1,
-     "last": "2025-11-26",
-     "recent": false,
-     "extreme": true
+     "price": 187.5985,
+     "touches": 2,
+     "last": "2026-06-15",
+     "recent": false
+    },
+    {
+     "price": 177.83,
+     "touches": 5,
+     "last": "2026-08-06",
+     "recent": false
+    },
+    {
+     "price": 161.52,
+     "touches": 5,
+     "last": "2026-07-31",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 83.355,
-     "touches": 2,
-     "last": "2026-10-28",
-     "recent": true
-    },
-    {
-     "price": 85.111,
-     "touches": 2,
-     "last": "2026-05-27",
-     "recent": false
-    },
-    {
-     "price": 87.0975,
-     "touches": 4,
-     "last": "2026-05-14",
-     "recent": false
+     "price": 309.6811,
+     "touches": 1,
+     "last": "2025-11-27",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "ENGI.PA": {
    "file": "series/ENGI_PA.json",
    "date": "2026-11-10",
-   "last": 236.9674,
-   "change": -1.9332,
-   "changePct": -0.81,
+   "last": 24.64,
+   "change": -0.09,
+   "changePct": -0.36,
    "currency": "EUR",
    "supports": [
     {
-     "price": 217.5136,
-     "touches": 1,
-     "last": "2026-09-09",
-     "recent": false,
-     "extreme": true
+     "price": 23.4925,
+     "touches": 4,
+     "last": "2026-10-15",
+     "recent": true
+    },
+    {
+     "price": 22.3256,
+     "touches": 3,
+     "last": "2026-10-23",
+     "recent": true
+    },
+    {
+     "price": 20.2957,
+     "touches": 2,
+     "last": "2025-12-11",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 402.2007,
+     "price": 24.6878,
      "touches": 2,
-     "last": "2026-02-19",
+     "last": "2026-09-09",
+     "recent": true
+    },
+    {
+     "price": 26.4317,
+     "touches": 7,
+     "last": "2026-07-16",
      "recent": false
     },
     {
-     "price": 428.6791,
-     "touches": 2,
-     "last": "2026-01-27",
+     "price": 27.6967,
+     "touches": 6,
+     "last": "2026-07-27",
      "recent": false
     }
    ]
@@ -782,36 +824,41 @@
   "FDJU.PA": {
    "file": "series/FDJU_PA.json",
    "date": "2026-11-10",
-   "last": 13.7813,
-   "change": 0.2562,
-   "changePct": 1.89,
+   "last": 21.71,
+   "change": -0.01,
+   "changePct": -0.05,
    "currency": "EUR",
    "supports": [
     {
-     "price": 11.4957,
-     "touches": 1,
-     "last": "2026-09-10",
-     "recent": false,
-     "extreme": true
+     "price": 20.625,
+     "touches": 4,
+     "last": "2026-06-26",
+     "recent": false
+    },
+    {
+     "price": 20.3088,
+     "touches": 2,
+     "last": "2026-10-01",
+     "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 14.6164,
-     "touches": 3,
-     "last": "2026-06-11",
-     "recent": false
+     "price": 21.7128,
+     "touches": 8,
+     "last": "2026-10-16",
+     "recent": true
     },
     {
-     "price": 15.458,
-     "touches": 2,
-     "last": "2026-06-16",
-     "recent": false
+     "price": 22.4832,
+     "touches": 7,
+     "last": "2026-09-10",
+     "recent": true
     },
     {
-     "price": 17.249,
-     "touches": 3,
-     "last": "2026-05-08",
+     "price": 23.0693,
+     "touches": 4,
+     "last": "2026-07-28",
      "recent": false
     }
    ]
@@ -819,71 +866,89 @@
   "FDX": {
    "file": "series/FDX.json",
    "date": "2026-11-10",
-   "last": 199.8488,
-   "change": -3.3308,
-   "changePct": -1.64,
+   "last": 318.96,
+   "change": 0.12,
+   "changePct": 0.04,
    "currency": "USD",
    "supports": [
     {
-     "price": 198.4574,
-     "touches": 3,
-     "last": "2026-07-13",
+     "price": 304.6104,
+     "touches": 6,
+     "last": "2026-07-28",
      "recent": false
     },
     {
-     "price": 187.8309,
-     "touches": 5,
-     "last": "2026-10-05",
+     "price": 286.6746,
+     "touches": 4,
+     "last": "2026-10-14",
+     "recent": true
+    },
+    {
+     "price": 275.999,
+     "touches": 4,
+     "last": "2026-09-25",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 213.2456,
-     "touches": 6,
-     "last": "2026-11-03",
+     "price": 319.3289,
+     "touches": 7,
+     "last": "2026-08-24",
      "recent": true
     },
     {
-     "price": 223.5686,
-     "touches": 2,
-     "last": "2026-01-06",
-     "recent": false
+     "price": 340.2798,
+     "touches": 4,
+     "last": "2026-08-26",
+     "recent": true
     }
    ]
   },
   "FISV": {
    "file": "series/FISV.json",
    "date": "2026-11-10",
-   "last": 225.7752,
-   "change": -7.3674,
-   "changePct": -3.16,
+   "last": 63.59,
+   "change": 0.07,
+   "changePct": 0.11,
    "currency": "USD",
    "supports": [
     {
-     "price": 222.9879,
+     "price": 58.406,
      "touches": 5,
-     "last": "2026-10-21",
-     "recent": true
+     "last": "2026-06-01",
+     "recent": false
     },
     {
-     "price": 214.2124,
-     "touches": 2,
-     "last": "2026-09-10",
+     "price": 55.96,
+     "touches": 4,
+     "last": "2026-08-13",
+     "recent": false
+    },
+    {
+     "price": 53.0233,
+     "touches": 3,
+     "last": "2026-08-31",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 236.6003,
-     "touches": 5,
-     "last": "2026-10-14",
-     "recent": true
+     "price": 64.4883,
+     "touches": 6,
+     "last": "2026-05-04",
+     "recent": false
     },
     {
-     "price": 249.4327,
-     "touches": 3,
-     "last": "2026-07-16",
+     "price": 67.815,
+     "touches": 2,
+     "last": "2026-01-26",
+     "recent": false
+    },
+    {
+     "price": 69.92,
+     "touches": 2,
+     "last": "2026-01-08",
      "recent": false
     }
    ]
@@ -891,35 +956,47 @@
   "GLE.PA": {
    "file": "series/GLE_PA.json",
    "date": "2026-11-10",
-   "last": 251.3091,
-   "change": 0.0943,
-   "changePct": 0.04,
+   "last": 67.47,
+   "change": 1.61,
+   "changePct": 2.44,
    "currency": "EUR",
    "supports": [
     {
-     "price": 243.1691,
+     "price": 67.3987,
      "touches": 2,
-     "last": "2026-10-20",
-     "recent": true
+     "last": "2026-06-11",
+     "recent": false
     },
     {
-     "price": 232.336,
-     "touches": 2,
-     "last": "2026-10-13",
-     "recent": true
-    },
-    {
-     "price": 194.4183,
+     "price": 65.7632,
      "touches": 3,
-     "last": "2026-08-17",
+     "last": "2026-10-16",
+     "recent": true
+    },
+    {
+     "price": 63.634,
+     "touches": 3,
+     "last": "2026-05-18",
      "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 310.3554,
+     "price": 70.1304,
+     "touches": 6,
+     "last": "2026-09-15",
+     "recent": true
+    },
+    {
+     "price": 74.8525,
+     "touches": 4,
+     "last": "2026-09-21",
+     "recent": true
+    },
+    {
+     "price": 78.0668,
      "touches": 2,
-     "last": "2026-05-06",
+     "last": "2026-07-06",
      "recent": false
     }
    ]
@@ -927,314 +1004,320 @@
   "HEIA.AS": {
    "file": "series/HEIA_AS.json",
    "date": "2026-11-10",
-   "last": 73.4938,
-   "change": 0.1456,
-   "changePct": 0.2,
+   "last": 84.26,
+   "change": 0.88,
+   "changePct": 1.06,
    "currency": "EUR",
    "supports": [
     {
-     "price": 71.8316,
-     "touches": 3,
-     "last": "2026-02-06",
+     "price": 79.563,
+     "touches": 2,
+     "last": "2026-08-05",
      "recent": false
+    },
+    {
+     "price": 73.9831,
+     "touches": 4,
+     "last": "2026-09-08",
+     "recent": true
+    },
+    {
+     "price": 70.5318,
+     "touches": 8,
+     "last": "2026-09-21",
+     "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 83.3243,
-     "touches": 2,
-     "last": "2026-07-15",
-     "recent": false
-    },
-    {
-     "price": 85.7023,
-     "touches": 2,
-     "last": "2026-09-11",
-     "recent": true
-    },
-    {
-     "price": 91.5307,
-     "touches": 3,
-     "last": "2026-07-08",
-     "recent": false
+     "price": 84.64,
+     "touches": 1,
+     "last": "2026-11-10",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "HO.PA": {
    "file": "series/HO_PA.json",
    "date": "2026-11-10",
-   "last": 102.9193,
-   "change": 0.1415,
-   "changePct": 0.14,
+   "last": 232.7,
+   "change": 4.0,
+   "changePct": 1.75,
    "currency": "EUR",
    "supports": [
     {
-     "price": 101.82,
-     "touches": 1,
-     "last": "2026-11-10",
-     "recent": false,
-     "extreme": true
+     "price": 231.7416,
+     "touches": 3,
+     "last": "2026-03-23",
+     "recent": false
+    },
+    {
+     "price": 222.8818,
+     "touches": 5,
+     "last": "2026-10-23",
+     "recent": true
+    },
+    {
+     "price": 213.7386,
+     "touches": 5,
+     "last": "2026-10-08",
+     "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 103.822,
-     "touches": 2,
-     "last": "2026-10-27",
+     "price": 239.7835,
+     "touches": 7,
+     "last": "2026-10-29",
      "recent": true
     },
     {
-     "price": 118.3489,
+     "price": 246.6124,
      "touches": 3,
-     "last": "2026-10-01",
+     "last": "2026-09-17",
      "recent": true
     },
     {
-     "price": 126.8229,
-     "touches": 2,
-     "last": "2026-09-07",
-     "recent": true
+     "price": 268.6716,
+     "touches": 3,
+     "last": "2026-04-17",
+     "recent": false
     }
    ]
   },
   "IT": {
    "file": "series/IT.json",
    "date": "2026-11-10",
-   "last": 304.8142,
-   "change": 4.7738,
-   "changePct": 1.59,
+   "last": 188.28,
+   "change": -2.74,
+   "changePct": -1.43,
    "currency": "USD",
    "supports": [
     {
-     "price": 289.517,
-     "touches": 5,
-     "last": "2026-10-07",
+     "price": 175.3425,
+     "touches": 4,
+     "last": "2026-09-24",
      "recent": true
     },
     {
-     "price": 273.4527,
-     "touches": 2,
-     "last": "2026-10-14",
+     "price": 162.1386,
+     "touches": 7,
+     "last": "2026-09-09",
      "recent": true
+    },
+    {
+     "price": 142.82,
+     "touches": 9,
+     "last": "2026-07-17",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 309.221,
-     "touches": 5,
-     "last": "2026-09-17",
+     "price": 203.4333,
+     "touches": 3,
+     "last": "2026-10-01",
      "recent": true
     },
     {
-     "price": 322.5395,
-     "touches": 4,
-     "last": "2026-10-27",
-     "recent": true
-    },
-    {
-     "price": 329.5205,
-     "touches": 2,
-     "last": "2026-05-20",
+     "price": 223.0,
+     "touches": 3,
+     "last": "2026-01-20",
      "recent": false
+    },
+    {
+     "price": 237.5967,
+     "touches": 3,
+     "last": "2026-11-02",
+     "recent": true
     }
    ]
   },
   "IWDA.AS": {
    "file": "series/IWDA_AS.json",
    "date": "2026-11-10",
-   "last": 20.781,
-   "change": 0.27,
-   "changePct": 1.32,
+   "last": 128.7,
+   "change": 0.18,
+   "changePct": 0.14,
    "currency": "EUR",
    "supports": [
     {
-     "price": 20.2331,
-     "touches": 3,
-     "last": "2026-10-01",
+     "price": 124.97,
+     "touches": 6,
+     "last": "2026-09-10",
      "recent": true
     },
     {
-     "price": 18.8497,
-     "touches": 2,
-     "last": "2026-09-14",
-     "recent": true
+     "price": 122.55,
+     "touches": 3,
+     "last": "2026-07-30",
+     "recent": false
+    },
+    {
+     "price": 113.8608,
+     "touches": 6,
+     "last": "2026-03-18",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 21.8034,
-     "touches": 3,
-     "last": "2026-08-11",
-     "recent": false
+     "price": 129.24,
+     "touches": 4,
+     "last": "2026-10-23",
+     "recent": true
     },
     {
-     "price": 23.219,
+     "price": 132.31,
      "touches": 2,
-     "last": "2026-01-05",
-     "recent": false
-    },
-    {
-     "price": 24.8018,
-     "touches": 2,
-     "last": "2026-06-24",
-     "recent": false
+     "last": "2026-10-29",
+     "recent": true
     }
    ]
   },
   "KER.PA": {
    "file": "series/KER_PA.json",
    "date": "2026-11-10",
-   "last": 332.2125,
-   "change": -9.0238,
-   "changePct": -2.64,
+   "last": 189.5,
+   "change": 0.42,
+   "changePct": 0.22,
    "currency": "EUR",
    "supports": [
     {
-     "price": 331.1261,
-     "touches": 3,
-     "last": "2026-09-30",
-     "recent": true
-    },
-    {
-     "price": 314.919,
-     "touches": 3,
-     "last": "2026-08-14",
-     "recent": false
-    },
-    {
-     "price": 304.1511,
-     "touches": 2,
-     "last": "2026-10-15",
-     "recent": true
+     "price": 173.5,
+     "touches": 1,
+     "last": "2026-11-02",
+     "recent": false,
+     "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 338.8469,
-     "touches": 2,
-     "last": "2026-09-02",
-     "recent": true
-    },
-    {
-     "price": 350.0151,
+     "price": 222.0267,
      "touches": 3,
-     "last": "2026-11-03",
+     "last": "2026-10-20",
      "recent": true
     },
     {
-     "price": 360.7459,
+     "price": 228.8238,
      "touches": 2,
-     "last": "2026-07-15",
-     "recent": false
+     "last": "2026-09-10",
+     "recent": true
+    },
+    {
+     "price": 240.8258,
+     "touches": 5,
+     "last": "2026-09-17",
+     "recent": true
     }
    ]
   },
   "KGX.DE": {
    "file": "series/KGX_DE.json",
    "date": "2026-11-10",
-   "last": 380.1352,
-   "change": 3.4443,
-   "changePct": 0.91,
+   "last": 35.08,
+   "change": -0.2,
+   "changePct": -0.57,
    "currency": "EUR",
    "supports": [
     {
-     "price": 337.5475,
+     "price": 32.29,
      "touches": 3,
-     "last": "2026-09-02",
-     "recent": true
-    },
-    {
-     "price": 330.6392,
-     "touches": 3,
-     "last": "2026-09-30",
-     "recent": true
-    },
-    {
-     "price": 319.1138,
-     "touches": 7,
-     "last": "2026-08-31",
+     "last": "2026-11-02",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 387.3534,
-     "touches": 1,
-     "last": "2026-11-03",
-     "recent": false,
-     "extreme": true
+     "price": 35.87,
+     "touches": 2,
+     "last": "2026-10-14",
+     "recent": true
+    },
+    {
+     "price": 37.84,
+     "touches": 2,
+     "last": "2026-07-31",
+     "recent": false
+    },
+    {
+     "price": 39.36,
+     "touches": 2,
+     "last": "2026-08-20",
+     "recent": true
     }
    ]
   },
   "KO": {
    "file": "series/KO.json",
    "date": "2026-11-10",
-   "last": 432.3748,
-   "change": -1.4069,
-   "changePct": -0.32,
+   "last": 96.7897,
+   "change": 0.7597,
+   "changePct": 0.79,
    "currency": "USD",
    "supports": [
     {
-     "price": 427.8004,
-     "touches": 3,
-     "last": "2026-10-23",
+     "price": 90.0362,
+     "touches": 4,
+     "last": "2026-10-28",
      "recent": true
+    },
+    {
+     "price": 85.0322,
+     "touches": 5,
+     "last": "2026-10-05",
+     "recent": true
+    },
+    {
+     "price": 80.3941,
+     "touches": 2,
+     "last": "2026-07-17",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 445.4387,
-     "touches": 2,
-     "last": "2026-11-03",
-     "recent": true
-    },
-    {
-     "price": 453.7372,
-     "touches": 2,
-     "last": "2026-10-20",
-     "recent": true
-    },
-    {
-     "price": 459.6751,
-     "touches": 3,
-     "last": "2026-08-25",
-     "recent": true
+     "price": 97.39,
+     "touches": 1,
+     "last": "2026-11-05",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "MC.PA": {
    "file": "series/MC_PA.json",
    "date": "2026-11-10",
-   "last": 151.6876,
-   "change": -2.6008,
-   "changePct": -1.69,
+   "last": 401.0,
+   "change": -1.45,
+   "changePct": -0.36,
    "currency": "EUR",
    "supports": [
     {
-     "price": 147.5857,
-     "touches": 1,
-     "last": "2026-10-26",
-     "recent": false,
-     "extreme": true
+     "price": 378.1375,
+     "touches": 4,
+     "last": "2026-11-02",
+     "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 234.5182,
+     "price": 444.0031,
+     "touches": 5,
+     "last": "2026-08-21",
+     "recent": true
+    },
+    {
+     "price": 461.05,
      "touches": 2,
-     "last": "2026-05-26",
-     "recent": false
+     "last": "2026-08-25",
+     "recent": true
     },
     {
-     "price": 242.6332,
+     "price": 473.9184,
      "touches": 4,
-     "last": "2026-03-13",
-     "recent": false
-    },
-    {
-     "price": 254.9913,
-     "touches": 4,
-     "last": "2026-06-02",
+     "last": "2026-07-14",
      "recent": false
     }
    ]
@@ -1242,36 +1325,47 @@
   "MCD": {
    "file": "series/MCD.json",
    "date": "2026-11-10",
-   "last": 87.7629,
-   "change": 0.0126,
-   "changePct": 0.01,
+   "last": 282.185,
+   "change": 0.745,
+   "changePct": 0.26,
    "currency": "USD",
    "supports": [
     {
-     "price": 71.6028,
-     "touches": 1,
-     "last": "2026-09-16",
-     "recent": false,
-     "extreme": true
+     "price": 276.5692,
+     "touches": 2,
+     "last": "2026-08-13",
+     "recent": false
+    },
+    {
+     "price": 269.7911,
+     "touches": 3,
+     "last": "2026-08-24",
+     "recent": true
+    },
+    {
+     "price": 261.8736,
+     "touches": 4,
+     "last": "2026-08-17",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 88.7941,
-     "touches": 2,
-     "last": "2026-11-02",
-     "recent": true
-    },
-    {
-     "price": 91.9232,
-     "touches": 5,
-     "last": "2026-06-10",
+     "price": 284.5733,
+     "touches": 3,
+     "last": "2026-07-07",
      "recent": false
     },
     {
-     "price": 96.2647,
-     "touches": 3,
-     "last": "2026-07-08",
+     "price": 294.3401,
+     "touches": 4,
+     "last": "2026-01-20",
+     "recent": false
+    },
+    {
+     "price": 299.7273,
+     "touches": 2,
+     "last": "2026-04-02",
      "recent": false
     }
    ]
@@ -1279,72 +1373,83 @@
   "META": {
    "file": "series/META.json",
    "date": "2026-11-10",
-   "last": 417.2254,
-   "change": 7.2246,
-   "changePct": 1.76,
+   "last": 639.11,
+   "change": -2.26,
+   "changePct": -0.35,
    "currency": "USD",
    "supports": [
     {
-     "price": 377.5174,
-     "touches": 2,
-     "last": "2026-05-04",
+     "price": 632.1988,
+     "touches": 4,
+     "last": "2026-05-28",
      "recent": false
     },
     {
-     "price": 362.7447,
-     "touches": 6,
-     "last": "2026-10-08",
-     "recent": true
+     "price": 608.6396,
+     "touches": 2,
+     "last": "2026-08-11",
+     "recent": false
     },
     {
-     "price": 347.8855,
+     "price": 587.9468,
      "touches": 5,
-     "last": "2026-05-18",
+     "last": "2026-07-09",
      "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 421.0975,
-     "touches": 1,
-     "last": "2026-11-06",
-     "recent": false,
-     "extreme": true
+     "price": 679.6917,
+     "touches": 4,
+     "last": "2026-07-15",
+     "recent": false
+    },
+    {
+     "price": 710.1382,
+     "touches": 2,
+     "last": "2026-10-08",
+     "recent": true
+    },
+    {
+     "price": 775.545,
+     "touches": 2,
+     "last": "2026-10-13",
+     "recent": true
     }
    ]
   },
   "MSFT": {
    "file": "series/MSFT.json",
    "date": "2026-11-10",
-   "last": 225.121,
-   "change": -0.2401,
-   "changePct": -0.11,
+   "last": 533.595,
+   "change": -11.585,
+   "changePct": -2.12,
    "currency": "USD",
    "supports": [
     {
-     "price": 222.2538,
-     "touches": 2,
-     "last": "2026-04-15",
-     "recent": false
+     "price": 511.8349,
+     "touches": 3,
+     "last": "2026-11-02",
+     "recent": true
     },
     {
-     "price": 216.2388,
-     "touches": 2,
-     "last": "2026-03-26",
-     "recent": false
+     "price": 484.4098,
+     "touches": 6,
+     "last": "2026-09-10",
+     "recent": true
     },
     {
-     "price": 209.4142,
-     "touches": 2,
-     "last": "2026-06-09",
+     "price": 465.4637,
+     "touches": 4,
+     "last": "2026-06-01",
      "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 231.5778,
+     "price": 559.15,
      "touches": 1,
-     "last": "2026-02-17",
+     "last": "2026-11-04",
      "recent": false,
      "extreme": true
     }
@@ -1353,41 +1458,47 @@
   "NANO.PA": {
    "file": "series/NANO_PA.json",
    "date": "2026-11-10",
-   "last": 234.8848,
-   "change": 2.5891,
-   "changePct": 1.11,
+   "last": 29.02,
+   "change": 0.52,
+   "changePct": 1.82,
    "currency": "EUR",
    "supports": [
     {
-     "price": 219.5233,
-     "touches": 2,
-     "last": "2026-09-08",
+     "price": 27.2725,
+     "touches": 4,
+     "last": "2026-09-14",
      "recent": true
     },
     {
-     "price": 214.8504,
-     "touches": 2,
-     "last": "2026-08-07",
+     "price": 24.125,
+     "touches": 4,
+     "last": "2026-11-03",
+     "recent": true
+    },
+    {
+     "price": 20.4667,
+     "touches": 3,
+     "last": "2026-02-24",
      "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 246.623,
-     "touches": 2,
-     "last": "2026-07-08",
+     "price": 29.1333,
+     "touches": 3,
+     "last": "2026-06-25",
      "recent": false
     },
     {
-     "price": 271.6239,
-     "touches": 2,
-     "last": "2026-05-21",
-     "recent": false
+     "price": 31.448,
+     "touches": 5,
+     "last": "2026-10-28",
+     "recent": true
     },
     {
-     "price": 332.5728,
+     "price": 33.23,
      "touches": 2,
-     "last": "2026-02-20",
+     "last": "2026-06-15",
      "recent": false
     }
    ]
@@ -1395,41 +1506,36 @@
   "NFLX": {
    "file": "series/NFLX.json",
    "date": "2026-11-10",
-   "last": 433.9532,
-   "change": 2.4012,
-   "changePct": 0.56,
+   "last": 62.715,
+   "change": -1.235,
+   "changePct": -1.93,
    "currency": "USD",
    "supports": [
     {
-     "price": 396.1137,
-     "touches": 2,
+     "price": 61.39,
+     "touches": 1,
      "last": "2026-10-29",
-     "recent": true
-    },
-    {
-     "price": 356.4597,
-     "touches": 2,
-     "last": "2026-09-18",
-     "recent": true
+     "recent": false,
+     "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 530.4834,
-     "touches": 5,
-     "last": "2026-06-22",
-     "recent": false
+     "price": 70.485,
+     "touches": 2,
+     "last": "2026-09-18",
+     "recent": true
     },
     {
-     "price": 553.5618,
-     "touches": 2,
-     "last": "2026-02-02",
-     "recent": false
+     "price": 75.09,
+     "touches": 3,
+     "last": "2026-09-10",
+     "recent": true
     },
     {
-     "price": 562.1647,
+     "price": 78.835,
      "touches": 2,
-     "last": "2026-02-23",
+     "last": "2026-07-02",
      "recent": false
     }
    ]
@@ -1437,36 +1543,41 @@
   "NKE": {
    "file": "series/NKE.json",
    "date": "2026-11-10",
-   "last": 71.5919,
-   "change": 0.3111,
-   "changePct": 0.44,
+   "last": 39.055,
+   "change": -0.825,
+   "changePct": -2.07,
    "currency": "USD",
    "supports": [
     {
-     "price": 65.9934,
-     "touches": 1,
-     "last": "2026-10-19",
-     "recent": false,
-     "extreme": true
+     "price": 38.1107,
+     "touches": 2,
+     "last": "2026-08-27",
+     "recent": true
+    },
+    {
+     "price": 36.94,
+     "touches": 2,
+     "last": "2026-10-28",
+     "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 72.9937,
-     "touches": 2,
-     "last": "2026-09-23",
-     "recent": true
-    },
-    {
-     "price": 75.7859,
+     "price": 40.3255,
      "touches": 4,
-     "last": "2026-09-28",
+     "last": "2026-08-24",
      "recent": true
     },
     {
-     "price": 77.2791,
+     "price": 44.5375,
      "touches": 2,
-     "last": "2026-08-05",
+     "last": "2026-07-17",
+     "recent": false
+    },
+    {
+     "price": 46.2068,
+     "touches": 3,
+     "last": "2026-06-12",
      "recent": false
     }
    ]
@@ -1474,41 +1585,35 @@
   "NRO.PA": {
    "file": "series/NRO_PA.json",
    "date": "2026-11-10",
-   "last": 216.5392,
-   "change": 5.538,
-   "changePct": 2.62,
+   "last": 40.6,
+   "change": 0.6,
+   "changePct": 1.5,
    "currency": "EUR",
    "supports": [
     {
-     "price": 199.0524,
-     "touches": 4,
-     "last": "2026-09-17",
-     "recent": true
-    },
-    {
-     "price": 188.569,
+     "price": 40.4129,
      "touches": 3,
-     "last": "2026-09-30",
+     "last": "2026-08-06",
+     "recent": false
+    },
+    {
+     "price": 37.5618,
+     "touches": 7,
+     "last": "2026-10-12",
      "recent": true
     },
     {
-     "price": 178.5562,
-     "touches": 2,
-     "last": "2026-09-10",
-     "recent": true
+     "price": 36.3953,
+     "touches": 4,
+     "last": "2026-07-17",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 245.7808,
+     "price": 43.114,
      "touches": 2,
-     "last": "2026-02-19",
-     "recent": false
-    },
-    {
-     "price": 295.3362,
-     "touches": 2,
-     "last": "2026-04-28",
+     "last": "2025-12-16",
      "recent": false
     }
    ]
@@ -1516,35 +1621,36 @@
   "NVDA": {
    "file": "series/NVDA.json",
    "date": "2026-11-10",
-   "last": 103.3957,
-   "change": 2.4546,
-   "changePct": 2.43,
+   "last": 168.36,
+   "change": -10.31,
+   "changePct": -5.77,
    "currency": "USD",
    "supports": [
     {
-     "price": 98.163,
-     "touches": 2,
-     "last": "2026-10-29",
-     "recent": true
+     "price": 163.8954,
+     "touches": 1,
+     "last": "2026-03-30",
+     "recent": false,
+     "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 103.7229,
+     "price": 168.3958,
      "touches": 4,
-     "last": "2026-10-15",
-     "recent": true
-    },
-    {
-     "price": 108.6664,
-     "touches": 2,
-     "last": "2026-07-27",
+     "last": "2026-03-30",
      "recent": false
     },
     {
-     "price": 114.3178,
+     "price": 176.7298,
      "touches": 3,
-     "last": "2026-07-30",
+     "last": "2026-03-02",
+     "recent": false
+    },
+    {
+     "price": 191.564,
+     "touches": 10,
+     "last": "2026-07-29",
      "recent": false
     }
    ]
@@ -1552,514 +1658,13 @@
   "ORCL": {
    "file": "series/ORCL.json",
    "date": "2026-11-10",
-   "last": 169.6774,
-   "change": 5.8207,
-   "changePct": 3.55,
+   "last": 116.9105,
+   "change": -2.8795,
+   "changePct": -2.4,
    "currency": "USD",
    "supports": [
     {
-     "price": 164.5455,
-     "touches": 2,
-     "last": "2026-10-12",
-     "recent": true
-    },
-    {
-     "price": 160.9989,
-     "touches": 3,
-     "last": "2026-10-21",
-     "recent": true
-    },
-    {
-     "price": 149.6014,
-     "touches": 2,
-     "last": "2026-10-16",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 183.7969,
-     "touches": 2,
-     "last": "2026-07-20",
-     "recent": false
-    },
-    {
-     "price": 195.0321,
-     "touches": 2,
-     "last": "2026-06-24",
-     "recent": false
-    },
-    {
-     "price": 230.3841,
-     "touches": 3,
-     "last": "2026-04-13",
-     "recent": false
-    }
-   ]
-  },
-  "PYPL": {
-   "file": "series/PYPL.json",
-   "date": "2026-11-10",
-   "last": 219.0535,
-   "change": 0.0092,
-   "changePct": 0.0,
-   "currency": "USD",
-   "supports": [
-    {
-     "price": 217.9811,
-     "touches": 3,
-     "last": "2026-10-01",
-     "recent": true
-    },
-    {
-     "price": 209.3603,
-     "touches": 4,
-     "last": "2026-10-27",
-     "recent": true
-    },
-    {
-     "price": 195.8717,
-     "touches": 2,
-     "last": "2026-08-14",
-     "recent": false
-    }
-   ],
-   "resistances": [
-    {
-     "price": 222.2805,
-     "touches": 2,
-     "last": "2026-10-26",
-     "recent": true
-    },
-    {
-     "price": 262.3567,
-     "touches": 2,
-     "last": "2026-06-09",
-     "recent": false
-    },
-    {
-     "price": 281.2624,
-     "touches": 3,
-     "last": "2026-05-11",
-     "recent": false
-    }
-   ]
-  },
-  "RCO.PA": {
-   "file": "series/RCO_PA.json",
-   "date": "2026-11-10",
-   "last": 171.774,
-   "change": 4.7779,
-   "changePct": 2.86,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 161.0884,
-     "touches": 1,
-     "last": "2026-09-01",
-     "recent": false,
-     "extreme": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 222.9261,
-     "touches": 2,
-     "last": "2026-04-13",
-     "recent": false
-    },
-    {
-     "price": 233.645,
-     "touches": 2,
-     "last": "2026-05-07",
-     "recent": false
-    },
-    {
-     "price": 236.5896,
-     "touches": 2,
-     "last": "2026-03-31",
-     "recent": false
-    }
-   ]
-  },
-  "RIVN": {
-   "file": "series/RIVN.json",
-   "date": "2026-11-10",
-   "last": 467.4816,
-   "change": 5.3593,
-   "changePct": 1.16,
-   "currency": "USD",
-   "supports": [
-    {
-     "price": 458.8515,
-     "touches": 2,
-     "last": "2026-09-25",
-     "recent": true
-    },
-    {
-     "price": 445.1459,
-     "touches": 2,
-     "last": "2026-10-29",
-     "recent": true
-    },
-    {
-     "price": 437.3303,
-     "touches": 3,
-     "last": "2026-09-29",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 472.8488,
-     "touches": 1,
-     "last": "2026-11-04",
-     "recent": false,
-     "extreme": true
-    }
-   ]
-  },
-  "RNO.PA": {
-   "file": "series/RNO_PA.json",
-   "date": "2026-11-10",
-   "last": 153.7737,
-   "change": -4.668,
-   "changePct": -2.95,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 153.0872,
-     "touches": 5,
-     "last": "2026-07-31",
-     "recent": false
-    },
-    {
-     "price": 148.1262,
-     "touches": 2,
-     "last": "2026-10-21",
-     "recent": true
-    },
-    {
-     "price": 145.1177,
-     "touches": 3,
-     "last": "2026-10-06",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 161.533,
-     "touches": 3,
-     "last": "2026-05-27",
-     "recent": false
-    },
-    {
-     "price": 174.028,
-     "touches": 5,
-     "last": "2026-05-07",
-     "recent": false
-    },
-    {
-     "price": 183.6216,
-     "touches": 2,
-     "last": "2026-02-23",
-     "recent": false
-    }
-   ]
-  },
-  "RYA.IR": {
-   "file": "series/RYA_IR.json",
-   "date": "2026-11-10",
-   "last": 225.6397,
-   "change": 1.1812,
-   "changePct": 0.53,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 219.695,
-     "touches": 4,
-     "last": "2026-10-23",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 237.8492,
-     "touches": 2,
-     "last": "2026-08-20",
-     "recent": true
-    },
-    {
-     "price": 245.2367,
-     "touches": 3,
-     "last": "2026-08-10",
-     "recent": false
-    },
-    {
-     "price": 369.5402,
-     "touches": 2,
-     "last": "2026-04-29",
-     "recent": false
-    }
-   ]
-  },
-  "SAN.PA": {
-   "file": "series/SAN_PA.json",
-   "date": "2026-11-10",
-   "last": 311.079,
-   "change": 8.894,
-   "changePct": 2.94,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 258.2969,
-     "touches": 1,
-     "last": "2026-09-29",
-     "recent": false,
-     "extreme": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 314.2169,
-     "touches": 2,
-     "last": "2026-08-03",
-     "recent": false
-    },
-    {
-     "price": 331.2328,
-     "touches": 4,
-     "last": "2026-08-04",
-     "recent": false
-    },
-    {
-     "price": 344.6558,
-     "touches": 4,
-     "last": "2026-07-03",
-     "recent": false
-    }
-   ]
-  },
-  "SAP.DE": {
-   "file": "series/SAP_DE.json",
-   "date": "2026-11-10",
-   "last": 390.6848,
-   "change": -7.0516,
-   "changePct": -1.77,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 352.0625,
-     "touches": 4,
-     "last": "2026-10-20",
-     "recent": true
-    },
-    {
-     "price": 335.1327,
-     "touches": 3,
-     "last": "2026-09-17",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 392.0381,
-     "touches": 3,
-     "last": "2026-01-07",
-     "recent": false
-    },
-    {
-     "price": 414.8057,
-     "touches": 3,
-     "last": "2026-06-05",
-     "recent": false
-    },
-    {
-     "price": 422.0751,
-     "touches": 2,
-     "last": "2026-05-26",
-     "recent": false
-    }
-   ]
-  },
-  "SK.PA": {
-   "file": "series/SK_PA.json",
-   "date": "2026-11-10",
-   "last": 172.5551,
-   "change": -3.2911,
-   "changePct": -1.87,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 171.5352,
-     "touches": 4,
-     "last": "2026-10-07",
-     "recent": true
-    },
-    {
-     "price": 158.9564,
-     "touches": 4,
-     "last": "2026-10-20",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 179.8548,
-     "touches": 2,
-     "last": "2026-07-28",
-     "recent": false
-    },
-    {
-     "price": 183.256,
-     "touches": 2,
-     "last": "2026-06-12",
-     "recent": false
-    },
-    {
-     "price": 190.2322,
-     "touches": 2,
-     "last": "2026-07-15",
-     "recent": false
-    }
-   ]
-  },
-  "SNAP": {
-   "file": "series/SNAP.json",
-   "date": "2026-11-10",
-   "last": 9.6492,
-   "change": -0.0245,
-   "changePct": -0.25,
-   "currency": "USD",
-   "supports": [
-    {
-     "price": 8.0605,
-     "touches": 2,
-     "last": "2026-10-06",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 10.1915,
-     "touches": 2,
-     "last": "2026-07-21",
-     "recent": false
-    },
-    {
-     "price": 12.7511,
-     "touches": 4,
-     "last": "2026-05-19",
-     "recent": false
-    },
-    {
-     "price": 13.675,
-     "touches": 2,
-     "last": "2026-03-05",
-     "recent": false
-    }
-   ]
-  },
-  "SNOW": {
-   "file": "series/SNOW.json",
-   "date": "2026-11-10",
-   "last": 29.5136,
-   "change": -0.3931,
-   "changePct": -1.31,
-   "currency": "USD",
-   "supports": [
-    {
-     "price": 29.1286,
-     "touches": 2,
-     "last": "2025-12-17",
-     "recent": false
-    },
-    {
-     "price": 28.558,
-     "touches": 2,
-     "last": "2026-10-21",
-     "recent": true
-    },
-    {
-     "price": 27.7411,
-     "touches": 2,
-     "last": "2026-09-22",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 30.6919,
-     "touches": 3,
-     "last": "2026-10-30",
-     "recent": true
-    },
-    {
-     "price": 32.9221,
-     "touches": 2,
-     "last": "2026-04-09",
-     "recent": false
-    },
-    {
-     "price": 34.0697,
-     "touches": 3,
-     "last": "2026-07-14",
-     "recent": false
-    }
-   ]
-  },
-  "SPIE.PA": {
-   "file": "series/SPIE_PA.json",
-   "date": "2026-11-10",
-   "last": 226.9463,
-   "change": -1.0287,
-   "changePct": -0.45,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 215.7784,
-     "touches": 4,
-     "last": "2026-10-16",
-     "recent": true
-    },
-    {
-     "price": 209.2052,
-     "touches": 2,
-     "last": "2026-10-30",
-     "recent": true
-    }
-   ],
-   "resistances": [
-    {
-     "price": 228.4391,
-     "touches": 5,
-     "last": "2026-10-13",
-     "recent": true
-    },
-    {
-     "price": 233.5785,
-     "touches": 2,
-     "last": "2026-08-06",
-     "recent": false
-    },
-    {
-     "price": 263.0825,
-     "touches": 2,
-     "last": "2025-12-29",
-     "recent": false
-    }
-   ]
-  },
-  "STMPA.PA": {
-   "file": "series/STMPA_PA.json",
-   "date": "2026-11-10",
-   "last": 120.7917,
-   "change": 0.2678,
-   "changePct": 0.22,
-   "currency": "EUR",
-   "supports": [
-    {
-     "price": 117.17,
+     "price": 109.21,
      "touches": 1,
      "last": "2026-11-06",
      "recent": false,
@@ -2068,21 +1673,516 @@
    ],
    "resistances": [
     {
-     "price": 126.2983,
-     "touches": 3,
-     "last": "2026-11-02",
+     "price": 135.7199,
+     "touches": 8,
+     "last": "2026-09-28",
      "recent": true
     },
     {
-     "price": 137.2242,
+     "price": 147.6281,
+     "touches": 3,
+     "last": "2026-10-28",
+     "recent": true
+    },
+    {
+     "price": 160.4988,
+     "touches": 3,
+     "last": "2026-08-13",
+     "recent": false
+    }
+   ]
+  },
+  "PYPL": {
+   "file": "series/PYPL.json",
+   "date": "2026-11-10",
+   "last": 58.77,
+   "change": -1.28,
+   "changePct": -2.13,
+   "currency": "USD",
+   "supports": [
+    {
+     "price": 57.8008,
+     "touches": 5,
+     "last": "2026-10-21",
+     "recent": true
+    },
+    {
+     "price": 54.8047,
+     "touches": 4,
+     "last": "2026-10-27",
+     "recent": true
+    },
+    {
+     "price": 51.5954,
+     "touches": 5,
+     "last": "2026-09-23",
+     "recent": true
+    }
+   ],
+   "resistances": [
+    {
+     "price": 59.4664,
      "touches": 2,
-     "last": "2026-07-31",
+     "last": "2026-07-29",
      "recent": false
     },
     {
-     "price": 145.6692,
+     "price": 62.7391,
+     "touches": 3,
+     "last": "2026-08-20",
+     "recent": true
+    }
+   ]
+  },
+  "RCO.PA": {
+   "file": "series/RCO_PA.json",
+   "date": "2026-11-10",
+   "last": 52.55,
+   "change": 0.55,
+   "changePct": 1.06,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 47.6867,
+     "touches": 3,
+     "last": "2026-10-28",
+     "recent": true
+    },
+    {
+     "price": 45.8874,
      "touches": 2,
-     "last": "2026-08-07",
+     "last": "2026-07-17",
+     "recent": false
+    },
+    {
+     "price": 44.8014,
+     "touches": 6,
+     "last": "2026-09-22",
+     "recent": true
+    }
+   ],
+   "resistances": [
+    {
+     "price": 53.75,
+     "touches": 1,
+     "last": "2026-11-05",
+     "recent": false,
+     "extreme": true
+    }
+   ]
+  },
+  "RIVN": {
+   "file": "series/RIVN.json",
+   "date": "2026-11-10",
+   "last": 13.49,
+   "change": -0.52,
+   "changePct": -3.71,
+   "currency": "USD",
+   "supports": [
+    {
+     "price": 11.375,
+     "touches": 1,
+     "last": "2026-10-29",
+     "recent": false,
+     "extreme": true
+    }
+   ],
+   "resistances": [
+    {
+     "price": 13.765,
+     "touches": 2,
+     "last": "2026-02-05",
+     "recent": false
+    },
+    {
+     "price": 14.5067,
+     "touches": 7,
+     "last": "2026-08-18",
+     "recent": true
+    },
+    {
+     "price": 15.4077,
+     "touches": 4,
+     "last": "2026-09-01",
+     "recent": true
+    }
+   ]
+  },
+  "RNO.PA": {
+   "file": "series/RNO_PA.json",
+   "date": "2026-11-10",
+   "last": 29.44,
+   "change": 0.63,
+   "changePct": 2.19,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 29.3197,
+     "touches": 7,
+     "last": "2026-08-20",
+     "recent": true
+    },
+    {
+     "price": 28.2198,
+     "touches": 3,
+     "last": "2026-10-20",
+     "recent": true
+    },
+    {
+     "price": 27.032,
+     "touches": 5,
+     "last": "2026-08-26",
+     "recent": true
+    }
+   ],
+   "resistances": [
+    {
+     "price": 30.2683,
+     "touches": 5,
+     "last": "2026-09-14",
+     "recent": true
+    },
+    {
+     "price": 31.3966,
+     "touches": 3,
+     "last": "2026-02-19",
+     "recent": false
+    }
+   ]
+  },
+  "RYA.IR": {
+   "file": "series/RYA_IR.json",
+   "date": "2026-11-10",
+   "last": 26.61,
+   "change": 0.19,
+   "changePct": 0.72,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 25.5462,
+     "touches": 2,
+     "last": "2026-08-06",
+     "recent": false
+    },
+    {
+     "price": 24.1621,
+     "touches": 5,
+     "last": "2026-10-20",
+     "recent": true
+    },
+    {
+     "price": 23.1042,
+     "touches": 4,
+     "last": "2026-07-23",
+     "recent": false
+    }
+   ],
+   "resistances": [
+    {
+     "price": 27.1749,
+     "touches": 3,
+     "last": "2026-04-08",
+     "recent": false
+    },
+    {
+     "price": 27.9453,
+     "touches": 4,
+     "last": "2026-07-07",
+     "recent": false
+    },
+    {
+     "price": 29.4801,
+     "touches": 4,
+     "last": "2026-02-03",
+     "recent": false
+    }
+   ]
+  },
+  "SAN.PA": {
+   "file": "series/SAN_PA.json",
+   "date": "2026-11-10",
+   "last": 85.95,
+   "change": 0.19,
+   "changePct": 0.22,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 80.3254,
+     "touches": 2,
+     "last": "2026-07-29",
+     "recent": false
+    },
+    {
+     "price": 78.695,
+     "touches": 8,
+     "last": "2026-08-26",
+     "recent": true
+    },
+    {
+     "price": 74.978,
+     "touches": 2,
+     "last": "2026-10-01",
+     "recent": true
+    }
+   ],
+   "resistances": [
+    {
+     "price": 86.25,
+     "touches": 1,
+     "last": "2026-11-10",
+     "recent": false,
+     "extreme": true
+    }
+   ]
+  },
+  "SAP.DE": {
+   "file": "series/SAP_DE.json",
+   "date": "2026-11-10",
+   "last": 209.95,
+   "change": -1.7,
+   "changePct": -0.8,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 198.3216,
+     "touches": 4,
+     "last": "2026-01-27",
+     "recent": false
+    },
+    {
+     "price": 190.5267,
+     "touches": 3,
+     "last": "2026-10-01",
+     "recent": true
+    },
+    {
+     "price": 174.0703,
+     "touches": 5,
+     "last": "2026-09-11",
+     "recent": true
+    }
+   ],
+   "resistances": [
+    {
+     "price": 216.1942,
+     "touches": 2,
+     "last": "2026-10-22",
+     "recent": true
+    }
+   ]
+  },
+  "SK.PA": {
+   "file": "series/SK_PA.json",
+   "date": "2026-11-10",
+   "last": 58.05,
+   "change": 0.6,
+   "changePct": 1.04,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 54.6454,
+     "touches": 2,
+     "last": "2026-09-15",
+     "recent": true
+    },
+    {
+     "price": 51.9561,
+     "touches": 4,
+     "last": "2026-10-29",
+     "recent": true
+    },
+    {
+     "price": 50.1928,
+     "touches": 4,
+     "last": "2026-07-06",
+     "recent": false
+    }
+   ],
+   "resistances": [
+    {
+     "price": 58.26,
+     "touches": 5,
+     "last": "2026-10-21",
+     "recent": true
+    }
+   ]
+  },
+  "SNAP": {
+   "file": "series/SNAP.json",
+   "date": "2026-11-10",
+   "last": 4.895,
+   "change": -0.155,
+   "changePct": -3.07,
+   "currency": "USD",
+   "supports": [
+    {
+     "price": 4.575,
+     "touches": 2,
+     "last": "2026-07-09",
+     "recent": false
+    },
+    {
+     "price": 4.275,
+     "touches": 2,
+     "last": "2026-07-23",
+     "recent": false
+    }
+   ],
+   "resistances": [
+    {
+     "price": 4.9283,
+     "touches": 3,
+     "last": "2026-08-19",
+     "recent": true
+    },
+    {
+     "price": 5.1817,
+     "touches": 3,
+     "last": "2026-09-29",
+     "recent": true
+    },
+    {
+     "price": 5.4875,
+     "touches": 2,
+     "last": "2026-04-23",
+     "recent": false
+    }
+   ]
+  },
+  "SNOW": {
+   "file": "series/SNOW.json",
+   "date": "2026-11-10",
+   "last": 290.8425,
+   "change": -0.2975,
+   "changePct": -0.1,
+   "currency": "USD",
+   "supports": [
+    {
+     "price": 282.24,
+     "touches": 2,
+     "last": "2026-07-21",
+     "recent": false
+    },
+    {
+     "price": 253.295,
+     "touches": 2,
+     "last": "2026-07-28",
+     "recent": false
+    },
+    {
+     "price": 228.88,
+     "touches": 5,
+     "last": "2026-06-09",
+     "recent": false
+    }
+   ],
+   "resistances": [
+    {
+     "price": 303.065,
+     "touches": 2,
+     "last": "2026-10-16",
+     "recent": true
+    },
+    {
+     "price": 317.04,
+     "touches": 2,
+     "last": "2026-09-28",
+     "recent": true
+    },
+    {
+     "price": 344.7033,
+     "touches": 3,
+     "last": "2026-10-28",
+     "recent": true
+    }
+   ]
+  },
+  "SPIE.PA": {
+   "file": "series/SPIE_PA.json",
+   "date": "2026-11-10",
+   "last": 46.02,
+   "change": 1.04,
+   "changePct": 2.31,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 45.4638,
+     "touches": 3,
+     "last": "2026-08-03",
+     "recent": false
+    },
+    {
+     "price": 44.2997,
+     "touches": 3,
+     "last": "2026-04-23",
+     "recent": false
+    },
+    {
+     "price": 42.7814,
+     "touches": 4,
+     "last": "2026-10-14",
+     "recent": true
+    }
+   ],
+   "resistances": [
+    {
+     "price": 46.4046,
+     "touches": 3,
+     "last": "2026-09-22",
+     "recent": true
+    },
+    {
+     "price": 47.6969,
+     "touches": 4,
+     "last": "2026-08-14",
+     "recent": false
+    },
+    {
+     "price": 49.2902,
+     "touches": 4,
+     "last": "2026-07-22",
+     "recent": false
+    }
+   ]
+  },
+  "STMPA.PA": {
+   "file": "series/STMPA_PA.json",
+   "date": "2026-11-10",
+   "last": 40.105,
+   "change": 0.475,
+   "changePct": 1.2,
+   "currency": "EUR",
+   "supports": [
+    {
+     "price": 39.075,
+     "touches": 2,
+     "last": "2026-10-23",
+     "recent": true
+    },
+    {
+     "price": 29.5863,
+     "touches": 3,
+     "last": "2026-03-18",
+     "recent": false
+    },
+    {
+     "price": 25.4515,
+     "touches": 4,
+     "last": "2026-03-23",
+     "recent": false
+    }
+   ],
+   "resistances": [
+    {
+     "price": 41.7795,
+     "touches": 4,
+     "last": "2026-09-15",
+     "recent": true
+    },
+    {
+     "price": 70.0933,
+     "touches": 2,
+     "last": "2026-06-22",
      "recent": false
     }
    ]
@@ -2090,77 +2190,83 @@
   "SU.PA": {
    "file": "series/SU_PA.json",
    "date": "2026-11-10",
-   "last": 336.0444,
-   "change": -6.0924,
-   "changePct": -1.78,
+   "last": 235.35,
+   "change": 0.95,
+   "changePct": 0.41,
    "currency": "EUR",
    "supports": [
     {
-     "price": 323.736,
-     "touches": 3,
-     "last": "2026-10-13",
-     "recent": true
-    },
-    {
-     "price": 310.0354,
+     "price": 230.9609,
      "touches": 2,
-     "last": "2026-02-20",
+     "last": "2026-03-09",
      "recent": false
     },
     {
-     "price": 297.6783,
-     "touches": 2,
-     "last": "2026-10-21",
+     "price": 223.7856,
+     "touches": 4,
+     "last": "2026-10-23",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 356.6817,
-     "touches": 4,
-     "last": "2026-08-07",
+     "price": 242.2098,
+     "touches": 3,
+     "last": "2026-02-17",
      "recent": false
     },
     {
-     "price": 365.7357,
-     "touches": 2,
-     "last": "2026-08-28",
+     "price": 255.0472,
+     "touches": 7,
+     "last": "2026-10-29",
      "recent": true
     },
     {
-     "price": 373.1984,
-     "touches": 3,
-     "last": "2026-08-13",
-     "recent": false
+     "price": 269.4592,
+     "touches": 2,
+     "last": "2026-09-14",
+     "recent": true
     }
    ]
   },
   "TSLA": {
    "file": "series/TSLA.json",
    "date": "2026-11-10",
-   "last": 294.569,
-   "change": 7.5497,
-   "changePct": 2.63,
+   "last": 376.665,
+   "change": -1.385,
+   "changePct": -0.37,
    "currency": "USD",
    "supports": [
     {
-     "price": 255.5931,
+     "price": 366.3733,
      "touches": 3,
-     "last": "2026-10-08",
+     "last": "2026-08-21",
      "recent": true
     },
     {
-     "price": 243.0851,
-     "touches": 2,
-     "last": "2026-09-03",
+     "price": 346.625,
+     "touches": 4,
+     "last": "2026-10-16",
      "recent": true
     }
    ],
    "resistances": [
     {
-     "price": 326.8401,
-     "touches": 3,
-     "last": "2026-06-17",
+     "price": 386.02,
+     "touches": 7,
+     "last": "2026-10-09",
+     "recent": true
+    },
+    {
+     "price": 417.0067,
+     "touches": 6,
+     "last": "2026-11-02",
+     "recent": true
+    },
+    {
+     "price": 434.605,
+     "touches": 2,
+     "last": "2026-07-01",
      "recent": false
     }
    ]
@@ -2168,78 +2274,78 @@
   "UNH": {
    "file": "series/UNH.json",
    "date": "2026-11-10",
-   "last": 404.8607,
-   "change": -9.1039,
-   "changePct": -2.2,
+   "last": 403.18,
+   "change": 5.56,
+   "changePct": 1.4,
    "currency": "USD",
    "supports": [
     {
-     "price": 387.6137,
-     "touches": 1,
-     "last": "2026-10-07",
-     "recent": false,
-     "extreme": true
+     "price": 396.9705,
+     "touches": 3,
+     "last": "2026-08-05",
+     "recent": false
+    },
+    {
+     "price": 383.4091,
+     "touches": 2,
+     "last": "2026-08-31",
+     "recent": true
+    },
+    {
+     "price": 350.247,
+     "touches": 3,
+     "last": "2026-05-06",
+     "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 418.0176,
+     "price": 403.9029,
      "touches": 2,
-     "last": "2026-09-17",
+     "last": "2026-09-09",
      "recent": true
     },
     {
-     "price": 426.9972,
+     "price": 411.7297,
      "touches": 2,
-     "last": "2026-10-28",
-     "recent": true
-    },
-    {
-     "price": 443.5585,
-     "touches": 2,
-     "last": "2026-09-11",
-     "recent": true
+     "last": "2026-07-15",
+     "recent": false
     }
    ]
   },
   "VLTSA.PA": {
    "file": "series/VLTSA_PA.json",
    "date": "2026-11-10",
-   "last": 61.2064,
-   "change": -0.3632,
-   "changePct": -0.59,
+   "last": 3.95,
+   "change": -0.135,
+   "changePct": -3.3,
    "currency": "EUR",
    "supports": [
     {
-     "price": 59.5868,
-     "touches": 3,
-     "last": "2026-10-09",
-     "recent": true
-    },
-    {
-     "price": 55.7755,
-     "touches": 2,
-     "last": "2026-10-14",
-     "recent": true
+     "price": 3.65,
+     "touches": 1,
+     "last": "2026-11-03",
+     "recent": false,
+     "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 71.9898,
+     "price": 4.245,
      "touches": 2,
-     "last": "2026-05-14",
-     "recent": false
+     "last": "2026-09-29",
+     "recent": true
     },
     {
-     "price": 76.3367,
-     "touches": 2,
-     "last": "2026-06-29",
-     "recent": false
+     "price": 6.4438,
+     "touches": 4,
+     "last": "2026-08-19",
+     "recent": true
     },
     {
-     "price": 81.2934,
-     "touches": 3,
-     "last": "2026-05-26",
+     "price": 6.715,
+     "touches": 2,
+     "last": "2026-06-11",
      "recent": false
     }
    ]
@@ -2247,78 +2353,79 @@
   "ZAL.DE": {
    "file": "series/ZAL_DE.json",
    "date": "2026-11-10",
-   "last": 292.6244,
-   "change": 2.4778,
-   "changePct": 0.85,
+   "last": 28.24,
+   "change": 0.83,
+   "changePct": 3.03,
    "currency": "EUR",
    "supports": [
     {
-     "price": 281.1032,
-     "touches": 3,
-     "last": "2026-07-29",
+     "price": 27.54,
+     "touches": 2,
+     "last": "2026-10-26",
+     "recent": true
+    },
+    {
+     "price": 26.336,
+     "touches": 5,
+     "last": "2026-07-24",
+     "recent": false
+    },
+    {
+     "price": 23.9629,
+     "touches": 7,
+     "last": "2026-08-04",
      "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 355.1955,
-     "touches": 3,
-     "last": "2026-02-18",
-     "recent": false
-    },
-    {
-     "price": 372.2267,
-     "touches": 3,
-     "last": "2026-01-30",
-     "recent": false
-    },
-    {
-     "price": 392.6361,
-     "touches": 2,
-     "last": "2026-02-04",
-     "recent": false
+     "price": 30.43,
+     "touches": 1,
+     "last": "2026-07-30",
+     "recent": false,
+     "extreme": true
     }
    ]
   },
   "^GSPC": {
    "file": "series/_GSPC.json",
    "date": "2026-11-10",
-   "last": 168.1007,
-   "change": -2.0313,
-   "changePct": -1.19,
+   "last": 7494.5698,
+   "change": -55.3701,
+   "changePct": -0.73,
    "currency": "USD",
    "supports": [
     {
-     "price": 163.2255,
-     "touches": 2,
-     "last": "2026-11-03",
+     "price": 7482.2367,
+     "touches": 3,
+     "last": "2026-09-16",
      "recent": true
     },
     {
-     "price": 160.7837,
-     "touches": 2,
-     "last": "2026-08-07",
+     "price": 7294.9076,
+     "touches": 4,
+     "last": "2026-07-29",
+     "recent": false
+    },
+    {
+     "price": 6963.9716,
+     "touches": 6,
+     "last": "2026-02-25",
      "recent": false
     }
    ],
    "resistances": [
     {
-     "price": 173.5971,
-     "touches": 2,
-     "last": "2026-10-28",
+     "price": 7607.745,
+     "touches": 6,
+     "last": "2026-10-01",
      "recent": true
     },
     {
-     "price": 195.0467,
-     "touches": 2,
-     "last": "2026-04-17",
-     "recent": false
-    },
-    {
-     "price": 198.5983,
-     "touches": 2,
-     "last": "2026-05-08",
-     "recent": false
+     "price": 7801.7141,
+     "touches": 5,
+     "last": "2026-10-06",
+     "recent": true
     }
    ]
   }
