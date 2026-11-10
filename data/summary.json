@@ -1,32 +1,35 @@
 {
- "updated": "2026-11-10T18:59+00:00",
+ "timeframes": {
+  "D": "1 an de séances",
+  "W": "3 ans de semaines",
+  "M": "10 ans de mois",
+  "Q": "10 ans de trimestres"
+ },
+ "updated": "2026-11-10T19:05+00:00",
  "demo": false,
  "symbols": {
   "AAPL": {
    "file": "series/AAPL.json",
    "date": "2026-11-10",
-   "last": 348.11,
-   "change": -2.58,
-   "changePct": -0.74,
+   "last": 348.0643,
+   "change": -2.6257,
+   "changePct": -0.75,
    "currency": "USD",
    "supports": [
     {
      "price": 345.921,
      "touches": 3,
-     "last": "2026-10-13",
-     "recent": true
+     "last": "2026-10-13"
     },
     {
      "price": 336.7007,
      "touches": 2,
-     "last": "2026-10-20",
-     "recent": true
+     "last": "2026-10-20"
     },
     {
      "price": 325.57,
      "touches": 2,
-     "last": "2026-11-03",
-     "recent": true
+     "last": "2026-11-03"
     }
    ],
    "resistances": [
@@ -34,10 +37,119 @@
      "price": 355.38,
      "touches": 1,
      "last": "2026-11-05",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 345.921,
+       "touches": 3,
+       "last": "2026-10-13"
+      },
+      {
+       "price": 336.7007,
+       "touches": 2,
+       "last": "2026-10-20"
+      },
+      {
+       "price": 325.57,
+       "touches": 2,
+       "last": "2026-11-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 355.38,
+       "touches": 1,
+       "last": "2026-11-05",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 276.6536,
+       "touches": 3,
+       "last": "2026-06-22"
+      },
+      {
+       "price": 245.4345,
+       "touches": 3,
+       "last": "2026-03-30"
+      },
+      {
+       "price": 233.8887,
+       "touches": 3,
+       "last": "2024-10-14"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 355.38,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 238.8746,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 196.2683,
+       "touches": 2,
+       "last": "2023-12-01"
+      },
+      {
+       "price": 169.0829,
+       "touches": 5,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 355.38,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 250.4926,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 168.16,
+       "touches": 4,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 129.7463,
+       "touches": 3,
+       "last": "2023-01-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 355.38,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "ABI.BR": {
    "file": "series/ABI_BR.json",
@@ -50,20 +162,17 @@
     {
      "price": 76.24,
      "touches": 2,
-     "last": "2026-10-23",
-     "recent": true
+     "last": "2026-10-23"
     },
     {
      "price": 69.4467,
      "touches": 6,
-     "last": "2026-10-29",
-     "recent": true
+     "last": "2026-10-29"
     },
     {
-     "price": 67.0893,
-     "touches": 5,
-     "last": "2026-09-09",
-     "recent": true
+     "price": 67.6021,
+     "touches": 3,
+     "last": "2026-06-05"
     }
    ],
    "resistances": [
@@ -71,52 +180,265 @@
      "price": 76.92,
      "touches": 1,
      "last": "2026-11-10",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 76.24,
+       "touches": 2,
+       "last": "2026-10-23"
+      },
+      {
+       "price": 69.4467,
+       "touches": 6,
+       "last": "2026-10-29"
+      },
+      {
+       "price": 67.6021,
+       "touches": 3,
+       "last": "2026-06-05"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 76.92,
+       "touches": 1,
+       "last": "2026-11-10",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 75.43,
+       "touches": 2,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 68.8406,
+       "touches": 3,
+       "last": "2026-09-14"
+      },
+      {
+       "price": 65.18,
+       "touches": 2,
+       "last": "2026-09-28"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 76.92,
+       "touches": 1,
+       "last": "2026-11-09",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 69.1447,
+       "touches": 4,
+       "last": "2026-02-02"
+      },
+      {
+       "price": 61.6447,
+       "touches": 2,
+       "last": "2025-06-02"
+      },
+      {
+       "price": 57.6829,
+       "touches": 6,
+       "last": "2024-10-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 81.6344,
+       "touches": 3,
+       "last": "2019-08-01"
+      },
+      {
+       "price": 92.1339,
+       "touches": 2,
+       "last": "2017-10-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 58.7249,
+       "touches": 7,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 46.6066,
+       "touches": 8,
+       "last": "2025-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 82.0906,
+       "touches": 2,
+       "last": "2019-07-01"
+      },
+      {
+       "price": 92.1339,
+       "touches": 2,
+       "last": "2017-10-02"
+      }
+     ]
+    }
+   }
   },
   "ADBE": {
    "file": "series/ADBE.json",
    "date": "2026-11-10",
-   "last": 234.44,
-   "change": -2.88,
-   "changePct": -1.21,
+   "last": 234.655,
+   "change": -2.665,
+   "changePct": -1.12,
    "currency": "USD",
    "supports": [
     {
      "price": 233.77,
      "touches": 4,
-     "last": "2026-05-28",
-     "recent": false
+     "last": "2026-05-28"
     },
     {
      "price": 225.2667,
      "touches": 3,
-     "last": "2026-10-07",
-     "recent": true
+     "last": "2026-10-07"
     }
    ],
    "resistances": [
     {
      "price": 241.98,
      "touches": 3,
-     "last": "2026-09-11",
-     "recent": true
+     "last": "2026-09-11"
     },
     {
      "price": 249.51,
      "touches": 4,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-10-01"
     },
     {
      "price": 259.095,
      "touches": 2,
-     "last": "2026-05-07",
-     "recent": false
+     "last": "2026-05-07"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 233.77,
+       "touches": 4,
+       "last": "2026-05-28"
+      },
+      {
+       "price": 225.2667,
+       "touches": 3,
+       "last": "2026-10-07"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 241.98,
+       "touches": 3,
+       "last": "2026-09-11"
+      },
+      {
+       "price": 249.51,
+       "touches": 4,
+       "last": "2026-10-01"
+      },
+      {
+       "price": 259.095,
+       "touches": 2,
+       "last": "2026-05-07"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 226.8467,
+       "touches": 3,
+       "last": "2026-09-28"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 273.77,
+       "touches": 2,
+       "last": "2026-10-19"
+      },
+      {
+       "price": 289.945,
+       "touches": 2,
+       "last": "2026-08-31"
+      },
+      {
+       "price": 331.025,
+       "touches": 2,
+       "last": "2025-08-11"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 197.535,
+       "touches": 2,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 264.9,
+       "touches": 5,
+       "last": "2022-09-01"
+      },
+      {
+       "price": 319.25,
+       "touches": 5,
+       "last": "2026-09-01"
+      },
+      {
+       "price": 394.62,
+       "touches": 2,
+       "last": "2023-02-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 197.535,
+       "touches": 2,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 275.5,
+       "touches": 4,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 427.375,
+       "touches": 2,
+       "last": "2024-04-01"
+      }
+     ]
+    }
+   }
   },
   "AF.PA": {
    "file": "series/AF_PA.json",
@@ -127,22 +449,19 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 12.5317,
-     "touches": 3,
-     "last": "2026-08-26",
-     "recent": true
+     "price": 12.465,
+     "touches": 4,
+     "last": "2026-09-22"
     },
     {
-     "price": 12.0517,
-     "touches": 3,
-     "last": "2026-09-22",
-     "recent": true
+     "price": 11.945,
+     "touches": 2,
+     "last": "2026-05-29"
     },
     {
-     "price": 11.25,
-     "touches": 9,
-     "last": "2026-09-16",
-     "recent": true
+     "price": 11.2169,
+     "touches": 8,
+     "last": "2026-09-16"
     }
    ],
    "resistances": [
@@ -150,46 +469,273 @@
      "price": 14.43,
      "touches": 1,
      "last": "2026-07-07",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 12.465,
+       "touches": 4,
+       "last": "2026-09-22"
+      },
+      {
+       "price": 11.945,
+       "touches": 2,
+       "last": "2026-05-29"
+      },
+      {
+       "price": 11.2169,
+       "touches": 8,
+       "last": "2026-09-16"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 14.43,
+       "touches": 1,
+       "last": "2026-07-07",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 12.3025,
+       "touches": 4,
+       "last": "2026-09-21"
+      },
+      {
+       "price": 11.29,
+       "touches": 3,
+       "last": "2026-08-17"
+      },
+      {
+       "price": 10.0574,
+       "touches": 5,
+       "last": "2026-10-19"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 15.165,
+       "touches": 1,
+       "last": "2025-08-25",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 13.8087,
+       "touches": 5,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 11.535,
+       "touches": 4,
+       "last": "2025-03-03"
+      },
+      {
+       "price": 9.351,
+       "touches": 4,
+       "last": "2026-03-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 15.1755,
+       "touches": 2,
+       "last": "2025-08-01"
+      },
+      {
+       "price": 18.3416,
+       "touches": 4,
+       "last": "2023-06-01"
+      },
+      {
+       "price": 22.6049,
+       "touches": 2,
+       "last": "2022-05-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 12.0195,
+       "touches": 3,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 7.634,
+       "touches": 2,
+       "last": "2026-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 14.7975,
+       "touches": 2,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "AMD": {
    "file": "series/AMD.json",
    "date": "2026-11-10",
-   "last": 513.435,
-   "change": 4.855,
-   "changePct": 0.95,
+   "last": 512.69,
+   "change": 4.11,
+   "changePct": 0.81,
    "currency": "USD",
    "supports": [
     {
      "price": 500.914,
      "touches": 5,
-     "last": "2026-10-22",
-     "recent": true
+     "last": "2026-10-22"
     },
     {
-     "price": 449.3429,
-     "touches": 7,
-     "last": "2026-09-03",
-     "recent": true
+     "price": 464.2133,
+     "touches": 3,
+     "last": "2026-08-11"
     },
     {
-     "price": 206.3725,
-     "touches": 12,
-     "last": "2026-03-30",
-     "recent": false
+     "price": 438.19,
+     "touches": 4,
+     "last": "2026-09-03"
     }
    ],
    "resistances": [
     {
-     "price": 559.0683,
-     "touches": 6,
-     "last": "2026-10-28",
-     "recent": true
+     "price": 538.285,
+     "touches": 2,
+     "last": "2026-08-04"
+    },
+    {
+     "price": 572.514,
+     "touches": 5,
+     "last": "2026-10-28"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 500.914,
+       "touches": 5,
+       "last": "2026-10-22"
+      },
+      {
+       "price": 464.2133,
+       "touches": 3,
+       "last": "2026-08-11"
+      },
+      {
+       "price": 438.19,
+       "touches": 4,
+       "last": "2026-09-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 538.285,
+       "touches": 2,
+       "last": "2026-08-04"
+      },
+      {
+       "price": 572.514,
+       "touches": 5,
+       "last": "2026-10-28"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 432.265,
+       "touches": 2,
+       "last": "2026-08-31"
+      },
+      {
+       "price": 267.02,
+       "touches": 2,
+       "last": "2026-01-20"
+      },
+      {
+       "price": 185.0837,
+       "touches": 8,
+       "last": "2026-03-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 658.52,
+       "touches": 1,
+       "last": "2026-10-05",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 267.02,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 188.262,
+       "touches": 5,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 106.7733,
+       "touches": 6,
+       "last": "2024-08-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 658.52,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 247.19,
+       "touches": 2,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 161.5233,
+       "touches": 3,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 50.1027,
+       "touches": 11,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 658.52,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "AMG.AS": {
    "file": "series/AMG_AS.json",
@@ -203,7 +749,6 @@
      "price": 22.34,
      "touches": 1,
      "last": "2026-10-23",
-     "recent": false,
      "extreme": true
     }
    ],
@@ -211,22 +756,136 @@
     {
      "price": 27.8115,
      "touches": 2,
-     "last": "2026-09-28",
-     "recent": true
+     "last": "2026-09-28"
     },
     {
      "price": 28.8044,
      "touches": 2,
-     "last": "2026-09-15",
-     "recent": true
+     "last": "2026-09-15"
     },
     {
      "price": 30.798,
      "touches": 5,
-     "last": "2026-09-23",
-     "recent": true
+     "last": "2026-09-23"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 22.34,
+       "touches": 1,
+       "last": "2026-10-23",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 27.8115,
+       "touches": 2,
+       "last": "2026-09-28"
+      },
+      {
+       "price": 28.8044,
+       "touches": 2,
+       "last": "2026-09-15"
+      },
+      {
+       "price": 30.798,
+       "touches": 5,
+       "last": "2026-09-23"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 22.925,
+       "touches": 4,
+       "last": "2026-10-19"
+      },
+      {
+       "price": 20.3328,
+       "touches": 3,
+       "last": "2025-05-12"
+      },
+      {
+       "price": 16.5532,
+       "touches": 5,
+       "last": "2025-06-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 26.1605,
+       "touches": 2,
+       "last": "2026-07-20"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 23.4973,
+       "touches": 10,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 17.2359,
+       "touches": 7,
+       "last": "2024-09-02"
+      },
+      {
+       "price": 11.7765,
+       "touches": 5,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 30.1202,
+       "touches": 4,
+       "last": "2023-03-01"
+      },
+      {
+       "price": 36.5647,
+       "touches": 5,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 40.9476,
+       "touches": 4,
+       "last": "2026-05-04"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 21.5833,
+       "touches": 3,
+       "last": "2024-04-02"
+      },
+      {
+       "price": 13.0132,
+       "touches": 5,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 30.546,
+       "touches": 2,
+       "last": "2021-04-01"
+      },
+      {
+       "price": 45.4035,
+       "touches": 3,
+       "last": "2026-04-01"
+      }
+     ]
+    }
+   }
   },
   "AMP.MI": {
    "file": "series/AMP_MI.json",
@@ -237,177 +896,613 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 11.5582,
-     "touches": 3,
-     "last": "2026-08-20",
-     "recent": true
+     "price": 11.645,
+     "touches": 2,
+     "last": "2026-08-20"
     },
     {
-     "price": 11.042,
-     "touches": 5,
-     "last": "2026-10-30",
-     "recent": true
+     "price": 11.2566,
+     "touches": 3,
+     "last": "2026-09-10"
     },
     {
-     "price": 10.0851,
+     "price": 10.9417,
      "touches": 3,
-     "last": "2026-05-20",
-     "recent": false
+     "last": "2026-10-30"
     }
    ],
    "resistances": [
     {
-     "price": 12.4972,
-     "touches": 8,
-     "last": "2026-08-31",
-     "recent": true
+     "price": 12.4298,
+     "touches": 6,
+     "last": "2026-08-31"
+    },
+    {
+     "price": 12.6993,
+     "touches": 2,
+     "last": "2026-08-14"
     },
     {
      "price": 13.0738,
      "touches": 5,
-     "last": "2026-10-29",
-     "recent": true
-    },
-    {
-     "price": 13.8707,
-     "touches": 4,
-     "last": "2026-02-10",
-     "recent": false
+     "last": "2026-10-29"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 11.645,
+       "touches": 2,
+       "last": "2026-08-20"
+      },
+      {
+       "price": 11.2566,
+       "touches": 3,
+       "last": "2026-09-10"
+      },
+      {
+       "price": 10.9417,
+       "touches": 3,
+       "last": "2026-10-30"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 12.4298,
+       "touches": 6,
+       "last": "2026-08-31"
+      },
+      {
+       "price": 12.6993,
+       "touches": 2,
+       "last": "2026-08-14"
+      },
+      {
+       "price": 13.0738,
+       "touches": 5,
+       "last": "2026-10-29"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 11.2949,
+       "touches": 2,
+       "last": "2026-09-07"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 12.4947,
+       "touches": 3,
+       "last": "2026-08-10"
+      },
+      {
+       "price": 14.0066,
+       "touches": 3,
+       "last": "2026-02-09"
+      },
+      {
+       "price": 15.5171,
+       "touches": 2,
+       "last": "2025-10-20"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 10.503,
+       "touches": 2,
+       "last": "2017-11-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 12.3251,
+       "touches": 3,
+       "last": "2018-12-03"
+      },
+      {
+       "price": 13.7283,
+       "touches": 3,
+       "last": "2026-02-02"
+      },
+      {
+       "price": 18.9603,
+       "touches": 2,
+       "last": "2019-10-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 8.8731,
+       "touches": 2,
+       "last": "2026-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 12.7353,
+       "touches": 3,
+       "last": "2020-01-02"
+      },
+      {
+       "price": 22.6073,
+       "touches": 2,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 33.9525,
+       "touches": 2,
+       "last": "2024-04-02"
+      }
+     ]
+    }
+   }
   },
   "AVGO": {
    "file": "series/AVGO.json",
    "date": "2026-11-10",
-   "last": 329.74,
-   "change": 10.26,
-   "changePct": 3.21,
+   "last": 329.61,
+   "change": 10.13,
+   "changePct": 3.17,
    "currency": "USD",
    "supports": [
     {
-     "price": 323.8682,
-     "touches": 2,
-     "last": "2026-01-08",
-     "recent": false
-    },
-    {
      "price": 308.2412,
      "touches": 3,
-     "last": "2026-03-19",
-     "recent": false
+     "last": "2026-03-19"
     },
     {
      "price": 291.3285,
      "touches": 2,
-     "last": "2026-03-30",
-     "recent": false
+     "last": "2026-03-30"
     }
    ],
    "resistances": [
     {
-     "price": 345.2201,
-     "touches": 8,
-     "last": "2026-10-28",
-     "recent": true
+     "price": 337.4025,
+     "touches": 5,
+     "last": "2026-10-01"
     },
     {
-     "price": 362.6888,
+     "price": 354.0714,
      "touches": 8,
-     "last": "2026-09-22",
-     "recent": true
+     "last": "2026-10-28"
     },
     {
-     "price": 378.3727,
-     "touches": 2,
-     "last": "2026-10-06",
-     "recent": true
+     "price": 369.6562,
+     "touches": 5,
+     "last": "2026-09-22"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 308.2412,
+       "touches": 3,
+       "last": "2026-03-19"
+      },
+      {
+       "price": 291.3285,
+       "touches": 2,
+       "last": "2026-03-30"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 337.4025,
+       "touches": 5,
+       "last": "2026-10-01"
+      },
+      {
+       "price": 354.0714,
+       "touches": 8,
+       "last": "2026-10-28"
+      },
+      {
+       "price": 369.6562,
+       "touches": 5,
+       "last": "2026-09-22"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 325.6343,
+       "touches": 4,
+       "last": "2026-09-14"
+      },
+      {
+       "price": 291.3285,
+       "touches": 2,
+       "last": "2026-03-30"
+      },
+      {
+       "price": 246.7958,
+       "touches": 2,
+       "last": "2025-01-21"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 352.4651,
+       "touches": 3,
+       "last": "2026-06-29"
+      },
+      {
+       "price": 378.4334,
+       "touches": 3,
+       "last": "2026-10-05"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 131.2118,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 30.5967,
+       "touches": 13,
+       "last": "2022-10-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 493.3195,
+       "touches": 1,
+       "last": "2026-06-01",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 268.2841,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 29.31,
+       "touches": 9,
+       "last": "2022-10-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 493.3195,
+       "touches": 1,
+       "last": "2026-04-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "BABA": {
    "file": "series/BABA.json",
    "date": "2026-11-10",
-   "last": 102.6503,
-   "change": -2.7297,
-   "changePct": -2.59,
+   "last": 102.74,
+   "change": -2.64,
+   "changePct": -2.51,
    "currency": "USD",
    "supports": [
     {
      "price": 91.99,
      "touches": 1,
      "last": "2026-06-26",
-     "recent": false,
      "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 105.695,
-     "touches": 2,
-     "last": "2026-10-08",
-     "recent": true
-    },
-    {
      "price": 112.197,
      "touches": 2,
-     "last": "2026-10-14",
-     "recent": true
+     "last": "2026-10-14"
     },
     {
      "price": 120.9406,
      "touches": 4,
-     "last": "2026-09-22",
-     "recent": true
+     "last": "2026-09-22"
+    },
+    {
+     "price": 128.1002,
+     "touches": 3,
+     "last": "2026-05-13"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 91.99,
+       "touches": 1,
+       "last": "2026-06-26",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 112.197,
+       "touches": 2,
+       "last": "2026-10-14"
+      },
+      {
+       "price": 120.9406,
+       "touches": 4,
+       "last": "2026-09-22"
+      },
+      {
+       "price": 128.1002,
+       "touches": 3,
+       "last": "2026-05-13"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 92.3285,
+       "touches": 3,
+       "last": "2026-06-22"
+      },
+      {
+       "price": 84.9341,
+       "touches": 2,
+       "last": "2024-08-19"
+      },
+      {
+       "price": 79.1578,
+       "touches": 3,
+       "last": "2025-01-13"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 115.8321,
+       "touches": 2,
+       "last": "2026-04-06"
+      },
+      {
+       "price": 131.8203,
+       "touches": 2,
+       "last": "2026-08-10"
+      },
+      {
+       "price": 145.3508,
+       "touches": 4,
+       "last": "2026-05-11"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 94.1536,
+       "touches": 5,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 68.3147,
+       "touches": 7,
+       "last": "2025-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 117.3749,
+       "touches": 4,
+       "last": "2024-10-01"
+      },
+      {
+       "price": 150.0389,
+       "touches": 6,
+       "last": "2026-05-01"
+      },
+      {
+       "price": 191.0993,
+       "touches": 6,
+       "last": "2026-01-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 67.6589,
+       "touches": 5,
+       "last": "2025-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 118.2307,
+       "touches": 3,
+       "last": "2023-01-03"
+      },
+      {
+       "price": 193.2747,
+       "touches": 4,
+       "last": "2025-10-01"
+      }
+     ]
+    }
+   }
   },
   "BZ=F": {
    "file": "series/BZ_F.json",
    "date": "2026-11-10",
-   "last": 91.45,
-   "change": -1.12,
-   "changePct": -1.21,
+   "last": 91.47,
+   "change": -1.1,
+   "changePct": -1.19,
    "currency": "USD",
    "supports": [
     {
      "price": 90.735,
      "touches": 2,
-     "last": "2026-05-29",
-     "recent": false
+     "last": "2026-05-29"
     },
     {
      "price": 85.78,
      "touches": 2,
-     "last": "2026-08-26",
-     "recent": true
+     "last": "2026-08-26"
     },
     {
-     "price": 67.436,
-     "touches": 5,
-     "last": "2026-07-02",
-     "recent": false
+     "price": 70.4467,
+     "touches": 3,
+     "last": "2026-07-02"
     }
    ],
    "resistances": [
     {
      "price": 96.21,
      "touches": 5,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-10-01"
     },
     {
-     "price": 110.5633,
-     "touches": 3,
-     "last": "2026-09-28",
-     "recent": true
+     "price": 109.5,
+     "touches": 2,
+     "last": "2026-09-28"
     },
     {
      "price": 118.9475,
      "touches": 4,
-     "last": "2026-10-30",
-     "recent": true
+     "last": "2026-10-30"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 90.735,
+       "touches": 2,
+       "last": "2026-05-29"
+      },
+      {
+       "price": 85.78,
+       "touches": 2,
+       "last": "2026-08-26"
+      },
+      {
+       "price": 70.4467,
+       "touches": 3,
+       "last": "2026-07-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 96.21,
+       "touches": 5,
+       "last": "2026-10-01"
+      },
+      {
+       "price": 109.5,
+       "touches": 2,
+       "last": "2026-09-28"
+      },
+      {
+       "price": 118.9475,
+       "touches": 4,
+       "last": "2026-10-30"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 90.065,
+       "touches": 2,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 82.2057,
+       "touches": 7,
+       "last": "2026-04-13"
+      },
+      {
+       "price": 71.008,
+       "touches": 10,
+       "last": "2026-06-29"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 126.1,
+       "touches": 1,
+       "last": "2026-04-27",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 85.6987,
+       "touches": 8,
+       "last": "2025-06-02"
+      },
+      {
+       "price": 68.0938,
+       "touches": 16,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 44.14,
+       "touches": 4,
+       "last": "2020-11-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 98.595,
+       "touches": 2,
+       "last": "2023-09-01"
+      },
+      {
+       "price": 125.64,
+       "touches": 2,
+       "last": "2026-04-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 89.79,
+       "touches": 4,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 66.6556,
+       "touches": 9,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 43.35,
+       "touches": 3,
+       "last": "2020-10-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 131.55,
+       "touches": 2,
+       "last": "2026-04-01"
+      }
+     ]
+    }
+   }
   },
   "CA.PA": {
    "file": "series/CA_PA.json",
@@ -420,78 +1515,306 @@
     {
      "price": 13.8837,
      "touches": 2,
-     "last": "2026-03-23",
-     "recent": false
+     "last": "2026-03-23"
     },
     {
      "price": 13.4671,
      "touches": 2,
-     "last": "2026-01-08",
-     "recent": false
+     "last": "2026-01-08"
     },
     {
      "price": 12.668,
      "touches": 3,
-     "last": "2026-01-30",
-     "recent": false
+     "last": "2026-01-30"
     }
    ],
    "resistances": [
     {
-     "price": 14.7286,
-     "touches": 2,
-     "last": "2026-03-17",
-     "recent": false
-    },
-    {
-     "price": 15.0172,
-     "touches": 4,
-     "last": "2026-07-24",
-     "recent": false
+     "price": 14.9772,
+     "touches": 5,
+     "last": "2026-07-24"
     },
     {
      "price": 15.3896,
      "touches": 5,
-     "last": "2026-10-05",
-     "recent": true
+     "last": "2026-10-05"
+    },
+    {
+     "price": 15.6715,
+     "touches": 2,
+     "last": "2026-08-11"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 13.8837,
+       "touches": 2,
+       "last": "2026-03-23"
+      },
+      {
+       "price": 13.4671,
+       "touches": 2,
+       "last": "2026-01-08"
+      },
+      {
+       "price": 12.668,
+       "touches": 3,
+       "last": "2026-01-30"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 14.9772,
+       "touches": 5,
+       "last": "2026-07-24"
+      },
+      {
+       "price": 15.3896,
+       "touches": 5,
+       "last": "2026-10-05"
+      },
+      {
+       "price": 15.6715,
+       "touches": 2,
+       "last": "2026-08-11"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 13.6623,
+       "touches": 5,
+       "last": "2026-03-23"
+      },
+      {
+       "price": 13.0017,
+       "touches": 4,
+       "last": "2025-05-19"
+      },
+      {
+       "price": 12.2756,
+       "touches": 8,
+       "last": "2026-01-26"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 15.042,
+       "touches": 3,
+       "last": "2026-07-20"
+      },
+      {
+       "price": 16.7338,
+       "touches": 4,
+       "last": "2026-10-12"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 13.6882,
+       "touches": 3,
+       "last": "2024-09-02"
+      },
+      {
+       "price": 12.892,
+       "touches": 11,
+       "last": "2025-05-02"
+      },
+      {
+       "price": 10.9396,
+       "touches": 11,
+       "last": "2025-09-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 15.076,
+       "touches": 3,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 16.0654,
+       "touches": 2,
+       "last": "2022-05-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 13.1795,
+       "touches": 7,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 10.965,
+       "touches": 4,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 9.2371,
+       "touches": 3,
+       "last": "2020-10-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 16.6351,
+       "touches": 2,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "COO": {
    "file": "series/COO.json",
    "date": "2026-11-10",
-   "last": 63.385,
-   "change": -0.545,
-   "changePct": -0.85,
+   "last": 63.41,
+   "change": -0.52,
+   "changePct": -0.81,
    "currency": "USD",
    "supports": [
     {
      "price": 59.015,
      "touches": 2,
-     "last": "2026-06-02",
-     "recent": false
+     "last": "2026-06-02"
     }
    ],
    "resistances": [
     {
      "price": 68.9175,
      "touches": 4,
-     "last": "2026-07-23",
-     "recent": false
+     "last": "2026-07-23"
     },
     {
      "price": 72.59,
      "touches": 2,
-     "last": "2026-04-14",
-     "recent": false
+     "last": "2026-04-14"
     },
     {
      "price": 74.2,
      "touches": 2,
-     "last": "2026-07-17",
-     "recent": false
+     "last": "2026-07-17"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 59.015,
+       "touches": 2,
+       "last": "2026-06-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 68.9175,
+       "touches": 4,
+       "last": "2026-07-23"
+      },
+      {
+       "price": 72.59,
+       "touches": 2,
+       "last": "2026-04-14"
+      },
+      {
+       "price": 74.2,
+       "touches": 2,
+       "last": "2026-07-17"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 51.01,
+       "touches": 1,
+       "last": "2026-09-08",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 66.1,
+       "touches": 2,
+       "last": "2025-11-03"
+      },
+      {
+       "price": 75.18,
+       "touches": 5,
+       "last": "2026-06-29"
+      },
+      {
+       "price": 78.45,
+       "touches": 2,
+       "last": "2026-08-17"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 62.9627,
+       "touches": 4,
+       "last": "2025-08-01"
+      },
+      {
+       "price": 55.7384,
+       "touches": 6,
+       "last": "2026-09-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 78.7759,
+       "touches": 4,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 88.9289,
+       "touches": 7,
+       "last": "2025-12-01"
+      },
+      {
+       "price": 101.9836,
+       "touches": 2,
+       "last": "2024-03-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 59.1465,
+       "touches": 8,
+       "last": "2026-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 85.4553,
+       "touches": 7,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 101.9836,
+       "touches": 2,
+       "last": "2024-01-02"
+      },
+      {
+       "price": 114.1193,
+       "touches": 2,
+       "last": "2024-07-01"
+      }
+     ]
+    }
+   }
   },
   "CS.PA": {
    "file": "series/CS_PA.json",
@@ -504,20 +1827,17 @@
     {
      "price": 45.4967,
      "touches": 3,
-     "last": "2026-09-17",
-     "recent": true
+     "last": "2026-09-17"
     },
     {
      "price": 44.4767,
      "touches": 3,
-     "last": "2026-09-04",
-     "recent": true
+     "last": "2026-09-04"
     },
     {
      "price": 42.585,
      "touches": 2,
-     "last": "2026-09-09",
-     "recent": true
+     "last": "2026-09-09"
     }
    ],
    "resistances": [
@@ -525,94 +1845,409 @@
      "price": 46.37,
      "touches": 1,
      "last": "2026-11-10",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 45.4967,
+       "touches": 3,
+       "last": "2026-09-17"
+      },
+      {
+       "price": 44.4767,
+       "touches": 3,
+       "last": "2026-09-04"
+      },
+      {
+       "price": 42.585,
+       "touches": 2,
+       "last": "2026-09-09"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 46.37,
+       "touches": 1,
+       "last": "2026-11-10",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 45.43,
+       "touches": 2,
+       "last": "2026-09-14"
+      },
+      {
+       "price": 40.8329,
+       "touches": 4,
+       "last": "2026-10-19"
+      },
+      {
+       "price": 38.5804,
+       "touches": 5,
+       "last": "2026-05-04"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 46.37,
+       "touches": 1,
+       "last": "2026-11-09",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 34.1278,
+       "touches": 3,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 30.4979,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 25.026,
+       "touches": 3,
+       "last": "2024-06-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 46.37,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 33.6573,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 21.4625,
+       "touches": 2,
+       "last": "2023-07-03"
+      },
+      {
+       "price": 14.6547,
+       "touches": 8,
+       "last": "2022-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 46.37,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "DECK": {
    "file": "series/DECK.json",
    "date": "2026-11-10",
-   "last": 89.675,
-   "change": -0.755,
-   "changePct": -0.83,
+   "last": 89.735,
+   "change": -0.695,
+   "changePct": -0.77,
    "currency": "USD",
    "supports": [
     {
      "price": 77.5633,
      "touches": 3,
-     "last": "2026-10-23",
-     "recent": true
+     "last": "2026-10-23"
     }
    ],
    "resistances": [
     {
      "price": 92.44,
      "touches": 4,
-     "last": "2026-08-24",
-     "recent": true
+     "last": "2026-08-24"
     },
     {
-     "price": 98.258,
-     "touches": 5,
-     "last": "2026-06-30",
-     "recent": false
+     "price": 97.84,
+     "touches": 4,
+     "last": "2026-06-30"
     },
     {
      "price": 105.158,
      "touches": 5,
-     "last": "2026-07-29",
-     "recent": false
+     "last": "2026-07-29"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 77.5633,
+       "touches": 3,
+       "last": "2026-10-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 92.44,
+       "touches": 4,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 97.84,
+       "touches": 4,
+       "last": "2026-06-30"
+      },
+      {
+       "price": 105.158,
+       "touches": 5,
+       "last": "2026-07-29"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 78.055,
+       "touches": 2,
+       "last": "2026-09-28"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 93.874,
+       "touches": 5,
+       "last": "2026-05-18"
+      },
+      {
+       "price": 98.09,
+       "touches": 2,
+       "last": "2026-01-26"
+      },
+      {
+       "price": 109.7142,
+       "touches": 2,
+       "last": "2026-07-13"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 78.0071,
+       "touches": 4,
+       "last": "2026-09-01"
+      },
+      {
+       "price": 34.6767,
+       "touches": 2,
+       "last": "2022-05-02"
+      },
+      {
+       "price": 24.4017,
+       "touches": 4,
+       "last": "2019-09-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 94.2,
+       "touches": 2,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 119.395,
+       "touches": 2,
+       "last": "2026-06-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 81.1497,
+       "touches": 5,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 21.5831,
+       "touches": 6,
+       "last": "2022-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 223.98,
+       "touches": 1,
+       "last": "2025-01-02",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "DELL": {
    "file": "series/DELL.json",
    "date": "2026-11-10",
-   "last": 329.23,
-   "change": -17.08,
-   "changePct": -4.93,
+   "last": 330.015,
+   "change": -16.295,
+   "changePct": -4.71,
    "currency": "USD",
    "supports": [
     {
      "price": 223.7049,
      "touches": 2,
-     "last": "2026-05-19",
-     "recent": false
+     "last": "2026-05-19"
     },
     {
-     "price": 187.1341,
-     "touches": 3,
-     "last": "2026-04-30",
-     "recent": false
+     "price": 180.5856,
+     "touches": 2,
+     "last": "2026-04-15"
     },
     {
-     "price": 148.4331,
-     "touches": 4,
-     "last": "2026-03-31",
-     "recent": false
+     "price": 146.0786,
+     "touches": 5,
+     "last": "2026-03-31"
     }
    ],
    "resistances": [
     {
-     "price": 364.7295,
-     "touches": 4,
-     "last": "2026-07-28",
-     "recent": false
-    },
-    {
-     "price": 431.7186,
-     "touches": 4,
-     "last": "2026-10-20",
-     "recent": true
-    },
-    {
-     "price": 461.4211,
+     "price": 360.4685,
      "touches": 3,
-     "last": "2026-07-23",
-     "recent": false
+     "last": "2026-07-28"
+    },
+    {
+     "price": 422.3599,
+     "touches": 2,
+     "last": "2026-09-01"
+    },
+    {
+     "price": 445.4318,
+     "touches": 3,
+     "last": "2026-10-20"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 223.7049,
+       "touches": 2,
+       "last": "2026-05-19"
+      },
+      {
+       "price": 180.5856,
+       "touches": 2,
+       "last": "2026-04-15"
+      },
+      {
+       "price": 146.0786,
+       "touches": 5,
+       "last": "2026-03-31"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 360.4685,
+       "touches": 3,
+       "last": "2026-07-28"
+      },
+      {
+       "price": 422.3599,
+       "touches": 2,
+       "last": "2026-09-01"
+      },
+      {
+       "price": 445.4318,
+       "touches": 3,
+       "last": "2026-10-20"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 169.877,
+       "touches": 2,
+       "last": "2025-11-03"
+      },
+      {
+       "price": 111.9098,
+       "touches": 17,
+       "last": "2026-01-20"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 594.6862,
+       "touches": 1,
+       "last": "2026-09-14",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 161.0876,
+       "touches": 3,
+       "last": "2025-11-03"
+      },
+      {
+       "price": 96.867,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 30.6524,
+       "touches": 20,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 594.6862,
+       "touches": 1,
+       "last": "2026-09-01",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 96.867,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 28.9756,
+       "touches": 10,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 594.6862,
+       "touches": 1,
+       "last": "2026-07-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "DG.PA": {
    "file": "series/DG_PA.json",
@@ -625,68 +2260,186 @@
     {
      "price": 114.2143,
      "touches": 2,
-     "last": "2026-01-02",
-     "recent": false
+     "last": "2026-01-02"
     },
     {
      "price": 112.5156,
      "touches": 3,
-     "last": "2026-09-17",
-     "recent": true
+     "last": "2026-09-17"
     },
     {
      "price": 108.7223,
      "touches": 4,
-     "last": "2026-10-15",
-     "recent": true
+     "last": "2026-10-15"
     }
    ],
    "resistances": [
     {
      "price": 116.177,
      "touches": 4,
-     "last": "2026-07-27",
-     "recent": false
+     "last": "2026-07-27"
     },
     {
      "price": 119.7878,
      "touches": 6,
-     "last": "2026-07-17",
-     "recent": false
+     "last": "2026-07-17"
     },
     {
      "price": 125.9739,
      "touches": 2,
-     "last": "2026-08-06",
-     "recent": false
+     "last": "2026-08-06"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 114.2143,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 112.5156,
+       "touches": 3,
+       "last": "2026-09-17"
+      },
+      {
+       "price": 108.7223,
+       "touches": 4,
+       "last": "2026-10-15"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 116.177,
+       "touches": 4,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 119.7878,
+       "touches": 6,
+       "last": "2026-07-17"
+      },
+      {
+       "price": 125.9739,
+       "touches": 2,
+       "last": "2026-08-06"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 112.0966,
+       "touches": 2,
+       "last": "2025-07-28"
+      },
+      {
+       "price": 107.9924,
+       "touches": 6,
+       "last": "2026-01-19"
+      },
+      {
+       "price": 103.2344,
+       "touches": 4,
+       "last": "2026-09-28"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 115.668,
+       "touches": 3,
+       "last": "2026-07-13"
+      },
+      {
+       "price": 119.2389,
+       "touches": 4,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 123.2438,
+       "touches": 3,
+       "last": "2025-08-18"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 106.9996,
+       "touches": 2,
+       "last": "2025-09-01"
+      },
+      {
+       "price": 100.6368,
+       "touches": 2,
+       "last": "2024-09-02"
+      },
+      {
+       "price": 85.6855,
+       "touches": 6,
+       "last": "2024-11-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 123.99,
+       "touches": 2,
+       "last": "2025-08-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 85.6855,
+       "touches": 6,
+       "last": "2024-10-01"
+      },
+      {
+       "price": 67.0786,
+       "touches": 3,
+       "last": "2022-10-03"
+      },
+      {
+       "price": 54.411,
+       "touches": 3,
+       "last": "2020-10-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 137.5955,
+       "touches": 1,
+       "last": "2026-01-02",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "DIS": {
    "file": "series/DIS.json",
    "date": "2026-11-10",
-   "last": 118.725,
-   "change": -0.395,
-   "changePct": -0.33,
+   "last": 118.97,
+   "change": -0.15,
+   "changePct": -0.13,
    "currency": "USD",
    "supports": [
     {
-     "price": 112.8903,
-     "touches": 3,
-     "last": "2026-10-22",
-     "recent": true
+     "price": 113.4005,
+     "touches": 2,
+     "last": "2026-10-22"
     },
     {
      "price": 109.3972,
      "touches": 7,
-     "last": "2026-10-28",
-     "recent": true
+     "last": "2026-10-28"
     },
     {
      "price": 106.4378,
      "touches": 2,
-     "last": "2026-09-28",
-     "recent": true
+     "last": "2026-09-28"
     }
    ],
    "resistances": [
@@ -694,10 +2447,117 @@
      "price": 120.8,
      "touches": 1,
      "last": "2026-11-05",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 113.4005,
+       "touches": 2,
+       "last": "2026-10-22"
+      },
+      {
+       "price": 109.3972,
+       "touches": 7,
+       "last": "2026-10-28"
+      },
+      {
+       "price": 106.4378,
+       "touches": 2,
+       "last": "2026-09-28"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 120.8,
+       "touches": 1,
+       "last": "2026-11-05",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 115.0102,
+       "touches": 6,
+       "last": "2026-01-05"
+      },
+      {
+       "price": 110.4859,
+       "touches": 3,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 103.9678,
+       "touches": 2,
+       "last": "2026-06-22"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 121.6375,
+       "touches": 2,
+       "last": "2025-06-30"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 116.3992,
+       "touches": 4,
+       "last": "2025-02-03"
+      },
+      {
+       "price": 108.0544,
+       "touches": 3,
+       "last": "2026-05-01"
+      },
+      {
+       "price": 100.243,
+       "touches": 4,
+       "last": "2025-11-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 122.8207,
+       "touches": 3,
+       "last": "2025-06-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 114.4382,
+       "touches": 6,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 92.4373,
+       "touches": 5,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 79.0255,
+       "touches": 5,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 196.8407,
+       "touches": 1,
+       "last": "2021-01-04",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "DSY.PA": {
    "file": "series/DSY_PA.json",
@@ -710,20 +2570,17 @@
     {
      "price": 23.9526,
      "touches": 2,
-     "last": "2026-01-29",
-     "recent": false
+     "last": "2026-01-29"
     },
     {
      "price": 22.6333,
      "touches": 4,
-     "last": "2026-08-07",
-     "recent": false
+     "last": "2026-08-07"
     },
     {
-     "price": 20.1649,
-     "touches": 6,
-     "last": "2026-10-01",
-     "recent": true
+     "price": 20.69,
+     "touches": 2,
+     "last": "2026-08-13"
     }
    ],
    "resistances": [
@@ -731,10 +2588,131 @@
      "price": 26.39,
      "touches": 1,
      "last": "2026-11-09",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 23.9526,
+       "touches": 2,
+       "last": "2026-01-29"
+      },
+      {
+       "price": 22.6333,
+       "touches": 4,
+       "last": "2026-08-07"
+      },
+      {
+       "price": 20.69,
+       "touches": 2,
+       "last": "2026-08-13"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 26.39,
+       "touches": 1,
+       "last": "2026-11-09",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 22.8337,
+       "touches": 2,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 20.2325,
+       "touches": 2,
+       "last": "2026-09-07"
+      },
+      {
+       "price": 15.9503,
+       "touches": 2,
+       "last": "2026-03-30"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 29.9996,
+       "touches": 4,
+       "last": "2025-10-20"
+      },
+      {
+       "price": 31.7092,
+       "touches": 3,
+       "last": "2024-12-30"
+      },
+      {
+       "price": 35.076,
+       "touches": 3,
+       "last": "2024-12-09"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 23.9644,
+       "touches": 2,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 16.0161,
+       "touches": 5,
+       "last": "2026-02-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 27.5792,
+       "touches": 3,
+       "last": "2020-10-01"
+      },
+      {
+       "price": 31.3072,
+       "touches": 7,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 36.9368,
+       "touches": 3,
+       "last": "2024-09-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 21.6933,
+       "touches": 2,
+       "last": "2020-01-02"
+      },
+      {
+       "price": 16.1565,
+       "touches": 3,
+       "last": "2026-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 31.5533,
+       "touches": 5,
+       "last": "2024-10-01"
+      },
+      {
+       "price": 40.5862,
+       "touches": 2,
+       "last": "2025-01-02"
+      }
+     ]
+    }
+   }
   },
   "EL.PA": {
    "file": "series/EL_PA.json",
@@ -747,20 +2725,17 @@
     {
      "price": 187.5985,
      "touches": 2,
-     "last": "2026-06-15",
-     "recent": false
+     "last": "2026-06-15"
     },
     {
      "price": 177.83,
      "touches": 5,
-     "last": "2026-08-06",
-     "recent": false
+     "last": "2026-08-06"
     },
     {
      "price": 161.52,
      "touches": 5,
-     "last": "2026-07-31",
-     "recent": false
+     "last": "2026-07-31"
     }
    ],
    "resistances": [
@@ -768,10 +2743,123 @@
      "price": 309.6811,
      "touches": 1,
      "last": "2025-11-27",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 187.5985,
+       "touches": 2,
+       "last": "2026-06-15"
+      },
+      {
+       "price": 177.83,
+       "touches": 5,
+       "last": "2026-08-06"
+      },
+      {
+       "price": 161.52,
+       "touches": 5,
+       "last": "2026-07-31"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 309.6811,
+       "touches": 1,
+       "last": "2025-11-27",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 176.5614,
+       "touches": 5,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 160.8182,
+       "touches": 3,
+       "last": "2026-06-29"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 193.0246,
+       "touches": 3,
+       "last": "2026-06-15"
+      },
+      {
+       "price": 211.4767,
+       "touches": 2,
+       "last": "2026-04-13"
+      },
+      {
+       "price": 217.4958,
+       "touches": 2,
+       "last": "2025-04-07"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 173.1123,
+       "touches": 4,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 141.5032,
+       "touches": 4,
+       "last": "2026-09-01"
+      },
+      {
+       "price": 116.3398,
+       "touches": 7,
+       "last": "2022-09-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 316.3241,
+       "touches": 1,
+       "last": "2025-11-03",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 164.6704,
+       "touches": 4,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 123.8439,
+       "touches": 4,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 87.3428,
+       "touches": 5,
+       "last": "2020-10-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 316.3241,
+       "touches": 1,
+       "last": "2025-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "ENGI.PA": {
    "file": "series/ENGI_PA.json",
@@ -784,42 +2872,154 @@
     {
      "price": 23.4925,
      "touches": 4,
-     "last": "2026-10-15",
-     "recent": true
+     "last": "2026-10-15"
     },
     {
      "price": 22.3256,
      "touches": 3,
-     "last": "2026-10-23",
-     "recent": true
+     "last": "2026-10-23"
     },
     {
      "price": 20.2957,
      "touches": 2,
-     "last": "2025-12-11",
-     "recent": false
+     "last": "2025-12-11"
     }
    ],
    "resistances": [
     {
      "price": 24.6878,
      "touches": 2,
-     "last": "2026-09-09",
-     "recent": true
+     "last": "2026-09-09"
     },
     {
      "price": 26.4317,
      "touches": 7,
-     "last": "2026-07-16",
-     "recent": false
+     "last": "2026-07-16"
     },
     {
      "price": 27.6967,
      "touches": 6,
-     "last": "2026-07-27",
-     "recent": false
+     "last": "2026-07-27"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 23.4925,
+       "touches": 4,
+       "last": "2026-10-15"
+      },
+      {
+       "price": 22.3256,
+       "touches": 3,
+       "last": "2026-10-23"
+      },
+      {
+       "price": 20.2957,
+       "touches": 2,
+       "last": "2025-12-11"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 24.6878,
+       "touches": 2,
+       "last": "2026-09-09"
+      },
+      {
+       "price": 26.4317,
+       "touches": 7,
+       "last": "2026-07-16"
+      },
+      {
+       "price": 27.6967,
+       "touches": 6,
+       "last": "2026-07-27"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 17.0281,
+       "touches": 2,
+       "last": "2025-10-06"
+      },
+      {
+       "price": 14.1255,
+       "touches": 3,
+       "last": "2024-10-14"
+      },
+      {
+       "price": 13.2081,
+       "touches": 5,
+       "last": "2025-01-27"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 28.188,
+       "touches": 3,
+       "last": "2026-07-27"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 13.333,
+       "touches": 5,
+       "last": "2024-11-01"
+      },
+      {
+       "price": 11.0534,
+       "touches": 5,
+       "last": "2024-06-03"
+      },
+      {
+       "price": 8.9709,
+       "touches": 9,
+       "last": "2023-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 28.454,
+       "touches": 1,
+       "last": "2026-02-02",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 10.8728,
+       "touches": 3,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 9.0671,
+       "touches": 4,
+       "last": "2022-01-03"
+      },
+      {
+       "price": 6.7847,
+       "touches": 7,
+       "last": "2022-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 28.454,
+       "touches": 1,
+       "last": "2026-01-02",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "FDJU.PA": {
    "file": "series/FDJU_PA.json",
@@ -832,120 +3032,447 @@
     {
      "price": 20.625,
      "touches": 4,
-     "last": "2026-06-26",
-     "recent": false
+     "last": "2026-06-26"
     },
     {
      "price": 20.3088,
      "touches": 2,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-10-01"
     }
    ],
    "resistances": [
     {
      "price": 21.7128,
      "touches": 8,
-     "last": "2026-10-16",
-     "recent": true
+     "last": "2026-10-16"
     },
     {
      "price": 22.4832,
      "touches": 7,
-     "last": "2026-09-10",
-     "recent": true
+     "last": "2026-09-10"
     },
     {
-     "price": 23.0693,
-     "touches": 4,
-     "last": "2026-07-28",
-     "recent": false
+     "price": 23.1589,
+     "touches": 3,
+     "last": "2026-07-28"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 20.625,
+       "touches": 4,
+       "last": "2026-06-26"
+      },
+      {
+       "price": 20.3088,
+       "touches": 2,
+       "last": "2026-10-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 21.7128,
+       "touches": 8,
+       "last": "2026-10-16"
+      },
+      {
+       "price": 22.4832,
+       "touches": 7,
+       "last": "2026-09-10"
+      },
+      {
+       "price": 23.1589,
+       "touches": 3,
+       "last": "2026-07-28"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 20.5296,
+       "touches": 3,
+       "last": "2026-06-22"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 21.7963,
+       "touches": 2,
+       "last": "2026-04-20"
+      },
+      {
+       "price": 22.606,
+       "touches": 3,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 23.6,
+       "touches": 2,
+       "last": "2026-07-13"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 20.4488,
+       "touches": 2,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 22.8986,
+       "touches": 4,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 24.4836,
+       "touches": 2,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 28.1284,
+       "touches": 2,
+       "last": "2024-10-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 13.4661,
+       "touches": 1,
+       "last": "2020-01-02",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 22.7717,
+       "touches": 5,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 32.5286,
+       "touches": 4,
+       "last": "2025-07-01"
+      }
+     ]
+    }
+   }
   },
   "FDX": {
    "file": "series/FDX.json",
    "date": "2026-11-10",
-   "last": 319.76,
-   "change": 0.92,
-   "changePct": 0.29,
+   "last": 319.79,
+   "change": 0.95,
+   "changePct": 0.3,
    "currency": "USD",
    "supports": [
     {
-     "price": 319.3289,
-     "touches": 7,
-     "last": "2026-08-24",
-     "recent": true
+     "price": 317.8377,
+     "touches": 5,
+     "last": "2026-07-22"
     },
     {
      "price": 304.6104,
      "touches": 6,
-     "last": "2026-07-28",
-     "recent": false
+     "last": "2026-07-28"
     },
     {
      "price": 286.6746,
      "touches": 4,
-     "last": "2026-10-14",
-     "recent": true
+     "last": "2026-10-14"
     }
    ],
    "resistances": [
     {
+     "price": 323.057,
+     "touches": 2,
+     "last": "2026-08-24"
+    },
+    {
      "price": 340.2798,
      "touches": 4,
-     "last": "2026-08-26",
-     "recent": true
+     "last": "2026-08-26"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 317.8377,
+       "touches": 5,
+       "last": "2026-07-22"
+      },
+      {
+       "price": 304.6104,
+       "touches": 6,
+       "last": "2026-07-28"
+      },
+      {
+       "price": 286.6746,
+       "touches": 4,
+       "last": "2026-10-14"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 323.057,
+       "touches": 2,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 340.2798,
+       "touches": 4,
+       "last": "2026-08-26"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 278.4326,
+       "touches": 3,
+       "last": "2026-09-21"
+      },
+      {
+       "price": 239.6984,
+       "touches": 3,
+       "last": "2024-11-25"
+      },
+      {
+       "price": 220.0586,
+       "touches": 3,
+       "last": "2025-01-27"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 341.5434,
+       "touches": 2,
+       "last": "2026-08-10"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 240.3228,
+       "touches": 2,
+       "last": "2024-11-01"
+      },
+      {
+       "price": 219.7471,
+       "touches": 5,
+       "last": "2024-03-01"
+      },
+      {
+       "price": 184.6491,
+       "touches": 11,
+       "last": "2025-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 342.7328,
+       "touches": 1,
+       "last": "2026-06-01",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 231.4831,
+       "touches": 3,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 192.9151,
+       "touches": 2,
+       "last": "2022-01-03"
+      },
+      {
+       "price": 157.5742,
+       "touches": 5,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 342.7328,
+       "touches": 1,
+       "last": "2026-04-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "FISV": {
    "file": "series/FISV.json",
    "date": "2026-11-10",
-   "last": 63.54,
-   "change": 0.02,
-   "changePct": 0.03,
+   "last": 63.49,
+   "change": -0.03,
+   "changePct": -0.05,
    "currency": "USD",
    "supports": [
     {
-     "price": 58.406,
-     "touches": 5,
-     "last": "2026-06-01",
-     "recent": false
+     "price": 59.64,
+     "touches": 3,
+     "last": "2026-06-01"
+    },
+    {
+     "price": 57.7967,
+     "touches": 3,
+     "last": "2026-05-19"
     },
     {
      "price": 55.96,
      "touches": 4,
-     "last": "2026-08-13",
-     "recent": false
-    },
-    {
-     "price": 53.0233,
-     "touches": 3,
-     "last": "2026-08-31",
-     "recent": true
+     "last": "2026-08-13"
     }
    ],
    "resistances": [
     {
      "price": 64.4883,
      "touches": 6,
-     "last": "2026-05-04",
-     "recent": false
+     "last": "2026-05-04"
     },
     {
      "price": 67.815,
      "touches": 2,
-     "last": "2026-01-26",
-     "recent": false
+     "last": "2026-01-26"
     },
     {
      "price": 69.92,
      "touches": 2,
-     "last": "2026-01-08",
-     "recent": false
+     "last": "2026-01-08"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 59.64,
+       "touches": 3,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 57.7967,
+       "touches": 3,
+       "last": "2026-05-19"
+      },
+      {
+       "price": 55.96,
+       "touches": 4,
+       "last": "2026-08-13"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 64.4883,
+       "touches": 6,
+       "last": "2026-05-04"
+      },
+      {
+       "price": 67.815,
+       "touches": 2,
+       "last": "2026-01-26"
+      },
+      {
+       "price": 69.92,
+       "touches": 2,
+       "last": "2026-01-08"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 58.265,
+       "touches": 4,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 52.54,
+       "touches": 2,
+       "last": "2026-05-11"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 64.905,
+       "touches": 2,
+       "last": "2026-04-20"
+      },
+      {
+       "price": 128.5,
+       "touches": 2,
+       "last": "2025-10-27"
+      },
+      {
+       "price": 146.23,
+       "touches": 3,
+       "last": "2024-07-08"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 61.53,
+       "touches": 5,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 71.049,
+       "touches": 5,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 88.1586,
+       "touches": 7,
+       "last": "2022-10-03"
+      },
+      {
+       "price": 110.2225,
+       "touches": 4,
+       "last": "2023-10-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 43.87,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 76.3267,
+       "touches": 3,
+       "last": "2022-04-01"
+      },
+      {
+       "price": 118.1125,
+       "touches": 4,
+       "last": "2023-10-02"
+      }
+     ]
+    }
+   }
   },
   "GLE.PA": {
    "file": "series/GLE_PA.json",
@@ -958,42 +3485,154 @@
     {
      "price": 67.3987,
      "touches": 2,
-     "last": "2026-06-11",
-     "recent": false
+     "last": "2026-06-11"
     },
     {
      "price": 65.7632,
      "touches": 3,
-     "last": "2026-10-16",
-     "recent": true
+     "last": "2026-10-16"
     },
     {
      "price": 63.634,
      "touches": 3,
-     "last": "2026-05-18",
-     "recent": false
+     "last": "2026-05-18"
     }
    ],
    "resistances": [
     {
-     "price": 70.1304,
-     "touches": 6,
-     "last": "2026-09-15",
-     "recent": true
+     "price": 69.947,
+     "touches": 5,
+     "last": "2026-09-15"
     },
     {
      "price": 74.8525,
      "touches": 4,
-     "last": "2026-09-21",
-     "recent": true
+     "last": "2026-09-21"
     },
     {
      "price": 78.0668,
      "touches": 2,
-     "last": "2026-07-06",
-     "recent": false
+     "last": "2026-07-06"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 67.3987,
+       "touches": 2,
+       "last": "2026-06-11"
+      },
+      {
+       "price": 65.7632,
+       "touches": 3,
+       "last": "2026-10-16"
+      },
+      {
+       "price": 63.634,
+       "touches": 3,
+       "last": "2026-05-18"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 69.947,
+       "touches": 5,
+       "last": "2026-09-15"
+      },
+      {
+       "price": 74.8525,
+       "touches": 4,
+       "last": "2026-09-21"
+      },
+      {
+       "price": 78.0668,
+       "touches": 2,
+       "last": "2026-07-06"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 57.656,
+       "touches": 4,
+       "last": "2026-10-19"
+      },
+      {
+       "price": 49.5946,
+       "touches": 2,
+       "last": "2025-10-06"
+      },
+      {
+       "price": 26.1257,
+       "touches": 3,
+       "last": "2024-12-09"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 69.9447,
+       "touches": 2,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 74.552,
+       "touches": 3,
+       "last": "2026-09-21"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 57.4074,
+       "touches": 2,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 31.6703,
+       "touches": 3,
+       "last": "2022-02-01"
+      },
+      {
+       "price": 24.5472,
+       "touches": 7,
+       "last": "2024-06-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 83.8605,
+       "touches": 1,
+       "last": "2026-08-03",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 26.1824,
+       "touches": 6,
+       "last": "2024-04-02"
+      },
+      {
+       "price": 16.6125,
+       "touches": 6,
+       "last": "2024-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 83.8605,
+       "touches": 1,
+       "last": "2026-07-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "HEIA.AS": {
    "file": "series/HEIA_AS.json",
@@ -1006,20 +3645,17 @@
     {
      "price": 79.563,
      "touches": 2,
-     "last": "2026-08-05",
-     "recent": false
+     "last": "2026-08-05"
     },
     {
      "price": 73.9831,
      "touches": 4,
-     "last": "2026-09-08",
-     "recent": true
+     "last": "2026-09-08"
     },
     {
      "price": 70.5318,
      "touches": 8,
-     "last": "2026-09-21",
-     "recent": true
+     "last": "2026-09-21"
     }
    ],
    "resistances": [
@@ -1027,10 +3663,112 @@
      "price": 84.64,
      "touches": 1,
      "last": "2026-11-10",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 79.563,
+       "touches": 2,
+       "last": "2026-08-05"
+      },
+      {
+       "price": 73.9831,
+       "touches": 4,
+       "last": "2026-09-08"
+      },
+      {
+       "price": 70.5318,
+       "touches": 8,
+       "last": "2026-09-21"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 84.64,
+       "touches": 1,
+       "last": "2026-11-10",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 79.9164,
+       "touches": 6,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 76.8753,
+       "touches": 2,
+       "last": "2025-07-21"
+      },
+      {
+       "price": 74.0775,
+       "touches": 2,
+       "last": "2026-09-07"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 93.3505,
+       "touches": 1,
+       "last": "2024-05-20",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 79.1681,
+       "touches": 11,
+       "last": "2026-02-02"
+      },
+      {
+       "price": 70.8665,
+       "touches": 8,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 63.0182,
+       "touches": 5,
+       "last": "2026-05-04"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 92.8686,
+       "touches": 7,
+       "last": "2024-05-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 77.1654,
+       "touches": 8,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 63.9475,
+       "touches": 6,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 92.0797,
+       "touches": 7,
+       "last": "2024-04-02"
+      }
+     ]
+    }
+   }
   },
   "HO.PA": {
    "file": "series/HO_PA.json",
@@ -1043,90 +3781,325 @@
     {
      "price": 231.7416,
      "touches": 3,
-     "last": "2026-03-23",
-     "recent": false
+     "last": "2026-03-23"
     },
     {
      "price": 222.8818,
      "touches": 5,
-     "last": "2026-10-23",
-     "recent": true
+     "last": "2026-10-23"
     },
     {
-     "price": 213.7386,
-     "touches": 5,
-     "last": "2026-10-08",
-     "recent": true
+     "price": 213.0733,
+     "touches": 4,
+     "last": "2026-10-08"
     }
    ],
    "resistances": [
     {
-     "price": 239.7835,
-     "touches": 7,
-     "last": "2026-10-29",
-     "recent": true
+     "price": 240.4808,
+     "touches": 6,
+     "last": "2026-10-29"
     },
     {
      "price": 246.6124,
      "touches": 3,
-     "last": "2026-09-17",
-     "recent": true
+     "last": "2026-09-17"
     },
     {
      "price": 268.6716,
      "touches": 3,
-     "last": "2026-04-17",
-     "recent": false
+     "last": "2026-04-17"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 231.7416,
+       "touches": 3,
+       "last": "2026-03-23"
+      },
+      {
+       "price": 222.8818,
+       "touches": 5,
+       "last": "2026-10-23"
+      },
+      {
+       "price": 213.0733,
+       "touches": 4,
+       "last": "2026-10-08"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 240.4808,
+       "touches": 6,
+       "last": "2026-10-29"
+      },
+      {
+       "price": 246.6124,
+       "touches": 3,
+       "last": "2026-09-17"
+      },
+      {
+       "price": 268.6716,
+       "touches": 3,
+       "last": "2026-04-17"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 213.129,
+       "touches": 5,
+       "last": "2026-10-05"
+      },
+      {
+       "price": 145.7518,
+       "touches": 2,
+       "last": "2024-08-26"
+      },
+      {
+       "price": 131.9619,
+       "touches": 5,
+       "last": "2025-01-06"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 241.0123,
+       "touches": 2,
+       "last": "2026-05-25"
+      },
+      {
+       "price": 254.1433,
+       "touches": 3,
+       "last": "2025-07-14"
+      },
+      {
+       "price": 271.0772,
+       "touches": 6,
+       "last": "2026-08-10"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 213.0817,
+       "touches": 3,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 163.7083,
+       "touches": 2,
+       "last": "2024-11-01"
+      },
+      {
+       "price": 126.6269,
+       "touches": 9,
+       "last": "2025-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 271.8806,
+       "touches": 5,
+       "last": "2026-08-03"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 212.9465,
+       "touches": 2,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 125.8164,
+       "touches": 4,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 92.4317,
+       "touches": 6,
+       "last": "2022-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 273.4828,
+       "touches": 3,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "IT": {
    "file": "series/IT.json",
    "date": "2026-11-10",
-   "last": 188.01,
-   "change": -3.01,
-   "changePct": -1.58,
+   "last": 187.82,
+   "change": -3.2,
+   "changePct": -1.68,
    "currency": "USD",
    "supports": [
     {
-     "price": 175.3425,
-     "touches": 4,
-     "last": "2026-09-24",
-     "recent": true
+     "price": 182.725,
+     "touches": 2,
+     "last": "2026-11-03"
+    },
+    {
+     "price": 173.64,
+     "touches": 3,
+     "last": "2026-09-24"
     },
     {
      "price": 162.1386,
      "touches": 7,
-     "last": "2026-09-09",
-     "recent": true
-    },
-    {
-     "price": 142.82,
-     "touches": 9,
-     "last": "2026-07-17",
-     "recent": false
+     "last": "2026-09-09"
     }
    ],
    "resistances": [
     {
      "price": 203.4333,
      "touches": 3,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-10-01"
     },
     {
      "price": 223.0,
      "touches": 3,
-     "last": "2026-01-20",
-     "recent": false
+     "last": "2026-01-20"
     },
     {
      "price": 237.5967,
      "touches": 3,
-     "last": "2026-11-02",
-     "recent": true
+     "last": "2026-11-02"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 182.725,
+       "touches": 2,
+       "last": "2026-11-03"
+      },
+      {
+       "price": 173.64,
+       "touches": 3,
+       "last": "2026-09-24"
+      },
+      {
+       "price": 162.1386,
+       "touches": 7,
+       "last": "2026-09-09"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 203.4333,
+       "touches": 3,
+       "last": "2026-10-01"
+      },
+      {
+       "price": 223.0,
+       "touches": 3,
+       "last": "2026-01-20"
+      },
+      {
+       "price": 237.5967,
+       "touches": 3,
+       "last": "2026-11-02"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 169.12,
+       "touches": 2,
+       "last": "2026-09-08"
+      },
+      {
+       "price": 140.5,
+       "touches": 3,
+       "last": "2026-05-11"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 225.84,
+       "touches": 3,
+       "last": "2025-11-03"
+      },
+      {
+       "price": 261.375,
+       "touches": 2,
+       "last": "2025-12-15"
+      },
+      {
+       "price": 411.93,
+       "touches": 2,
+       "last": "2024-05-28"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 166.0867,
+       "touches": 3,
+       "last": "2020-02-03"
+      },
+      {
+       "price": 125.5242,
+       "touches": 12,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 222.52,
+       "touches": 2,
+       "last": "2025-08-01"
+      },
+      {
+       "price": 319.1167,
+       "touches": 3,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 367.795,
+       "touches": 4,
+       "last": "2025-04-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 131.3355,
+       "touches": 11,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 308.105,
+       "touches": 2,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 363.625,
+       "touches": 2,
+       "last": "2022-10-03"
+      }
+     ]
+    }
+   }
   },
   "IWDA.AS": {
    "file": "series/IWDA_AS.json",
@@ -1139,36 +4112,145 @@
     {
      "price": 124.97,
      "touches": 6,
-     "last": "2026-09-10",
-     "recent": true
+     "last": "2026-09-10"
     },
     {
      "price": 122.55,
      "touches": 3,
-     "last": "2026-07-30",
-     "recent": false
+     "last": "2026-07-30"
     },
     {
      "price": 113.8608,
      "touches": 6,
-     "last": "2026-03-18",
-     "recent": false
+     "last": "2026-03-18"
     }
    ],
    "resistances": [
     {
      "price": 129.24,
      "touches": 4,
-     "last": "2026-10-23",
-     "recent": true
+     "last": "2026-10-23"
     },
     {
      "price": 132.31,
      "touches": 2,
-     "last": "2026-10-29",
-     "recent": true
+     "last": "2026-10-29"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 124.97,
+       "touches": 6,
+       "last": "2026-09-10"
+      },
+      {
+       "price": 122.55,
+       "touches": 3,
+       "last": "2026-07-30"
+      },
+      {
+       "price": 113.8608,
+       "touches": 6,
+       "last": "2026-03-18"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 129.24,
+       "touches": 4,
+       "last": "2026-10-23"
+      },
+      {
+       "price": 132.31,
+       "touches": 2,
+       "last": "2026-10-29"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 124.17,
+       "touches": 2,
+       "last": "2026-09-07"
+      },
+      {
+       "price": 114.8575,
+       "touches": 2,
+       "last": "2026-02-23"
+      },
+      {
+       "price": 111.7675,
+       "touches": 2,
+       "last": "2026-02-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 132.42,
+       "touches": 1,
+       "last": "2026-10-12",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 108.065,
+       "touches": 2,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 79.925,
+       "touches": 5,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 74.06,
+       "touches": 2,
+       "last": "2023-10-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 132.42,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 84.64,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 77.3567,
+       "touches": 3,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 66.4825,
+       "touches": 2,
+       "last": "2022-10-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 132.42,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "KER.PA": {
    "file": "series/KER_PA.json",
@@ -1182,7 +4264,6 @@
      "price": 173.5,
      "touches": 1,
      "last": "2026-11-02",
-     "recent": false,
      "extreme": true
     }
    ],
@@ -1190,22 +4271,129 @@
     {
      "price": 222.0267,
      "touches": 3,
-     "last": "2026-10-20",
-     "recent": true
+     "last": "2026-10-20"
     },
     {
      "price": 228.8238,
      "touches": 2,
-     "last": "2026-09-10",
-     "recent": true
+     "last": "2026-09-10"
     },
     {
-     "price": 240.8258,
-     "touches": 5,
-     "last": "2026-09-17",
-     "recent": true
+     "price": 237.475,
+     "touches": 2,
+     "last": "2026-07-24"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 173.5,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 222.0267,
+       "touches": 3,
+       "last": "2026-10-20"
+      },
+      {
+       "price": 228.8238,
+       "touches": 2,
+       "last": "2026-09-10"
+      },
+      {
+       "price": 237.475,
+       "touches": 2,
+       "last": "2026-07-24"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 144.3337,
+       "touches": 1,
+       "last": "2025-04-07",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 193.9104,
+       "touches": 2,
+       "last": "2025-05-12"
+      },
+      {
+       "price": 207.6905,
+       "touches": 2,
+       "last": "2025-01-13"
+      },
+      {
+       "price": 223.2118,
+       "touches": 3,
+       "last": "2026-05-04"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 144.3337,
+       "touches": 1,
+       "last": "2025-04-01",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 287.3194,
+       "touches": 5,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 323.3254,
+       "touches": 3,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 353.143,
+       "touches": 2,
+       "last": "2025-10-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 144.3337,
+       "touches": 1,
+       "last": "2025-04-01",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 289.4071,
+       "touches": 4,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 376.4656,
+       "touches": 5,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 537.6571,
+       "touches": 3,
+       "last": "2023-01-02"
+      }
+     ]
+    }
+   }
   },
   "KGX.DE": {
    "file": "series/KGX_DE.json",
@@ -1216,58 +4404,157 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 32.29,
-     "touches": 3,
-     "last": "2026-11-02",
-     "recent": true
+     "price": 32.015,
+     "touches": 2,
+     "last": "2026-11-02"
     }
    ],
    "resistances": [
     {
      "price": 35.87,
      "touches": 2,
-     "last": "2026-10-14",
-     "recent": true
+     "last": "2026-10-14"
     },
     {
      "price": 37.84,
      "touches": 2,
-     "last": "2026-07-31",
-     "recent": false
+     "last": "2026-07-31"
     },
     {
      "price": 39.36,
      "touches": 2,
-     "last": "2026-08-20",
-     "recent": true
+     "last": "2026-08-20"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 32.015,
+       "touches": 2,
+       "last": "2026-11-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 35.87,
+       "touches": 2,
+       "last": "2026-10-14"
+      },
+      {
+       "price": 37.84,
+       "touches": 2,
+       "last": "2026-07-31"
+      },
+      {
+       "price": 39.36,
+       "touches": 2,
+       "last": "2026-08-20"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 29.7047,
+       "touches": 4,
+       "last": "2024-12-16"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 35.6114,
+       "touches": 3,
+       "last": "2026-06-08"
+      },
+      {
+       "price": 37.6849,
+       "touches": 2,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 40.0926,
+       "touches": 3,
+       "last": "2026-04-07"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 28.4662,
+       "touches": 6,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 36.9178,
+       "touches": 7,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 48.2001,
+       "touches": 3,
+       "last": "2026-09-01"
+      },
+      {
+       "price": 57.046,
+       "touches": 4,
+       "last": "2020-11-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 28.2735,
+       "touches": 4,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 37.0854,
+       "touches": 5,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 53.3041,
+       "touches": 3,
+       "last": "2024-01-02"
+      },
+      {
+       "price": 69.916,
+       "touches": 3,
+       "last": "2026-01-02"
+      }
+     ]
+    }
+   }
   },
   "KO": {
    "file": "series/KO.json",
    "date": "2026-11-10",
-   "last": 96.865,
-   "change": 0.835,
-   "changePct": 0.87,
+   "last": 96.9,
+   "change": 0.87,
+   "changePct": 0.91,
    "currency": "USD",
    "supports": [
     {
      "price": 90.0362,
      "touches": 4,
-     "last": "2026-10-28",
-     "recent": true
+     "last": "2026-10-28"
     },
     {
      "price": 85.0322,
      "touches": 5,
-     "last": "2026-10-05",
-     "recent": true
+     "last": "2026-10-05"
     },
     {
      "price": 80.3941,
      "touches": 2,
-     "last": "2026-07-17",
-     "recent": false
+     "last": "2026-07-17"
     }
    ],
    "resistances": [
@@ -1275,10 +4562,119 @@
      "price": 97.39,
      "touches": 1,
      "last": "2026-11-05",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 90.0362,
+       "touches": 4,
+       "last": "2026-10-28"
+      },
+      {
+       "price": 85.0322,
+       "touches": 5,
+       "last": "2026-10-05"
+      },
+      {
+       "price": 80.3941,
+       "touches": 2,
+       "last": "2026-07-17"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 97.39,
+       "touches": 1,
+       "last": "2026-11-05",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 72.4266,
+       "touches": 4,
+       "last": "2026-04-20"
+      },
+      {
+       "price": 69.304,
+       "touches": 4,
+       "last": "2025-08-18"
+      },
+      {
+       "price": 66.2536,
+       "touches": 5,
+       "last": "2026-01-05"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 97.39,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 70.1642,
+       "touches": 3,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 58.2495,
+       "touches": 5,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 52.592,
+       "touches": 3,
+       "last": "2024-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 97.39,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 70.228,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 57.4782,
+       "touches": 5,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 47.2115,
+       "touches": 5,
+       "last": "2023-10-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 97.39,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "MC.PA": {
    "file": "series/MC_PA.json",
@@ -1291,152 +4687,498 @@
     {
      "price": 378.1375,
      "touches": 4,
-     "last": "2026-11-02",
-     "recent": true
+     "last": "2026-11-02"
     }
    ],
    "resistances": [
     {
-     "price": 444.0031,
-     "touches": 5,
-     "last": "2026-08-21",
-     "recent": true
+     "price": 442.6289,
+     "touches": 4,
+     "last": "2026-08-21"
     },
     {
      "price": 461.05,
      "touches": 2,
-     "last": "2026-08-25",
-     "recent": true
+     "last": "2026-08-25"
     },
     {
      "price": 473.9184,
      "touches": 4,
-     "last": "2026-07-14",
-     "recent": false
+     "last": "2026-07-14"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 378.1375,
+       "touches": 4,
+       "last": "2026-11-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 442.6289,
+       "touches": 4,
+       "last": "2026-08-21"
+      },
+      {
+       "price": 461.05,
+       "touches": 2,
+       "last": "2026-08-25"
+      },
+      {
+       "price": 473.9184,
+       "touches": 4,
+       "last": "2026-07-14"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 375.65,
+       "touches": 1,
+       "last": "2026-10-12",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 445.0264,
+       "touches": 5,
+       "last": "2026-07-20"
+      },
+      {
+       "price": 495.0174,
+       "touches": 2,
+       "last": "2026-04-07"
+      },
+      {
+       "price": 534.4393,
+       "touches": 3,
+       "last": "2026-06-15"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 264.6576,
+       "touches": 3,
+       "last": "2020-03-02"
+      },
+      {
+       "price": 204.2213,
+       "touches": 5,
+       "last": "2018-12-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 432.9349,
+       "touches": 2,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 543.3232,
+       "touches": 4,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 610.0687,
+       "touches": 2,
+       "last": "2024-01-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 232.3677,
+       "touches": 5,
+       "last": "2020-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 408.8223,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 515.7778,
+       "touches": 2,
+       "last": "2024-10-01"
+      },
+      {
+       "price": 647.5134,
+       "touches": 3,
+       "last": "2026-01-02"
+      }
+     ]
+    }
+   }
   },
   "MCD": {
    "file": "series/MCD.json",
    "date": "2026-11-10",
-   "last": 282.29,
-   "change": 0.85,
-   "changePct": 0.3,
+   "last": 282.41,
+   "change": 0.97,
+   "changePct": 0.34,
    "currency": "USD",
    "supports": [
     {
      "price": 276.5692,
      "touches": 2,
-     "last": "2026-08-13",
-     "recent": false
+     "last": "2026-08-13"
     },
     {
      "price": 269.791,
      "touches": 3,
-     "last": "2026-08-24",
-     "recent": true
+     "last": "2026-08-24"
     },
     {
      "price": 261.8736,
      "touches": 4,
-     "last": "2026-08-17",
-     "recent": false
+     "last": "2026-08-17"
     }
    ],
    "resistances": [
     {
-     "price": 284.5733,
-     "touches": 3,
-     "last": "2026-07-07",
-     "recent": false
+     "price": 286.161,
+     "touches": 2,
+     "last": "2026-07-07"
     },
     {
      "price": 294.3401,
      "touches": 4,
-     "last": "2026-01-20",
-     "recent": false
+     "last": "2026-01-20"
     },
     {
      "price": 299.7273,
      "touches": 2,
-     "last": "2026-04-02",
-     "recent": false
+     "last": "2026-04-02"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 276.5692,
+       "touches": 2,
+       "last": "2026-08-13"
+      },
+      {
+       "price": 269.791,
+       "touches": 3,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 261.8736,
+       "touches": 4,
+       "last": "2026-08-17"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 286.161,
+       "touches": 2,
+       "last": "2026-07-07"
+      },
+      {
+       "price": 294.3401,
+       "touches": 4,
+       "last": "2026-01-20"
+      },
+      {
+       "price": 299.7273,
+       "touches": 2,
+       "last": "2026-04-02"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 272.4254,
+       "touches": 2,
+       "last": "2025-06-23"
+      },
+      {
+       "price": 263.9601,
+       "touches": 4,
+       "last": "2026-07-20"
+      },
+      {
+       "price": 231.4475,
+       "touches": 3,
+       "last": "2026-10-05"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 283.2579,
+       "touches": 6,
+       "last": "2026-06-15"
+      },
+      {
+       "price": 292.5926,
+       "touches": 3,
+       "last": "2026-01-05"
+      },
+      {
+       "price": 303.9031,
+       "touches": 2,
+       "last": "2025-10-20"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 279.8588,
+       "touches": 4,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 260.6621,
+       "touches": 2,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 234.8425,
+       "touches": 4,
+       "last": "2024-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 309.6124,
+       "touches": 3,
+       "last": "2025-09-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 273.9956,
+       "touches": 2,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 233.9704,
+       "touches": 3,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 189.815,
+       "touches": 5,
+       "last": "2022-01-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 335.1797,
+       "touches": 1,
+       "last": "2026-01-02",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "META": {
    "file": "series/META.json",
    "date": "2026-11-10",
-   "last": 639.01,
-   "change": -2.36,
-   "changePct": -0.37,
+   "last": 639.435,
+   "change": -1.935,
+   "changePct": -0.3,
    "currency": "USD",
    "supports": [
     {
-     "price": 632.1988,
+     "price": 628.9657,
+     "touches": 3,
+     "last": "2026-05-07"
+    },
+    {
+     "price": 597.2916,
      "touches": 4,
-     "last": "2026-05-28",
-     "recent": false
+     "last": "2026-06-16"
     },
     {
-     "price": 608.6396,
+     "price": 577.95,
      "touches": 2,
-     "last": "2026-08-11",
-     "recent": false
-    },
-    {
-     "price": 587.9469,
-     "touches": 5,
-     "last": "2026-07-09",
-     "recent": false
+     "last": "2026-07-09"
     }
    ],
    "resistances": [
     {
-     "price": 679.6917,
-     "touches": 4,
-     "last": "2026-07-15",
-     "recent": false
+     "price": 671.4464,
+     "touches": 2,
+     "last": "2026-03-04"
+    },
+    {
+     "price": 687.937,
+     "touches": 2,
+     "last": "2026-07-15"
     },
     {
      "price": 710.1382,
      "touches": 2,
-     "last": "2026-10-08",
-     "recent": true
-    },
-    {
-     "price": 775.545,
-     "touches": 2,
-     "last": "2026-10-13",
-     "recent": true
+     "last": "2026-10-08"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 628.9657,
+       "touches": 3,
+       "last": "2026-05-07"
+      },
+      {
+       "price": 597.2916,
+       "touches": 4,
+       "last": "2026-06-16"
+      },
+      {
+       "price": 577.95,
+       "touches": 2,
+       "last": "2026-07-09"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 671.4464,
+       "touches": 2,
+       "last": "2026-03-04"
+      },
+      {
+       "price": 687.937,
+       "touches": 2,
+       "last": "2026-07-15"
+      },
+      {
+       "price": 710.1382,
+       "touches": 2,
+       "last": "2026-10-08"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 638.0728,
+       "touches": 2,
+       "last": "2026-05-26"
+      },
+      {
+       "price": 592.2575,
+       "touches": 3,
+       "last": "2026-01-20"
+      },
+      {
+       "price": 531.7221,
+       "touches": 8,
+       "last": "2026-07-27"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 698.3348,
+       "touches": 5,
+       "last": "2026-07-13"
+      },
+      {
+       "price": 745.0591,
+       "touches": 4,
+       "last": "2026-01-26"
+      },
+      {
+       "price": 786.8126,
+       "touches": 3,
+       "last": "2026-09-21"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 511.9848,
+       "touches": 4,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 312.4425,
+       "touches": 2,
+       "last": "2023-07-03"
+      },
+      {
+       "price": 226.9695,
+       "touches": 3,
+       "last": "2021-01-04"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 762.9043,
+       "touches": 4,
+       "last": "2026-09-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 506.9776,
+       "touches": 3,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 253.5383,
+       "touches": 3,
+       "last": "2021-01-04"
+      },
+      {
+       "price": 123.1282,
+       "touches": 4,
+       "last": "2022-10-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 786.4215,
+       "touches": 2,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "MSFT": {
    "file": "series/MSFT.json",
    "date": "2026-11-10",
-   "last": 533.94,
-   "change": -11.24,
-   "changePct": -2.06,
+   "last": 533.9825,
+   "change": -11.1975,
+   "changePct": -2.05,
    "currency": "USD",
    "supports": [
     {
-     "price": 511.8349,
-     "touches": 3,
-     "last": "2026-11-02",
-     "recent": true
+     "price": 508.8623,
+     "touches": 2,
+     "last": "2026-11-02"
     },
     {
      "price": 484.4098,
      "touches": 6,
-     "last": "2026-09-10",
-     "recent": true
+     "last": "2026-09-10"
     },
     {
      "price": 465.4637,
      "touches": 4,
-     "last": "2026-06-01",
-     "recent": false
+     "last": "2026-06-01"
     }
    ],
    "resistances": [
@@ -1444,10 +5186,112 @@
      "price": 559.15,
      "touches": 1,
      "last": "2026-11-04",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 508.8623,
+       "touches": 2,
+       "last": "2026-11-02"
+      },
+      {
+       "price": 484.4098,
+       "touches": 6,
+       "last": "2026-09-10"
+      },
+      {
+       "price": 465.4637,
+       "touches": 4,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 559.15,
+       "touches": 1,
+       "last": "2026-11-04",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 487.4824,
+       "touches": 2,
+       "last": "2026-01-05"
+      },
+      {
+       "price": 459.4013,
+       "touches": 4,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 435.2249,
+       "touches": 4,
+       "last": "2026-04-20"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 549.6072,
+       "touches": 2,
+       "last": "2025-10-27"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 455.101,
+       "touches": 2,
+       "last": "2024-12-02"
+      },
+      {
+       "price": 379.7613,
+       "touches": 2,
+       "last": "2024-08-01"
+      },
+      {
+       "price": 347.6012,
+       "touches": 5,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 549.6072,
+       "touches": 2,
+       "last": "2025-10-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 351.109,
+       "touches": 4,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 214.0001,
+       "touches": 2,
+       "last": "2022-10-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 559.15,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "NANO.PA": {
    "file": "series/NANO_PA.json",
@@ -1458,58 +5302,169 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 27.2725,
+     "price": 28.92,
      "touches": 4,
-     "last": "2026-09-14",
-     "recent": true
+     "last": "2026-09-14"
+    },
+    {
+     "price": 26.9367,
+     "touches": 3,
+     "last": "2026-06-11"
     },
     {
      "price": 24.125,
      "touches": 4,
-     "last": "2026-11-03",
-     "recent": true
-    },
-    {
-     "price": 20.4667,
-     "touches": 3,
-     "last": "2026-02-24",
-     "recent": false
+     "last": "2026-11-03"
     }
    ],
    "resistances": [
     {
-     "price": 29.1333,
-     "touches": 3,
-     "last": "2026-06-25",
-     "recent": false
-    },
-    {
      "price": 31.448,
      "touches": 5,
-     "last": "2026-10-28",
-     "recent": true
+     "last": "2026-10-28"
     },
     {
      "price": 33.23,
      "touches": 2,
-     "last": "2026-06-15",
-     "recent": false
+     "last": "2026-06-15"
+    },
+    {
+     "price": 35.62,
+     "touches": 2,
+     "last": "2026-07-27"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 28.92,
+       "touches": 4,
+       "last": "2026-09-14"
+      },
+      {
+       "price": 26.9367,
+       "touches": 3,
+       "last": "2026-06-11"
+      },
+      {
+       "price": 24.125,
+       "touches": 4,
+       "last": "2026-11-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 31.448,
+       "touches": 5,
+       "last": "2026-10-28"
+      },
+      {
+       "price": 33.23,
+       "touches": 2,
+       "last": "2026-06-15"
+      },
+      {
+       "price": 35.62,
+       "touches": 2,
+       "last": "2026-07-27"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 24.775,
+       "touches": 2,
+       "last": "2026-03-23"
+      },
+      {
+       "price": 17.56,
+       "touches": 2,
+       "last": "2026-10-19"
+      },
+      {
+       "price": 7.8163,
+       "touches": 4,
+       "last": "2025-08-18"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 36.33,
+       "touches": 2,
+       "last": "2026-07-13"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 24.0,
+       "touches": 2,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 17.3367,
+       "touches": 3,
+       "last": "2021-01-04"
+      },
+      {
+       "price": 11.3471,
+       "touches": 7,
+       "last": "2023-08-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 47.66,
+       "touches": 1,
+       "last": "2026-05-04",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 17.3367,
+       "touches": 3,
+       "last": "2021-01-04"
+      },
+      {
+       "price": 9.8763,
+       "touches": 4,
+       "last": "2023-07-03"
+      },
+      {
+       "price": 3.278,
+       "touches": 7,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 47.66,
+       "touches": 1,
+       "last": "2026-04-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "NFLX": {
    "file": "series/NFLX.json",
    "date": "2026-11-10",
-   "last": 62.725,
-   "change": -1.225,
-   "changePct": -1.92,
+   "last": 62.74,
+   "change": -1.21,
+   "changePct": -1.89,
    "currency": "USD",
    "supports": [
     {
      "price": 61.39,
      "touches": 1,
      "last": "2026-10-29",
-     "recent": false,
      "extreme": true
     }
    ],
@@ -1517,64 +5472,274 @@
     {
      "price": 70.485,
      "touches": 2,
-     "last": "2026-09-18",
-     "recent": true
+     "last": "2026-09-18"
     },
     {
      "price": 75.09,
      "touches": 3,
-     "last": "2026-09-10",
-     "recent": true
+     "last": "2026-09-10"
     },
     {
      "price": 78.835,
      "touches": 2,
-     "last": "2026-07-02",
-     "recent": false
+     "last": "2026-07-02"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 61.39,
+       "touches": 1,
+       "last": "2026-10-29",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 70.485,
+       "touches": 2,
+       "last": "2026-09-18"
+      },
+      {
+       "price": 75.09,
+       "touches": 3,
+       "last": "2026-09-10"
+      },
+      {
+       "price": 78.835,
+       "touches": 2,
+       "last": "2026-07-02"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 44.573,
+       "touches": 1,
+       "last": "2023-12-04",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 65.02,
+       "touches": 3,
+       "last": "2026-07-13"
+      },
+      {
+       "price": 69.5567,
+       "touches": 3,
+       "last": "2024-10-14"
+      },
+      {
+       "price": 82.6873,
+       "touches": 3,
+       "last": "2026-08-31"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 59.5798,
+       "touches": 5,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 50.185,
+       "touches": 3,
+       "last": "2024-04-01"
+      },
+      {
+       "price": 39.3857,
+       "touches": 4,
+       "last": "2023-02-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 72.5545,
+       "touches": 2,
+       "last": "2026-02-02"
+      },
+      {
+       "price": 82.855,
+       "touches": 2,
+       "last": "2026-09-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 58.433,
+       "touches": 2,
+       "last": "2021-01-04"
+      },
+      {
+       "price": 40.8117,
+       "touches": 4,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 21.5407,
+       "touches": 3,
+       "last": "2022-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 134.115,
+       "touches": 1,
+       "last": "2025-04-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "NKE": {
    "file": "series/NKE.json",
    "date": "2026-11-10",
-   "last": 39.005,
-   "change": -0.875,
-   "changePct": -2.19,
+   "last": 38.97,
+   "change": -0.91,
+   "changePct": -2.28,
    "currency": "USD",
    "supports": [
     {
-     "price": 38.1107,
-     "touches": 2,
-     "last": "2026-08-27",
-     "recent": true
-    },
-    {
      "price": 36.94,
      "touches": 2,
-     "last": "2026-10-28",
-     "recent": true
+     "last": "2026-10-28"
     }
    ],
    "resistances": [
     {
-     "price": 40.3255,
-     "touches": 4,
-     "last": "2026-08-24",
-     "recent": true
+     "price": 40.574,
+     "touches": 3,
+     "last": "2026-08-24"
     },
     {
      "price": 44.5375,
      "touches": 2,
-     "last": "2026-07-17",
-     "recent": false
+     "last": "2026-07-17"
     },
     {
-     "price": 46.2068,
-     "touches": 3,
-     "last": "2026-06-12",
-     "recent": false
+     "price": 45.9443,
+     "touches": 2,
+     "last": "2026-06-12"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 36.94,
+       "touches": 2,
+       "last": "2026-10-28"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 40.574,
+       "touches": 3,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 44.5375,
+       "touches": 2,
+       "last": "2026-07-17"
+      },
+      {
+       "price": 45.9443,
+       "touches": 2,
+       "last": "2026-06-12"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 31.97,
+       "touches": 1,
+       "last": "2026-09-28",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 40.4707,
+       "touches": 3,
+       "last": "2026-06-22"
+      },
+      {
+       "price": 58.6201,
+       "touches": 2,
+       "last": "2026-02-02"
+      },
+      {
+       "price": 65.3607,
+       "touches": 2,
+       "last": "2026-01-12"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 31.97,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 44.1784,
+       "touches": 2,
+       "last": "2017-10-02"
+      },
+      {
+       "price": 52.7676,
+       "touches": 5,
+       "last": "2025-12-01"
+      },
+      {
+       "price": 60.4688,
+       "touches": 2,
+       "last": "2018-12-03"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 31.97,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 48.1114,
+       "touches": 4,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 62.9355,
+       "touches": 2,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 77.9804,
+       "touches": 4,
+       "last": "2025-07-01"
+      }
+     ]
+    }
+   }
   },
   "NRO.PA": {
    "file": "series/NRO_PA.json",
@@ -1587,81 +5752,303 @@
     {
      "price": 40.4129,
      "touches": 3,
-     "last": "2026-08-06",
-     "recent": false
+     "last": "2026-08-06"
     },
     {
-     "price": 37.5618,
+     "price": 37.3673,
      "touches": 7,
-     "last": "2026-10-12",
-     "recent": true
+     "last": "2026-10-12"
     },
     {
-     "price": 36.3953,
-     "touches": 4,
-     "last": "2026-07-17",
-     "recent": false
+     "price": 36.0047,
+     "touches": 7,
+     "last": "2026-10-23"
     }
    ],
    "resistances": [
     {
      "price": 43.114,
      "touches": 2,
-     "last": "2025-12-16",
-     "recent": false
+     "last": "2025-12-16"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 40.4129,
+       "touches": 3,
+       "last": "2026-08-06"
+      },
+      {
+       "price": 37.3673,
+       "touches": 7,
+       "last": "2026-10-12"
+      },
+      {
+       "price": 36.0047,
+       "touches": 7,
+       "last": "2026-10-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 43.114,
+       "touches": 2,
+       "last": "2025-12-16"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 40.3068,
+       "touches": 6,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 38.3154,
+       "touches": 3,
+       "last": "2026-09-21"
+      },
+      {
+       "price": 36.8594,
+       "touches": 3,
+       "last": "2025-10-13"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 42.1105,
+       "touches": 6,
+       "last": "2025-08-25"
+      },
+      {
+       "price": 43.4722,
+       "touches": 4,
+       "last": "2025-12-01"
+      },
+      {
+       "price": 45.1431,
+       "touches": 3,
+       "last": "2025-07-14"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 40.1373,
+       "touches": 4,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 36.6176,
+       "touches": 4,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 32.3426,
+       "touches": 4,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 43.9807,
+       "touches": 3,
+       "last": "2025-12-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 37.1212,
+       "touches": 3,
+       "last": "2024-07-01"
+      },
+      {
+       "price": 31.4046,
+       "touches": 3,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 25.7457,
+       "touches": 3,
+       "last": "2022-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 48.6588,
+       "touches": 1,
+       "last": "2025-01-02",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "NVDA": {
    "file": "series/NVDA.json",
    "date": "2026-11-10",
-   "last": 167.8885,
-   "change": -10.7815,
-   "changePct": -6.03,
+   "last": 167.99,
+   "change": -10.68,
+   "changePct": -5.98,
    "currency": "USD",
    "supports": [
     {
      "price": 163.8954,
      "touches": 1,
      "last": "2026-03-30",
-     "recent": false,
      "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 168.3958,
+     "price": 170.98,
      "touches": 4,
-     "last": "2026-03-30",
-     "recent": false
+     "last": "2026-03-02"
     },
     {
-     "price": 176.7298,
-     "touches": 3,
-     "last": "2026-03-02",
-     "recent": false
+     "price": 177.9785,
+     "touches": 2,
+     "last": "2026-02-17"
     },
     {
      "price": 191.5641,
      "touches": 10,
-     "last": "2026-07-29",
-     "recent": false
+     "last": "2026-07-29"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 163.8954,
+       "touches": 1,
+       "last": "2026-03-30",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 170.98,
+       "touches": 4,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 177.9785,
+       "touches": 2,
+       "last": "2026-02-17"
+      },
+      {
+       "price": 191.5641,
+       "touches": 10,
+       "last": "2026-07-29"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 166.8349,
+       "touches": 4,
+       "last": "2026-03-30"
+      },
+      {
+       "price": 152.6058,
+       "touches": 2,
+       "last": "2025-01-06"
+      },
+      {
+       "price": 141.7187,
+       "touches": 2,
+       "last": "2025-02-18"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 180.1831,
+       "touches": 2,
+       "last": "2025-10-20"
+      },
+      {
+       "price": 192.6475,
+       "touches": 4,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 237.9561,
+       "touches": 3,
+       "last": "2026-10-05"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 146.551,
+       "touches": 2,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 88.4208,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 41.2401,
+       "touches": 3,
+       "last": "2023-10-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 243.37,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 36.8041,
+       "touches": 2,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 8.6718,
+       "touches": 6,
+       "last": "2022-10-03"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 243.37,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "ORCL": {
    "file": "series/ORCL.json",
    "date": "2026-11-10",
-   "last": 117.25,
-   "change": -2.54,
-   "changePct": -2.12,
+   "last": 117.22,
+   "change": -2.57,
+   "changePct": -2.15,
    "currency": "USD",
    "supports": [
     {
      "price": 109.21,
      "touches": 1,
      "last": "2026-11-06",
-     "recent": false,
      "extreme": true
     }
    ],
@@ -1669,64 +6056,285 @@
     {
      "price": 135.7199,
      "touches": 8,
-     "last": "2026-09-28",
-     "recent": true
+     "last": "2026-09-28"
     },
     {
      "price": 147.6281,
      "touches": 3,
-     "last": "2026-10-28",
-     "recent": true
+     "last": "2026-10-28"
     },
     {
-     "price": 160.4988,
-     "touches": 3,
-     "last": "2026-08-13",
-     "recent": false
+     "price": 158.9293,
+     "touches": 2,
+     "last": "2026-08-13"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 109.21,
+       "touches": 1,
+       "last": "2026-11-06",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 135.7199,
+       "touches": 8,
+       "last": "2026-09-28"
+      },
+      {
+       "price": 147.6281,
+       "touches": 3,
+       "last": "2026-10-28"
+      },
+      {
+       "price": 158.9293,
+       "touches": 2,
+       "last": "2026-08-13"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 113.1273,
+       "touches": 5,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 99.5114,
+       "touches": 2,
+       "last": "2024-02-20"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 125.624,
+       "touches": 2,
+       "last": "2024-08-05"
+      },
+      {
+       "price": 133.7132,
+       "touches": 2,
+       "last": "2026-04-06"
+      },
+      {
+       "price": 146.1005,
+       "touches": 2,
+       "last": "2025-01-13"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 87.5127,
+       "touches": 4,
+       "last": "2023-12-01"
+      },
+      {
+       "price": 48.1067,
+       "touches": 16,
+       "last": "2022-09-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 122.9241,
+       "touches": 6,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 181.9177,
+       "touches": 2,
+       "last": "2026-09-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 108.5419,
+       "touches": 4,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 45.3229,
+       "touches": 8,
+       "last": "2022-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 340.5644,
+       "touches": 1,
+       "last": "2025-07-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "PYPL": {
    "file": "series/PYPL.json",
    "date": "2026-11-10",
-   "last": 58.77,
-   "change": -1.28,
-   "changePct": -2.13,
+   "last": 58.66,
+   "change": -1.39,
+   "changePct": -2.31,
    "currency": "USD",
    "supports": [
     {
      "price": 57.8008,
      "touches": 5,
-     "last": "2026-10-21",
-     "recent": true
+     "last": "2026-10-21"
     },
     {
-     "price": 54.8047,
-     "touches": 4,
-     "last": "2026-10-27",
-     "recent": true
+     "price": 54.5579,
+     "touches": 3,
+     "last": "2026-10-27"
     },
     {
      "price": 51.5954,
      "touches": 5,
-     "last": "2026-09-23",
-     "recent": true
+     "last": "2026-09-23"
     }
    ],
    "resistances": [
     {
      "price": 59.4664,
      "touches": 2,
-     "last": "2026-07-29",
-     "recent": false
+     "last": "2026-07-29"
     },
     {
-     "price": 62.7391,
-     "touches": 3,
-     "last": "2026-08-20",
-     "recent": true
+     "price": 62.4231,
+     "touches": 2,
+     "last": "2026-08-20"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 57.8008,
+       "touches": 5,
+       "last": "2026-10-21"
+      },
+      {
+       "price": 54.5579,
+       "touches": 3,
+       "last": "2026-10-27"
+      },
+      {
+       "price": 51.5954,
+       "touches": 5,
+       "last": "2026-09-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 59.4664,
+       "touches": 2,
+       "last": "2026-07-29"
+      },
+      {
+       "price": 62.4231,
+       "touches": 2,
+       "last": "2026-08-20"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 55.5769,
+       "touches": 3,
+       "last": "2025-04-07"
+      },
+      {
+       "price": 51.4009,
+       "touches": 2,
+       "last": "2026-09-08"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 62.3475,
+       "touches": 3,
+       "last": "2026-08-17"
+      },
+      {
+       "price": 66.571,
+       "touches": 7,
+       "last": "2025-09-08"
+      },
+      {
+       "price": 70.4009,
+       "touches": 2,
+       "last": "2025-03-24"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 56.2576,
+       "touches": 4,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 39.1124,
+       "touches": 2,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 65.021,
+       "touches": 3,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 71.0549,
+       "touches": 3,
+       "last": "2024-04-01"
+      },
+      {
+       "price": 78.4563,
+       "touches": 4,
+       "last": "2025-10-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 53.7572,
+       "touches": 3,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 67.669,
+       "touches": 5,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 79.894,
+       "touches": 2,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 92.6468,
+       "touches": 2,
+       "last": "2024-10-01"
+      }
+     ]
+    }
+   }
   },
   "RCO.PA": {
    "file": "series/RCO_PA.json",
@@ -1739,20 +6347,17 @@
     {
      "price": 47.6867,
      "touches": 3,
-     "last": "2026-10-28",
-     "recent": true
+     "last": "2026-10-28"
     },
     {
      "price": 45.8874,
      "touches": 2,
-     "last": "2026-07-17",
-     "recent": false
+     "last": "2026-07-17"
     },
     {
      "price": 44.8014,
      "touches": 6,
-     "last": "2026-09-22",
-     "recent": true
+     "last": "2026-09-22"
     }
    ],
    "resistances": [
@@ -1760,47 +6365,246 @@
      "price": 53.75,
      "touches": 1,
      "last": "2026-11-05",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 47.6867,
+       "touches": 3,
+       "last": "2026-10-28"
+      },
+      {
+       "price": 45.8874,
+       "touches": 2,
+       "last": "2026-07-17"
+      },
+      {
+       "price": 44.8014,
+       "touches": 6,
+       "last": "2026-09-22"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 53.75,
+       "touches": 1,
+       "last": "2026-11-05",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 49.8822,
+       "touches": 7,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 45.4743,
+       "touches": 2,
+       "last": "2026-06-15"
+      },
+      {
+       "price": 41.0462,
+       "touches": 4,
+       "last": "2026-10-05"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 81.4019,
+       "touches": 2,
+       "last": "2024-04-08"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 34.0934,
+       "touches": 2,
+       "last": "2026-03-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 81.6695,
+       "touches": 4,
+       "last": "2024-01-02"
+      },
+      {
+       "price": 123.7985,
+       "touches": 3,
+       "last": "2023-06-01"
+      },
+      {
+       "price": 136.602,
+       "touches": 2,
+       "last": "2022-10-03"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 35.6943,
+       "touches": 2,
+       "last": "2026-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 65.1662,
+       "touches": 2,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 82.6493,
+       "touches": 2,
+       "last": "2019-01-02"
+      },
+      {
+       "price": 136.602,
+       "touches": 2,
+       "last": "2022-10-03"
+      }
+     ]
+    }
+   }
   },
   "RIVN": {
    "file": "series/RIVN.json",
    "date": "2026-11-10",
-   "last": 13.5,
-   "change": -0.51,
-   "changePct": -3.64,
+   "last": 13.475,
+   "change": -0.535,
+   "changePct": -3.82,
    "currency": "USD",
    "supports": [
     {
      "price": 11.375,
      "touches": 1,
      "last": "2026-10-29",
-     "recent": false,
      "extreme": true
     }
    ],
    "resistances": [
     {
-     "price": 13.765,
-     "touches": 2,
-     "last": "2026-02-05",
-     "recent": false
+     "price": 14.3287,
+     "touches": 6,
+     "last": "2026-08-18"
     },
     {
-     "price": 14.5067,
-     "touches": 7,
-     "last": "2026-08-18",
-     "recent": true
+     "price": 14.875,
+     "touches": 3,
+     "last": "2026-08-03"
     },
     {
-     "price": 15.4077,
-     "touches": 4,
-     "last": "2026-09-01",
-     "recent": true
+     "price": 15.5103,
+     "touches": 3,
+     "last": "2026-09-01"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 11.375,
+       "touches": 1,
+       "last": "2026-10-29",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 14.3287,
+       "touches": 6,
+       "last": "2026-08-18"
+      },
+      {
+       "price": 14.875,
+       "touches": 3,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 15.5103,
+       "touches": 3,
+       "last": "2026-09-01"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 12.302,
+       "touches": 5,
+       "last": "2026-05-18"
+      },
+      {
+       "price": 9.9337,
+       "touches": 4,
+       "last": "2025-03-31"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 13.535,
+       "touches": 2,
+       "last": "2026-02-02"
+      },
+      {
+       "price": 14.4233,
+       "touches": 6,
+       "last": "2026-08-17"
+      },
+      {
+       "price": 16.41,
+       "touches": 2,
+       "last": "2025-09-22"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 12.374,
+       "touches": 5,
+       "last": "2026-05-01"
+      },
+      {
+       "price": 9.3733,
+       "touches": 3,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 17.9762,
+       "touches": 4,
+       "last": "2025-05-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 10.49,
+       "touches": 5,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 19.629,
+       "touches": 5,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "RNO.PA": {
    "file": "series/RNO_PA.json",
@@ -1811,38 +6615,164 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 29.3197,
-     "touches": 7,
-     "last": "2026-08-20",
-     "recent": true
+     "price": 28.9666,
+     "touches": 3,
+     "last": "2026-08-03"
     },
     {
      "price": 28.2198,
      "touches": 3,
-     "last": "2026-10-20",
-     "recent": true
+     "last": "2026-10-20"
     },
     {
      "price": 27.032,
      "touches": 5,
-     "last": "2026-08-26",
-     "recent": true
+     "last": "2026-08-26"
     }
    ],
    "resistances": [
     {
-     "price": 30.2683,
-     "touches": 5,
-     "last": "2026-09-14",
-     "recent": true
+     "price": 29.8184,
+     "touches": 7,
+     "last": "2026-08-31"
     },
     {
-     "price": 31.3966,
-     "touches": 3,
-     "last": "2026-02-19",
-     "recent": false
+     "price": 30.4753,
+     "touches": 2,
+     "last": "2026-09-14"
+    },
+    {
+     "price": 31.203,
+     "touches": 2,
+     "last": "2026-01-22"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 28.9666,
+       "touches": 3,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 28.2198,
+       "touches": 3,
+       "last": "2026-10-20"
+      },
+      {
+       "price": 27.032,
+       "touches": 5,
+       "last": "2026-08-26"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 29.8184,
+       "touches": 7,
+       "last": "2026-08-31"
+      },
+      {
+       "price": 30.4753,
+       "touches": 2,
+       "last": "2026-09-14"
+      },
+      {
+       "price": 31.203,
+       "touches": 2,
+       "last": "2026-01-22"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 28.0115,
+       "touches": 4,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 24.6706,
+       "touches": 3,
+       "last": "2026-10-05"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 30.3202,
+       "touches": 4,
+       "last": "2026-09-14"
+      },
+      {
+       "price": 31.6642,
+       "touches": 2,
+       "last": "2026-02-16"
+      },
+      {
+       "price": 34.4311,
+       "touches": 6,
+       "last": "2025-12-15"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 26.5603,
+       "touches": 2,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 24.1301,
+       "touches": 4,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 16.9875,
+       "touches": 2,
+       "last": "2022-03-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 30.2246,
+       "touches": 3,
+       "last": "2026-09-01"
+      },
+      {
+       "price": 35.0402,
+       "touches": 3,
+       "last": "2025-12-01"
+      },
+      {
+       "price": 40.3794,
+       "touches": 2,
+       "last": "2019-05-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 25.9464,
+       "touches": 5,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 34.1636,
+       "touches": 5,
+       "last": "2024-10-01"
+      },
+      {
+       "price": 48.8199,
+       "touches": 3,
+       "last": "2025-01-02"
+      }
+     ]
+    }
+   }
   },
   "RYA.IR": {
    "file": "series/RYA_IR.json",
@@ -1855,42 +6785,152 @@
     {
      "price": 25.5462,
      "touches": 2,
-     "last": "2026-08-06",
-     "recent": false
+     "last": "2026-08-06"
     },
     {
-     "price": 24.1621,
-     "touches": 5,
-     "last": "2026-10-20",
-     "recent": true
-    },
-    {
-     "price": 23.1042,
+     "price": 24.5122,
      "touches": 4,
-     "last": "2026-07-23",
-     "recent": false
+     "last": "2026-10-06"
+    },
+    {
+     "price": 23.8,
+     "touches": 2,
+     "last": "2026-10-20"
     }
    ],
    "resistances": [
     {
      "price": 27.1749,
      "touches": 3,
-     "last": "2026-04-08",
-     "recent": false
+     "last": "2026-04-08"
     },
     {
      "price": 27.9453,
      "touches": 4,
-     "last": "2026-07-07",
-     "recent": false
+     "last": "2026-07-07"
     },
     {
      "price": 29.4801,
      "touches": 4,
-     "last": "2026-02-03",
-     "recent": false
+     "last": "2026-02-03"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 25.5462,
+       "touches": 2,
+       "last": "2026-08-06"
+      },
+      {
+       "price": 24.5122,
+       "touches": 4,
+       "last": "2026-10-06"
+      },
+      {
+       "price": 23.8,
+       "touches": 2,
+       "last": "2026-10-20"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 27.1749,
+       "touches": 3,
+       "last": "2026-04-08"
+      },
+      {
+       "price": 27.9453,
+       "touches": 4,
+       "last": "2026-07-07"
+      },
+      {
+       "price": 29.4801,
+       "touches": 4,
+       "last": "2026-02-03"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 24.1766,
+       "touches": 2,
+       "last": "2026-10-05"
+      },
+      {
+       "price": 23.0074,
+       "touches": 2,
+       "last": "2026-07-20"
+      },
+      {
+       "price": 22.0837,
+       "touches": 4,
+       "last": "2026-10-12"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 27.5821,
+       "touches": 2,
+       "last": "2026-07-06"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 21.446,
+       "touches": 4,
+       "last": "2026-09-01"
+      },
+      {
+       "price": 16.659,
+       "touches": 9,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 12.537,
+       "touches": 11,
+       "last": "2024-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 27.1981,
+       "touches": 2,
+       "last": "2026-07-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 20.8342,
+       "touches": 2,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 17.0092,
+       "touches": 5,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 13.1214,
+       "touches": 3,
+       "last": "2024-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 28.7455,
+       "touches": 2,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "SAN.PA": {
    "file": "series/SAN_PA.json",
@@ -1901,22 +6941,19 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 80.3254,
-     "touches": 2,
-     "last": "2026-07-29",
-     "recent": false
+     "price": 79.7871,
+     "touches": 5,
+     "last": "2026-08-26"
     },
     {
-     "price": 78.695,
-     "touches": 8,
-     "last": "2026-08-26",
-     "recent": true
+     "price": 78.2551,
+     "touches": 5,
+     "last": "2026-07-17"
     },
     {
-     "price": 74.978,
+     "price": 74.263,
      "touches": 2,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-04-13"
     }
    ],
    "resistances": [
@@ -1924,10 +6961,122 @@
      "price": 86.25,
      "touches": 1,
      "last": "2026-11-10",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 79.7871,
+       "touches": 5,
+       "last": "2026-08-26"
+      },
+      {
+       "price": 78.2551,
+       "touches": 5,
+       "last": "2026-07-17"
+      },
+      {
+       "price": 74.263,
+       "touches": 2,
+       "last": "2026-04-13"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 86.25,
+       "touches": 1,
+       "last": "2026-11-10",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 84.1178,
+       "touches": 3,
+       "last": "2025-08-18"
+      },
+      {
+       "price": 79.0125,
+       "touches": 12,
+       "last": "2026-08-24"
+      },
+      {
+       "price": 73.9766,
+       "touches": 3,
+       "last": "2025-12-15"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 100.579,
+       "touches": 1,
+       "last": "2025-03-10",
+       "extreme": true
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 79.7137,
+       "touches": 3,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 71.261,
+       "touches": 9,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 63.9686,
+       "touches": 3,
+       "last": "2022-08-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 86.5793,
+       "touches": 4,
+       "last": "2025-10-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 72.2462,
+       "touches": 5,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 61.5984,
+       "touches": 5,
+       "last": "2022-07-01"
+      },
+      {
+       "price": 51.2778,
+       "touches": 2,
+       "last": "2020-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 88.2727,
+       "touches": 3,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 98.4291,
+       "touches": 2,
+       "last": "2025-01-02"
+      }
+     ]
+    }
+   }
   },
   "SAP.DE": {
    "file": "series/SAP_DE.json",
@@ -1940,30 +7089,133 @@
     {
      "price": 198.3216,
      "touches": 4,
-     "last": "2026-01-27",
-     "recent": false
+     "last": "2026-01-27"
     },
     {
      "price": 190.5267,
      "touches": 3,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-10-01"
     },
     {
-     "price": 174.0703,
-     "touches": 5,
-     "last": "2026-09-11",
-     "recent": true
+     "price": 177.2179,
+     "touches": 3,
+     "last": "2026-09-28"
     }
    ],
    "resistances": [
     {
      "price": 216.1942,
      "touches": 2,
-     "last": "2026-10-22",
-     "recent": true
+     "last": "2026-10-22"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 198.3216,
+       "touches": 4,
+       "last": "2026-01-27"
+      },
+      {
+       "price": 190.5267,
+       "touches": 3,
+       "last": "2026-10-01"
+      },
+      {
+       "price": 177.2179,
+       "touches": 3,
+       "last": "2026-09-28"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 216.1942,
+       "touches": 2,
+       "last": "2026-10-22"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 205.5204,
+       "touches": 2,
+       "last": "2025-09-15"
+      },
+      {
+       "price": 173.7861,
+       "touches": 4,
+       "last": "2026-09-07"
+      },
+      {
+       "price": 158.5438,
+       "touches": 3,
+       "last": "2026-02-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 240.3441,
+       "touches": 3,
+       "last": "2025-10-20"
+      },
+      {
+       "price": 266.9198,
+       "touches": 2,
+       "last": "2025-07-07"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 119.6882,
+       "touches": 6,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 97.1163,
+       "touches": 5,
+       "last": "2021-10-01"
+      },
+      {
+       "price": 77.653,
+       "touches": 8,
+       "last": "2022-09-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 272.6282,
+       "touches": 2,
+       "last": "2025-06-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 122.0936,
+       "touches": 4,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 79.6464,
+       "touches": 9,
+       "last": "2022-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 276.2716,
+       "touches": 1,
+       "last": "2025-01-02",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "SK.PA": {
    "file": "series/SK_PA.json",
@@ -1976,120 +7228,439 @@
     {
      "price": 54.6454,
      "touches": 2,
-     "last": "2026-09-15",
-     "recent": true
+     "last": "2026-09-15"
     },
     {
      "price": 51.9561,
      "touches": 4,
-     "last": "2026-10-29",
-     "recent": true
+     "last": "2026-10-29"
     },
     {
-     "price": 50.1928,
-     "touches": 4,
-     "last": "2026-07-06",
-     "recent": false
+     "price": 50.7388,
+     "touches": 2,
+     "last": "2026-05-27"
     }
    ],
    "resistances": [
     {
-     "price": 58.26,
-     "touches": 5,
-     "last": "2026-10-21",
-     "recent": true
+     "price": 58.4875,
+     "touches": 4,
+     "last": "2026-10-21"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 54.6454,
+       "touches": 2,
+       "last": "2026-09-15"
+      },
+      {
+       "price": 51.9561,
+       "touches": 4,
+       "last": "2026-10-29"
+      },
+      {
+       "price": 50.7388,
+       "touches": 2,
+       "last": "2026-05-27"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 58.4875,
+       "touches": 4,
+       "last": "2026-10-21"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 55.3872,
+       "touches": 2,
+       "last": "2026-02-23"
+      },
+      {
+       "price": 51.9048,
+       "touches": 2,
+       "last": "2026-10-05"
+      },
+      {
+       "price": 42.8158,
+       "touches": 2,
+       "last": "2026-01-26"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 58.7743,
+       "touches": 2,
+       "last": "2026-06-15"
+      },
+      {
+       "price": 61.8777,
+       "touches": 4,
+       "last": "2026-08-31"
+      },
+      {
+       "price": 74.3707,
+       "touches": 3,
+       "last": "2025-06-23"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 46.6831,
+       "touches": 2,
+       "last": "2026-07-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 62.9306,
+       "touches": 3,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 77.0719,
+       "touches": 4,
+       "last": "2024-08-01"
+      },
+      {
+       "price": 96.6328,
+       "touches": 5,
+       "last": "2024-09-02"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 38.6174,
+       "touches": 1,
+       "last": "2026-01-02",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 63.5074,
+       "touches": 2,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 76.9798,
+       "touches": 2,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 96.8469,
+       "touches": 2,
+       "last": "2023-01-02"
+      }
+     ]
+    }
+   }
   },
   "SNAP": {
    "file": "series/SNAP.json",
    "date": "2026-11-10",
-   "last": 4.8903,
-   "change": -0.1597,
-   "changePct": -3.16,
+   "last": 4.9,
+   "change": -0.15,
+   "changePct": -2.97,
    "currency": "USD",
    "supports": [
     {
      "price": 4.575,
      "touches": 2,
-     "last": "2026-07-09",
-     "recent": false
+     "last": "2026-07-09"
     },
     {
      "price": 4.275,
      "touches": 2,
-     "last": "2026-07-23",
-     "recent": false
+     "last": "2026-07-23"
     }
    ],
    "resistances": [
     {
      "price": 4.9283,
      "touches": 3,
-     "last": "2026-08-19",
-     "recent": true
+     "last": "2026-08-19"
     },
     {
      "price": 5.1817,
      "touches": 3,
-     "last": "2026-09-29",
-     "recent": true
+     "last": "2026-09-29"
     },
     {
      "price": 5.4875,
      "touches": 2,
-     "last": "2026-04-23",
-     "recent": false
+     "last": "2026-04-23"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 4.575,
+       "touches": 2,
+       "last": "2026-07-09"
+      },
+      {
+       "price": 4.275,
+       "touches": 2,
+       "last": "2026-07-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 4.9283,
+       "touches": 3,
+       "last": "2026-08-19"
+      },
+      {
+       "price": 5.1817,
+       "touches": 3,
+       "last": "2026-09-29"
+      },
+      {
+       "price": 5.4875,
+       "touches": 2,
+       "last": "2026-04-23"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 4.275,
+       "touches": 2,
+       "last": "2026-07-20"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 5.2917,
+       "touches": 3,
+       "last": "2026-09-28"
+      },
+      {
+       "price": 6.2725,
+       "touches": 2,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 7.033,
+       "touches": 5,
+       "last": "2026-10-12"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 4.04,
+       "touches": 2,
+       "last": "2026-06-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 6.9162,
+       "touches": 4,
+       "last": "2026-05-01"
+      },
+      {
+       "price": 8.08,
+       "touches": 4,
+       "last": "2024-08-01"
+      },
+      {
+       "price": 10.0833,
+       "touches": 4,
+       "last": "2025-07-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 4.315,
+       "touches": 2,
+       "last": "2026-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 7.654,
+       "touches": 5,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 11.9102,
+       "touches": 4,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 17.8633,
+       "touches": 3,
+       "last": "2024-07-01"
+      }
+     ]
+    }
+   }
   },
   "SNOW": {
    "file": "series/SNOW.json",
    "date": "2026-11-10",
-   "last": 291.595,
-   "change": 0.455,
-   "changePct": 0.16,
+   "last": 291.35,
+   "change": 0.21,
+   "changePct": 0.07,
    "currency": "USD",
    "supports": [
     {
      "price": 282.24,
      "touches": 2,
-     "last": "2026-07-21",
-     "recent": false
+     "last": "2026-07-21"
     },
     {
      "price": 253.295,
      "touches": 2,
-     "last": "2026-07-28",
-     "recent": false
+     "last": "2026-07-28"
     },
     {
-     "price": 228.88,
-     "touches": 5,
-     "last": "2026-06-09",
-     "recent": false
+     "price": 227.0225,
+     "touches": 4,
+     "last": "2026-06-09"
     }
    ],
    "resistances": [
     {
      "price": 303.065,
      "touches": 2,
-     "last": "2026-10-16",
-     "recent": true
+     "last": "2026-10-16"
     },
     {
      "price": 317.04,
      "touches": 2,
-     "last": "2026-09-28",
-     "recent": true
+     "last": "2026-09-28"
     },
     {
      "price": 344.7033,
      "touches": 3,
-     "last": "2026-10-28",
-     "recent": true
+     "last": "2026-10-28"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 282.24,
+       "touches": 2,
+       "last": "2026-07-21"
+      },
+      {
+       "price": 253.295,
+       "touches": 2,
+       "last": "2026-07-28"
+      },
+      {
+       "price": 227.0225,
+       "touches": 4,
+       "last": "2026-06-09"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 303.065,
+       "touches": 2,
+       "last": "2026-10-16"
+      },
+      {
+       "price": 317.04,
+       "touches": 2,
+       "last": "2026-09-28"
+      },
+      {
+       "price": 344.7033,
+       "touches": 3,
+       "last": "2026-10-28"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 282.83,
+       "touches": 2,
+       "last": "2026-06-01"
+      },
+      {
+       "price": 238.3225,
+       "touches": 4,
+       "last": "2026-01-05"
+      },
+      {
+       "price": 210.74,
+       "touches": 3,
+       "last": "2026-06-22"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 377.555,
+       "touches": 2,
+       "last": "2026-10-12"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 190.9017,
+       "touches": 6,
+       "last": "2025-08-01"
+      },
+      {
+       "price": 118.9108,
+       "touches": 6,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 394.78,
+       "touches": 2,
+       "last": "2026-09-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 189.325,
+       "touches": 2,
+       "last": "2023-04-03"
+      },
+      {
+       "price": 118.9108,
+       "touches": 6,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 406.1867,
+       "touches": 3,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "SPIE.PA": {
    "file": "series/SPIE_PA.json",
@@ -2100,44 +7671,164 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 45.4638,
-     "touches": 3,
-     "last": "2026-08-03",
-     "recent": false
+     "price": 45.2654,
+     "touches": 2,
+     "last": "2026-08-03"
     },
     {
      "price": 44.2997,
      "touches": 3,
-     "last": "2026-04-23",
-     "recent": false
+     "last": "2026-04-23"
     },
     {
      "price": 42.7814,
      "touches": 4,
-     "last": "2026-10-14",
-     "recent": true
+     "last": "2026-10-14"
     }
    ],
    "resistances": [
     {
-     "price": 46.4046,
-     "touches": 3,
-     "last": "2026-09-22",
-     "recent": true
+     "price": 46.2686,
+     "touches": 4,
+     "last": "2026-09-22"
     },
     {
      "price": 47.6969,
      "touches": 4,
-     "last": "2026-08-14",
-     "recent": false
+     "last": "2026-08-14"
     },
     {
-     "price": 49.2902,
-     "touches": 4,
-     "last": "2026-07-22",
-     "recent": false
+     "price": 48.9378,
+     "touches": 2,
+     "last": "2026-07-22"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 45.2654,
+       "touches": 2,
+       "last": "2026-08-03"
+      },
+      {
+       "price": 44.2997,
+       "touches": 3,
+       "last": "2026-04-23"
+      },
+      {
+       "price": 42.7814,
+       "touches": 4,
+       "last": "2026-10-14"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 46.2686,
+       "touches": 4,
+       "last": "2026-09-22"
+      },
+      {
+       "price": 47.6969,
+       "touches": 4,
+       "last": "2026-08-14"
+      },
+      {
+       "price": 48.9378,
+       "touches": 2,
+       "last": "2026-07-22"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 44.4482,
+       "touches": 3,
+       "last": "2026-01-19"
+      },
+      {
+       "price": 40.4145,
+       "touches": 4,
+       "last": "2026-10-19"
+      },
+      {
+       "price": 35.9188,
+       "touches": 3,
+       "last": "2024-09-16"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 46.2918,
+       "touches": 3,
+       "last": "2026-09-21"
+      },
+      {
+       "price": 50.5945,
+       "touches": 2,
+       "last": "2026-05-04"
+      },
+      {
+       "price": 52.6905,
+       "touches": 3,
+       "last": "2026-07-06"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 40.6613,
+       "touches": 2,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 36.3702,
+       "touches": 2,
+       "last": "2024-09-02"
+      },
+      {
+       "price": 28.5037,
+       "touches": 3,
+       "last": "2024-12-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 52.6905,
+       "touches": 3,
+       "last": "2026-07-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 38.5424,
+       "touches": 2,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 27.5794,
+       "touches": 2,
+       "last": "2024-10-01"
+      },
+      {
+       "price": 21.436,
+       "touches": 3,
+       "last": "2023-10-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 52.6905,
+       "touches": 3,
+       "last": "2026-07-01"
+      }
+     ]
+    }
+   }
   },
   "STMPA.PA": {
    "file": "series/STMPA_PA.json",
@@ -2150,36 +7841,142 @@
     {
      "price": 39.075,
      "touches": 2,
-     "last": "2026-10-23",
-     "recent": true
+     "last": "2026-10-23"
     },
     {
      "price": 29.5863,
      "touches": 3,
-     "last": "2026-03-18",
-     "recent": false
+     "last": "2026-03-18"
     },
     {
      "price": 25.4515,
      "touches": 4,
-     "last": "2026-03-23",
-     "recent": false
+     "last": "2026-03-23"
     }
    ],
    "resistances": [
     {
      "price": 41.7795,
      "touches": 4,
-     "last": "2026-09-15",
-     "recent": true
+     "last": "2026-09-15"
     },
     {
      "price": 70.0933,
      "touches": 2,
-     "last": "2026-06-22",
-     "recent": false
+     "last": "2026-06-22"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 39.075,
+       "touches": 2,
+       "last": "2026-10-23"
+      },
+      {
+       "price": 29.5863,
+       "touches": 3,
+       "last": "2026-03-18"
+      },
+      {
+       "price": 25.4515,
+       "touches": 4,
+       "last": "2026-03-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 41.7795,
+       "touches": 4,
+       "last": "2026-09-15"
+      },
+      {
+       "price": 70.0933,
+       "touches": 2,
+       "last": "2026-06-22"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 36.0984,
+       "touches": 3,
+       "last": "2024-05-27"
+      },
+      {
+       "price": 28.0742,
+       "touches": 2,
+       "last": "2025-07-21"
+      },
+      {
+       "price": 24.9537,
+       "touches": 11,
+       "last": "2026-03-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 41.7747,
+       "touches": 4,
+       "last": "2026-09-14"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 34.8978,
+       "touches": 5,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 27.486,
+       "touches": 9,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 20.7088,
+       "touches": 4,
+       "last": "2025-08-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 45.2337,
+       "touches": 5,
+       "last": "2024-06-03"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 34.0205,
+       "touches": 2,
+       "last": "2023-10-02"
+      },
+      {
+       "price": 27.0707,
+       "touches": 5,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 16.1205,
+       "touches": 6,
+       "last": "2025-10-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 46.7289,
+       "touches": 3,
+       "last": "2023-07-03"
+      }
+     ]
+    }
+   }
   },
   "SU.PA": {
    "file": "series/SU_PA.json",
@@ -2190,122 +7987,481 @@
    "currency": "EUR",
    "supports": [
     {
-     "price": 230.9609,
-     "touches": 2,
-     "last": "2026-03-09",
-     "recent": false
+     "price": 227.5229,
+     "touches": 3,
+     "last": "2026-10-23"
     },
     {
-     "price": 223.7856,
-     "touches": 4,
-     "last": "2026-10-23",
-     "recent": true
+     "price": 221.0657,
+     "touches": 2,
+     "last": "2026-03-31"
     }
    ],
    "resistances": [
     {
      "price": 242.2098,
      "touches": 3,
-     "last": "2026-02-17",
-     "recent": false
+     "last": "2026-02-17"
     },
     {
      "price": 255.0472,
      "touches": 7,
-     "last": "2026-10-29",
-     "recent": true
+     "last": "2026-10-29"
     },
     {
      "price": 269.4592,
      "touches": 2,
-     "last": "2026-09-14",
-     "recent": true
+     "last": "2026-09-14"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 227.5229,
+       "touches": 3,
+       "last": "2026-10-23"
+      },
+      {
+       "price": 221.0657,
+       "touches": 2,
+       "last": "2026-03-31"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 242.2098,
+       "touches": 3,
+       "last": "2026-02-17"
+      },
+      {
+       "price": 255.0472,
+       "touches": 7,
+       "last": "2026-10-29"
+      },
+      {
+       "price": 269.4592,
+       "touches": 2,
+       "last": "2026-09-14"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 227.1504,
+       "touches": 4,
+       "last": "2025-06-09"
+      },
+      {
+       "price": 213.2671,
+       "touches": 9,
+       "last": "2026-03-30"
+      },
+      {
+       "price": 167.7568,
+       "touches": 3,
+       "last": "2025-04-07"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 242.4125,
+       "touches": 5,
+       "last": "2026-01-05"
+      },
+      {
+       "price": 257.4847,
+       "touches": 5,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 279.5997,
+       "touches": 2,
+       "last": "2026-05-04"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 235.2759,
+       "touches": 2,
+       "last": "2025-07-01"
+      },
+      {
+       "price": 159.5638,
+       "touches": 4,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 129.9973,
+       "touches": 5,
+       "last": "2023-10-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 259.8259,
+       "touches": 2,
+       "last": "2025-10-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 168.2326,
+       "touches": 4,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 97.1132,
+       "touches": 2,
+       "last": "2022-04-01"
+      },
+      {
+       "price": 55.8839,
+       "touches": 5,
+       "last": "2020-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 312.3,
+       "touches": 1,
+       "last": "2026-07-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   },
   "TSLA": {
    "file": "series/TSLA.json",
    "date": "2026-11-10",
-   "last": 377.075,
-   "change": -0.975,
-   "changePct": -0.26,
+   "last": 376.756,
+   "change": -1.294,
+   "changePct": -0.34,
    "currency": "USD",
    "supports": [
     {
      "price": 366.3733,
      "touches": 3,
-     "last": "2026-08-21",
-     "recent": true
+     "last": "2026-08-21"
     },
     {
-     "price": 346.625,
-     "touches": 4,
-     "last": "2026-10-16",
-     "recent": true
+     "price": 344.15,
+     "touches": 3,
+     "last": "2026-10-16"
     }
    ],
    "resistances": [
     {
      "price": 386.02,
      "touches": 7,
-     "last": "2026-10-09",
-     "recent": true
+     "last": "2026-10-09"
     },
     {
      "price": 417.0067,
      "touches": 6,
-     "last": "2026-11-02",
-     "recent": true
+     "last": "2026-11-02"
     },
     {
      "price": 434.605,
      "touches": 2,
-     "last": "2026-07-01",
-     "recent": false
+     "last": "2026-07-01"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 366.3733,
+       "touches": 3,
+       "last": "2026-08-21"
+      },
+      {
+       "price": 344.15,
+       "touches": 3,
+       "last": "2026-10-16"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 386.02,
+       "touches": 7,
+       "last": "2026-10-09"
+      },
+      {
+       "price": 417.0067,
+       "touches": 6,
+       "last": "2026-11-02"
+      },
+      {
+       "price": 434.605,
+       "touches": 2,
+       "last": "2026-07-01"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 366.7225,
+       "touches": 4,
+       "last": "2026-06-22"
+      },
+      {
+       "price": 341.56,
+       "touches": 2,
+       "last": "2026-09-28"
+      },
+      {
+       "price": 293.075,
+       "touches": 2,
+       "last": "2026-07-27"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 385.155,
+       "touches": 2,
+       "last": "2026-02-02"
+      },
+      {
+       "price": 472.41,
+       "touches": 2,
+       "last": "2025-11-03"
+      },
+      {
+       "price": 493.685,
+       "touches": 2,
+       "last": "2025-12-22"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 363.08,
+       "touches": 3,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 296.494,
+       "touches": 5,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 213.232,
+       "touches": 5,
+       "last": "2025-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 493.685,
+       "touches": 2,
+       "last": "2025-12-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 298.9344,
+       "touches": 3,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 210.5533,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 120.305,
+       "touches": 2,
+       "last": "2024-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 493.685,
+       "touches": 2,
+       "last": "2025-10-01"
+      }
+     ]
+    }
+   }
   },
   "UNH": {
    "file": "series/UNH.json",
    "date": "2026-11-10",
-   "last": 403.465,
-   "change": 5.845,
+   "last": 403.46,
+   "change": 5.84,
    "changePct": 1.47,
    "currency": "USD",
    "supports": [
     {
      "price": 396.9705,
      "touches": 3,
-     "last": "2026-08-05",
-     "recent": false
+     "last": "2026-08-05"
     },
     {
      "price": 383.4091,
      "touches": 2,
-     "last": "2026-08-31",
-     "recent": true
+     "last": "2026-08-31"
     },
     {
-     "price": 350.2469,
-     "touches": 3,
-     "last": "2026-05-06",
-     "recent": false
+     "price": 348.3527,
+     "touches": 2,
+     "last": "2026-01-23"
     }
    ],
    "resistances": [
     {
      "price": 403.9029,
      "touches": 2,
-     "last": "2026-09-09",
-     "recent": true
+     "last": "2026-09-09"
     },
     {
      "price": 411.7297,
      "touches": 2,
-     "last": "2026-07-15",
-     "recent": false
+     "last": "2026-07-15"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 396.9705,
+       "touches": 3,
+       "last": "2026-08-05"
+      },
+      {
+       "price": 383.4091,
+       "touches": 2,
+       "last": "2026-08-31"
+      },
+      {
+       "price": 348.3527,
+       "touches": 2,
+       "last": "2026-01-23"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 403.9029,
+       "touches": 2,
+       "last": "2026-09-09"
+      },
+      {
+       "price": 411.7297,
+       "touches": 2,
+       "last": "2026-07-15"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 401.7188,
+       "touches": 2,
+       "last": "2026-09-08"
+      },
+      {
+       "price": 368.0099,
+       "touches": 3,
+       "last": "2026-09-28"
+      },
+      {
+       "price": 293.108,
+       "touches": 2,
+       "last": "2026-03-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 416.2406,
+       "touches": 2,
+       "last": "2025-02-18"
+      },
+      {
+       "price": 450.8838,
+       "touches": 5,
+       "last": "2026-07-13"
+      },
+      {
+       "price": 500.8518,
+       "touches": 2,
+       "last": "2024-05-13"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 357.3555,
+       "touches": 3,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 259.161,
+       "touches": 3,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 224.4548,
+       "touches": 5,
+       "last": "2025-08-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 417.3002,
+       "touches": 4,
+       "last": "2024-04-01"
+      },
+      {
+       "price": 458.9758,
+       "touches": 3,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 510.4999,
+       "touches": 4,
+       "last": "2023-12-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 387.2893,
+       "touches": 4,
+       "last": "2025-10-01"
+      },
+      {
+       "price": 214.1373,
+       "touches": 6,
+       "last": "2026-01-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 498.0404,
+       "touches": 4,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 592.0613,
+       "touches": 2,
+       "last": "2025-04-01"
+      }
+     ]
+    }
+   }
   },
   "VLTSA.PA": {
    "file": "series/VLTSA_PA.json",
@@ -2319,7 +8475,6 @@
      "price": 3.65,
      "touches": 1,
      "last": "2026-11-03",
-     "recent": false,
      "extreme": true
     }
    ],
@@ -2327,22 +8482,129 @@
     {
      "price": 4.245,
      "touches": 2,
-     "last": "2026-09-29",
-     "recent": true
+     "last": "2026-09-29"
     },
     {
-     "price": 6.4438,
-     "touches": 4,
-     "last": "2026-08-19",
-     "recent": true
-    },
-    {
-     "price": 6.715,
+     "price": 6.3925,
      "touches": 2,
-     "last": "2026-06-11",
-     "recent": false
+     "last": "2026-08-19"
+    },
+    {
+     "price": 6.495,
+     "touches": 2,
+     "last": "2026-07-16"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 3.65,
+       "touches": 1,
+       "last": "2026-11-03",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 4.245,
+       "touches": 2,
+       "last": "2026-09-29"
+      },
+      {
+       "price": 6.3925,
+       "touches": 2,
+       "last": "2026-08-19"
+      },
+      {
+       "price": 6.495,
+       "touches": 2,
+       "last": "2026-07-16"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 3.65,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 5.8017,
+       "touches": 3,
+       "last": "2025-09-01"
+      },
+      {
+       "price": 6.7193,
+       "touches": 7,
+       "last": "2026-07-13"
+      },
+      {
+       "price": 7.0075,
+       "touches": 2,
+       "last": "2025-11-03"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 3.65,
+       "touches": 1,
+       "last": "2026-11-02",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 6.0603,
+       "touches": 6,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 7.055,
+       "touches": 3,
+       "last": "2025-12-01"
+      },
+      {
+       "price": 7.7545,
+       "touches": 2,
+       "last": "2018-02-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 3.65,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ],
+     "resistances": [
+      {
+       "price": 6.0944,
+       "touches": 5,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 9.4145,
+       "touches": 5,
+       "last": "2026-04-01"
+      },
+      {
+       "price": 12.3837,
+       "touches": 2,
+       "last": "2024-04-02"
+      }
+     ]
+    }
+   }
   },
   "ZAL.DE": {
    "file": "series/ZAL_DE.json",
@@ -2355,20 +8617,17 @@
     {
      "price": 27.54,
      "touches": 2,
-     "last": "2026-10-26",
-     "recent": true
+     "last": "2026-10-26"
     },
     {
-     "price": 26.336,
-     "touches": 5,
-     "last": "2026-07-24",
-     "recent": false
+     "price": 26.2175,
+     "touches": 4,
+     "last": "2026-07-24"
     },
     {
-     "price": 23.9629,
-     "touches": 7,
-     "last": "2026-08-04",
-     "recent": false
+     "price": 23.8925,
+     "touches": 8,
+     "last": "2026-08-04"
     }
    ],
    "resistances": [
@@ -2376,52 +8635,281 @@
      "price": 30.43,
      "touches": 1,
      "last": "2026-07-30",
-     "recent": false,
      "extreme": true
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 27.54,
+       "touches": 2,
+       "last": "2026-10-26"
+      },
+      {
+       "price": 26.2175,
+       "touches": 4,
+       "last": "2026-07-24"
+      },
+      {
+       "price": 23.8925,
+       "touches": 8,
+       "last": "2026-08-04"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 30.43,
+       "touches": 1,
+       "last": "2026-07-30",
+       "extreme": true
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 27.614,
+       "touches": 5,
+       "last": "2026-01-12"
+      },
+      {
+       "price": 25.9,
+       "touches": 3,
+       "last": "2025-12-15"
+      },
+      {
+       "price": 23.9,
+       "touches": 3,
+       "last": "2026-04-13"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 30.625,
+       "touches": 2,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 36.315,
+       "touches": 2,
+       "last": "2025-04-22"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 27.5175,
+       "touches": 4,
+       "last": "2026-01-02"
+      },
+      {
+       "price": 20.5306,
+       "touches": 9,
+       "last": "2026-09-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 36.58,
+       "touches": 2,
+       "last": "2019-11-01"
+      },
+      {
+       "price": 40.3333,
+       "touches": 3,
+       "last": "2025-02-03"
+      },
+      {
+       "price": 45.645,
+       "touches": 2,
+       "last": "2023-02-01"
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 18.6825,
+       "touches": 4,
+       "last": "2026-04-01"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 28.88,
+       "touches": 2,
+       "last": "2026-07-01"
+      },
+      {
+       "price": 38.37,
+       "touches": 2,
+       "last": "2025-01-02"
+      },
+      {
+       "price": 47.968,
+       "touches": 5,
+       "last": "2023-01-02"
+      }
+     ]
+    }
+   }
   },
   "^GSPC": {
    "file": "series/_GSPC.json",
    "date": "2026-11-10",
-   "last": 7500.0898,
-   "change": -49.8501,
+   "last": 7500.3301,
+   "change": -49.6099,
    "changePct": -0.66,
    "currency": "USD",
    "supports": [
     {
      "price": 7482.2367,
      "touches": 3,
-     "last": "2026-09-16",
-     "recent": true
+     "last": "2026-09-16"
     },
     {
      "price": 7294.9076,
      "touches": 4,
-     "last": "2026-07-29",
-     "recent": false
+     "last": "2026-07-29"
     },
     {
      "price": 6963.9716,
      "touches": 6,
-     "last": "2026-02-25",
-     "recent": false
+     "last": "2026-02-25"
     }
    ],
    "resistances": [
     {
      "price": 7607.745,
      "touches": 6,
-     "last": "2026-10-01",
-     "recent": true
+     "last": "2026-10-01"
     },
     {
      "price": 7801.7141,
      "touches": 5,
-     "last": "2026-10-06",
-     "recent": true
+     "last": "2026-10-06"
     }
-   ]
+   ],
+   "levels": {
+    "D": {
+     "supports": [
+      {
+       "price": 7482.2367,
+       "touches": 3,
+       "last": "2026-09-16"
+      },
+      {
+       "price": 7294.9076,
+       "touches": 4,
+       "last": "2026-07-29"
+      },
+      {
+       "price": 6963.9716,
+       "touches": 6,
+       "last": "2026-02-25"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 7607.745,
+       "touches": 6,
+       "last": "2026-10-01"
+      },
+      {
+       "price": 7801.7141,
+       "touches": 5,
+       "last": "2026-10-06"
+      }
+     ]
+    },
+    "W": {
+     "supports": [
+      {
+       "price": 7275.885,
+       "touches": 2,
+       "last": "2026-07-27"
+      },
+      {
+       "price": 6961.3098,
+       "touches": 2,
+       "last": "2026-01-26"
+      },
+      {
+       "price": 6536.3499,
+       "touches": 2,
+       "last": "2025-11-17"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 7564.335,
+       "touches": 2,
+       "last": "2026-09-14"
+      },
+      {
+       "price": 7830.6101,
+       "touches": 2,
+       "last": "2026-10-05"
+      }
+     ]
+    },
+    "M": {
+     "supports": [
+      {
+       "price": 6232.1702,
+       "touches": 2,
+       "last": "2026-03-02"
+      },
+      {
+       "price": 4753.5767,
+       "touches": 3,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 4203.6179,
+       "touches": 5,
+       "last": "2023-10-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 7844.52,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    },
+    "Q": {
+     "supports": [
+      {
+       "price": 4826.8301,
+       "touches": 2,
+       "last": "2025-04-01"
+      },
+      {
+       "price": 3442.55,
+       "touches": 2,
+       "last": "2022-10-03"
+      },
+      {
+       "price": 2906.89,
+       "touches": 2,
+       "last": "2018-07-02"
+      }
+     ],
+     "resistances": [
+      {
+       "price": 7844.52,
+       "touches": 1,
+       "last": "2026-10-01",
+       "extreme": true
+      }
+     ]
+    }
+   }
   }
  }
 }
