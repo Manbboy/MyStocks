@@ -1211,11 +1211,18 @@ function channels(rows, iv, pct) {
         const allT = upT.concat(loT), t0 = Math.min(...allT), t1 = Math.max(...allT);
         if (t1 - t0 < 0.6 * span) continue;
         // sommets / creux qui transpercent nettement un bord : un vrai canal contient ses points extrêmes
-        const pierce = hi.filter(p => p >= a && p <= end && H(p) > upper(p) + band).length
-                     + lo.filter(p => p >= a && p <= end && L(p) < lower(p) - band).length;
+        // test strict : un creux qui passe nettement sous le support (ou un sommet au-dessus de la résistance) ne compte pas comme contact
+        const pb = Math.max(width * 0.02, midP * tol * 0.35);
+        // le test strict ne s'applique qu'au bord d'appui (la base) ; la parallèle garde la marge normale
+        const pierce = side === "lo" ? lo.filter(p => p >= a && p <= end && L(p) < lower(p) - pb).length
+                                     : hi.filter(p => p >= a && p <= end && H(p) > upper(p) + pb).length;
+        const baseT = piv.filter(p => p >= a && p <= end && Math.abs(v(p) - base(p)) <= pb).length;
+        // un appui régulier (contacts répartis tout du long) vaut mieux qu'un appui avec un long trou au milieu
+        const bT = (side === "lo" ? loT : upT).slice().sort((p, q) => p - q);
+        let gap = 0; for (let k = 1; k < bT.length; k++) gap = Math.max(gap, bT[k] - bT[k - 1]);
         // un bord qui ne touche que ses deux points d'ancrage vaut moins qu'un bord touché 3 ou 4 fois
         const score = Math.min(upT.length, 8) * 10 + Math.min(loT.length, 8) * 10 + Math.min(upT.length, loT.length) * 8
-          + span / P.lb * 6 - width / range * 30 - pierce * 12 + (broken ? 0 : 4);
+          + span / P.lb * 6 - width / range * 30 - pierce * 15 - gap / span * 25 + Math.min(baseT, 5) * 6 + (baseT >= 3 ? 15 : 0) + (broken ? 0 : 4);
         out.push({ a, end, m, side, broken, upT, loT, lowerAt:lower, upperAt:upper, score });
       }
     }
