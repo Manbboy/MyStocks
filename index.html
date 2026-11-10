@@ -114,6 +114,9 @@
     #ov .mmb { min-width:31px; padding:5px 4px 4px; font-size:11.5px; }
     #ivSeg button { padding:6px 6px; min-width:22px; }
     #ov .cfg-btn { padding:7px 6px; gap:3px; }
+    #ov .cfg-btn .badge { display:none; }
+    #ov .mmb { min-width:29px; padding:5px 3px 4px; }
+    #ov .tb { gap:3px; }
   }
   #ov .tb { gap:4px; }
   .cfg-btn { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:7px 9px; font-size:13px; font-weight:600; cursor:pointer; }
@@ -121,6 +124,15 @@
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
   .badge:empty { display:none; }
   .chart-wrap { position:relative; }
+  .quad { display:none; position:absolute; left:0; right:0; top:0; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:6px; }
+  .chart-wrap.quad-on .quad { display:grid; }
+  .chart-wrap.quad-on .ov-chart { visibility:hidden; }
+  .chart-wrap.quad-on .ohlc, .chart-wrap.quad-on .tags, .chart-wrap.quad-on .rings, .chart-wrap.quad-on .rsi-chart { display:none !important; }
+  .qcell { position:relative; background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; min-height:0; }
+  .qcell .qc { position:absolute; inset:0; }
+  .qcell .qlab { position:absolute; top:4px; left:4px; z-index:3; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:7px; font-size:11px; font-weight:700; padding:2px 7px; cursor:pointer; }
+  .qcell .qlab small { font-weight:400; color:var(--muted); margin-left:3px; }
+  .qcell .qchg { position:absolute; top:6px; left:auto; right:56px; z-index:3; font-size:10px; font-weight:600; pointer-events:none; }
   /* Paysage (téléphone ou tablette couché) : graphique à gauche, informations à droite */
   @media (orientation:landscape) and (min-width:600px) {
     #ov .ov-head { padding:6px 10px; }
@@ -312,6 +324,7 @@
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
       <button class="mmb" id="rtBtn" aria-pressed="false" title="Afficher / masquer RSI Trends (chandeliers colorés)">RT<span class="mmdots"><i style="background:#4CAF50"></i><i style="background:#787B86"></i><i style="background:#FF5252"></i></span></button>
       <button class="mmb" id="volBtn" aria-pressed="false" title="Afficher / masquer les volumes">Vol<span class="mmdots"><i style="background:var(--muted);width:3px;height:5px"></i><i style="background:var(--muted);width:3px;height:3px;margin-top:2px"></i><i style="background:var(--muted);width:3px;height:5px"></i></span></button>
+      <button class="mmb" id="quadBtn" aria-pressed="false" title="4 graphiques : jour, semaine, mois, trimestre">1/4<span class="mmdots"><i style="background:var(--muted);width:4px;height:4px"></i><i style="background:var(--muted);width:4px;height:4px"></i></span></button>
       <span class="spacer"></span>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false" aria-label="Réglages" title="Réglages"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
@@ -343,6 +356,7 @@
       <div class="ohlc" id="ohlc"></div>
       <div class="tags" id="tags"></div>
       <div class="rings" id="rings"></div>
+      <div class="quad" id="quad"></div>
     </div>
     <div class="navrow">
       <button class="navsm" id="ovPrev2" aria-label="Action précédente">‹</button>
@@ -775,6 +789,61 @@ $("mmBtn").onclick = () => {
     downAt = null;
   }, true);
 })();
+/* ---------- Vue 1/4 : jour, semaine, mois, trimestre côte à côte ---------- */
+let quadCharts = [];
+function clearQuad() { quadCharts.forEach(c => c.remove()); quadCharts = []; $("quad").innerHTML = ""; }
+function applyQuad() {
+  const wrap = document.querySelector("#ov .chart-wrap");
+  wrap.classList.toggle("quad-on", !!prefs.quad);
+  $("quadBtn").classList.toggle("on", !!prefs.quad); $("quadBtn").setAttribute("aria-pressed", prefs.quad ? "true" : "false");
+  if (prefs.quad) drawQuad(); else clearQuad();
+}
+function drawQuad() {
+  if (!ovData || !ovItem) return;
+  const lr = ovChart ? ovChart.timeScale().getVisibleLogicalRange() : null;
+  const width = lr ? Math.max(10, lr.to - lr.from) : null;
+  clearQuad();
+  $("quad").style.height = $("ovChart").offsetHeight + "px";
+  const names = { D:"Jour", W:"Semaine", M:"Mois", Q:"Trimestre" };
+  LV_ORDER.forEach(tf => {
+    const cell = document.createElement("div"); cell.className = "qcell";
+    const lab = document.createElement("button"); lab.className = "qlab"; lab.innerHTML = { D:"J", W:"S", M:"M", Q:"T" }[tf] + "<small>" + names[tf] + " ↗</small>";
+    lab.title = "Ouvrir en grand";
+    lab.onclick = () => { prefs.quad = false; prefs.iv = tf; savePrefs(); drawDetail(); };
+    const box = document.createElement("div"); box.className = "qc";
+    const rows = barsFor(ovData, tf);
+    const chg = document.createElement("span"); chg.className = "qchg";
+    if (rows.length > 1) { const p = (rows[rows.length - 1][4] / rows[rows.length - 2][4] - 1) * 100; chg.textContent = fmtPct(Math.round(p * 100) / 100); chg.classList.add(p >= 0 ? "up" : "down"); }
+    cell.append(box, lab, chg); $("quad").appendChild(cell);
+    const ch = LW.createChart(box, Object.assign(baseOptions(true), {
+      crosshair:crossOpt(), rightPriceScale:{ borderVisible:false, scaleMargins:{ top:0.16, bottom:0.06 } },
+      timeScale:{ borderVisible:false, minBarSpacing:0.02 }, handleScale:{ axisPressedMouseMove:{ time:true, price:true }, mouseWheel:true, pinch:true },
+    }));
+    const c = ch.addCandlestickSeries({ upColor:css("--up"), downColor:css("--down"), borderVisible:false, wickUpColor:css("--up"), wickDownColor:css("--down"), priceLineVisible:false });
+    c.setData(candleData(rows, false));
+    if (prefs.vol !== false) {
+      const v = ch.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
+      ch.priceScale("").applyOptions({ scaleMargins:{ top:0.85, bottom:0 } });
+      v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
+    }
+    selMaP().forEach(n => {
+      const pts = maSeries(ovData, tf, n, tf);
+      if (!pts.length) return;
+      const s = ch.addLineSeries({ color:MA_COL[n], lineWidth:1.5, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+      s.setData(pts);
+    });
+    if (selectedKinds().length && selectedLv().length) {
+      const L = levelsOf(ovItem, tf), st = LV[tf];
+      KINDS.filter(([k]) => selectedKinds().includes(k)).forEach(([p, , k, cc]) =>
+        L[k].forEach(l => c.createPriceLine({ price:l.price, color:colorOf(cc, tf), lineWidth:st.width, lineStyle:st.style, axisLabelVisible:false, title:"" })));
+    }
+    if (width && rows.length > width) ch.timeScale().setVisibleLogicalRange({ from:rows.length - 1 - width, to:rows.length - 1 });
+    else ch.timeScale().fitContent();
+    quadCharts.push(ch);
+  });
+}
+window.addEventListener("resize", () => { if (prefs.quad && $("ov").classList.contains("show")) $("quad").style.height = $("ovChart").offsetHeight + "px"; });
+$("quadBtn").onclick = () => { prefs.quad = !prefs.quad; savePrefs(); drawRsi(); applyQuad(); renderToggles(); };
 $("ovPrev").onclick = $("ovPrev2").onclick = () => goTo(-1);
 $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 /* Glisser à gauche / à droite sur les zones sans contrôle (titre, fond, listes) */
@@ -1216,6 +1285,7 @@ function refreshLevels() {
     drawMas();
   }
   renderLevelLists(ovItem);
+  if (prefs.quad) drawQuad();
 }
 function drawMas() {
   ovMa.forEach(s => ovChart.removeSeries(s));
@@ -1294,11 +1364,12 @@ function drawRsi() {
   if (rsiChart) { rsiChart.remove(); rsiChart = null; rsiSeries = null; }
   rsiMap = new Map();
   const box = $("rsiChart");
-  box.classList.toggle("show", !!prefs.rsi);
-  box.parentElement.classList.toggle("with-rsi", !!prefs.rsi);
+  const showRsi = !!prefs.rsi && !prefs.quad;
+  box.classList.toggle("show", showRsi);
+  box.parentElement.classList.toggle("with-rsi", showRsi);
   if (!ovChart) return;
-  ovChart.applyOptions({ timeScale:{ visible:!prefs.rsi } });
-  if (!prefs.rsi) return;
+  ovChart.applyOptions({ timeScale:{ visible:!showRsi } });
+  if (!showRsi) return;
   const rows = barsFor(ovData, prefs.iv || "D");
   rsiChart = LW.createChart(box, Object.assign(baseOptions(false), {
     crosshair:crossOpt(),
@@ -1564,6 +1635,7 @@ function fitAll() {
 $("fitBtn").onclick = fitAll;
 function resetView() {
   fitPrev = null; setFitLabel();
+  if (prefs.quad) { drawQuad(); toast("Vue réinitialisée", 1200); return; }
   if (!ovChart || !ovData) return;
   ovChart.priceScale("right").applyOptions({ autoScale:true });
   if (rsiChart) rsiChart.priceScale("right").applyOptions({ autoScale:true });
@@ -1648,11 +1720,13 @@ function drawDetail(keep) {
     ovChart.timeScale().setVisibleLogicalRange({ from:to - keep.width, to });
   } else defaultView(rows, iv);
   drawRsi();
+  applyQuad();
 }
 function closeDetail() {
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
+  clearQuad();
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = []; ovLevels = null;
 }
