@@ -312,6 +312,11 @@
           "yahoo": "VU.PA",
           "tv": "EURONEXT:VU",
           "name": "VusionGroup"
+        },
+        {
+          "yahoo": "JOBY",
+          "tv": "NYSE:JOBY",
+          "name": "Joby Aviation"
         }
       ]
     },
