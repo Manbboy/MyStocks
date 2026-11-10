@@ -421,7 +421,8 @@ function renderGrid() {
         const pctTxt = nr.dist.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %";
         el.textContent = prefs.cols >= 3
           ? (nr.kind === "S" ? "▲ S·" : "▼ R·") + LV[nr.tf].short + " à " + pctTxt
-          : (nr.kind === "S" ? "▲ Proche support " : "▼ Proche résistance ") + LV[nr.tf].name.toLowerCase().replace(/s$/, "") + " à " + pctTxt;
+          : (nr.kind === "S" ? "▲ Proche support " + { D:"journalier", W:"hebdomadaire", M:"mensuel", Q:"trimestriel" }[nr.tf]
+                             : "▼ Proche résistance " + { D:"journalière", W:"hebdomadaire", M:"mensuelle", Q:"trimestrielle" }[nr.tf]) + " à " + pctTxt;
         el.title = fmt(nr.price, info.currency);
       }
       chartEl.dataset.sym = item.yahoo;
@@ -1063,7 +1064,9 @@ function openLevel(info, tf, p, i) {
   const col = colorOf(p.toLowerCase(), tf);
   const kindName = p === "S" ? "Support" : "Résistance";
   $("lvOv").classList.add("show");
-  $("lvTitle").textContent = p + (i + 1) + "·" + LV[tf].short + " — " + kindName + " " + LV[tf].name.toLowerCase().replace(/s$/, "") + " " + fmt(l.price, info.currency);
+  const adj = p === "S" ? { D:"journalier", W:"hebdomadaire", M:"mensuel", Q:"trimestriel" }[tf]
+                        : { D:"journalière", W:"hebdomadaire", M:"mensuelle", Q:"trimestrielle" }[tf];
+  $("lvTitle").textContent = p + (i + 1) + "·" + LV[tf].short + " — " + kindName + " " + adj + " " + fmt(l.price, info.currency);
   $("lvSub").textContent = ovItemName + " · chandeliers " + INTERVALS.find(x => x[0] === tf)[2];
 
   const hits = (l.hits || []).slice().sort((a, b) => a[0] < b[0] ? -1 : 1);
