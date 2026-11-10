@@ -814,8 +814,8 @@ function openLevel(info, tf, p, i) {
   const ago = last ? Math.round((Date.now() - new Date(last + "T00:00:00Z")) / 86400000) : null;
   let role = "";
   if (nH && nL) role = p === "S" ? "Ancienne résistance devenue support" : "Ancien support devenu résistance";
-  else if (nH) role = "Touché uniquement par des sommets";
-  else if (nL) role = "Touché uniquement par des creux";
+  else if (nH) role = p === "R" ? "Sommets répétés : le cours a buté dessus" : "Ancienne résistance, franchie par le cours";
+  else if (nL) role = p === "S" ? "Creux répétés : le cours a rebondi dessus" : "Ancien support, cassé par le cours";
   const tol = l.tol || 0;
   const stats = [
     ["Niveau", fmt(l.price, info.currency)],
