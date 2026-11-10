@@ -760,6 +760,18 @@ $("mmBtn").onclick = () => {
   prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
   savePrefs(); refreshLevels();
 };
+(() => {
+  let lastTap = 0, lx = 0, ly = 0, downAt = null;
+  const zone = document.querySelector("#ov .chart-wrap");
+  zone.addEventListener("pointerdown", e => { downAt = { x:e.clientX, y:e.clientY }; }, true);
+  zone.addEventListener("pointerup", e => {
+    if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 12) { downAt = null; return; }   // c'était un glissement
+    const now = Date.now();
+    if (now - lastTap < 350 && Math.hypot(e.clientX - lx, e.clientY - ly) < 30) { lastTap = 0; resetView(); }
+    else { lastTap = now; lx = e.clientX; ly = e.clientY; }
+    downAt = null;
+  }, true);
+})();
 $("ovPrev").onclick = $("ovPrev2").onclick = () => goTo(-1);
 $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 /* Glisser à gauche / à droite sur les zones sans contrôle (titre, fond, listes) */
@@ -1512,9 +1524,30 @@ function renderLevelLists(info) {
   });
 }
 
-function drawDetail() {
+/* Vue actuelle : nombre de chandeliers visibles + date du bord droit (pour la retrouver après un changement d'unité) */
+function captureView() {
+  if (!ovChart || !ovData) return null;
+  const lr = ovChart.timeScale().getVisibleLogicalRange();
+  if (!lr) return null;
+  const rows = barsFor(ovData, prefs.iv || "D");
+  const last = rows.length - 1, toIdx = Math.min(last, Math.max(0, Math.round(lr.to)));
+  return { width:lr.to - lr.from, gap:Math.max(0, lr.to - last), toTime:rows[toIdx][0] };
+}
+/* Cadrage par défaut d'une action (celui de l'ouverture) */
+function defaultView(rows, iv) {
+  const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
+  if (rows.length > show) ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
+  else ovChart.timeScale().fitContent();
+}
+function resetView() {
+  if (!ovChart || !ovData) return;
+  ovChart.priceScale("right").applyOptions({ autoScale:true });
+  defaultView(barsFor(ovData, prefs.iv || "D"), prefs.iv || "D");
+  toast("Vue réinitialisée", 1200);
+}
+function drawDetail(keep) {
   const info = ovItem, iv = prefs.iv || "D";
-  renderSeg("ivSeg", INTERVALS, iv, v => { prefs.iv = v; savePrefs(); drawDetail(); });
+  renderSeg("ivSeg", INTERVALS, iv, v => { const keep = captureView(); prefs.iv = v; savePrefs(); drawDetail(keep); });
   [...$("ivSeg").children].forEach((b, k) => {
     b.textContent = { D:"J", W:"S", M:"M", Q:"T" }[INTERVALS[k][0]];
     b.title = "Chandeliers " + INTERVALS[k][2];
@@ -1580,12 +1613,14 @@ function drawDetail() {
     }
   });
   renderLevelLists(info);
-  const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
-  if (rows.length > show) {
-    ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
-  } else {
-    ovChart.timeScale().fitContent();
-  }
+  if (keep && keep.width > 0) {
+    /* même nombre de chandeliers à l'écran, bord droit sur la même date */
+    const k = keyOf(iv, keep.toTime);
+    let idx = rows.findIndex(r => keyOf(iv, r[0]) === k);
+    if (idx < 0) idx = rows.length - 1;
+    const to = idx + (idx === rows.length - 1 ? keep.gap : 0);
+    ovChart.timeScale().setVisibleLogicalRange({ from:to - keep.width, to });
+  } else defaultView(rows, iv);
   drawRsi();
 }
 function closeDetail() {
