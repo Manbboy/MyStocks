@@ -107,6 +107,9 @@
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
   .badge:empty { display:none; }
   .chart-wrap { position:relative; }
+  .tags { position:absolute; left:0; top:0; right:0; height:0; pointer-events:none; z-index:3; }
+  .tag { position:absolute; font-size:9.5px; font-weight:400; line-height:1; white-space:nowrap; padding:1px 3px; border-radius:3px;
+         background:color-mix(in srgb, var(--card) 80%, transparent); transform:translateY(-100%); letter-spacing:.01em; }
   #ov .ov-head, #ov .ov-body { touch-action:pan-y; }
   .ov-id { min-width:0; flex:1; }
   .tip { font-size:11px; color:var(--muted); margin:8px 2px 0; }
@@ -250,6 +253,7 @@
       <div class="ov-chart" id="ovChart"></div>
       <div class="rsi-chart" id="rsiChart"></div>
       <div class="ohlc" id="ohlc"></div>
+      <div class="tags" id="tags"></div>
     </div>
     <div class="navrow">
       <button class="navsm" id="ovPrev2" aria-label="Action précédente">‹</button>
@@ -1029,8 +1033,7 @@ function drawMas() {
     if (!pts.length) return;
     const s = ovChart.addLineSeries({
       color:MA_COL[n], lineWidth:2, priceLineVisible:false,
-      lastValueVisible:!!prefs.axis, crosshairMarkerVisible:false,
-      title: prefs.axis ? "MM" + n : "",
+      lastValueVisible:false, crosshairMarkerVisible:false, title:"",
       autoscaleInfoProvider: () => null,
     });
     s.setData(pts);
@@ -1107,7 +1110,7 @@ function addDetailLevels(series, info) {
     KINDS.filter(([k]) => selK.includes(k)).forEach(([p, , k, c]) =>
       L[k].forEach((l, i) => {
         const opts = { price:l.price, color:colorOf(c, tf), lineWidth:st.width, lineStyle:st.style,
-          axisLabelVisible:!!prefs.axis, title: prefs.axis ? p + (i + 1) + "·" + st.short : "" };
+          axisLabelVisible:false, title:"" };
         const line = series.createPriceLine(opts);
         lines.push(line);
         lineMeta.push({ line, key:tf + "|" + p + "|" + i, opts, level:l, tf, p, i });
@@ -1125,9 +1128,8 @@ function applyHighlight() {
   lineMeta.forEach(m => {
     if (!sel) m.line.applyOptions(m.opts);
     else if (m === sel) m.line.applyOptions(Object.assign({}, m.opts, {
-      lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid,
-      axisLabelVisible:true, title:m.p + (m.i + 1) + "·" + LV[m.tf].short }));
-    else m.line.applyOptions(Object.assign({}, m.opts, { color:fade(m.opts.color), axisLabelVisible:false, title:"" }));
+      lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid }));
+    else m.line.applyOptions(Object.assign({}, m.opts, { color:fade(m.opts.color) }));
   });
   if (!sel) { ovCandles.setMarkers([]); return; }
   /* chaque contact est placé sur le chandelier affiché qui contient sa date */
@@ -1146,6 +1148,26 @@ function applyHighlight() {
   const vr = ovChart.timeScale().getVisibleRange();
   if (vr && marks.length && !marks.some(m => m.time >= vr.from && m.time <= vr.to)) toast("Contacts hors de la zone affichée : dézoome ou fais glisser le graphique pour les voir.", 3500);
 }
+/* Étiquettes fines (nom + prix) à droite des lignes, si « Valeurs sur l'axe » est sur Afficher */
+function updateTags() {
+  const box = $("tags");
+  if (!box) return;
+  if (!prefs.axis || !ovChart || !ovCandles || !$("ov").classList.contains("show")) { if (box.childElementCount) box.innerHTML = ""; return; }
+  const H = $("ovChart").clientHeight, sw = ovChart.priceScale("right").width();
+  const items = [];
+  if (!hiKey) lineMeta.forEach(m => items.push({ y:ovCandles.priceToCoordinate(m.opts.price), c:m.opts.color,
+    t:m.p + (m.i + 1) + "·" + LV[m.tf].short + " " + fmt(m.opts.price) }));
+  ovMa.forEach(s => {
+    const d = s.data ? s.data() : null, last = d && d.length ? d[d.length - 1].value : null;
+    if (last != null) items.push({ y:s.priceToCoordinate(last), c:MA_COL[s._n], t:"MM" + s._n + " " + fmt(last) });
+  });
+  const vis = items.filter(x => x.y != null && x.y > 14 && x.y < H - 26).sort((a, b) => a.y - b.y);
+  for (let k = 1; k < vis.length; k++) if (vis[k].y - vis[k - 1].y < 12) vis[k].y = vis[k - 1].y + 12;   // évite les chevauchements
+  const html = vis.map(x => '<span class="tag" style="right:' + (sw + 4) + 'px;top:' + Math.round(x.y - 1) + 'px;color:' + x.c + '">' + x.t + "</span>").join("");
+  if (box._h !== html) { box.innerHTML = html; box._h = html; }
+}
+(function loop() { try { updateTags(); } catch (e) {} requestAnimationFrame(loop); })();
+
 function onLevelTap(info, tf, p, i, el) {
   const key = tf + "|" + p + "|" + i;
   if (hiKey === key) { openLevel(info, tf, p, i); return; }      // 2e toucher : page de détail
