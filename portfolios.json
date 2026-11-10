@@ -317,6 +317,11 @@
           "yahoo": "JOBY",
           "tv": "NYSE:JOBY",
           "name": "Joby Aviation"
+        },
+        {
+          "yahoo": "V",
+          "tv": "NYSE:V",
+          "name": "Visa"
         }
       ]
     },
