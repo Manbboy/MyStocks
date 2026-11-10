@@ -166,7 +166,9 @@
   #ov .ov-head, #ov .ov-body { touch-action:pan-y; }
   .ov-id { min-width:0; flex:1; }
   .tip { font-size:11px; color:var(--muted); margin:8px 2px 0; }
-  .navrow { display:flex; justify-content:space-between; margin:6px 2px 0; }
+  .navrow { display:flex; justify-content:space-between; align-items:center; margin:6px 2px 0; }
+  .fitbtn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:14px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+  .fitbtn.on { background:var(--text); color:var(--bg); border-color:var(--text); }
   .navsm { border:0; background:none; color:var(--muted); font-size:26px; line-height:1; width:44px; height:30px; border-radius:8px; cursor:pointer; opacity:.7; }
   .navsm:hover, .navsm:active { background:var(--chip); opacity:1; }
   .navsm:disabled { opacity:.2; cursor:default; background:none; }
@@ -344,6 +346,7 @@
     </div>
     <div class="navrow">
       <button class="navsm" id="ovPrev2" aria-label="Action précédente">‹</button>
+      <button class="fitbtn" id="fitBtn" title="Dézoomer au maximum pour voir tout l'historique">⤢ Tout voir</button>
       <button class="navsm" id="ovNext2" aria-label="Action suivante">›</button>
     </div>
     </div>
@@ -1539,7 +1542,28 @@ function defaultView(rows, iv) {
   if (rows.length > show) ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
   else ovChart.timeScale().fitContent();
 }
+/* « Tout voir » : tout l'historique de l'unité affichée, hauteur ajustée ; un second toucher revient à la vue d'avant */
+let fitPrev = null;
+function setFitLabel() { $("fitBtn").textContent = fitPrev ? "↩ Revenir" : "⤢ Tout voir"; $("fitBtn").classList.toggle("on", !!fitPrev); }
+function fitAll() {
+  if (!ovChart || !ovData) return;
+  if (fitPrev) {                       // retour à la vue précédente
+    ovChart.timeScale().setVisibleLogicalRange(fitPrev);
+    fitPrev = null; setFitLabel(); return;
+  }
+  fitPrev = ovChart.timeScale().getVisibleLogicalRange();
+  [ovChart, rsiChart].forEach(c => { if (c) { c.timeScale().applyOptions({ minBarSpacing:0.02 }); c.priceScale("right").applyOptions({ autoScale:true }); } });
+  ovChart.timeScale().fitContent();
+  document.querySelector("#ov .ov-body").scrollTo({ top:0, behavior:"smooth" });
+  setFitLabel();
+  const rows = barsFor(ovData, prefs.iv || "D");
+  if (rows.length) toast("Tout l'historique en " + { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[prefs.iv || "D"] + " : depuis " +
+    new Date(rows[0][0] + "T00:00:00Z").toLocaleDateString("fr-FR", { month:"long", year:"numeric", timeZone:"UTC" }) +
+    ((prefs.iv || "D") === "D" || prefs.iv === "W" ? " (plus ancien en M ou T)" : ""), 2600);
+}
+$("fitBtn").onclick = fitAll;
 function resetView() {
+  fitPrev = null; setFitLabel();
   if (!ovChart || !ovData) return;
   ovChart.priceScale("right").applyOptions({ autoScale:true });
   if (rsiChart) rsiChart.priceScale("right").applyOptions({ autoScale:true });
@@ -1547,6 +1571,7 @@ function resetView() {
   toast("Vue réinitialisée", 1200);
 }
 function drawDetail(keep) {
+  fitPrev = null; if ($("fitBtn")) setFitLabel();
   const info = ovItem, iv = prefs.iv || "D";
   renderSeg("ivSeg", INTERVALS, iv, v => { const keep = captureView(); prefs.iv = v; savePrefs(); drawDetail(keep); });
   [...$("ivSeg").children].forEach((b, k) => {
