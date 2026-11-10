@@ -151,6 +151,10 @@
     #ov .rsi-chart { height:70px; margin-top:4px; }
     #ov .ohlc { font-size:10px; line-height:1.3; }
   }
+  .rings { position:absolute; left:0; top:0; right:0; height:0; pointer-events:none; z-index:2; }
+  .ring { position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 14%, transparent); }
+  .ring.down { border-style:solid; }
+  .ring b { position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:9px; font-weight:600; color:var(--c); }
   .tags { position:absolute; left:0; top:0; right:0; height:0; pointer-events:none; z-index:3; }
   .tag { position:absolute; font-size:9.5px; font-weight:400; line-height:1; white-space:nowrap; padding:1px 3px; border-radius:3px;
          background:color-mix(in srgb, var(--card) 80%, transparent); transform:translateY(-100%); letter-spacing:.01em; }
@@ -322,6 +326,7 @@
       <div class="rsi-chart" id="rsiChart"></div>
       <div class="ohlc" id="ohlc"></div>
       <div class="tags" id="tags"></div>
+      <div class="rings" id="rings"></div>
     </div>
     <div class="navrow">
       <button class="navsm" id="ovPrev2" aria-label="Action précédente">‹</button>
@@ -330,7 +335,7 @@
     </div>
     <div class="ov-side">
     <div class="lgd" id="ovLegend"></div>
-    <p class="tip">Touche un niveau ou une moyenne mobile pour le mettre en évidence (le reste du graphique s'estompe), touche-le à nouveau pour revenir à l'affichage normal. La flèche › d'un niveau ouvre son détail.</p>
+    <p class="tip">Touche un niveau ou une moyenne mobile pour le mettre en évidence avec ses contacts ou ses réactions (cercles), le reste du graphique s'estompe ; touche-le à nouveau pour revenir à l'affichage normal. La flèche › ouvre le détail.</p>
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
@@ -377,9 +382,9 @@
     <button class="close" id="lvClose">‹ Retour</button>
   </div>
   <div class="ov-body">
-    <div class="lv-chart" id="lvChart"></div>
+    <div class="chart-wrap"><div class="lv-chart" id="lvChart"></div><div class="rings" id="lvRings"></div></div>
     <div class="stats" id="lvStats"></div>
-    <div class="lv"><h3>Points de contact</h3><div id="lvHits"></div></div>
+    <div class="lv"><h3 id="lvListTitle">Points de contact</h3><div id="lvHits"></div></div>
     <p class="ov-foot" id="lvFoot"></p>
   </div>
 </div>
@@ -830,6 +835,57 @@ function barsFor(data, iv) {
   return barsCache[k];
 }
 
+/* ---------- Réactions autour d'une moyenne mobile ----------
+   Rebond : le cours arrive par le dessus, touche la moyenne (à « Précision des contacts » près), puis remonte
+            d'au moins 2 × cette précision en 5 chandeliers sans clôturer nettement sous la moyenne.
+   Rejet  : l'inverse, par le dessous, avec une baisse d'au moins 2 × la précision.
+   Test   : chaque nouveau contact avec la moyenne (réaction ou non). */
+const MA_REACT_BARS = 5;
+const MA_LOOKBACK = { D:250, W:156, M:120, Q:40 };
+function maReactions(data, iv, n, pct) {
+  const rows = barsFor(data, iv), len = rows.length;
+  const ma = new Array(len).fill(null);
+  let sum = 0;
+  for (let i = 0; i < len; i++) { sum += rows[i][4]; if (i >= n) sum -= rows[i - n][4]; if (i >= n - 1) ma[i] = sum / n; }
+  const tol = pct / 100, need = Math.max(2 * tol, 0.015), N = MA_REACT_BARS;
+  const start = Math.max(n, len - (MA_LOOKBACK[iv] || 250));
+  const events = []; let tests = 0, lastTouch = -99;
+  for (let i = start; i < len; i++) {
+    const m = ma[i], pm = ma[i - 1];
+    if (m == null || pm == null) continue;
+    const [t, o, hi, lo, c] = rows[i];
+    const touches = lo <= m * (1 + tol) && hi >= m * (1 - tol);
+    if (!touches) continue;
+    if (i - lastTouch > N) tests++;
+    lastTouch = i;
+    if (events.length && i - events[events.length - 1].i <= N) continue;
+    const prevC = rows[i - 1][4], end = Math.min(len - 1, i + N);
+    if (end <= i) continue;
+    const after = rows.slice(i + 1, end + 1);
+    if (prevC > pm && lo >= m * (1 - tol)) {
+      const best = Math.max(...after.map(r => r[4])), worst = Math.min(...after.map(r => r[4]));
+      if (best >= lo * (1 + need) && worst >= m * (1 - tol)) events.push({ i, time:t, type:"up", price:m, at:lo, move:(best / lo - 1) * 100 });
+    } else if (prevC < pm && hi <= m * (1 + tol)) {
+      const best = Math.min(...after.map(r => r[4])), worst = Math.max(...after.map(r => r[4]));
+      if (best <= hi * (1 - need) && worst <= m * (1 + tol)) events.push({ i, time:t, type:"down", price:m, at:hi, move:(best / hi - 1) * 100 });
+    }
+  }
+  return { events, tests, from: rows[start] ? rows[start][0] : null };
+}
+/* Cercles autour des réactions, recalés à chaque image sur le graphique */
+function drawRings(box, chart, series, events, color) {
+  if (!box) return;
+  if (!chart || !series || !events || !events.length) { if (box._h) { box.innerHTML = ""; box._h = ""; } return; }
+  const W = chart.timeScale().width();
+  const html = events.map((e, j) => {
+    const x = chart.timeScale().timeToCoordinate(e.time), y = series.priceToCoordinate(e.price);
+    if (x == null || y == null || x < 0 || x > W) return "";
+    return '<span class="ring ' + e.type + '" style="left:' + Math.round(x) + "px;top:" + Math.round(y) + "px;--c:" + color + '"></span>';
+  }).join("");
+  if (box._h !== html) { box.innerHTML = html; box._h = html; }
+}
+let ovMaReact = null, lvRingState = null;
+
 /* ---------- Moyennes mobiles ---------- */
 const MA_PERIODS = [20, 50, 200];
 const MA_COL = { 20:"#2563eb", 50:"#9333ea", 200:"#d97706" };
@@ -1250,7 +1306,14 @@ function applyHighlight() {
       else m.line.applyOptions(Object.assign({}, m.opts, { lineVisible:false }));
     } else m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, maSel ? { color:dim(m.opts.color) } : {}));
   });
-  if (!sel) { ovCandles.setMarkers([]); return; }
+  if (!sel) {
+    ovMaReact = maSel ? maReactions(ovData, prefs.iv || "D", maSel, tolPct()) : null;
+    ovCandles.setMarkers(ovMaReact ? ovMaReact.events.map((e, j) => ({
+      time:e.time, position:e.type === "up" ? "belowBar" : "aboveBar", shape:e.type === "up" ? "arrowUp" : "arrowDown",
+      color:MA_COL[maSel], text:String(j + 1) })) : []);
+    return;
+  }
+  ovMaReact = null;
   /* chaque contact est placé sur le chandelier affiché qui contient sa date */
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   const byKey = new Map(rows.map(r => [keyOf(iv, r[0]), r[0]]));
@@ -1286,7 +1349,16 @@ function updateTags() {
   const html = vis.map(x => '<span class="tag" style="right:' + (sw + 4) + 'px;top:' + Math.round(x.y - 1) + 'px;color:' + x.c + '">' + x.t + "</span>").join("");
   if (box._h !== html) { box.innerHTML = html; box._h = html; }
 }
-(function loop() { try { updateTags(); } catch (e) {} requestAnimationFrame(loop); })();
+(function loop() {
+  try {
+    updateTags();
+    const s = ovMaReact && hiMa ? ovMa.find(x => x._n === hiMa) : null;
+    drawRings($("rings"), ovChart, s, ovMaReact && ovMaReact.events, MA_COL[hiMa]);
+    if (lvRingState && lvChart) drawRings($("lvRings"), lvChart, lvRingState.series, lvRingState.events, lvRingState.color);
+    else drawRings($("lvRings"), null);
+  } catch (e) {}
+  requestAnimationFrame(loop);
+})();
 
 function onLevelTap(info, tf, p, i, el) {
   const key = tf + "|" + p + "|" + i;
@@ -1319,7 +1391,15 @@ function renderMaList(info) {
     else {
       const v = pts[pts.length - 1].value, dist = (info.last / v - 1) * 100;
       a.textContent = "MM" + n + "  " + fmt(v, info.currency);
-      b.textContent = "Cours " + fmtPct(Math.round(dist * 100) / 100) + (dist >= 0 ? " au-dessus" : " en dessous");
+      const R = maReactions(ovData, iv, n, tolPct());
+      const up = R.events.filter(e => e.type === "up").length, dn = R.events.length - up;
+      b.textContent = "Cours " + fmtPct(Math.round(dist * 100) / 100) + (dist >= 0 ? " au-dessus" : " en dessous") +
+        " · " + up + " rebond" + (up > 1 ? "s" : "") + ", " + dn + " rejet" + (dn > 1 ? "s" : "");
+      d.classList.add("link");
+      const go = document.createElement("button");
+      go.className = "go"; go.textContent = "›"; go.setAttribute("aria-label", "Détail des réactions");
+      go.onclick = e => { e.stopPropagation(); openMaDetail(info, n); };
+      setTimeout(() => d.appendChild(go), 0);
     }
     d.append(a, b); box.appendChild(d);
   });
@@ -1484,6 +1564,8 @@ function openLevel(info, tf, p, i) {
   stats.forEach(([t, v]) => { const d = document.createElement("div"); d.className = "stat"; d.innerHTML = "<small></small><b></b>"; d.querySelector("small").textContent = t; d.querySelector("b").textContent = v; $("lvStats").appendChild(d); });
   if (role) { const d = document.createElement("div"); d.className = "stat"; d.innerHTML = "<small>Comportement</small><b></b>"; d.querySelector("b").textContent = role; $("lvStats").appendChild(d); }
 
+  $("lvListTitle").textContent = "Points de contact";
+  lvRingState = null;
   $("lvHits").innerHTML = "";
   hits.forEach((h, j) => {
     const d = document.createElement("div"); d.className = "it";
@@ -1522,7 +1604,58 @@ function openLevel(info, tf, p, i) {
 function summaryTf(tf) { return summary && summary.timeframes ? summary.timeframes[tf] : ""; }
 function closeLevel() {
   $("lvOv").classList.remove("show");
+  lvRingState = null;
   if (lvChart) { lvChart.remove(); lvChart = null; }
+}
+function openMaDetail(info, n) {
+  const iv = prefs.iv || "D", unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
+  const R = maReactions(ovData, iv, n, tolPct()), col = MA_COL[n];
+  const pts = maSeries(ovData, iv, n, iv), cur = pts.length ? pts[pts.length - 1].value : null;
+  const up = R.events.filter(e => e.type === "up"), dn = R.events.filter(e => e.type === "down");
+  $("lvOv").classList.add("show");
+  $("lvTitle").textContent = "MM" + n + " — réactions (" + n + " " + unit + ")";
+  $("lvSub").textContent = ovItemName + " · chandeliers " + INTERVALS.find(x => x[0] === iv)[2];
+  const avg = a => a.length ? a.reduce((s, e) => s + Math.abs(e.move), 0) / a.length : null;
+  const last = R.events[R.events.length - 1];
+  const stats = [
+    ["Valeur actuelle", cur != null ? fmt(cur, info.currency) : "–"],
+    ["Écart du cours", cur != null ? fmtPct(Math.round((info.last / cur - 1) * 10000) / 100) : "–"],
+    ["Contacts (tests)", String(R.tests)],
+    ["Réactions", R.events.length + (R.tests ? " (" + Math.round(R.events.length / R.tests * 100) + " % des tests)" : "")],
+    ["Rebonds ▲", up.length + (up.length ? " · moy. +" + avg(up).toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %" : "")],
+    ["Rejets ▼", dn.length + (dn.length ? " · moy. −" + avg(dn).toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %" : "")],
+    ["Dernière réaction", last ? fmtDate(last.time) : "–"],
+  ];
+  $("lvStats").innerHTML = "";
+  stats.forEach(([t, v]) => { const d = document.createElement("div"); d.className = "stat"; d.innerHTML = "<small></small><b></b>"; d.querySelector("small").textContent = t; d.querySelector("b").textContent = v; $("lvStats").appendChild(d); });
+  $("lvListTitle").textContent = "Réactions";
+  $("lvHits").innerHTML = R.events.length ? "" : "<small>Aucune réaction nette sur la période avec cette précision.</small>";
+  R.events.forEach((e, j) => {
+    const d = document.createElement("div"); d.className = "it";
+    const a = document.createElement("span");
+    a.textContent = (j + 1) + ".  " + fmtDate(e.time) + "  " + (e.type === "up" ? "Rebond ▲" : "Rejet ▼");
+    const b = document.createElement("small");
+    b.textContent = "MM" + n + " à " + fmt(e.price, info.currency) + " · puis " + fmtPct(Math.round(e.move * 100) / 100) + " en " + MA_REACT_BARS + " chandeliers";
+    d.append(a, b); $("lvHits").appendChild(d);
+  });
+  $("lvFoot").textContent = "Rebond : le cours arrive par le dessus, touche la MM" + n + " (à " + tolPct().toLocaleString("fr-FR") +
+    " % près, réglage « Précision des contacts ») puis remonte d'au moins " + Math.max(2 * tolPct(), 1.5).toLocaleString("fr-FR") +
+    " % en " + MA_REACT_BARS + " chandeliers sans la casser. Rejet : l'inverse, par le dessous. Analyse sur les " + (MA_LOOKBACK[iv] || 250) + " derniers chandeliers.";
+
+  if (lvChart) { lvChart.remove(); lvChart = null; }
+  const rows = barsFor(ovData, iv);
+  lvChart = LW.createChart($("lvChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
+  lvChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.08, bottom:0.08 }, minimumWidth:72 });
+  const up_ = css("--up"), down_ = css("--down");
+  const c = lvChart.addCandlestickSeries({ upColor:dim(up_), downColor:dim(down_), borderVisible:false, wickUpColor:dim(up_), wickDownColor:dim(down_) });
+  c.setData(rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
+  const s = lvChart.addLineSeries({ color:col, lineWidth:3, priceLineVisible:false, lastValueVisible:true, crosshairMarkerVisible:false, title:"MM" + n });
+  s.setData(pts);
+  c.setMarkers(R.events.map((e, j) => ({ time:e.time, position:e.type === "up" ? "belowBar" : "aboveBar",
+    shape:e.type === "up" ? "arrowUp" : "arrowDown", color:col, text:String(j + 1) })));
+  lvRingState = { series:s, events:R.events, color:col };
+  const first = R.events.length ? R.events[0].i : rows.length - 120;
+  lvChart.timeScale().setVisibleLogicalRange({ from:Math.max(0, first - 15), to:rows.length + 2 });
 }
 $("lvClose").onclick = closeLevel;
 
