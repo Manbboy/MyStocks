@@ -78,34 +78,38 @@ def support_resistance(df: pd.DataFrame, lookback: int, window: int, pct: float)
     tol = max(pct * price, 0.5 * atr(d))
 
     w = window
-    pivots = []  # (prix, index)
+    pivots = []  # (prix, index, "H" sommet / "L" creux)
     highs, lows = d["High"].values, d["Low"].values
     for i in range(w, n - w):
         if highs[i] == highs[i - w:i + w + 1].max():
-            pivots.append((float(highs[i]), i))
+            pivots.append((float(highs[i]), i, "H"))
         if lows[i] == lows[i - w:i + w + 1].min():
-            pivots.append((float(lows[i]), i))
+            pivots.append((float(lows[i]), i, "L"))
 
     # Regroupement des pivots proches en un même niveau
     pivots.sort()
     clusters = []
-    for p, i in pivots:
+    for p, i, kind in pivots:
         if clusters and abs(p - clusters[-1]["mean"]) <= tol:
             c = clusters[-1]
             c["prices"].append(p)
             c["idx"].append(i)
+            c["kinds"].append(kind)
             c["mean"] = sum(c["prices"]) / len(c["prices"])
         else:
-            clusters.append({"prices": [p], "idx": [i], "mean": p})
+            clusters.append({"prices": [p], "idx": [i], "kinds": [kind], "mean": p})
 
     levels = []
     for c in clusters:
         if len(c["prices"]) < MIN_TOUCHES:
             continue
+        hits = sorted(zip(c["idx"], c["prices"], c["kinds"]))
         levels.append({
             "price": round(c["mean"], 4),
             "touches": len(c["prices"]),
             "last": str(d["Date"].iloc[max(c["idx"])])[:10],
+            "tol": round(tol, 4),
+            "hits": [[str(d["Date"].iloc[i])[:10], round(p, 4), k] for i, p, k in hits],
         })
 
     supports = sorted([l for l in levels if l["price"] < price], key=lambda l: -l["price"])[:MAX_LEVELS]
@@ -115,11 +119,13 @@ def support_resistance(df: pd.DataFrame, lookback: int, window: int, pct: float)
     if not supports:
         i = int(d["Low"].idxmin())
         if d["Low"].iloc[i] < price:
-            supports = [{"price": round(float(d["Low"].iloc[i]), 4), "touches": 1, "last": str(d["Date"].iloc[i])[:10], "extreme": True}]
+            supports = [{"price": round(float(d["Low"].iloc[i]), 4), "touches": 1, "last": str(d["Date"].iloc[i])[:10], "extreme": True,
+                         "tol": round(tol, 4), "hits": [[str(d["Date"].iloc[i])[:10], round(float(d["Low"].iloc[i]), 4), "L"]]}]
     if not resistances:
         i = int(d["High"].idxmax())
         if d["High"].iloc[i] > price:
-            resistances = [{"price": round(float(d["High"].iloc[i]), 4), "touches": 1, "last": str(d["Date"].iloc[i])[:10], "extreme": True}]
+            resistances = [{"price": round(float(d["High"].iloc[i]), 4), "touches": 1, "last": str(d["Date"].iloc[i])[:10], "extreme": True,
+                            "tol": round(tol, 4), "hits": [[str(d["Date"].iloc[i])[:10], round(float(d["High"].iloc[i]), 4), "H"]]}]
     return supports, resistances
 
 
@@ -127,7 +133,7 @@ def all_levels(df: pd.DataFrame):
     out = {}
     for tf, p in TIMEFRAMES.items():
         sup, res = support_resistance(resample(df, p["rule"]), p["lookback"], p["window"], p["pct"])
-        out[tf] = {"supports": sup, "resistances": res}
+        out[tf] = {"supports": sup, "resistances": res, "from": str(resample(df, p["rule"]).tail(p["lookback"])["Date"].iloc[0])[:10]}
     return out
 
 

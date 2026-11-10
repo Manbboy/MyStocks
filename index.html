@@ -58,12 +58,12 @@
   .credit a { color:var(--muted); }
 
   /* Vue détaillée */
-  .ov { position:fixed; inset:0; background:var(--bg); z-index:20; display:none; flex-direction:column; }
+  .ov { position:fixed; top:0; left:0; right:0; height:100vh; height:100dvh; background:var(--bg); z-index:20; display:none; flex-direction:column; }
   .ov.show { display:flex; }
   .ov-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border-bottom:1px solid var(--border); }
   .ov-title { font-size:17px; font-weight:700; }
   .ov-sub { font-size:13px; color:var(--muted); }
-  .close { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer; }
+  .close { white-space:nowrap; flex:0 0 auto; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer; }
   .ov-body { flex:1; overflow:auto; padding:12px; max-width:1100px; width:100%; margin:0 auto; }
   .ov-ctrl { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
   .freq { font-size:13px; font-weight:600; }
@@ -74,11 +74,21 @@
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
   .badge:empty { display:none; }
   .chart-wrap { position:relative; }
+  .lvov { z-index:30; }
+  .lv-chart { height:max(260px, min(560px, calc(100vh - 220px))); height:max(260px, min(560px, calc(100dvh - 220px))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin:12px 0; }
+  .stat { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:9px 11px; }
+  .stat small { display:block; color:var(--muted); font-size:11px; }
+  .stat b { font-size:15px; }
+  .lv .it.link { cursor:pointer; position:relative; padding-right:18px; border-radius:8px; }
+  .lv .it.link::after { content:"›"; position:absolute; right:2px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:20px; font-weight:400; }
+  .lv .it.link:active { background:var(--chip); }
   .rsi-chart { height:130px; margin-top:6px; background:var(--card); border:1px solid var(--border); border-radius:12px; display:none; }
   .rsi-chart.show { display:block; }
   .near { font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
   .near.s { color:var(--sup); } .near.r { color:var(--res); }
-  .ov-chart { height:min(72vh,620px); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .ov-chart { height:max(260px, min(640px, calc(100vh - 150px))); height:max(260px, min(640px, calc(100dvh - 150px))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .chart-wrap.with-rsi .ov-chart { height:max(220px, min(520px, calc(100vh - 290px))); height:max(220px, min(520px, calc(100dvh - 290px))); }
   .ohlc { position:absolute; top:6px; left:8px; right:64px; font-size:11px; line-height:1.45; color:var(--muted); pointer-events:none; z-index:2; }
   .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ohlc span { margin-right:8px; }
@@ -89,7 +99,13 @@
   .cfg-x { border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; padding:2px 6px; }
   .cfg-row { display:flex; flex-direction:column; gap:5px; padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--muted); }
   .cfg-row small { font-size:11px; }
-  .cfg-row .seg { align-self:flex-start; }
+  .cfg-row .seg { align-self:flex-start; flex-wrap:wrap; }
+  .seg button.col { color:var(--c); }
+  .seg button.col.on { background:var(--c); color:#fff; box-shadow:none; }
+  .seg button.tfb { display:inline-flex; flex-direction:column; align-items:center; gap:2px; padding:5px 9px; }
+  .seg button.tfb .sw { display:flex; flex-direction:column; gap:1px; line-height:0; opacity:.45; }
+  .seg button.tfb.on .sw { opacity:1; }
+  .seg button.tfb .sw svg { width:30px; height:5px; }
   .levels { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px; }
   .lv { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
   .lv h3 { margin:0 0 6px; font-size:13px; }
@@ -156,6 +172,19 @@
       <div class="lv" id="boxMa"><h3>Moyennes mobiles</h3><div id="ovMaList"></div></div>
     </div>
     <p class="ov-foot" id="ovFoot"></p>
+  </div>
+</div>
+
+<div class="ov lvov" id="lvOv">
+  <div class="ov-head">
+    <div><div class="ov-title" id="lvTitle"></div><div class="ov-sub" id="lvSub"></div></div>
+    <button class="close" id="lvClose">‹ Retour</button>
+  </div>
+  <div class="ov-body">
+    <div class="lv-chart" id="lvChart"></div>
+    <div class="stats" id="lvStats"></div>
+    <div class="lv"><h3>Points de contact</h3><div id="lvHits"></div></div>
+    <p class="ov-foot" id="lvFoot"></p>
   </div>
 </div>
 
@@ -338,6 +367,7 @@ async function openDetail(item, info) {
   $("ov").classList.add("show");
   document.body.style.overflow = "hidden";
   $("ovTitle").textContent = item.name;
+  ovItemName = item.name;
   const pct = info.changePct;
   $("ovSub").innerHTML = "";
   const sub = document.createElement("span");
@@ -361,7 +391,7 @@ async function openDetail(item, info) {
 }
 
 const INTERVALS = [["D","Jour","journaliers"],["W","Semaine","hebdomadaires"],["M","Mois","mensuels"],["Q","Trimestre","trimestriels"]];
-let ovItem = null, ovData = null;
+let ovItem = null, ovData = null, ovItemName = "";
 
 /* Regroupe les séances journalières en chandeliers semaine / mois / trimestre */
 function keyOf(iv, d) {
@@ -397,6 +427,7 @@ function barsFor(data, iv) {
 /* ---------- Moyennes mobiles ---------- */
 const MA_PERIODS = [20, 50, 200];
 const MA_COL = { 20:"#2563eb", 50:"#9333ea", 200:"#d97706" };
+const RSI_COL = "#0ea5e9";
 /* Moyenne mobile de n chandeliers de l'échelle tf, projetée sur les chandeliers de l'échelle iv affichée */
 function maSeries(data, tf, n, iv) {
   const src = barsFor(data, tf);
@@ -449,7 +480,7 @@ function selectedKinds() {
 const colorOf = (kind, tf) => css("--" + kind + "-" + tf);
 function sample(kind, tf) {
   const st = LV[tf], c = colorOf(kind, tf);
-  return '<svg width="26" height="8" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="' + c +
+  return '<svg width="26" height="8" viewBox="0 0 26 8" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="' + c +
     '" stroke-width="' + st.width + '"' + (st.dash ? ' stroke-dasharray="' + st.dash + '"' : "") + '/></svg>';
 }
 const LV_ORDER = ["D","W","M","Q"];
@@ -461,11 +492,17 @@ function selectedLv() {
   const s = Array.isArray(prefs.lvs) ? prefs.lvs.filter(t => LV[t]) : ["D"];
   return LV_ORDER.filter(t => s.includes(t));
 }
-function multiSeg(id, opts, selected, onChange) {
+function paint(b, color) {
+  if (!color) return;
+  b.classList.add("col");
+  b.style.setProperty("--c", color);
+}
+function multiSeg(id, opts, selected, onChange, colorOf) {
   const s = $(id); s.innerHTML = "";
   opts.forEach(([v, label]) => {
     const b = document.createElement("button");
     b.textContent = label; if (selected.includes(v)) b.className = "on";
+    if (colorOf) paint(b, colorOf(v));
     b.onclick = () => onChange(selected.includes(v) ? selected.filter(x => x !== v) : selected.concat(v));
     s.appendChild(b);
   });
@@ -486,14 +523,16 @@ function renderToggles() {
   $("maHint").textContent = "· en " + unit + ", comme les chandeliers";
   const n = (selectedKinds().length ? selectedLv().length : 0) + selMaP().length;
   $("cfgCount").textContent = n ? String(n) : "";
-  multiSeg("maSeg", MA_PERIODS.map(p => [p, "MM" + p]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); });
+  multiSeg("maSeg", MA_PERIODS.map(p => [p, "MM" + p]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); }, v => MA_COL[v]);
   renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
   renderSeg("rsiSeg", [[false,"Aucun"],[true,"RSI 14"]], !!prefs.rsi, v => { prefs.rsi = v; savePrefs(); renderToggles(); drawRsi(); });
+  paint($("rsiSeg").children[1], RSI_COL);
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
   KINDS.forEach(([k, label]) => {
     const b = document.createElement("button");
     b.textContent = label; if (selK.includes(k)) b.className = "on";
+    paint(b, css(k === "S" ? "--sup" : "--res"));
     b.onclick = () => { const cur = selectedKinds(); prefs.kinds = cur.includes(k) ? cur.filter(x => x !== k) : cur.concat(k); savePrefs(); refreshLevels(); };
     ks.appendChild(b);
   });
@@ -514,8 +553,10 @@ function renderToggles() {
   const sel = selectedLv();
   LV_ORDER.forEach(tf => {
     const b = document.createElement("button");
-    b.textContent = { D:"Jour", W:"Semaine", M:"Mois", Q:"Trimestre" }[tf];
-    if (sel.includes(tf)) b.className = "on";
+    const kinds = selectedKinds().length ? selectedKinds() : ["S","R"];
+    b.innerHTML = '<span class="sw">' + kinds.map(k => sample(k.toLowerCase(), tf)).join("") + "</span>" +
+      { D:"Jour", W:"Semaine", M:"Mois", Q:"Trimestre" }[tf];
+    b.className = "tfb" + (sel.includes(tf) ? " on" : "");
     b.onclick = () => {
       const cur = selectedLv();
       prefs.lvs = cur.includes(tf) ? cur.filter(t => t !== tf) : cur.concat(tf);
@@ -592,6 +633,7 @@ function drawRsi() {
   rsiMap = new Map();
   const box = $("rsiChart");
   box.classList.toggle("show", !!prefs.rsi);
+  box.parentElement.classList.toggle("with-rsi", !!prefs.rsi);
   if (!ovChart) return;
   ovChart.applyOptions({ timeScale:{ visible:!prefs.rsi } });
   if (!prefs.rsi) return;
@@ -601,7 +643,7 @@ function drawRsi() {
     handleScale:{ axisPressedMouseMove:false },
   }));
   rsiSeries = rsiChart.addLineSeries({
-    color:"#0ea5e9", lineWidth:2, priceLineVisible:false, lastValueVisible:true, title:"RSI 14",
+    color:RSI_COL, lineWidth:2, priceLineVisible:false, lastValueVisible:true, title:"RSI 14",
     autoscaleInfoProvider: () => ({ priceRange:{ minValue:0, maxValue:100 } }),
   });
   const data = rsiValues(rows);
@@ -664,7 +706,8 @@ function renderLevelLists(info) {
       const arr = levelsOf(info, tf)[k];
       if (!arr.length) { const s = document.createElement("small"); s.textContent = "Aucun niveau"; box.appendChild(s); return; }
       arr.forEach((l, i) => {
-        const d = document.createElement("div"); d.className = "it";
+        const d = document.createElement("div"); d.className = "it link";
+        d.onclick = () => openLevel(info, tf, p, i);
         const dist = (l.price / info.last - 1) * 100;
         const a = document.createElement("span");
         a.textContent = p + (i + 1) + "·" + LV[tf].short + "  " + fmt(l.price, info.currency);
@@ -746,7 +789,87 @@ function closeDetail() {
   ovCandles = null; ovLines = []; ovMa = [];
 }
 $("ovClose").onclick = closeDetail;
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if ($("lvOv").classList.contains("show")) closeLevel(); else closeDetail();
+});
+
+/* ---------- Détail d'un support / d'une résistance ---------- */
+let lvChart = null;
+const fmtDate = d => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" });
+function openLevel(info, tf, p, i) {
+  const k = p === "S" ? "supports" : "resistances";
+  const L = levelsOf(info, tf), l = L[k][i];
+  if (!l) return;
+  const col = colorOf(p.toLowerCase(), tf);
+  const kindName = p === "S" ? "Support" : "Résistance";
+  $("lvOv").classList.add("show");
+  $("lvTitle").textContent = p + (i + 1) + "·" + LV[tf].short + " — " + kindName + " " + LV[tf].name.toLowerCase().replace(/s$/, "") + " " + fmt(l.price, info.currency);
+  $("lvSub").textContent = ovItemName + " · chandeliers " + INTERVALS.find(x => x[0] === tf)[2];
+
+  const hits = (l.hits || []).slice().sort((a, b) => a[0] < b[0] ? -1 : 1);
+  const dist = (l.price / info.last - 1) * 100;
+  const nH = hits.filter(h => h[2] === "H").length, nL = hits.length - nH;
+  const last = hits.length ? hits[hits.length - 1][0] : l.last;
+  const ago = last ? Math.round((Date.now() - new Date(last + "T00:00:00Z")) / 86400000) : null;
+  let role = "";
+  if (nH && nL) role = p === "S" ? "Ancienne résistance devenue support" : "Ancien support devenu résistance";
+  else if (nH) role = "Touché uniquement par des sommets";
+  else if (nL) role = "Touché uniquement par des creux";
+  const tol = l.tol || 0;
+  const stats = [
+    ["Niveau", fmt(l.price, info.currency)],
+    ["Zone de contact", tol ? fmt(l.price - tol) + " – " + fmt(l.price + tol) : "–"],
+    ["Écart avec le cours", fmtPct(Math.round(dist * 100) / 100)],
+    ["Contacts", l.extreme ? "1 (extrême de la période)" : String(l.touches)],
+    ["Premier contact", hits.length ? fmtDate(hits[0][0]) : "–"],
+    ["Dernier contact", last ? fmtDate(last) + (ago != null ? " (il y a " + (ago > 60 ? Math.round(ago / 30) + " mois" : ago + " j") + ")" : "") : "–"],
+  ];
+  $("lvStats").innerHTML = "";
+  stats.forEach(([t, v]) => { const d = document.createElement("div"); d.className = "stat"; d.innerHTML = "<small></small><b></b>"; d.querySelector("small").textContent = t; d.querySelector("b").textContent = v; $("lvStats").appendChild(d); });
+  if (role) { const d = document.createElement("div"); d.className = "stat"; d.innerHTML = "<small>Comportement</small><b></b>"; d.querySelector("b").textContent = role; $("lvStats").appendChild(d); }
+
+  $("lvHits").innerHTML = "";
+  hits.forEach((h, j) => {
+    const d = document.createElement("div"); d.className = "it";
+    const a = document.createElement("span");
+    a.textContent = (j + 1) + ".  " + fmtDate(h[0]) + "  " + fmt(h[1], info.currency);
+    const b = document.createElement("small");
+    b.textContent = (h[2] === "H" ? "Sommet" : "Creux") + " · " + fmtPct(Math.round((h[1] / l.price - 1) * 10000) / 100) + " par rapport au niveau";
+    d.append(a, b); $("lvHits").appendChild(d);
+  });
+  $("lvFoot").textContent = "Les flèches numérotées marquent les sommets (▼) et creux (▲) qui forment ce niveau. La bande en pointillés montre la zone de tolérance dans laquelle deux contacts sont considérés comme le même niveau. Analyse sur " +
+    (summaryTf(tf) || "la période") + ".";
+
+  if (lvChart) { lvChart.remove(); lvChart = null; }
+  const rows = barsFor(ovData, tf);
+  lvChart = LW.createChart($("lvChart"), baseOptions(false));
+  lvChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.08, bottom:0.08 }, minimumWidth:72 });
+  const c = lvChart.addCandlestickSeries({
+    upColor:css("--up"), downColor:css("--down"), borderVisible:false, wickUpColor:css("--up"), wickDownColor:css("--down"),
+    autoscaleInfoProvider: orig => { const r = orig(); if (r) { r.priceRange.minValue = Math.min(r.priceRange.minValue, l.price - tol); r.priceRange.maxValue = Math.max(r.priceRange.maxValue, l.price + tol); } return r; },
+  });
+  c.setData(rows.map(r => ({ time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] })));
+  c.createPriceLine({ price:l.price, color:col, lineWidth:2, lineStyle:LW.LineStyle.Solid, axisLabelVisible:true, title:p + (i + 1) + "·" + LV[tf].short });
+  if (tol) [l.price - tol, l.price + tol].forEach(v => c.createPriceLine({ price:v, color:col, lineWidth:1, lineStyle:LW.LineStyle.Dotted, axisLabelVisible:false, title:"" }));
+  const times = new Set(rows.map(r => r[0]));
+  c.setMarkers(hits.filter(h => times.has(h[0])).map((h, j) => ({
+    time:h[0], position: h[2] === "H" ? "aboveBar" : "belowBar", shape: h[2] === "H" ? "arrowDown" : "arrowUp",
+    color:col, text:String(j + 1), size:1.2,
+  })));
+  /* Cadre : du premier contact (avec une marge avant) jusqu'à aujourd'hui */
+  let first = hits.length ? rows.findIndex(r => r[0] >= hits[0][0]) : rows.length - 60;
+  if (first < 0) first = rows.length - 60;
+  const span = rows.length - first;
+  const startIdx = Math.max(0, first - Math.max(8, Math.round(span * 0.4)));
+  lvChart.timeScale().setVisibleLogicalRange({ from:startIdx, to:rows.length + 2 });
+}
+function summaryTf(tf) { return summary && summary.timeframes ? summary.timeframes[tf] : ""; }
+function closeLevel() {
+  $("lvOv").classList.remove("show");
+  if (lvChart) { lvChart.remove(); lvChart = null; }
+}
+$("lvClose").onclick = closeLevel;
 
 /* ---------- Démarrage ---------- */
 (async function init() {
