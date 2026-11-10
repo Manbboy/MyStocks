@@ -225,6 +225,9 @@
   .cfg-x { border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; padding:2px 6px; }
   .cfg-row { display:flex; flex-direction:column; gap:3px; padding:5px 0; border-top:1px solid var(--border); font-size:11px; color:var(--muted); min-width:0; }
   .cfg-row b { color:var(--text); }
+  .trendin { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; }
+  .trendin label { display:flex; align-items:center; gap:4px; font-size:11px; }
+  .trendin input { width:44px; font-size:13px; padding:3px 4px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); }
   .cfg-row .pair { display:flex; flex-wrap:wrap; gap:4px 12px; }
   .cfg-row .pair > div { display:flex; flex-direction:column; gap:3px; }
   .cfg-head { gap:6px; }
@@ -315,7 +318,11 @@
         <div class="cfg-row wide"><span>Contacts pris en compte</span><div class="seg" id="roleSeg"></div></div>
         <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
         <div class="cfg-row wide"><span>Indicateur sous le graphique</span><div class="seg" id="rsiSeg"></div></div>
-        <div class="cfg-row wide" id="trendRow"><span>RSI Trends · chandeliers (vert : RSI &gt; 60 · rouge : &lt; 40 · gris : entre les deux)</span><div class="seg" id="trendSeg"></div></div>
+        <div class="cfg-row wide" id="trendRow"><span>RSI Trends · chandeliers colorés (vert : RSI ≥ seuil haut · rouge : ≤ seuil bas · gris : entre)</span>
+          <div class="trendin"><div class="seg" id="trendSeg"></div>
+            <label>Longueur<input type="number" id="tLen" min="2" max="100" step="1" inputmode="numeric"></label>
+            <label>Haut<input type="number" id="tOb" min="1" max="99" step="1" inputmode="numeric"></label>
+            <label>Bas<input type="number" id="tOs" min="1" max="99" step="1" inputmode="numeric"></label></div></div>
         <div class="cfg-row"><span>Réticule</span><div class="seg" id="crossSeg"></div></div>
         <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
         <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
@@ -738,6 +745,9 @@ function setVol(on) {
   renderToggles();
 }
 $("volBtn").onclick = () => setVol(prefs.vol === false);
+["tLen", "tOb", "tOs"].forEach(id => $(id).addEventListener("change", e => {
+  prefs[id] = +e.target.value; savePrefs(); renderToggles(); drawRsi(); setCandles();
+}));
 $("rsiBtn").onclick = () => setInd(indMode() === "none" ? (prefs.indLast || "rsi") : "none");
 $("mmBtn").onclick = () => {
   prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
@@ -787,7 +797,7 @@ async function openDetail(item, info, pos) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 au-dessus de 60 = tendance haussière (chandeliers verts), sous 40 = tendance baissière (rouges), entre les deux = sans tendance (gris) ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -1102,6 +1112,7 @@ function renderToggles() {
   paint($("rsiSeg").children[2], RSI_COL);
   $("trendRow").style.display = indMode() === "trend" ? "" : "none";
   renderSeg("trendSeg", [[true,"Colorer"],[false,"Normaux"]], prefs.trendBars !== false, v => { prefs.trendBars = v; savePrefs(); renderToggles(); setCandles(); });
+  [["tLen", TREND.len], ["tOb", TREND.ob], ["tOs", TREND.os]].forEach(([id, v]) => { if (document.activeElement !== $(id)) $(id).value = v; });
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
   KINDS.forEach(([k, label]) => {
@@ -1205,7 +1216,12 @@ function drawMas() {
   applyHighlight();
 }
 /* Indicateur sous le graphique : "none", "rsi" (RSI 14 classique) ou "trend" (RSI Trends, d'après zzzcrypto123) */
-const TREND = { len:14, ob:60, os:40 };
+const TV_COL = { green:"#4CAF50", red:"#FF5252", gray:"#787B86" };   // color.green / color.red / color.gray de TradingView
+const TREND = {
+  get len() { const v = +prefs.tLen; return v >= 2 && v <= 100 ? Math.round(v) : 14; },
+  get ob()  { const v = +prefs.tOb;  return v > 0 && v < 100 ? v : 60; },
+  get os()  { const v = +prefs.tOs;  return v > 0 && v < 100 ? v : 40; },
+};
 const indMode = () => prefs.ind === "rsi" || prefs.ind === "trend" ? prefs.ind : (prefs.ind === "none" ? "none" : (prefs.rsi ? "rsi" : "none"));
 function setInd(mode) {
   prefs.ind = mode; prefs.rsi = mode !== "none";
@@ -1215,12 +1231,13 @@ function setInd(mode) {
 const trendOn = () => indMode() === "trend" && prefs.trendBars !== false;
 /* État RSI Trends de chaque chandelier : 1 haussier (RSI > 60), -1 baissier (RSI < 40), 0 sans tendance */
 function trendStates(rows) {
-  return rsiValues(rows, TREND.len).map(d => d.value == null ? null : d.value > TREND.ob ? 1 : d.value < TREND.os ? -1 : 0);
+  const ob = TREND.ob, os = TREND.os;
+  return rsiValues(rows, TREND.len).map(d => d.value == null ? null : d.value >= ob ? 1 : d.value <= os ? -1 : (d.value < ob && d.value > os ? 0 : null));
 }
 /* Données des chandeliers, colorés selon RSI Trends si activé, estompés si une mise en évidence est en cours */
 function candleData(rows, faded) {
   const st = trendOn() ? trendStates(rows) : null;
-  const col = { 1:css("--up"), "-1":css("--down"), 0:css("--muted") };
+  const col = { 1:TV_COL.green, "-1":TV_COL.red, 0:TV_COL.gray };
   return rows.map((r, i) => {
     const d = { time:r[0], open:r[1], high:r[2], low:r[3], close:r[4] };
     if (st && st[i] != null) { const c = faded ? dim(col[st[i]]) : col[st[i]]; d.color = c; d.wickColor = c; }
@@ -1268,14 +1285,26 @@ function drawRsi() {
   }));
   const trend = indMode() === "trend";
   rsiSeries = rsiChart.addLineSeries({
-    color:RSI_COL, lineWidth:2, priceLineVisible:false, lastValueVisible:true, title: trend ? "RSI Trends" : "RSI 14",
+    color: trend ? TV_COL.gray : RSI_COL, lineWidth: trend ? 1 : 2, priceLineVisible:false, lastValueVisible:true, title: trend ? "RSI Trends" : "RSI 14",
     autoscaleInfoProvider: () => ({ priceRange:{ minValue:0, maxValue:100 } }),
   });
   const data = rsiValues(rows, trend ? TREND.len : 14);
-  if (trend) data.forEach(d => { if (d.value != null) d.color = d.value > TREND.ob ? css("--up") : d.value < TREND.os ? css("--down") : css("--muted"); });
   rsiSeries.setData(data);
   data.forEach(d => { if (d.value != null) rsiMap.set(d.time, d.value); });
-  (trend ? [[TREND.ob, css("--up")], [TREND.os, css("--down")]] : [[70, css("--res")], [30, css("--sup")]]).forEach(([v, col]) =>
+  if (trend) {
+    /* comme plot.style_linebr du script : segments épais seulement là où la condition est vraie */
+    const ob = TREND.ob, os = TREND.os;
+    const s = rsiChart.addLineSeries({ color:"rgba(0,0,0,0)", lineWidth:3, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false,
+      autoscaleInfoProvider: () => ({ priceRange:{ minValue:0, maxValue:100 } }) });
+    /* chaque segment prend la couleur de son point d'arrivée : vert si RSI ≥ haut, rouge si ≤ bas, invisible sinon */
+    s.setData(data.filter(d => d.value != null).map((d, k, arr) => {
+      const prev = arr[k - 1], inG = v => v >= ob, inR = v => v <= os;
+      const color = inG(d.value) && (!prev || inG(prev.value)) ? TV_COL.green
+                  : inR(d.value) && (!prev || inR(prev.value)) ? TV_COL.red : "rgba(0,0,0,0)";
+      return { time:d.time, value:d.value, color };
+    }));
+  }
+  (trend ? [[TREND.ob, TV_COL.gray], [TREND.os, TV_COL.gray]] : [[70, css("--res")], [30, css("--sup")]]).forEach(([v, col]) =>
     rsiSeries.createPriceLine({ price:v, color:col, lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));
   const r = ovChart.timeScale().getVisibleLogicalRange();
   if (r) rsiChart.timeScale().setVisibleLogicalRange(r);
