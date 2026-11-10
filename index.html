@@ -107,6 +107,16 @@
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
   .badge:empty { display:none; }
   .chart-wrap { position:relative; }
+  #ov .ov-head, #ov .ov-body { touch-action:pan-y; }
+  .ov-id { min-width:0; flex:1; }
+  .ov-nav { display:flex; align-items:center; gap:6px; margin-top:3px; font-size:11px; color:var(--muted); white-space:nowrap; }
+  .ov-nav span { overflow:hidden; text-overflow:ellipsis; }
+  .navb { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:8px; width:26px; height:22px; line-height:18px; font-size:16px; padding:0; cursor:pointer; }
+  .navb:disabled { opacity:.35; cursor:default; }
+  @keyframes inL { from { transform:translateX(40px); opacity:.3; } to { transform:none; opacity:1; } }
+  @keyframes inR { from { transform:translateX(-40px); opacity:.3; } to { transform:none; opacity:1; } }
+  #ov.go-next .ov-head, #ov.go-next .ov-body { animation:inL .22s ease-out; }
+  #ov.go-prev .ov-head, #ov.go-prev .ov-body { animation:inR .22s ease-out; }
   .lvov { z-index:30; }
   .lv-chart { height:max(260px, min(560px, calc(100vh - 220px))); height:max(260px, min(560px, calc(100dvh - 220px))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
   .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin:12px 0; }
@@ -190,7 +200,10 @@
 
 <div class="ov" id="ov">
   <div class="ov-head">
-    <div><div class="ov-title" id="ovTitle"></div><div class="ov-sub" id="ovSub"></div></div>
+    <div class="ov-id">
+      <div class="ov-title" id="ovTitle"></div><div class="ov-sub" id="ovSub"></div>
+      <div class="ov-nav"><button class="navb" id="ovPrev" aria-label="Action précédente">‹</button><span id="ovPos"></span><button class="navb" id="ovNext" aria-label="Action suivante">›</button></div>
+    </div>
     <button class="close" id="ovClose">Fermer</button>
   </div>
   <div class="ov-body">
@@ -580,7 +593,60 @@ function startPolling() {
 
 /* ---------- Vue détaillée ---------- */
 let ovChart = null;
-async function openDetail(item, info) {
+/* ---------- Navigation entre les actions du portefeuille ---------- */
+let ovPos = { pi:0, idx:0 }, openSeq = 0;
+const hasData = it => { const s = summary.symbols[it.yahoo]; return s && !s.error; };
+function neighbour(dir) {
+  const items = (cfg.portfolios[ovPos.pi] || { items:[] }).items;
+  for (let i = ovPos.idx + dir; i >= 0 && i < items.length; i += dir) if (hasData(items[i])) return i;
+  return -1;
+}
+function updateNav() {
+  const pf = cfg.portfolios[ovPos.pi]; if (!pf) return;
+  $("ovPos").textContent = (ovPos.idx + 1) + " / " + pf.items.length + " · " + pf.name;
+  $("ovPos").title = "Glisse à gauche ou à droite pour changer d'action";
+  $("ovPrev").disabled = neighbour(-1) < 0;
+  $("ovNext").disabled = neighbour(1) < 0;
+}
+function goTo(dir) {
+  if (!cfg || $("lvOv").classList.contains("show")) return;
+  const i = neighbour(dir);
+  if (i < 0) { toast(dir > 0 ? "Dernière valeur du portefeuille" : "Première valeur du portefeuille", 1500); return; }
+  const item = cfg.portfolios[ovPos.pi].items[i];
+  toggleCfg(false);
+  const ov = $("ov");
+  ov.classList.remove("go-next", "go-prev"); void ov.offsetWidth;
+  ov.classList.add(dir > 0 ? "go-next" : "go-prev");
+  openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
+}
+$("ovPrev").onclick = () => goTo(-1);
+$("ovNext").onclick = () => goTo(1);
+/* Glisser à gauche / à droite sur les zones sans contrôle (titre, fond, listes) */
+(() => {
+  const NO_SWIPE = ".chart-wrap, .rsi-chart, .cfg, .tb, button, input, select, a, .seg";
+  let st = null, swiped = false;
+  $("ov").addEventListener("pointerdown", e => {
+    st = (e.button === 0 && !e.target.closest(NO_SWIPE)) ? { x:e.clientX, y:e.clientY, t:Date.now() } : null;
+  });
+  $("ov").addEventListener("pointerup", e => {
+    if (!st) return;
+    const dx = e.clientX - st.x, dy = e.clientY - st.y, dt = Date.now() - st.t;
+    st = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && dt < 900) { swiped = true; goTo(dx < 0 ? 1 : -1); }
+  });
+  $("ov").addEventListener("pointercancel", () => { st = null; });
+  $("ov").addEventListener("click", e => { if (swiped) { swiped = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  document.addEventListener("keydown", e => {
+    if (!$("ov").classList.contains("show") || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === "ArrowRight") goTo(1); else if (e.key === "ArrowLeft") goTo(-1);
+  });
+})();
+
+async function openDetail(item, info, pos) {
+  if (pos) ovPos = pos;
+  else ovPos = { pi:prefs.active, idx:Math.max(0, (cfg.portfolios[prefs.active] || { items:[] }).items.indexOf(item)) };
+  updateNav();
+  if (pos) document.querySelector("#ov .ov-body").scrollTop = 0;
   $("ov").classList.add("show");
   document.body.style.overflow = "hidden";
   $("ovTitle").textContent = item.name;
@@ -602,8 +668,11 @@ async function openDetail(item, info) {
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
   $("ovFoot").append(t, a);
 
+  const seq = ++openSeq;
+  const data = await getSeries(info);
+  if (seq !== openSeq) return;          // une autre action a été ouverte entre-temps
   ovItem = info;
-  ovData = await getSeries(info);
+  ovData = data;
   ovLevels = computeLevels(ovData, info.last, tolPct(), !!prefs.role);
   drawDetail();
 }
