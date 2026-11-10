@@ -109,9 +109,19 @@
   .chart-wrap { position:relative; }
   #ov .ov-head, #ov .ov-body { touch-action:pan-y; }
   .ov-id { min-width:0; flex:1; }
-  .ov-nav { display:flex; align-items:center; gap:6px; margin-top:3px; font-size:11px; color:var(--muted); white-space:nowrap; }
-  .ov-nav span { overflow:hidden; text-overflow:ellipsis; }
-  .navb { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:8px; width:26px; height:22px; line-height:18px; font-size:16px; padding:0; cursor:pointer; }
+  .ov-id .ov-title, .ov-id .ov-sub { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #ov .ov-head { padding:10px 10px 10px 12px; gap:8px; }
+  .ov-nav .close { padding:8px 10px; }
+  @media (max-width:400px) {
+    #ov .ov-title { font-size:16px; }
+    .navb { width:30px; height:34px; }
+    .cfg-btn .lbl { display:none; }
+    .cfg-btn { padding:7px 8px; }
+  }
+  .ov-nav { flex:0 0 auto; display:flex; align-items:center; gap:4px; font-size:11px; color:var(--muted); white-space:nowrap; }
+  .ov-nav span { min-width:34px; text-align:center; }
+  .ov-nav .close { margin-left:4px; }
+  .navb { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; width:34px; height:36px; font-size:20px; line-height:1; padding:0; cursor:pointer; }
   .navb:disabled { opacity:.35; cursor:default; }
   @keyframes inL { from { transform:translateX(40px); opacity:.3; } to { transform:none; opacity:1; } }
   @keyframes inR { from { transform:translateX(-40px); opacity:.3; } to { transform:none; opacity:1; } }
@@ -130,8 +140,8 @@
   .rsi-chart.show { display:block; }
   .near { font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
   .near.s { color:var(--sup); } .near.r { color:var(--res); }
-  .ov-chart { height:max(260px, min(640px, calc(100vh - 150px))); height:max(260px, min(640px, calc(100dvh - 150px))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
-  .chart-wrap.with-rsi .ov-chart { height:max(220px, min(520px, calc(100vh - 290px))); height:max(220px, min(520px, calc(100dvh - 290px))); }
+  .ov-chart { height:max(245px, min(625px, calc(100vh - 165px))); height:max(245px, min(625px, calc(100dvh - 165px))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .chart-wrap.with-rsi .ov-chart { height:max(205px, min(505px, calc(100vh - 305px))); height:max(205px, min(505px, calc(100dvh - 305px))); }
   .ohlc { position:absolute; top:6px; left:8px; right:64px; font-size:11px; line-height:1.45; color:var(--muted); pointer-events:none; z-index:2; }
   .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ohlc span { margin-right:8px; }
@@ -202,14 +212,18 @@
   <div class="ov-head">
     <div class="ov-id">
       <div class="ov-title" id="ovTitle"></div><div class="ov-sub" id="ovSub"></div>
-      <div class="ov-nav"><button class="navb" id="ovPrev" aria-label="Action précédente">‹</button><span id="ovPos"></span><button class="navb" id="ovNext" aria-label="Action suivante">›</button></div>
     </div>
-    <button class="close" id="ovClose">Fermer</button>
+    <div class="ov-nav">
+      <button class="navb" id="ovPrev" aria-label="Action précédente">‹</button>
+      <span id="ovPos"></span>
+      <button class="navb" id="ovNext" aria-label="Action suivante">›</button>
+      <button class="close" id="ovClose">Fermer</button>
+    </div>
   </div>
   <div class="ov-body">
     <div class="tb">
       <div class="seg" id="ivSeg"></div>
-      <button class="cfg-btn" id="cfgBtn" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>Réglages<span class="badge" id="cfgCount"></span></button>
+      <button class="cfg-btn" id="cfgBtn" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="lbl">Réglages</span><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
       <div class="cfg-head"><strong>Réglages</strong><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
       <div class="cfg-grid">
@@ -603,8 +617,8 @@ function neighbour(dir) {
 }
 function updateNav() {
   const pf = cfg.portfolios[ovPos.pi]; if (!pf) return;
-  $("ovPos").textContent = (ovPos.idx + 1) + " / " + pf.items.length + " · " + pf.name;
-  $("ovPos").title = "Glisse à gauche ou à droite pour changer d'action";
+  $("ovPos").textContent = (ovPos.idx + 1) + "/" + pf.items.length;
+  $("ovPos").title = pf.name + " · glisse à gauche ou à droite pour changer d'action";
   $("ovPrev").disabled = neighbour(-1) < 0;
   $("ovNext").disabled = neighbour(1) < 0;
 }
@@ -658,7 +672,8 @@ async function openDetail(item, info, pos) {
   const ch = document.createElement("span");
   ch.className = pct >= 0 ? "up" : "down"; ch.textContent = fmtPct(pct);
   const dt = document.createElement("span");
-  dt.textContent = "  · clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
+  dt.textContent = "  · " + new Date(info.date).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" });
+  dt.title = "Clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
