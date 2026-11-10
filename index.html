@@ -124,6 +124,11 @@
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
   .badge:empty { display:none; }
   .chart-wrap { position:relative; }
+  .mmb.lay { padding:4px 5px; }
+  .mmb.lay svg { display:block; }
+  .mmb.lay small { font-size:9px; font-weight:700; margin-top:1px; }
+  .quad.two { grid-template-columns:1fr; grid-template-rows:1fr 1fr; }
+  @media (min-width:600px) { .quad.two { grid-template-columns:1fr 1fr; grid-template-rows:1fr; } }
   .quad { display:none; position:absolute; left:0; right:0; top:0; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:6px; }
   .chart-wrap.quad-on .quad { display:grid; }
   .chart-wrap.quad-on .ov-chart { visibility:hidden; }
@@ -325,7 +330,7 @@
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
       <button class="mmb" id="rtBtn" aria-pressed="false" title="Afficher / masquer RSI Trends (chandeliers colorés)">RT<span class="mmdots"><i style="background:#4CAF50"></i><i style="background:#787B86"></i><i style="background:#FF5252"></i></span></button>
       <button class="mmb" id="volBtn" aria-pressed="false" title="Afficher / masquer les volumes">Vol<span class="mmdots"><i style="background:var(--muted);width:3px;height:5px"></i><i style="background:var(--muted);width:3px;height:3px;margin-top:2px"></i><i style="background:var(--muted);width:3px;height:5px"></i></span></button>
-      <button class="mmb" id="quadBtn" aria-pressed="false" title="4 graphiques : jour, semaine, mois, trimestre">1/4<span class="mmdots"><i style="background:var(--muted);width:4px;height:4px"></i><i style="background:var(--muted);width:4px;height:4px"></i></span></button>
+      <button class="mmb lay" id="quadBtn" aria-pressed="false" title="Disposition : 1, 2 ou 4 graphiques"></button>
       <span class="spacer"></span>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false" aria-label="Réglages" title="Réglages"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
@@ -792,12 +797,28 @@ $("mmBtn").onclick = () => {
 })();
 /* ---------- Vue 1/4 : jour, semaine, mois, trimestre côte à côte ---------- */
 let quadCharts = [];
+const splitN = () => prefs.split === 2 || prefs.split === 4 ? prefs.split : (prefs.split === 1 ? 1 : (prefs.quad ? 4 : 1));
+const LAYOUT_ICON = {
+  1:'<rect x="1.5" y="1.5" width="17" height="13" rx="2"/>',
+  2:'<rect x="1.5" y="1.5" width="17" height="5.8" rx="1.5"/><rect x="1.5" y="8.7" width="17" height="5.8" rx="1.5"/>',
+  4:'<rect x="1.5" y="1.5" width="7.8" height="5.8" rx="1.5"/><rect x="10.7" y="1.5" width="7.8" height="5.8" rx="1.5"/><rect x="1.5" y="8.7" width="7.8" height="5.8" rx="1.5"/><rect x="10.7" y="8.7" width="7.8" height="5.8" rx="1.5"/>',
+};
+function layoutIcon() {
+  const n = splitN();
+  const side = n === 2 && matchMedia("(min-width:600px)").matches;   // 2 graphiques côte à côte sur grand écran
+  const icon = side ? '<rect x="1.5" y="1.5" width="7.8" height="13" rx="1.5"/><rect x="10.7" y="1.5" width="7.8" height="13" rx="1.5"/>' : LAYOUT_ICON[n];
+  $("quadBtn").innerHTML = '<svg width="20" height="16" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' + icon + "</svg><small>" + n + "</small>";
+  $("quadBtn").title = { 1:"1 graphique · toucher pour 2 (jour + semaine)", 2:"2 graphiques · toucher pour 4 (jour, semaine, mois, trimestre)", 4:"4 graphiques · toucher pour revenir à 1" }[n];
+}
 function clearQuad() { quadCharts.forEach(c => c.remove()); quadCharts = []; $("quad").innerHTML = ""; }
 function applyQuad() {
   const wrap = document.querySelector("#ov .chart-wrap");
-  wrap.classList.toggle("quad-on", !!prefs.quad);
-  $("quadBtn").classList.toggle("on", !!prefs.quad); $("quadBtn").setAttribute("aria-pressed", prefs.quad ? "true" : "false");
-  if (prefs.quad) drawQuad(); else clearQuad();
+  const multi = splitN() > 1;
+  wrap.classList.toggle("quad-on", multi);
+  $("quad").classList.toggle("two", splitN() === 2);
+  $("quadBtn").classList.toggle("on", multi); $("quadBtn").setAttribute("aria-pressed", multi ? "true" : "false");
+  layoutIcon();
+  if (multi) drawQuad(); else clearQuad();
 }
 function drawQuad() {
   if (!ovData || !ovItem) return;
@@ -806,11 +827,11 @@ function drawQuad() {
   clearQuad();
   $("quad").style.height = $("ovChart").offsetHeight + "px";
   const names = { D:"Jour", W:"Semaine", M:"Mois", Q:"Trimestre" };
-  LV_ORDER.forEach(tf => {
+  (splitN() === 2 ? ["D","W"] : LV_ORDER).forEach(tf => {
     const cell = document.createElement("div"); cell.className = "qcell";
     const lab = document.createElement("button"); lab.className = "qlab"; lab.innerHTML = { D:"J", W:"S", M:"M", Q:"T" }[tf] + "<small>" + names[tf] + "</small> ↗";
     lab.title = "Ouvrir en grand";
-    lab.onclick = () => { prefs.quad = false; prefs.iv = tf; savePrefs(); drawDetail(); };
+    lab.onclick = () => { prefs.split = 1; prefs.quad = false; prefs.iv = tf; savePrefs(); drawDetail(); };
     const box = document.createElement("div"); box.className = "qc";
     const rows = barsFor(ovData, tf);
     const chg = document.createElement("span"); chg.className = "qchg";
@@ -843,8 +864,9 @@ function drawQuad() {
     quadCharts.push(ch);
   });
 }
-window.addEventListener("resize", () => { if (prefs.quad && $("ov").classList.contains("show")) $("quad").style.height = $("ovChart").offsetHeight + "px"; });
-$("quadBtn").onclick = () => { prefs.quad = !prefs.quad; savePrefs(); drawRsi(); applyQuad(); renderToggles(); };
+window.addEventListener("resize", () => { if ($("quadBtn").innerHTML) layoutIcon(); if (splitN() > 1 && $("ov").classList.contains("show")) $("quad").style.height = $("ovChart").offsetHeight + "px"; });
+/* 1 → 2 (jour + semaine) → 4 (jour, semaine, mois, trimestre) → 1 */
+$("quadBtn").onclick = () => { prefs.split = { 1:2, 2:4, 4:1 }[splitN()]; prefs.quad = false; savePrefs(); drawRsi(); applyQuad(); renderToggles(); };
 $("ovPrev").onclick = $("ovPrev2").onclick = () => goTo(-1);
 $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 /* Glisser à gauche / à droite sur les zones sans contrôle (titre, fond, listes) */
@@ -1286,7 +1308,7 @@ function refreshLevels() {
     drawMas();
   }
   renderLevelLists(ovItem);
-  if (prefs.quad) drawQuad();
+  if (splitN() > 1) drawQuad();
 }
 function drawMas() {
   ovMa.forEach(s => ovChart.removeSeries(s));
@@ -1365,7 +1387,7 @@ function drawRsi() {
   if (rsiChart) { rsiChart.remove(); rsiChart = null; rsiSeries = null; }
   rsiMap = new Map();
   const box = $("rsiChart");
-  const showRsi = !!prefs.rsi && !prefs.quad;
+  const showRsi = !!prefs.rsi && splitN() === 1;
   box.classList.toggle("show", showRsi);
   box.parentElement.classList.toggle("with-rsi", showRsi);
   if (!ovChart) return;
@@ -1619,9 +1641,9 @@ let fitPrev = null;
 function setFitLabel() { $("fitBtn").textContent = fitPrev ? "↩ Revenir" : "⤢ Tout voir"; $("fitBtn").classList.toggle("on", !!fitPrev); }
 function fitAll() {
   if (!ovChart || !ovData) return;
-  if (prefs.quad) {                    // vue 1/4 : les 4 graphiques montrent tout leur historique
+  if (splitN() > 1) {                  // vue 2 ou 4 graphiques : chacun montre tout son historique
     quadCharts.forEach(c => { c.priceScale("right").applyOptions({ autoScale:true }); c.timeScale().fitContent(); });
-    toast("Tout l'historique sur les 4 graphiques", 1600);
+    toast("Tout l'historique sur les " + splitN() + " graphiques", 1600);
     return;
   }
   if (fitPrev) {                       // retour à la vue précédente
@@ -1641,7 +1663,7 @@ function fitAll() {
 $("fitBtn").onclick = fitAll;
 function resetView() {
   fitPrev = null; setFitLabel();
-  if (prefs.quad) { drawQuad(); toast("Vue réinitialisée", 1200); return; }
+  if (splitN() > 1) { drawQuad(); toast("Vue réinitialisée", 1200); return; }
   if (!ovChart || !ovData) return;
   ovChart.priceScale("right").applyOptions({ autoScale:true });
   if (rsiChart) rsiChart.priceScale("right").applyOptions({ autoScale:true });
