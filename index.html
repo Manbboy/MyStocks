@@ -369,7 +369,7 @@ function renderToggles() {
   KINDS.forEach(([k, label]) => {
     const b = document.createElement("button");
     b.textContent = label; if (selK.includes(k)) b.className = "on";
-    b.onclick = () => { const cur = selectedKinds(); prefs.kinds = cur.includes(k) ? cur.filter(x => x !== k) : cur.concat(k); savePrefs(); drawDetail(); };
+    b.onclick = () => { const cur = selectedKinds(); prefs.kinds = cur.includes(k) ? cur.filter(x => x !== k) : cur.concat(k); savePrefs(); refreshLevels(); };
     ks.appendChild(b);
   });
   const lg = $("ovLegend"); lg.innerHTML = "";
@@ -387,7 +387,7 @@ function renderToggles() {
     b.onclick = () => {
       const cur = selectedLv();
       prefs.lvs = cur.includes(tf) ? cur.filter(t => t !== tf) : cur.concat(tf);
-      savePrefs(); drawDetail();
+      savePrefs(); refreshLevels();
     };
     s.appendChild(b);
   });
@@ -408,16 +408,28 @@ function autoscaleDetail(info) {
     return r;
   };
 }
+let ovCandles = null, ovLines = [];
+/* Met à jour uniquement les lignes et la liste : le graphique garde sa position et son zoom */
+function refreshLevels() {
+  renderToggles();
+  if (ovCandles) {
+    ovLines.forEach(l => ovCandles.removePriceLine(l));
+    ovLines = addDetailLevels(ovCandles, ovItem);
+  }
+  renderLevelLists(ovItem);
+}
 function addDetailLevels(series, info) {
+  const lines = [];
   selectedLv().forEach(tf => {
     const L = levelsOf(info, tf), st = LV[tf];
     const selK = selectedKinds();
     KINDS.filter(([k]) => selK.includes(k)).forEach(([p, , k, c]) =>
-      L[k].forEach((l, i) => series.createPriceLine({
+      L[k].forEach((l, i) => lines.push(series.createPriceLine({
         price:l.price, color:colorOf(c, tf), lineWidth:st.width, lineStyle:st.style,
         axisLabelVisible:true, title:p + (i + 1) + "·" + st.short,
-      })));
+      }))));
   });
+  return lines;
 }
 function renderLevelLists(info) {
   const sel = selectedLv();
@@ -451,6 +463,7 @@ function drawDetail() {
   const ivInfo = INTERVALS.find(x => x[0] === iv);
   $("ovFreq").textContent = "Chandeliers " + ivInfo[2];
   if (ovChart) { ovChart.remove(); ovChart = null; }
+  ovCandles = null; ovLines = [];
   const rows = aggregate(ovData.rows, iv);
   ovChart = LW.createChart($("ovChart"), baseOptions(false));
   const c = ovChart.addCandlestickSeries({
@@ -462,7 +475,8 @@ function drawDetail() {
   const v = ovChart.addHistogramSeries({ priceScaleId:"", priceFormat:{ type:"volume" }, color:css("--muted") + "55", lastValueVisible:false, priceLineVisible:false });
   ovChart.priceScale("").applyOptions({ scaleMargins:{ top:0.82, bottom:0 } });
   v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
-  addDetailLevels(c, info);
+  ovCandles = c;
+  ovLines = addDetailLevels(c, info);
   renderLevelLists(info);
   const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
   if (rows.length > show) {
@@ -475,6 +489,7 @@ function closeDetail() {
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
   if (ovChart) { ovChart.remove(); ovChart = null; }
+  ovCandles = null; ovLines = [];
 }
 $("ovClose").onclick = closeDetail;
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
