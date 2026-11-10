@@ -38,6 +38,31 @@
   .legend { font-size:12px; color:var(--muted); display:flex; gap:10px; }
   .legend i { display:inline-block; width:14px; border-top:2px dashed; vertical-align:middle; margin-right:4px; }
 
+  .spacer { flex:1; }
+  .btn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:9px; padding:6px 11px; font-size:13px; font-weight:600; cursor:pointer; }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn.danger { background:var(--down); border-color:var(--down); color:#fff; }
+  .btn.on { background:var(--text); color:var(--bg); }
+  .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:var(--text); color:var(--bg); padding:9px 14px; border-radius:10px; font-size:13px; z-index:60; display:none; max-width:92vw; }
+  .toast.show { display:block; }
+  .dlg-bg { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-start; justify-content:center; padding:24px 12px; overflow:auto; }
+  .dlg-bg.show { display:flex; }
+  .dlg { background:var(--card); border-radius:14px; padding:16px; width:100%; max-width:420px; }
+  .dlg h3 { margin:0 0 10px; font-size:17px; }
+  .dlg label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted); margin:8px 0; }
+  .dlg input, .dlg select { font-size:16px; padding:9px 10px; border:1px solid var(--border); border-radius:9px; background:var(--bg); color:var(--text); }
+  .dlg .hint { font-size:11px; color:var(--muted); margin:2px 0 6px; line-height:1.45; }
+  .dlg a { color:var(--accent); }
+  .dlg .row { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+  .dlg .err { color:var(--down); font-size:12px; margin:6px 0 0; min-height:0; }
+  .tokbox { border:1px dashed var(--border); border-radius:10px; padding:10px; margin-top:10px; font-size:12px; display:none; }
+  .tokbox.show { display:block; }
+  .tokbox p, .tokbox ol { margin:6px 0; padding-left:18px; line-height:1.5; }
+  .tokbox p { padding-left:0; }
+  .tokbox input { width:100%; font-size:14px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
+  .card .rm { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:12px; border:0; background:var(--down); color:#fff; font-size:13px; cursor:pointer; display:none; z-index:3; }
+  .editing .card .rm { display:block; }
+  .card { position:relative; }
   .grid { display:grid; gap:8px; padding:12px 0 40px; grid-template-columns:repeat(var(--cols,3), minmax(0,1fr)); }
   .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; }
   .card-head { padding:7px 9px 0; }
@@ -142,7 +167,11 @@
     <div class="group"><label>Par ligne</label><div class="seg" id="colsSeg"></div></div>
     <div class="group"><label>Période</label><div class="seg" id="rangeSeg"></div></div>
     <div class="legend"><span><i style="color:var(--sup)"></i>Support</span><span><i style="color:var(--res)"></i>Résistance</span></div>
+    <div class="spacer"></div>
+    <button class="btn" id="addBtn">+ Ajouter</button>
+    <button class="btn" id="editBtn">Modifier</button>
   </div>
+  <div class="toast" id="toast"></div>
 
   <div class="grid" id="grid"></div>
   <p class="credit">Graphiques : <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a> · Données : Yahoo Finance</p>
@@ -183,6 +212,36 @@
     </div>
     <p class="ov-foot" id="ovFoot"></p>
   </div>
+</div>
+
+<div class="dlg-bg" id="addDlg">
+  <form class="dlg" id="addForm" autocomplete="off">
+    <h3>Ajouter une valeur</h3>
+    <label>Portefeuille<select id="fPf"></select></label>
+    <label>Symbole Yahoo Finance<input id="fSym" placeholder="ex. VU.PA, AI.PA, AAPL" autocapitalize="characters" required></label>
+    <p class="hint">Suffixe de la place : .PA Paris · .BR Bruxelles · .AS Amsterdam · .DE Xetra · .MI Milan · rien pour les États-Unis.
+      <a id="fLookup" href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener">Trouver le symbole sur Yahoo Finance</a></p>
+    <label>Nom affiché<input id="fName" placeholder="ex. VusionGroup" required></label>
+    <div class="tokbox" id="tokBox">
+      <b>Autorisation GitHub (une seule fois sur cet appareil)</b>
+      <p>Pour enregistrer tes valeurs, la page a besoin d'un jeton d'accès limité à ton dépôt :</p>
+      <ol>
+        <li>Ouvre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a></li>
+        <li>Nom : « Mes actions », expiration au choix</li>
+        <li>Repository access : <i>Only select repositories</i> → <b id="repoName"></b></li>
+        <li>Permissions → Repository → <b>Contents : Read and write</b></li>
+        <li>Generate token, copie-le et colle-le ici</li>
+      </ol>
+      <input id="fTok" placeholder="github_pat_…" autocapitalize="off" spellcheck="false">
+      <p class="hint">Le jeton reste uniquement dans ce navigateur. <a href="#" id="tokForget">Oublier le jeton</a></p>
+    </div>
+    <p class="err" id="fErr"></p>
+    <div class="row"><button type="button" class="btn" id="fCancel">Annuler</button><button type="submit" class="btn primary" id="fOk">Ajouter</button></div>
+  </form>
+</div>
+<div class="dlg-bg" id="confDlg">
+  <div class="dlg"><p id="confText"></p><p class="err" id="confErr"></p>
+    <div class="row"><button class="btn" id="confNo">Annuler</button><button class="btn danger" id="confYes">Retirer</button></div></div>
 </div>
 
 <div class="ov lvov" id="lvOv">
@@ -326,9 +385,11 @@ function renderGrid() {
   g.style.setProperty("--cols", prefs.cols);
   g.style.setProperty("--h", HEIGHTS[prefs.cols] + "px");
   g.classList.toggle("compact", prefs.cols >= 3);
+  g.classList.toggle("editing", editing);
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
+  if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">Aucune valeur. Touche « + Ajouter ».</div>';
   pf.items.forEach(item => {
-    const info = summary.symbols[item.yahoo] || { error:"absente des données" };
+    const info = summary.symbols[item.yahoo] || { pending:true };
     const card = document.createElement("div"); card.className = "card";
     const pct = info.changePct;
     const cls = pct == null ? "" : pct >= 0 ? "up" : "down";
@@ -339,9 +400,16 @@ function renderGrid() {
     card.querySelector(".nm").textContent = item.name;
     card.querySelector(".sym").textContent = item.yahoo;
     const chartEl = card.querySelector(".chart");
-    if (info.error) {
+    const rm = document.createElement("button");
+    rm.className = "rm"; rm.textContent = "✕"; rm.title = "Retirer";
+    rm.onclick = e => { e.stopPropagation(); askRemove(prefs.active, item); };
+    card.appendChild(rm);
+    if (info.pending || info.error) {
       card.querySelector(".px").textContent = "–";
-      chartEl.innerHTML = '<div class="msg">Données indisponibles</div>';
+      chartEl.innerHTML = info.pending
+        ? '<div class="msg">Données en préparation… (2 à 3 min)</div>'
+        : '<div class="msg">Symbole introuvable chez Yahoo Finance. Vérifie-le (bouton Modifier pour le retirer).</div>';
+      if (info.pending) startPolling();
     } else {
       card.querySelector(".px").textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
       card.querySelector(".px2").textContent = fmt(info.last, null);
@@ -369,6 +437,107 @@ function render() {
   renderSeg("colsSeg", COLS.map(c => [c, String(c)]), prefs.cols, v => { prefs.cols = v; savePrefs(); render(); });
   renderSeg("rangeSeg", RANGES, prefs.range, v => { prefs.range = v; savePrefs(); render(); });
   renderGrid();
+}
+
+/* ---------- Ajouter / retirer des valeurs (enregistrées dans portfolios.json sur GitHub) ---------- */
+const REPO = (() => {
+  const h = location.hostname, seg = location.pathname.split("/").filter(Boolean)[0];
+  return h.endsWith(".github.io") && seg ? h.split(".")[0] + "/" + seg : "Manbboy/MyStocks";
+})();
+const TOK_KEY = "mes-actions-gh-token";
+const getTok = () => { try { return localStorage.getItem(TOK_KEY) || ""; } catch (e) { return ""; } };
+const setTok = t => { try { t ? localStorage.setItem(TOK_KEY, t) : localStorage.removeItem(TOK_KEY); } catch (e) {} };
+const b64enc = s => btoa(unescape(encodeURIComponent(s)));
+const b64dec = s => decodeURIComponent(escape(atob(s.replace(/\s/g, ""))));
+let editing = false;
+
+function toast(msg, ms = 4000) {
+  $("toast").textContent = msg; $("toast").classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => $("toast").classList.remove("show"), ms);
+}
+async function ghUpdate(mutate, message) {
+  const tok = getTok();
+  if (!tok) throw new Error("NOTOKEN");
+  const url = "https://api.github.com/repos/" + REPO + "/contents/portfolios.json";
+  const headers = { Authorization:"Bearer " + tok, Accept:"application/vnd.github+json" };
+  const r = await fetch(url + "?ref=main&t=" + Date.now(), { headers, cache:"no-store" });
+  if (r.status === 401 || r.status === 403 || r.status === 404) throw new Error("BADTOKEN");
+  if (!r.ok) throw new Error("GitHub a répondu " + r.status);
+  const j = await r.json();
+  const cur = JSON.parse(b64dec(j.content));
+  mutate(cur);
+  const put = await fetch(url, { method:"PUT", headers, body:JSON.stringify({
+    message, branch:"main", sha:j.sha, content:b64enc(JSON.stringify(cur, null, 2) + "\n") }) });
+  if (put.status === 401 || put.status === 403) throw new Error("BADTOKEN");
+  if (!put.ok) throw new Error("Enregistrement refusé par GitHub (" + put.status + ")");
+  cfg = cur;
+}
+const TV_EX = { PA:"EURONEXT", AS:"EURONEXT", BR:"EURONEXT", LS:"EURONEXT", IR:"EURONEXT", DE:"XETR", MI:"MIL", L:"LSE", SW:"SIX", MC:"BME" };
+function tvFromYahoo(sym) {
+  const m = sym.match(/^(.+)\.([A-Z]+)$/);
+  return m && TV_EX[m[2]] ? TV_EX[m[2]] + ":" + m[1] : sym.replace(/^\^/, "");
+}
+function openAdd() {
+  const sel = $("fPf"); sel.innerHTML = "";
+  cfg.portfolios.forEach((p, i) => { const o = document.createElement("option"); o.value = i; o.textContent = p.name; sel.appendChild(o); });
+  sel.value = String(prefs.active);
+  $("fSym").value = ""; $("fName").value = ""; $("fErr").textContent = ""; $("fTok").value = "";
+  $("repoName").textContent = REPO.split("/")[1];
+  $("tokBox").classList.toggle("show", !getTok());
+  $("addDlg").classList.add("show");
+  setTimeout(() => $("fSym").focus(), 50);
+}
+$("fName").addEventListener("input", () => { $("fLookup").href = "https://finance.yahoo.com/lookup?s=" + encodeURIComponent($("fName").value || $("fSym").value); });
+$("fSym").addEventListener("input", () => { $("fLookup").href = "https://finance.yahoo.com/lookup?s=" + encodeURIComponent($("fSym").value || $("fName").value); });
+$("tokForget").onclick = e => { e.preventDefault(); setTok(""); $("tokBox").classList.add("show"); toast("Jeton oublié sur cet appareil."); };
+$("fCancel").onclick = () => $("addDlg").classList.remove("show");
+$("addBtn").onclick = openAdd;
+$("editBtn").onclick = () => { editing = !editing; $("editBtn").classList.toggle("on", editing); $("editBtn").textContent = editing ? "Terminé" : "Modifier"; renderGrid(); };
+$("addForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const sym = $("fSym").value.trim().toUpperCase(), name = $("fName").value.trim(), pi = +$("fPf").value;
+  if ($("fTok").value.trim()) setTok($("fTok").value.trim());
+  if (!sym || !name) return;
+  if (cfg.portfolios[pi].items.some(x => x.yahoo === sym)) { $("fErr").textContent = "Cette valeur est déjà dans ce portefeuille."; return; }
+  $("fOk").disabled = true; $("fErr").textContent = "";
+  try {
+    await ghUpdate(c => { c.portfolios[pi].items.push({ yahoo:sym, tv:tvFromYahoo(sym), name }); }, "Ajout de " + name + " (" + sym + ") dans " + cfg.portfolios[pi].name);
+    $("addDlg").classList.remove("show");
+    prefs.active = pi; savePrefs(); render();
+    toast(name + " ajouté. Les cours et niveaux arrivent dans 2 à 3 minutes.", 6000);
+  } catch (err) {
+    if (err.message === "NOTOKEN") { $("tokBox").classList.add("show"); $("fErr").textContent = "Colle d'abord ton jeton GitHub ci-dessus."; }
+    else if (err.message === "BADTOKEN") { setTok(""); $("tokBox").classList.add("show"); $("fErr").textContent = "Jeton refusé par GitHub : vérifie qu'il donne « Contents : Read and write » sur " + REPO.split("/")[1] + "."; }
+    else $("fErr").textContent = err.message;
+  } finally { $("fOk").disabled = false; }
+});
+function askRemove(pi, item) {
+  $("confText").textContent = "Retirer " + item.name + " (" + item.yahoo + ") du portefeuille « " + cfg.portfolios[pi].name + " » ?";
+  $("confErr").textContent = "";
+  $("confDlg").classList.add("show");
+  $("confNo").onclick = () => $("confDlg").classList.remove("show");
+  $("confYes").onclick = async () => {
+    try {
+      await ghUpdate(c => { c.portfolios[pi].items = c.portfolios[pi].items.filter(x => x.yahoo !== item.yahoo); }, "Retrait de " + item.name + " (" + item.yahoo + ")");
+      $("confDlg").classList.remove("show"); renderGrid(); toast(item.name + " retiré.");
+    } catch (err) {
+      $("confErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN"
+        ? "Il faut d'abord enregistrer un jeton GitHub valide (bouton « + Ajouter »)." : err.message;
+    }
+  };
+}
+let pollTimer = null;
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(async () => {
+    try {
+      const s = await fetch("data/summary.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.json());
+      const all = cfg.portfolios.flatMap(p => p.items.map(i => i.yahoo));
+      const missing = all.filter(sym => !s.symbols[sym]);
+      if (s.updated !== summary.updated) { summary = s; renderGrid(); }
+      if (!missing.length) { clearInterval(pollTimer); pollTimer = null; }
+    } catch (e) {}
+  }, 30000);
 }
 
 /* ---------- Vue détaillée ---------- */
