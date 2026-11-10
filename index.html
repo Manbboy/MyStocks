@@ -139,6 +139,8 @@
   .chart-wrap.quad-on .ohlc, .chart-wrap.quad-on .tags, .chart-wrap.quad-on .rings, .chart-wrap.quad-on .rsi-chart { display:none !important; }
   .qcell { position:relative; background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; min-height:0; }
   .qcell .qc { position:absolute; inset:0; }
+  .qcell.wr .qc { bottom:30%; }
+  .qcell .qr { position:absolute; left:0; right:0; bottom:0; height:30%; border-top:1px solid var(--border); }
   .qcell .qlab { position:absolute; top:4px; left:4px; z-index:3; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:7px; font-size:11px; font-weight:700; padding:2px 7px; cursor:pointer; }
   .qcell .qlab small { font-weight:400; color:var(--muted); margin:0 2px 0 3px; }
   @media (max-width:500px) { .qcell .qlab small { display:none; } }
@@ -769,7 +771,7 @@ function goTo(dir) {
   ov.classList.add(dir > 0 ? "go-next" : "go-prev");
   openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
 }
-$("flipBtn").onclick = () => { prefs.flip = !prefs.flip; hiFlip = null; savePrefs(); drawFlips(); applyHighlight(); renderToggles(); };
+$("flipBtn").onclick = () => { prefs.flip = !prefs.flip; hiFlip = null; savePrefs(); drawFlips(); applyHighlight(); renderToggles(); refreshMulti(); };
 $("srBtn").onclick = () => {
   const on = selectedKinds().length > 0 && selectedLv().length > 0;
   if (on) prefs.kinds = [];
@@ -777,14 +779,15 @@ $("srBtn").onclick = () => {
   hiKey = null;
   savePrefs(); refreshLevels();
 };
+function refreshMulti() { if (splitN() > 1 && $("ov").classList.contains("show")) drawQuad(); }
 function setVol(on) {
   prefs.vol = on; savePrefs();
   if (ovVol) ovVol.applyOptions({ visible:on });
-  renderToggles();
+  renderToggles(); refreshMulti();
 }
 $("volBtn").onclick = () => setVol(prefs.vol === false);
 ["tLen", "tOb", "tOs"].forEach(id => $(id).addEventListener("change", e => {
-  prefs[id] = +e.target.value; savePrefs(); renderToggles(); drawRsi(); setCandles();
+  prefs[id] = +e.target.value; savePrefs(); renderToggles(); drawRsi(); setCandles(); refreshMulti();
 }));
 $("rsiBtn").onclick = () => setInd(indMode() === "rsi" ? "none" : "rsi");
 $("rtBtn").onclick = () => setInd(indMode() === "trend" ? "none" : "trend");
@@ -846,10 +849,13 @@ function drawQuad() {
     const rows = barsFor(ovData, tf);
     const chg = document.createElement("span"); chg.className = "qchg";
     if (rows.length > 1) { const p = (rows[rows.length - 1][4] / rows[rows.length - 2][4] - 1) * 100; chg.textContent = fmtPct(Math.round(p * 100) / 100); chg.classList.add(p >= 0 ? "up" : "down"); }
-    cell.append(box, lab, chg); $("quad").appendChild(cell);
+    const withRsi = indMode() !== "none";
+    let rbox = null;
+    if (withRsi) { cell.classList.add("wr"); rbox = document.createElement("div"); rbox.className = "qr"; }
+    cell.append(box, lab, chg); if (rbox) cell.appendChild(rbox); $("quad").appendChild(cell);
     const ch = LW.createChart(box, Object.assign(baseOptions(true), {
       crosshair:crossOpt(), rightPriceScale:{ borderVisible:false, scaleMargins:{ top:0.16, bottom:0.06 } },
-      timeScale:{ borderVisible:false, minBarSpacing:0.02 }, handleScale:{ axisPressedMouseMove:{ time:true, price:true }, mouseWheel:true, pinch:true },
+      timeScale:{ borderVisible:false, minBarSpacing:0.02, visible:!withRsi }, handleScale:{ axisPressedMouseMove:{ time:true, price:true }, mouseWheel:true, pinch:true },
     }));
     const c = ch.addCandlestickSeries({ upColor:css("--up"), downColor:css("--down"), borderVisible:false, wickUpColor:css("--up"), wickDownColor:css("--down"), priceLineVisible:false });
     c.setData(candleData(rows, false));
@@ -868,6 +874,44 @@ function drawQuad() {
       const L = levelsOf(ovItem, tf), st = LV[tf];
       KINDS.filter(([k]) => selectedKinds().includes(k)).forEach(([p, , k, cc]) =>
         L[k].forEach(l => c.createPriceLine({ price:l.price, color:colorOf(cc, tf), lineWidth:st.width, lineStyle:st.style, axisLabelVisible:false, title:"" })));
+    }
+    if (prefs.flip) {
+      const fl = flipLevels(rows, tf, tolPct()), lastT = rows[rows.length - 1][0], marks = [];
+      fl.forEach(f => {
+        const s = ch.addLineSeries({ color:FLIP_COL[f.type], lineWidth:2, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+        s.setData([{ time:f.pivotTime, value:f.price }, { time:lastT, value:f.price }]);
+        const up = f.type === "RS";
+        marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:FLIP_COL[f.type] });
+        f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:FLIP_COL[f.type] }));
+      });
+      c.setMarkers(marks.sort((a, b) => a.time < b.time ? -1 : 1));
+    }
+    /* RSI 14 ou RSI Trends sous chaque graphique, synchronisé avec lui */
+    if (withRsi) {
+      const trend = indMode() === "trend";
+      const rc = LW.createChart(rbox, Object.assign(baseOptions(true), {
+        crosshair:crossOpt(), rightPriceScale:{ borderVisible:false, scaleMargins:{ top:0.1, bottom:0.1 } },
+        timeScale:{ borderVisible:false, minBarSpacing:0.02 }, handleScale:{ axisPressedMouseMove:{ time:true, price:true }, mouseWheel:true, pinch:true },
+      }));
+      const data = rsiValues(rows, trend ? TREND.len : 14);
+      const rs = rc.addLineSeries({ color: trend ? TV_COL.gray : RSI_COL, lineWidth: trend ? 1 : 1.5, priceLineVisible:false, lastValueVisible:false,
+        crosshairMarkerVisible:false, autoscaleInfoProvider:() => ({ priceRange:{ minValue:0, maxValue:100 } }) });
+      rs.setData(data);
+      if (trend) {
+        const ob = TREND.ob, os = TREND.os, ov = rc.addLineSeries({ color:"rgba(0,0,0,0)", lineWidth:2, priceLineVisible:false, lastValueVisible:false,
+          crosshairMarkerVisible:false, autoscaleInfoProvider:() => ({ priceRange:{ minValue:0, maxValue:100 } }) });
+        ov.setData(data.filter(d => d.value != null).map((d, k, arr) => {
+          const pv = arr[k - 1], g = v => v >= ob, r = v => v <= os;
+          return { time:d.time, value:d.value, color: g(d.value) && (!pv || g(pv.value)) ? TV_COL.green : r(d.value) && (!pv || r(pv.value)) ? TV_COL.red : "rgba(0,0,0,0)" };
+        }));
+      }
+      (trend ? [TREND.ob, TREND.os] : [70, 30]).forEach((v, k) => rs.createPriceLine({ price:v, lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:false, title:"",
+        color: trend ? TV_COL.gray : (k ? css("--sup") : css("--res")) }));
+      let sync = false;
+      ch.timeScale().subscribeVisibleLogicalRangeChange(r => { if (!r || sync) return; sync = true; rc.timeScale().setVisibleLogicalRange(r); sync = false; });
+      rc.timeScale().subscribeVisibleLogicalRangeChange(r => { if (!r || sync) return; sync = true; ch.timeScale().setVisibleLogicalRange(r); sync = false; });
+      ch.priceScale("right").applyOptions({ minimumWidth:56 }); rc.priceScale("right").applyOptions({ minimumWidth:56 });
+      quadCharts.push(rc);
     }
     if (width && rows.length > width) ch.timeScale().setVisibleLogicalRange({ from:rows.length - 1 - width, to:rows.length - 1 });
     else ch.timeScale().fitContent();
@@ -1359,7 +1403,7 @@ function renderToggles() {
   paint($("rsiSeg").children[1], RSI_COL);
   paint($("rsiSeg").children[2], RSI_COL);
   $("trendRow").style.display = indMode() === "trend" ? "" : "none";
-  renderSeg("trendSeg", [[true,"Colorer"],[false,"Normaux"]], prefs.trendBars !== false, v => { prefs.trendBars = v; savePrefs(); renderToggles(); setCandles(); });
+  renderSeg("trendSeg", [[true,"Colorer"],[false,"Normaux"]], prefs.trendBars !== false, v => { prefs.trendBars = v; savePrefs(); renderToggles(); setCandles(); refreshMulti(); });
   [["tLen", TREND.len], ["tOb", TREND.ob], ["tOs", TREND.os]].forEach(([id, v]) => { if (document.activeElement !== $(id)) $(id).value = v; });
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
@@ -1475,7 +1519,7 @@ const indMode = () => prefs.ind === "rsi" || prefs.ind === "trend" ? prefs.ind :
 function setInd(mode) {
   prefs.ind = mode; prefs.rsi = mode !== "none";
   if (mode !== "none") prefs.indLast = mode;
-  savePrefs(); renderToggles(); drawRsi(); setCandles();
+  savePrefs(); renderToggles(); drawRsi(); setCandles(); refreshMulti();
 }
 const trendOn = () => indMode() === "trend" && prefs.trendBars !== false;
 /* État RSI Trends de chaque chandelier : 1 haussier (RSI > 60), -1 baissier (RSI < 40), 0 sans tendance */
