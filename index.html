@@ -74,6 +74,10 @@
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
   .badge:empty { display:none; }
   .chart-wrap { position:relative; }
+  .rsi-chart { height:130px; margin-top:6px; background:var(--card); border:1px solid var(--border); border-radius:12px; display:none; }
+  .rsi-chart.show { display:block; }
+  .near { font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
+  .near.s { color:var(--sup); } .near.r { color:var(--res); }
   .ov-chart { height:min(72vh,620px); background:var(--card); border:1px solid var(--border); border-radius:12px; }
   .ohlc { position:absolute; top:6px; left:8px; right:64px; font-size:11px; line-height:1.45; color:var(--muted); pointer-events:none; z-index:2; }
   .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -134,12 +138,14 @@
     </div>
     <div class="chart-wrap">
       <div class="ov-chart" id="ovChart"></div>
+      <div class="rsi-chart" id="rsiChart"></div>
       <div class="ohlc" id="ohlc"></div>
       <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
         <div class="cfg-head"><strong>Réglages</strong><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
         <div class="cfg-row"><span>Afficher</span><div class="seg" id="kindSeg"></div></div>
         <div class="cfg-row"><span>Supports et résistances</span><div class="seg" id="lvSeg"></div></div>
         <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
+        <div class="cfg-row"><span>Indicateur sous le graphique</span><div class="seg" id="rsiSeg"></div></div>
         <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
       </div>
     </div>
@@ -147,6 +153,7 @@
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
+      <div class="lv" id="boxMa"><h3>Moyennes mobiles</h3><div id="ovMaList"></div></div>
     </div>
     <p class="ov-foot" id="ovFoot"></p>
   </div>
@@ -159,7 +166,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -288,7 +295,7 @@ function renderGrid() {
     const cls = pct == null ? "" : pct >= 0 ? "up" : "down";
     card.innerHTML =
       '<div class="card-head"><div class="row1"><span class="nm"></span><span class="px"></span></div>' +
-      '<div class="row2"><span class="sym"></span><span class="px2"></span><span class="chg ' + cls + '"></span></div></div>' +
+      '<div class="row2"><span class="sym"></span><span class="px2"></span><span class="chg ' + cls + '"></span></div><div class="near"></div></div>' +
       '<div class="chart"></div>';
     card.querySelector(".nm").textContent = item.name;
     card.querySelector(".sym").textContent = item.yahoo;
@@ -300,6 +307,16 @@ function renderGrid() {
       card.querySelector(".px").textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
       card.querySelector(".px2").textContent = fmt(info.last, null);
       card.querySelector(".chg").textContent = fmtPct(pct);
+      const nr = nearestLevel(info);
+      if (nr) {
+        const el = card.querySelector(".near");
+        el.className = "near " + (nr.kind === "S" ? "s" : "r");
+        const pctTxt = nr.dist.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %";
+        el.textContent = prefs.cols >= 3
+          ? (nr.kind === "S" ? "▲ S·" : "▼ R·") + LV[nr.tf].short + " à " + pctTxt
+          : (nr.kind === "S" ? "▲ Proche support " : "▼ Proche résistance ") + LV[nr.tf].name.toLowerCase().replace(/s$/, "") + " à " + pctTxt;
+        el.title = fmt(nr.price, info.currency);
+      }
       chartEl.dataset.sym = item.yahoo;
       io.observe(chartEl);
       card.onclick = () => openDetail(item, info);
@@ -332,7 +349,7 @@ async function openDetail(item, info) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende au-dessus du graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -402,6 +419,21 @@ function maSeries(data, tf, n, iv) {
   return out;
 }
 
+/* Niveau (toutes échelles) le plus proche du cours, s'il est à moins de NEAR_PCT % */
+const NEAR_PCT = 2;
+function nearestLevel(info) {
+  let best = null;
+  ["D","W","M","Q"].forEach(tf => {
+    const L = levelsOf(info, tf);
+    [["S", L.supports[0]], ["R", L.resistances[0]]].forEach(([kind, l]) => {
+      if (!l || l.extreme) return;
+      const dist = Math.abs(l.price / info.last - 1) * 100;
+      if (dist <= NEAR_PCT && (!best || dist < best.dist)) best = { kind, tf, dist, price:l.price };
+    });
+  });
+  return best;
+}
+
 /* ---------- Niveaux par échelle de temps ---------- */
 const LV = {
   D: { short:"J", name:"Journaliers",    style:1, width:1, dash:"1 3" },
@@ -456,6 +488,7 @@ function renderToggles() {
   $("cfgCount").textContent = n ? String(n) : "";
   multiSeg("maSeg", MA_PERIODS.map(p => [p, "MM" + p]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); });
   renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
+  renderSeg("rsiSeg", [[false,"Aucun"],[true,"RSI 14"]], !!prefs.rsi, v => { prefs.rsi = v; savePrefs(); renderToggles(); drawRsi(); });
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
   KINDS.forEach(([k, label]) => {
@@ -537,6 +570,53 @@ function drawMas() {
     ovMa.push(s);
   }));
 }
+/* RSI 14 (lissage de Wilder), dans l'unité des chandeliers */
+function rsiValues(rows, n = 14) {
+  const out = rows.map(r => ({ time:r[0] }));
+  if (rows.length <= n) return out;
+  let g = 0, l = 0;
+  for (let i = 1; i <= n; i++) { const d = rows[i][4] - rows[i - 1][4]; if (d > 0) g += d; else l -= d; }
+  g /= n; l /= n;
+  out[n].value = l === 0 ? 100 : 100 - 100 / (1 + g / l);
+  for (let i = n + 1; i < rows.length; i++) {
+    const d = rows[i][4] - rows[i - 1][4];
+    g = (g * (n - 1) + Math.max(d, 0)) / n;
+    l = (l * (n - 1) + Math.max(-d, 0)) / n;
+    out[i].value = l === 0 ? 100 : 100 - 100 / (1 + g / l);
+  }
+  return out;
+}
+let rsiChart = null, rsiSeries = null, rsiMap = new Map(), syncing = false;
+function drawRsi() {
+  if (rsiChart) { rsiChart.remove(); rsiChart = null; rsiSeries = null; }
+  rsiMap = new Map();
+  const box = $("rsiChart");
+  box.classList.toggle("show", !!prefs.rsi);
+  if (!ovChart) return;
+  ovChart.applyOptions({ timeScale:{ visible:!prefs.rsi } });
+  if (!prefs.rsi) return;
+  const rows = barsFor(ovData, prefs.iv || "D");
+  rsiChart = LW.createChart(box, Object.assign(baseOptions(false), {
+    rightPriceScale:{ borderVisible:false, minimumWidth:72, scaleMargins:{ top:0.1, bottom:0.1 } },
+    handleScale:{ axisPressedMouseMove:false },
+  }));
+  rsiSeries = rsiChart.addLineSeries({
+    color:"#0ea5e9", lineWidth:2, priceLineVisible:false, lastValueVisible:true, title:"RSI 14",
+    autoscaleInfoProvider: () => ({ priceRange:{ minValue:0, maxValue:100 } }),
+  });
+  const data = rsiValues(rows);
+  rsiSeries.setData(data);
+  data.forEach(d => { if (d.value != null) rsiMap.set(d.time, d.value); });
+  [[70, css("--res")], [30, css("--sup")]].forEach(([v, col]) =>
+    rsiSeries.createPriceLine({ price:v, color:col, lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));
+  const r = ovChart.timeScale().getVisibleLogicalRange();
+  if (r) rsiChart.timeScale().setVisibleLogicalRange(r);
+  rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    if (!range || syncing || !ovChart) return;
+    syncing = true; ovChart.timeScale().setVisibleLogicalRange(range); syncing = false;
+  });
+}
+
 function addDetailLevels(series, info) {
   const lines = [];
   selectedLv().forEach(tf => {
@@ -550,7 +630,28 @@ function addDetailLevels(series, info) {
   });
   return lines;
 }
+function renderMaList(info) {
+  const box = $("ovMaList"); box.innerHTML = "";
+  const iv = prefs.iv || "D";
+  const unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
+  MA_PERIODS.forEach(n => {
+    const pts = maSeries(ovData, iv, n, iv);
+    const d = document.createElement("div"); d.className = "it";
+    const a = document.createElement("span"); a.style.color = MA_COL[n];
+    const b = document.createElement("small");
+    if (!pts.length) { a.textContent = "MM" + n; b.textContent = "historique insuffisant (" + n + " " + unit + ")"; }
+    else {
+      const v = pts[pts.length - 1].value, dist = (info.last / v - 1) * 100;
+      a.textContent = "MM" + n + "  " + fmt(v, info.currency);
+      b.textContent = "Cours " + fmtPct(Math.round(dist * 100) / 100) + (dist >= 0 ? " au-dessus" : " en dessous");
+    }
+    d.append(a, b); box.appendChild(d);
+  });
+  const note = document.createElement("small"); note.textContent = "En " + unit + ", comme les chandeliers";
+  box.appendChild(note);
+}
 function renderLevelLists(info) {
+  renderMaList(info);
   const sel = selectedLv();
   const selK = selectedKinds();
   $("boxRes").style.display = selK.includes("R") ? "" : "none";
@@ -581,11 +682,16 @@ function drawDetail() {
   renderToggles();
   const ivInfo = INTERVALS.find(x => x[0] === iv);
 
+  if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = [];
   const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), baseOptions(false));
-  ovChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.14, bottom:0.08 } });
+  ovChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.14, bottom:0.08 }, minimumWidth:72 });
+  ovChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    if (!range || syncing || !rsiChart) return;
+    syncing = true; rsiChart.timeScale().setVisibleLogicalRange(range); syncing = false;
+  });
   const c = ovChart.addCandlestickSeries({
     upColor:css("--up"), downColor:css("--down"), borderVisible:false,
     wickUpColor:css("--up"), wickDownColor:css("--down"),
@@ -616,8 +722,10 @@ function drawDetail() {
       param.time.year + "-" + String(param.time.month).padStart(2, "0") + "-" + String(param.time.day).padStart(2, "0")) : null;
     let r = row || rows[rows.length - 1];
     showOhlc(r);
-    if (row && ovMa.length) {
-      const extra = ovMa.map(s => { const v = param.seriesData.get(s); return v ? '<span style="color:' + MA_COL[s._n] + '">MM' + s._n + " <b>" + fmt(v.value) + "</b></span>" : ""; }).join("");
+    if (row && (ovMa.length || rsiChart)) {
+      let extra = ovMa.map(s => { const v = param.seriesData.get(s); return v ? '<span style="color:' + MA_COL[s._n] + '">MM' + s._n + " <b>" + fmt(v.value) + "</b></span>" : ""; }).join("");
+      const rv = rsiMap.get(row[0]);
+      if (rv != null) extra += '<span style="color:#0ea5e9">RSI <b>' + rv.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + "</b></span>";
       if (extra) $("ohlc").innerHTML += "<div>" + extra + "</div>";
     }
   });
@@ -628,10 +736,12 @@ function drawDetail() {
   } else {
     ovChart.timeScale().fitContent();
   }
+  drawRsi();
 }
 function closeDetail() {
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
+  if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = [];
 }
