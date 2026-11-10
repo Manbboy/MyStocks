@@ -30,12 +30,12 @@ MIN_TOUCHES = 2         # un niveau doit avoir été touché au moins 2 fois
 
 # Paramètres par échelle de temps :
 #   lookback = nombre de chandeliers analysés, window = un sommet/creux doit dominer
-#   ce nombre de chandeliers de chaque côté, pct = écart minimal pour fusionner deux pivots
+#   ce nombre de chandeliers de chaque côté, pct = écart max. entre deux contacts d'un même niveau
 TIMEFRAMES = {
-    "D": {"rule": None, "lookback": 250, "window": 5, "pct": 0.012, "label": "1 an de séances"},
+    "D": {"rule": None, "lookback": 250, "window": 5, "pct": 0.02, "label": "1 an de séances"},
     "W": {"rule": "W", "lookback": 156, "window": 3, "pct": 0.02,  "label": "3 ans de semaines"},
-    "M": {"rule": "M", "lookback": 120, "window": 2, "pct": 0.03,  "label": "10 ans de mois"},
-    "Q": {"rule": "Q", "lookback": 40,  "window": 1, "pct": 0.04,  "label": "10 ans de trimestres"},
+    "M": {"rule": "M", "lookback": 120, "window": 2, "pct": 0.02,  "label": "10 ans de mois"},
+    "Q": {"rule": "Q", "lookback": 40,  "window": 1, "pct": 0.02,  "label": "10 ans de trimestres"},
 }
 
 
@@ -75,7 +75,7 @@ def support_resistance(df: pd.DataFrame, lookback: int, window: int, pct: float)
     if n < window * 2 + 3:
         return [], []
     price = float(d["Close"].iloc[-1])
-    tol = max(pct * price, 0.5 * atr(d))
+    tol = pct * price   # même règle que le curseur « Précision des contacts » de la page (2 % par défaut)
 
     w = window
     pivots = []  # (prix, index, "H" sommet / "L" creux)

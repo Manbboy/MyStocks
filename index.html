@@ -93,11 +93,17 @@
   .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ohlc span { margin-right:8px; }
   .ohlc b { color:var(--text); font-weight:600; }
-  .cfg { position:absolute; top:8px; right:8px; left:8px; max-width:380px; margin-left:auto; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.18); padding:12px; z-index:5; display:none; }
+  .cfg { position:absolute; top:6px; right:6px; left:6px; max-width:420px; margin-left:auto; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.18); padding:8px 10px 10px; z-index:5; display:none; }
+  .cfg-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; }
+  .cfg-row.wide { grid-column:1 / -1; }
+  .cfg .seg button { padding:4px 7px; font-size:12px; }
+  .cfg .seg button.tfb { padding:3px 7px; }
+  #tolRange { width:100%; accent-color:var(--accent); margin:2px 0 0; }
   .cfg.show { display:block; }
-  .cfg-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:14px; }
+  .cfg-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; font-size:13px; }
   .cfg-x { border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; padding:2px 6px; }
-  .cfg-row { display:flex; flex-direction:column; gap:5px; padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--muted); }
+  .cfg-row { display:flex; flex-direction:column; gap:3px; padding:5px 0; border-top:1px solid var(--border); font-size:11px; color:var(--muted); min-width:0; }
+  .cfg-row b { color:var(--text); }
   .cfg-row small { font-size:11px; }
   .cfg-row .seg { align-self:flex-start; flex-wrap:wrap; }
   .seg button.col { color:var(--c); }
@@ -158,11 +164,15 @@
       <div class="ohlc" id="ohlc"></div>
       <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
         <div class="cfg-head"><strong>Réglages</strong><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
-        <div class="cfg-row"><span>Afficher</span><div class="seg" id="kindSeg"></div></div>
-        <div class="cfg-row"><span>Supports et résistances</span><div class="seg" id="lvSeg"></div></div>
-        <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
-        <div class="cfg-row"><span>Indicateur sous le graphique</span><div class="seg" id="rsiSeg"></div></div>
-        <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
+        <div class="cfg-grid">
+          <div class="cfg-row"><span>Afficher</span><div class="seg" id="kindSeg"></div></div>
+          <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
+          <div class="cfg-row wide"><span>Échelles des supports / résistances</span><div class="seg" id="lvSeg"></div></div>
+          <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
+            <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
+          <div class="cfg-row"><span>Moyennes <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
+          <div class="cfg-row"><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
+        </div>
       </div>
     </div>
     <div class="lgd" id="ovLegend"></div>
@@ -195,7 +205,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2 };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -379,7 +389,7 @@ async function openDetail(item, info) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Niveaux calculés à partir des sommets et creux touchés au moins deux fois, à l'écart près réglé avec « Précision des contacts » : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -387,6 +397,7 @@ async function openDetail(item, info) {
 
   ovItem = info;
   ovData = await getSeries(info);
+  ovLevels = computeLevels(ovData, info.last, tolPct());
   drawDetail();
 }
 
@@ -484,7 +495,53 @@ function sample(kind, tf) {
     '" stroke-width="' + st.width + '"' + (st.dash ? ' stroke-dasharray="' + st.dash + '"' : "") + '/></svg>';
 }
 const LV_ORDER = ["D","W","M","Q"];
+/* Niveaux recalculés dans la page avec la précision choisie (même méthode que le script) */
+const TF_PARAMS = { D:{ lookback:250, window:5 }, W:{ lookback:156, window:3 }, M:{ lookback:120, window:2 }, Q:{ lookback:40, window:1 } };
+let ovLevels = null;
+function computeLevels(data, last, pct) {
+  const out = {};
+  LV_ORDER.forEach(tf => {
+    const { lookback, window:w } = TF_PARAMS[tf];
+    const d = barsFor(data, tf).slice(-lookback);
+    const n = d.length, res = { supports:[], resistances:[], from: d[0] ? d[0][0] : null };
+    out[tf] = res;
+    if (n < w * 2 + 3) return;
+    const price = last, tol = pct / 100 * price;
+    const piv = [];
+    for (let i = w; i < n - w; i++) {
+      let isH = true, isL = true;
+      for (let j = i - w; j <= i + w; j++) { if (d[j][2] > d[i][2]) isH = false; if (d[j][3] < d[i][3]) isL = false; }
+      if (isH) piv.push([d[i][2], i, "H"]);
+      if (isL) piv.push([d[i][3], i, "L"]);
+    }
+    piv.sort((a, b) => a[0] - b[0]);
+    const cl = [];
+    for (const [p, i, k] of piv) {
+      const c = cl[cl.length - 1];
+      if (c && Math.abs(p - c.mean) <= tol) { c.items.push([p, i, k]); c.mean = c.items.reduce((s, x) => s + x[0], 0) / c.items.length; }
+      else cl.push({ items:[[p, i, k]], mean:p });
+    }
+    const levels = cl.filter(c => c.items.length >= 2).map(c => {
+      const hits = c.items.slice().sort((a, b) => a[1] - b[1]);
+      return { price:c.mean, touches:hits.length, last:d[hits[hits.length - 1][1]][0], tol,
+               hits:hits.map(([p, i, k]) => [d[i][0], p, k]) };
+    });
+    res.supports = levels.filter(l => l.price < price).sort((a, b) => b.price - a.price).slice(0, 3);
+    res.resistances = levels.filter(l => l.price > price).sort((a, b) => a.price - b.price).slice(0, 3);
+    if (!res.supports.length) {
+      let i = 0; d.forEach((r, j) => { if (r[3] < d[i][3]) i = j; });
+      if (d[i][3] < price) res.supports = [{ price:d[i][3], touches:1, last:d[i][0], tol, extreme:true, hits:[[d[i][0], d[i][3], "L"]] }];
+    }
+    if (!res.resistances.length) {
+      let i = 0; d.forEach((r, j) => { if (r[2] > d[i][2]) i = j; });
+      if (d[i][2] > price) res.resistances = [{ price:d[i][2], touches:1, last:d[i][0], tol, extreme:true, hits:[[d[i][0], d[i][2], "H"]] }];
+    }
+  });
+  return out;
+}
+const tolPct = () => { const v = +prefs.tol; return v >= 0.3 && v <= 6 ? v : 2; };
 function levelsOf(info, tf) {
+  if (ovLevels && info === ovItem) return ovLevels[tf];
   if (info.levels && info.levels[tf]) return info.levels[tf];
   return tf === "D" ? { supports:info.supports || [], resistances:info.resistances || [] } : { supports:[], resistances:[] };
 }
@@ -518,9 +575,27 @@ $("cfgBtn").onclick = e => { e.stopPropagation(); toggleCfg(); };
 $("cfgClose").onclick = () => toggleCfg(false);
 $("cfg").addEventListener("click", e => e.stopPropagation());
 document.addEventListener("click", () => toggleCfg(false));
+/* Le graphique capte les gestes tactiles : on ferme dès qu'on le touche (hors du panneau) */
+document.addEventListener("pointerdown", e => {
+  if (!$("cfg").classList.contains("show")) return;
+  if ($("cfg").contains(e.target) || $("cfgBtn").contains(e.target)) return;
+  toggleCfg(false);
+}, true);
+let tolTimer = null;
+$("tolRange").addEventListener("input", e => {
+  prefs.tol = +e.target.value;
+  $("tolVal").textContent = tolPct().toLocaleString("fr-FR", { minimumFractionDigits:1 }) + " %";
+  clearTimeout(tolTimer);
+  tolTimer = setTimeout(() => {
+    savePrefs();
+    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct()); refreshLevels(); }
+  }, 120);
+});
 function renderToggles() {
+  $("tolRange").value = tolPct();
+  $("tolVal").textContent = tolPct().toLocaleString("fr-FR", { minimumFractionDigits:1 }) + " %";
   const unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[prefs.iv || "D"];
-  $("maHint").textContent = "· en " + unit + ", comme les chandeliers";
+  $("maHint").textContent = "(en " + unit + ")";
   const n = (selectedKinds().length ? selectedLv().length : 0) + selMaP().length;
   $("cfgCount").textContent = n ? String(n) : "";
   multiSeg("maSeg", MA_PERIODS.map(p => [p, "MM" + p]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); }, v => MA_COL[v]);
@@ -627,7 +702,7 @@ function rsiValues(rows, n = 14) {
   }
   return out;
 }
-let rsiChart = null, rsiSeries = null, rsiMap = new Map(), syncing = false;
+let rsiChart = null, rsiSeries = null, rsiMap = new Map(), syncing = false, crossSync = false;
 function drawRsi() {
   if (rsiChart) { rsiChart.remove(); rsiChart = null; rsiSeries = null; }
   rsiMap = new Map();
@@ -653,6 +728,15 @@ function drawRsi() {
     rsiSeries.createPriceLine({ price:v, color:col, lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));
   const r = ovChart.timeScale().getVisibleLogicalRange();
   if (r) rsiChart.timeScale().setVisibleLogicalRange(r);
+  const closeByTime = new Map(rows.map(r => [r[0], r[4]]));
+  rsiChart.subscribeCrosshairMove(param => {
+    if (crossSync || !ovChart || !ovCandles) return;
+    crossSync = true;
+    const t = param && param.time ? (typeof param.time === "string" ? param.time :
+      param.time.year + "-" + String(param.time.month).padStart(2, "0") + "-" + String(param.time.day).padStart(2, "0")) : null;
+    if (t && closeByTime.has(t)) ovChart.setCrosshairPosition(closeByTime.get(t), t, ovCandles); else ovChart.clearCrosshairPosition();
+    crossSync = false;
+  });
   rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
     if (!range || syncing || !ovChart) return;
     syncing = true; ovChart.timeScale().setVisibleLogicalRange(range); syncing = false;
@@ -763,12 +847,18 @@ function drawDetail() {
   ovChart.subscribeCrosshairMove(param => {
     const row = param && param.time ? bySeries.get(typeof param.time === "string" ? param.time :
       param.time.year + "-" + String(param.time.month).padStart(2, "0") + "-" + String(param.time.day).padStart(2, "0")) : null;
+    if (rsiChart && rsiSeries && !crossSync) {
+      crossSync = true;
+      const rv = row ? rsiMap.get(row[0]) : null;
+      if (row && rv != null) rsiChart.setCrosshairPosition(rv, row[0], rsiSeries); else rsiChart.clearCrosshairPosition();
+      crossSync = false;
+    }
     let r = row || rows[rows.length - 1];
     showOhlc(r);
     if (row && (ovMa.length || rsiChart)) {
       let extra = ovMa.map(s => { const v = param.seriesData.get(s); return v ? '<span style="color:' + MA_COL[s._n] + '">MM' + s._n + " <b>" + fmt(v.value) + "</b></span>" : ""; }).join("");
       const rv = rsiMap.get(row[0]);
-      if (rv != null) extra += '<span style="color:#0ea5e9">RSI <b>' + rv.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + "</b></span>";
+      if (rv != null) extra += '<span style="color:' + RSI_COL + '">RSI <b>' + rv.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + "</b></span>";
       if (extra) $("ohlc").innerHTML += "<div>" + extra + "</div>";
     }
   });
@@ -786,7 +876,7 @@ function closeDetail() {
   document.body.style.overflow = "";
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   if (ovChart) { ovChart.remove(); ovChart = null; }
-  ovCandles = null; ovLines = []; ovMa = [];
+  ovCandles = null; ovLines = []; ovMa = []; ovLevels = null;
 }
 $("ovClose").onclick = closeDetail;
 document.addEventListener("keydown", e => {
