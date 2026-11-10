@@ -1,13 +1,13 @@
 {
- "updated": "2026-11-10T18:50+00:00",
+ "updated": "2026-11-10T18:59+00:00",
  "demo": false,
  "symbols": {
   "AAPL": {
    "file": "series/AAPL.json",
    "date": "2026-11-10",
-   "last": 347.9501,
-   "change": -2.7399,
-   "changePct": -0.78,
+   "last": 348.11,
+   "change": -2.58,
+   "changePct": -0.74,
    "currency": "USD",
    "supports": [
     {
@@ -79,9 +79,9 @@
   "ADBE": {
    "file": "series/ADBE.json",
    "date": "2026-11-10",
-   "last": 233.9,
-   "change": -3.42,
-   "changePct": -1.44,
+   "last": 234.44,
+   "change": -2.88,
+   "changePct": -1.21,
    "currency": "USD",
    "supports": [
     {
@@ -158,9 +158,9 @@
   "AMD": {
    "file": "series/AMD.json",
    "date": "2026-11-10",
-   "last": 511.41,
-   "change": 2.83,
-   "changePct": 0.56,
+   "last": 513.435,
+   "change": 4.855,
+   "changePct": 0.95,
    "currency": "USD",
    "supports": [
     {
@@ -279,13 +279,13 @@
   "AVGO": {
    "file": "series/AVGO.json",
    "date": "2026-11-10",
-   "last": 328.2332,
-   "change": 8.7532,
-   "changePct": 2.74,
+   "last": 329.74,
+   "change": 10.26,
+   "changePct": 3.21,
    "currency": "USD",
    "supports": [
     {
-     "price": 323.8681,
+     "price": 323.8682,
      "touches": 2,
      "last": "2026-01-08",
      "recent": false
@@ -327,9 +327,9 @@
   "BABA": {
    "file": "series/BABA.json",
    "date": "2026-11-10",
-   "last": 102.55,
-   "change": -2.83,
-   "changePct": -2.69,
+   "last": 102.6503,
+   "change": -2.7297,
+   "changePct": -2.59,
    "currency": "USD",
    "supports": [
     {
@@ -364,9 +364,9 @@
   "BZ=F": {
    "file": "series/BZ_F.json",
    "date": "2026-11-10",
-   "last": 91.39,
-   "change": -1.18,
-   "changePct": -1.27,
+   "last": 91.45,
+   "change": -1.12,
+   "changePct": -1.21,
    "currency": "USD",
    "supports": [
     {
@@ -460,9 +460,9 @@
   "COO": {
    "file": "series/COO.json",
    "date": "2026-11-10",
-   "last": 63.35,
-   "change": -0.58,
-   "changePct": -0.91,
+   "last": 63.385,
+   "change": -0.545,
+   "changePct": -0.85,
    "currency": "USD",
    "supports": [
     {
@@ -533,9 +533,9 @@
   "DECK": {
    "file": "series/DECK.json",
    "date": "2026-11-10",
-   "last": 89.83,
-   "change": -0.6,
-   "changePct": -0.66,
+   "last": 89.675,
+   "change": -0.755,
+   "changePct": -0.83,
    "currency": "USD",
    "supports": [
     {
@@ -569,9 +569,9 @@
   "DELL": {
    "file": "series/DELL.json",
    "date": "2026-11-10",
-   "last": 327.64,
-   "change": -18.67,
-   "changePct": -5.39,
+   "last": 329.23,
+   "change": -17.08,
+   "changePct": -4.93,
    "currency": "USD",
    "supports": [
     {
@@ -665,9 +665,9 @@
   "DIS": {
    "file": "series/DIS.json",
    "date": "2026-11-10",
-   "last": 118.86,
-   "change": -0.26,
-   "changePct": -0.22,
+   "last": 118.725,
+   "change": -0.395,
+   "changePct": -0.33,
    "currency": "USD",
    "supports": [
     {
@@ -866,11 +866,17 @@
   "FDX": {
    "file": "series/FDX.json",
    "date": "2026-11-10",
-   "last": 319.175,
-   "change": 0.335,
-   "changePct": 0.11,
+   "last": 319.76,
+   "change": 0.92,
+   "changePct": 0.29,
    "currency": "USD",
    "supports": [
+    {
+     "price": 319.3289,
+     "touches": 7,
+     "last": "2026-08-24",
+     "recent": true
+    },
     {
      "price": 304.6104,
      "touches": 6,
@@ -882,21 +888,9 @@
      "touches": 4,
      "last": "2026-10-14",
      "recent": true
-    },
-    {
-     "price": 275.999,
-     "touches": 4,
-     "last": "2026-09-25",
-     "recent": true
     }
    ],
    "resistances": [
-    {
-     "price": 319.3289,
-     "touches": 7,
-     "last": "2026-08-24",
-     "recent": true
-    },
     {
      "price": 340.2798,
      "touches": 4,
@@ -908,9 +902,9 @@
   "FISV": {
    "file": "series/FISV.json",
    "date": "2026-11-10",
-   "last": 63.59,
-   "change": 0.07,
-   "changePct": 0.11,
+   "last": 63.54,
+   "change": 0.02,
+   "changePct": 0.03,
    "currency": "USD",
    "supports": [
     {
@@ -1089,9 +1083,9 @@
   "IT": {
    "file": "series/IT.json",
    "date": "2026-11-10",
-   "last": 188.28,
-   "change": -2.74,
-   "changePct": -1.43,
+   "last": 188.01,
+   "change": -3.01,
+   "changePct": -1.58,
    "currency": "USD",
    "supports": [
     {
@@ -1252,9 +1246,9 @@
   "KO": {
    "file": "series/KO.json",
    "date": "2026-11-10",
-   "last": 96.795,
-   "change": 0.765,
-   "changePct": 0.8,
+   "last": 96.865,
+   "change": 0.835,
+   "changePct": 0.87,
    "currency": "USD",
    "supports": [
     {
@@ -1325,9 +1319,9 @@
   "MCD": {
    "file": "series/MCD.json",
    "date": "2026-11-10",
-   "last": 282.205,
-   "change": 0.765,
-   "changePct": 0.27,
+   "last": 282.29,
+   "change": 0.85,
+   "changePct": 0.3,
    "currency": "USD",
    "supports": [
     {
@@ -1337,7 +1331,7 @@
      "recent": false
     },
     {
-     "price": 269.7911,
+     "price": 269.791,
      "touches": 3,
      "last": "2026-08-24",
      "recent": true
@@ -1373,9 +1367,9 @@
   "META": {
    "file": "series/META.json",
    "date": "2026-11-10",
-   "last": 639.135,
-   "change": -2.235,
-   "changePct": -0.35,
+   "last": 639.01,
+   "change": -2.36,
+   "changePct": -0.37,
    "currency": "USD",
    "supports": [
     {
@@ -1421,9 +1415,9 @@
   "MSFT": {
    "file": "series/MSFT.json",
    "date": "2026-11-10",
-   "last": 533.72,
-   "change": -11.46,
-   "changePct": -2.1,
+   "last": 533.94,
+   "change": -11.24,
+   "changePct": -2.06,
    "currency": "USD",
    "supports": [
     {
@@ -1506,9 +1500,9 @@
   "NFLX": {
    "file": "series/NFLX.json",
    "date": "2026-11-10",
-   "last": 62.7342,
-   "change": -1.2158,
-   "changePct": -1.9,
+   "last": 62.725,
+   "change": -1.225,
+   "changePct": -1.92,
    "currency": "USD",
    "supports": [
     {
@@ -1543,9 +1537,9 @@
   "NKE": {
    "file": "series/NKE.json",
    "date": "2026-11-10",
-   "last": 39.045,
-   "change": -0.835,
-   "changePct": -2.09,
+   "last": 39.005,
+   "change": -0.875,
+   "changePct": -2.19,
    "currency": "USD",
    "supports": [
     {
@@ -1621,9 +1615,9 @@
   "NVDA": {
    "file": "series/NVDA.json",
    "date": "2026-11-10",
-   "last": 168.24,
-   "change": -10.43,
-   "changePct": -5.84,
+   "last": 167.8885,
+   "change": -10.7815,
+   "changePct": -6.03,
    "currency": "USD",
    "supports": [
     {
@@ -1658,9 +1652,9 @@
   "ORCL": {
    "file": "series/ORCL.json",
    "date": "2026-11-10",
-   "last": 116.86,
-   "change": -2.93,
-   "changePct": -2.45,
+   "last": 117.25,
+   "change": -2.54,
+   "changePct": -2.12,
    "currency": "USD",
    "supports": [
     {
@@ -1695,9 +1689,9 @@
   "PYPL": {
    "file": "series/PYPL.json",
    "date": "2026-11-10",
-   "last": 58.76,
-   "change": -1.29,
-   "changePct": -2.15,
+   "last": 58.77,
+   "change": -1.28,
+   "changePct": -2.13,
    "currency": "USD",
    "supports": [
     {
@@ -1774,9 +1768,9 @@
   "RIVN": {
    "file": "series/RIVN.json",
    "date": "2026-11-10",
-   "last": 13.485,
-   "change": -0.525,
-   "changePct": -3.75,
+   "last": 13.5,
+   "change": -0.51,
+   "changePct": -3.64,
    "currency": "USD",
    "supports": [
     {
@@ -2010,9 +2004,9 @@
   "SNAP": {
    "file": "series/SNAP.json",
    "date": "2026-11-10",
-   "last": 4.9,
-   "change": -0.15,
-   "changePct": -2.97,
+   "last": 4.8903,
+   "change": -0.1597,
+   "changePct": -3.16,
    "currency": "USD",
    "supports": [
     {
@@ -2052,9 +2046,9 @@
   "SNOW": {
    "file": "series/SNOW.json",
    "date": "2026-11-10",
-   "last": 290.775,
-   "change": -0.365,
-   "changePct": -0.13,
+   "last": 291.595,
+   "change": 0.455,
+   "changePct": 0.16,
    "currency": "USD",
    "supports": [
     {
@@ -2232,9 +2226,9 @@
   "TSLA": {
    "file": "series/TSLA.json",
    "date": "2026-11-10",
-   "last": 376.8296,
-   "change": -1.2204,
-   "changePct": -0.32,
+   "last": 377.075,
+   "change": -0.975,
+   "changePct": -0.26,
    "currency": "USD",
    "supports": [
     {
@@ -2274,9 +2268,9 @@
   "UNH": {
    "file": "series/UNH.json",
    "date": "2026-11-10",
-   "last": 403.11,
-   "change": 5.49,
-   "changePct": 1.38,
+   "last": 403.465,
+   "change": 5.845,
+   "changePct": 1.47,
    "currency": "USD",
    "supports": [
     {
@@ -2390,9 +2384,9 @@
   "^GSPC": {
    "file": "series/_GSPC.json",
    "date": "2026-11-10",
-   "last": 7494.5801,
-   "change": -55.3599,
-   "changePct": -0.73,
+   "last": 7500.0898,
+   "change": -49.8501,
+   "changePct": -0.66,
    "currency": "USD",
    "supports": [
     {
