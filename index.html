@@ -107,8 +107,7 @@
   .mmb .mmdots i { width:6px; height:3px; border-radius:2px; display:block; }
   .mmb.on { color:var(--text); border-color:var(--text); }
   .mmb.on .mmdots { opacity:1; }
-  .seg .short { display:none; }
-  @media (max-width:400px) { #ivSeg .full { display:none; } #ivSeg .short { display:inline; } }
+  #ivSeg button { min-width:30px; font-weight:600; }
   .cfg-btn { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:7px 9px; font-size:13px; font-weight:600; cursor:pointer; }
   .cfg-btn[aria-expanded="true"] { background:var(--text); color:var(--bg); border-color:var(--text); }
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
@@ -284,6 +283,7 @@
     <div class="tb">
       <div class="seg" id="ivSeg"></div>
       <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
+      <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
       <span class="spacer"></span>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="lbl">Réglages</span><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
@@ -705,6 +705,13 @@ function goTo(dir) {
   ov.classList.add(dir > 0 ? "go-next" : "go-prev");
   openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
 }
+$("srBtn").onclick = () => {
+  const on = selectedKinds().length > 0 && selectedLv().length > 0;
+  if (on) prefs.kinds = [];
+  else { prefs.kinds = ["S","R"]; if (!selectedLv().length) prefs.lvs = LV_ORDER.slice(); }
+  hiKey = null;
+  savePrefs(); refreshLevels();
+};
 $("mmBtn").onclick = () => {
   prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
   savePrefs(); refreshLevels();
@@ -985,6 +992,8 @@ $("tolRange").addEventListener("input", e => {
   }, 120);
 });
 function renderToggles() {
+  const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
+  $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
   const mmOn = selMaP().length > 0;
   $("mmBtn").classList.toggle("on", mmOn); $("mmBtn").setAttribute("aria-pressed", mmOn ? "true" : "false");
   $("tolRange").value = tolPct();
@@ -1299,8 +1308,8 @@ function drawDetail() {
   const info = ovItem, iv = prefs.iv || "D";
   renderSeg("ivSeg", INTERVALS, iv, v => { prefs.iv = v; savePrefs(); drawDetail(); });
   [...$("ivSeg").children].forEach((b, k) => {
-    const full = INTERVALS[k][1], short = { D:"Jour", W:"Sem.", M:"Mois", Q:"Trim." }[INTERVALS[k][0]];
-    b.innerHTML = '<span class="full">' + full + '</span><span class="short">' + short + "</span>";
+    b.textContent = { D:"J", W:"S", M:"M", Q:"T" }[INTERVALS[k][0]];
+    b.title = "Chandeliers " + INTERVALS[k][2];
   });
   renderToggles();
   const ivInfo = INTERVALS.find(x => x[0] === iv);
