@@ -884,7 +884,11 @@ function drawQuad() {
         marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:FLIP_COL[f.type] });
         f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:FLIP_COL[f.type] }));
       });
-      c.setMarkers(marks.sort((a, b) => a.time < b.time ? -1 : 1));
+      const sorted = marks.sort((a, b) => a.time < b.time ? -1 : 1);
+      const apply = () => c.setMarkers(declutter(ch, rows, sorted));
+      let t = null;
+      ch.timeScale().subscribeVisibleLogicalRangeChange(() => { cancelAnimationFrame(t); t = requestAnimationFrame(apply); });
+      setTimeout(apply, 0);
     }
     /* RSI 14 ou RSI Trends sous chaque graphique, synchronisé avec lui */
     if (withRsi) {
@@ -1115,6 +1119,31 @@ function flipMarkers(only) {
     f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:col }));
   });
   return marks.sort((a, b) => a.time < b.time ? -1 : 1);
+}
+/* N'affiche qu'un marqueur quand plusieurs se chevauchent : un marqueur n'est gardé que s'il est à au moins
+   MARK_GAP pixels du précédent du même côté du chandelier ; en zoomant, les marqueurs masqués réapparaissent. */
+const MARK_GAP = 14;
+function declutter(chart, rows, marks) {
+  if (!chart || !marks.length) return marks;
+  const lr = chart.timeScale().getVisibleLogicalRange(), W = chart.timeScale().width();
+  if (!lr || !W) return marks;
+  const spacing = W / Math.max(1, lr.to - lr.from);
+  const idx = new Map(rows.map((r, i) => [r[0], i]));
+  const lastAt = {}, keep = [];
+  marks.forEach(m => {
+    const i = idx.get(m.time);
+    if (i == null) return;
+    const side = m.position;
+    if (lastAt[side] != null && (i - lastAt[side]) * spacing < MARK_GAP) return;
+    keep.push(m); lastAt[side] = i;
+  });
+  return keep;
+}
+/* Marqueurs des bascules sur le graphique principal, recalculés à chaque zoom */
+let flipRaw = null;
+function setFlipMarks(marks) {
+  flipRaw = marks;
+  if (ovCandles) ovCandles.setMarkers(marks ? declutter(ovChart, barsFor(ovData, prefs.iv || "D"), marks) : []);
 }
 function renderFlipList() {
   const box = $("ovFlipList"); if (!box) return;
@@ -1674,10 +1703,11 @@ function applyHighlight() {
     ovMaReact = maSel ? maReactions(ovData, prefs.iv || "D", maSel, tolPct()) : null;
     ovCandles.setMarkers(ovMaReact ? ovMaReact.events.map((e, j) => ({
       time:e.time, position:e.type === "up" ? "belowBar" : "aboveBar", shape:e.type === "up" ? "arrowUp" : "arrowDown",
-      color:MA_COL[maSel], text:String(j + 1) })) : (prefs.flip ? flipMarkers(flipSel) : []));
+      color:MA_COL[maSel], text:String(j + 1) })) : []);
+    if (!ovMaReact) setFlipMarks(prefs.flip ? flipMarkers(flipSel) : null); else flipRaw = null;
     return;
   }
-  ovMaReact = null;
+  ovMaReact = null; flipRaw = null;
   /* chaque contact est placé sur le chandelier affiché qui contient sa date */
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   const byKey = new Map(rows.map(r => [keyOf(iv, r[0]), r[0]]));
@@ -1870,6 +1900,12 @@ function drawDetail(keep) {
   const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
   ovChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.14, bottom:0.08 }, minimumWidth:72 });
+  let declTimer = null;
+  ovChart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+    if (!flipRaw) return;
+    cancelAnimationFrame(declTimer);
+    declTimer = requestAnimationFrame(() => { if (flipRaw && ovCandles) ovCandles.setMarkers(declutter(ovChart, barsFor(ovData, prefs.iv || "D"), flipRaw)); });
+  });
   ovChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
     if (!range || syncing || !rsiChart) return;
     syncing = true; rsiChart.timeScale().setVisibleLogicalRange(range); syncing = false;
