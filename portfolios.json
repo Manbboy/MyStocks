@@ -322,6 +322,21 @@
           "yahoo": "V",
           "tv": "NYSE:V",
           "name": "Visa"
+        },
+        {
+          "yahoo": "LLY",
+          "tv": "NYSE:LLY",
+          "name": "Eli Lilly"
+        },
+        {
+          "yahoo": "VIE.PA",
+          "tv": "EURONEXT:VIE",
+          "name": "Veolia"
+        },
+        {
+          "yahoo": "VETO.PA",
+          "tv": "EURONEXT:VETO",
+          "name": "Vetoquinol"
         }
       ]
     },
