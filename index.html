@@ -1304,7 +1304,7 @@ function drawRsi() {
   }));
   const trend = indMode() === "trend";
   rsiSeries = rsiChart.addLineSeries({
-    color: trend ? TV_COL.gray : RSI_COL, lineWidth: trend ? 1 : 2, priceLineVisible:false, lastValueVisible:true, title: trend ? "RSI Trends" : "RSI 14",
+    color: trend ? TV_COL.gray : RSI_COL, lineWidth: trend ? 1 : 2, priceLineVisible:false, lastValueVisible:true, title:"",
     autoscaleInfoProvider: () => ({ priceRange:{ minValue:0, maxValue:100 } }),
   });
   const data = rsiValues(rows, trend ? TREND.len : 14);
