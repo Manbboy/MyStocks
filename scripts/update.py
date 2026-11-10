@@ -2,7 +2,8 @@
 Met à jour les données de la page « Mes actions ».
 
 - Lit portfolios.json
-- Télécharge 10 ans de cours journaliers par action (Yahoo Finance, via yfinance)
+- Télécharge tout l'historique disponible (Yahoo Finance, via yfinance) :
+  10 ans en journalier + tout l'historique en mensuel (pour les moyennes mobiles longues)
 - Calcule les supports et résistances
 - Écrit data/summary.json et data/series/<symbole>.json
 
@@ -133,7 +134,7 @@ def all_levels(df: pd.DataFrame):
 def fetch_real(sym: str):
     import yfinance as yf
     t = yf.Ticker(sym)
-    df = t.history(period="10y", interval="1d", auto_adjust=True)
+    df = t.history(period="max", interval="1d", auto_adjust=True)
     if df is None or df.empty:
         raise RuntimeError("aucune donnée")
     df = df.reset_index()
@@ -149,7 +150,7 @@ def fetch_real(sym: str):
 def fetch_demo(sym: str):
     """Cours simulés (marche aléatoire avec zones de rebond) pour tester hors ligne."""
     rng = np.random.default_rng(abs(hash(sym)) % (2**32))
-    days = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=2500)
+    days = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=6000)
     base = rng.uniform(10, 400)
     x = np.cumsum(rng.normal(0, 0.015, len(days)))
     x += 0.15 * np.sin(np.linspace(0, 12, len(days)))
@@ -177,13 +178,18 @@ def main():
             df, currency = fetch(sym)
             if len(df) < 2:
                 raise RuntimeError("historique trop court")
+            monthly = resample(df, "M")
+            cutoff = (pd.Timestamp.today() - pd.DateOffset(years=10)).strftime("%Y-%m-%d")
+            df = df[df["Date"] >= cutoff].reset_index(drop=True)
             last, prev = float(df["Close"].iloc[-1]), float(df["Close"].iloc[-2])
             levels = all_levels(df)
             sup, res = levels["D"]["supports"], levels["D"]["resistances"]
             rows = [[r.Date, round(r.Open, 4), round(r.High, 4), round(r.Low, 4), round(r.Close, 4), int(r.Volume or 0)]
                     for r in df.itertuples()]
             fname = safe_name(sym) + ".json"
-            (SERIES / fname).write_text(json.dumps({"symbol": sym, "rows": rows}, separators=(",", ":")), encoding="utf-8")
+            long_rows = [[r.Date, round(r.Open, 4), round(r.High, 4), round(r.Low, 4), round(r.Close, 4), int(r.Volume or 0)]
+                         for r in monthly.itertuples()]
+            (SERIES / fname).write_text(json.dumps({"symbol": sym, "rows": rows, "long": long_rows}, separators=(",", ":")), encoding="utf-8")
             summary["symbols"][sym] = {
                 "file": "series/" + fname,
                 "date": df["Date"].iloc[-1],

@@ -112,6 +112,9 @@
     <div class="ov-ctrl"><span class="freq" id="ovFreq"></span><div class="seg" id="ivSeg"></div></div>
     <div class="ov-ctrl"><span class="freq">Afficher</span><div class="seg" id="kindSeg"></div></div>
     <div class="ov-ctrl"><span class="freq">Échelles des niveaux</span><div class="seg" id="lvSeg"></div></div>
+    <div class="ov-ctrl"><span class="freq">Moyennes mobiles</span><div class="seg" id="maSeg"></div></div>
+    <div class="ov-ctrl"><span class="freq">Échelles des moyennes</span><div class="seg" id="maTfSeg"></div></div>
+    <div class="ov-ctrl"><span class="freq">Valeurs sur l'axe de droite</span><div class="seg" id="axisSeg"></div></div>
     <div class="lgd" id="ovLegend"></div>
     <div class="ov-chart" id="ovChart"></div>
     <div class="levels">
@@ -129,7 +132,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"] };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], maTf:["D"], axis:false };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -302,7 +305,7 @@ async function openDetail(item, info) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende au-dessus du graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende au-dessus du graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures (MM20·M = moyenne des 20 derniers mois). Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -317,22 +320,63 @@ const INTERVALS = [["D","Jour","journaliers"],["W","Semaine","hebdomadaires"],["
 let ovItem = null, ovData = null;
 
 /* Regroupe les séances journalières en chandeliers semaine / mois / trimestre */
+function keyOf(iv, d) {
+  if (iv === "D") return d;
+  if (iv === "W") { const dt = new Date(d + "T00:00:00Z"); const day = (dt.getUTCDay() + 6) % 7; dt.setUTCDate(dt.getUTCDate() - day); return dt.toISOString().slice(0, 10); }
+  if (iv === "M") return d.slice(0, 7);
+  return d.slice(0, 4) + "-Q" + Math.floor((+d.slice(5, 7) - 1) / 3);
+}
+/* Regroupe des chandeliers (journaliers ou mensuels) en semaine / mois / trimestre */
 function aggregate(rows, iv) {
   if (iv === "D") return rows;
-  const key = d => {
-    const dt = new Date(d + "T00:00:00Z");
-    if (iv === "W") { const day = (dt.getUTCDay() + 6) % 7; dt.setUTCDate(dt.getUTCDate() - day); return dt.toISOString().slice(0, 10); }
-    if (iv === "M") return d.slice(0, 7);
-    return d.slice(0, 4) + "-Q" + Math.floor((+d.slice(5, 7) - 1) / 3);
-  };
   const out = [];
   let cur = null, k0 = null;
   for (const r of rows) {
-    const k = key(r[0]);
+    const k = keyOf(iv, r[0]);
     if (k !== k0) { if (cur) out.push(cur); cur = [r[0], r[1], r[2], r[3], r[4], r[5]]; k0 = k; }
     else { cur[2] = Math.max(cur[2], r[2]); cur[3] = Math.min(cur[3], r[3]); cur[4] = r[4]; cur[5] += r[5]; }
   }
   if (cur) out.push(cur);
+  return out;
+}
+/* Chandeliers d'une échelle ; mois et trimestres utilisent tout l'historique disponible */
+const barsCache = {};
+function barsFor(data, iv) {
+  const k = data.symbol + "|" + iv;
+  if (!barsCache[k]) {
+    const src = (iv === "M" || iv === "Q") && data.long && data.long.length ? data.long : data.rows;
+    barsCache[k] = aggregate(src, iv);
+  }
+  return barsCache[k];
+}
+
+/* ---------- Moyennes mobiles ---------- */
+const MA_PERIODS = [20, 50, 200];
+const MA_COLORS = {
+  20:  { D:"#93c5fd", W:"#60a5fa", M:"#2563eb", Q:"#1e3a8a" },
+  50:  { D:"#d8b4fe", W:"#c084fc", M:"#9333ea", Q:"#581c87" },
+  200: { D:"#fcd34d", W:"#f59e0b", M:"#b45309", Q:"#78350f" },
+};
+const MA_WIDTH = { D:1, W:2, M:2, Q:3 };
+/* Moyenne mobile de n chandeliers de l'échelle tf, projetée sur les chandeliers de l'échelle iv affichée */
+function maSeries(data, tf, n, iv) {
+  const src = barsFor(data, tf);
+  if (src.length < n) return [];
+  const byKey = {};
+  let sum = 0;
+  for (let i = 0; i < src.length; i++) {
+    sum += src[i][4];
+    if (i >= n) sum -= src[i - n][4];
+    if (i >= n - 1) byKey[keyOf(tf, src[i][0])] = sum / n;
+  }
+  const lastDaily = {};
+  if (iv !== "D") for (const r of data.rows) lastDaily[keyOf(iv, r[0])] = r[0];
+  const out = [];
+  for (const b of barsFor(data, iv)) {
+    const last = iv === "D" ? b[0] : (lastDaily[keyOf(iv, b[0])] || b[0]);
+    const v = byKey[keyOf(tf, last)];
+    if (v != null) out.push({ time:b[0], value:v });
+  }
   return out;
 }
 
@@ -363,7 +407,22 @@ function selectedLv() {
   const s = Array.isArray(prefs.lvs) ? prefs.lvs.filter(t => LV[t]) : ["D"];
   return LV_ORDER.filter(t => s.includes(t));
 }
+function multiSeg(id, opts, selected, onChange) {
+  const s = $(id); s.innerHTML = "";
+  opts.forEach(([v, label]) => {
+    const b = document.createElement("button");
+    b.textContent = label; if (selected.includes(v)) b.className = "on";
+    b.onclick = () => onChange(selected.includes(v) ? selected.filter(x => x !== v) : selected.concat(v));
+    s.appendChild(b);
+  });
+}
+const TF_OPTS = [["D","Jour"],["W","Semaine"],["M","Mois"],["Q","Trimestre"]];
+const selMaP = () => (Array.isArray(prefs.maP) ? prefs.maP : []).filter(p => MA_PERIODS.includes(p)).sort((a, b) => a - b);
+const selMaTf = () => LV_ORDER.filter(t => (Array.isArray(prefs.maTf) ? prefs.maTf : []).includes(t));
 function renderToggles() {
+  multiSeg("maSeg", MA_PERIODS.map(p => [p, "MM" + p]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); });
+  multiSeg("maTfSeg", TF_OPTS, selMaTf(), v => { prefs.maTf = v; savePrefs(); refreshLevels(); });
+  renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
   KINDS.forEach(([k, label]) => {
@@ -376,6 +435,13 @@ function renderToggles() {
   selectedLv().forEach(tf => selK.forEach(k => {
     const s = document.createElement("span");
     s.innerHTML = sample(k.toLowerCase(), tf) + (k === "S" ? "S" : "R") + "·" + LV[tf].short + " " + LV[tf].name.toLowerCase();
+    lg.appendChild(s);
+  }));
+  selMaTf().forEach(tf => selMaP().forEach(n => {
+    const s = document.createElement("span");
+    const enough = ovData && barsFor(ovData, tf).length >= n;
+    s.innerHTML = '<svg width="26" height="8" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="' + MA_COLORS[n][tf] + '" stroke-width="' + (MA_WIDTH[tf] + 0.5) + '"/></svg>' +
+      "MM" + n + "·" + LV[tf].short + (enough ? "" : " (historique insuffisant)");
     lg.appendChild(s);
   }));
   const s = $("lvSeg"); s.innerHTML = "";
@@ -410,13 +476,32 @@ function autoscaleDetail(info) {
 }
 let ovCandles = null, ovLines = [];
 /* Met à jour uniquement les lignes et la liste : le graphique garde sa position et son zoom */
+let ovMa = [];
 function refreshLevels() {
   renderToggles();
   if (ovCandles) {
     ovLines.forEach(l => ovCandles.removePriceLine(l));
     ovLines = addDetailLevels(ovCandles, ovItem);
+    drawMas();
   }
   renderLevelLists(ovItem);
+}
+function drawMas() {
+  ovMa.forEach(s => ovChart.removeSeries(s));
+  ovMa = [];
+  const iv = prefs.iv || "D";
+  selMaTf().forEach(tf => selMaP().forEach(n => {
+    const pts = maSeries(ovData, tf, n, iv);
+    if (!pts.length) return;
+    const s = ovChart.addLineSeries({
+      color:MA_COLORS[n][tf], lineWidth:MA_WIDTH[tf], priceLineVisible:false,
+      lastValueVisible:!!prefs.axis, crosshairMarkerVisible:false,
+      title: prefs.axis ? "MM" + n + "·" + LV[tf].short : "",
+      autoscaleInfoProvider: () => null,
+    });
+    s.setData(pts);
+    ovMa.push(s);
+  }));
 }
 function addDetailLevels(series, info) {
   const lines = [];
@@ -426,7 +511,7 @@ function addDetailLevels(series, info) {
     KINDS.filter(([k]) => selK.includes(k)).forEach(([p, , k, c]) =>
       L[k].forEach((l, i) => lines.push(series.createPriceLine({
         price:l.price, color:colorOf(c, tf), lineWidth:st.width, lineStyle:st.style,
-        axisLabelVisible:true, title:p + (i + 1) + "·" + st.short,
+        axisLabelVisible:!!prefs.axis, title: prefs.axis ? p + (i + 1) + "·" + st.short : "",
       }))));
   });
   return lines;
@@ -463,8 +548,8 @@ function drawDetail() {
   const ivInfo = INTERVALS.find(x => x[0] === iv);
   $("ovFreq").textContent = "Chandeliers " + ivInfo[2];
   if (ovChart) { ovChart.remove(); ovChart = null; }
-  ovCandles = null; ovLines = [];
-  const rows = aggregate(ovData.rows, iv);
+  ovCandles = null; ovLines = []; ovMa = [];
+  const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), baseOptions(false));
   const c = ovChart.addCandlestickSeries({
     upColor:css("--up"), downColor:css("--down"), borderVisible:false,
@@ -477,6 +562,8 @@ function drawDetail() {
   v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
   ovCandles = c;
   ovLines = addDetailLevels(c, info);
+  ovMa = [];
+  drawMas();
   renderLevelLists(info);
   const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
   if (rows.length > show) {
@@ -489,7 +576,7 @@ function closeDetail() {
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
   if (ovChart) { ovChart.remove(); ovChart = null; }
-  ovCandles = null; ovLines = [];
+  ovCandles = null; ovLines = []; ovMa = [];
 }
 $("ovClose").onclick = closeDetail;
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
