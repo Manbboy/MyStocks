@@ -89,10 +89,11 @@
   .ov-title { font-size:17px; font-weight:700; }
   .ov-sub { font-size:13px; color:var(--muted); }
   .close { white-space:nowrap; flex:0 0 auto; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer; }
-  .ov-body { flex:1; overflow:auto; padding:12px; max-width:1100px; width:100%; margin:0 auto; }
+  .ov-body { flex:1; overflow:auto; padding:12px; position:relative; max-width:1100px; width:100%; margin:0 auto; }
   .ov-ctrl { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
   .freq { font-size:13px; font-weight:600; }
-  .tb { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:8px; }
+  .tb { display:flex; justify-content:space-between; align-items:center; gap:6px; margin:-12px -12px 8px; padding:8px 12px; position:sticky; top:-12px; z-index:8; background:var(--bg); border-bottom:1px solid transparent; }
+  .tb.stuck { border-bottom-color:var(--border); box-shadow:0 4px 10px rgba(0,0,0,.06); }
   .tb .seg button { padding:6px 8px; }
   .cfg-btn { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:7px 9px; font-size:13px; font-weight:600; cursor:pointer; }
   .cfg-btn[aria-expanded="true"] { background:var(--text); color:var(--bg); border-color:var(--text); }
@@ -118,7 +119,7 @@
   .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ohlc span { margin-right:8px; }
   .ohlc b { color:var(--text); font-weight:600; }
-  .cfg { position:absolute; top:6px; right:6px; left:6px; max-width:420px; margin-left:auto; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.18); padding:8px 10px 10px; z-index:5; display:none; }
+  .cfg { position:absolute; top:calc(100% + 2px); right:8px; left:8px; max-width:420px; margin-left:auto; max-height:calc(100dvh - 140px); overflow:auto; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.18); padding:8px 10px 10px; z-index:5; display:none; }
   .cfg-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; }
   .cfg-row.wide { grid-column:1 / -1; }
   .cfg .seg button { padding:4px 7px; font-size:12px; }
@@ -131,6 +132,8 @@
   .cfg-row b { color:var(--text); }
   .cfg-row small { font-size:11px; }
   .cfg-row .seg { align-self:flex-start; flex-wrap:wrap; }
+  .seg button.all { font-style:italic; border-left:1px solid var(--border); border-radius:0 6px 6px 0; }
+  .seg button.all.on { background:var(--text); color:var(--bg); font-style:normal; }
   .seg button.col { color:var(--c); }
   .seg button.col.on { background:var(--c); color:#fff; box-shadow:none; }
   .seg button.tfb { display:inline-flex; flex-direction:column; align-items:center; gap:2px; padding:5px 9px; }
@@ -186,23 +189,23 @@
     <div class="tb">
       <div class="seg" id="ivSeg"></div>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>Réglages<span class="badge" id="cfgCount"></span></button>
+    <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
+      <div class="cfg-head"><strong>Réglages</strong><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
+      <div class="cfg-grid">
+        <div class="cfg-row"><span>Supports / résistances</span><div class="seg" id="kindSeg"></div></div>
+        <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
+        <div class="cfg-row wide"><span>Échelles des niveaux</span><div class="seg" id="lvSeg"></div></div>
+        <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
+          <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
+        <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
+        <div class="cfg-row"><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
+      </div>
+    </div>
     </div>
     <div class="chart-wrap">
       <div class="ov-chart" id="ovChart"></div>
       <div class="rsi-chart" id="rsiChart"></div>
       <div class="ohlc" id="ohlc"></div>
-      <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
-        <div class="cfg-head"><strong>Réglages</strong><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
-        <div class="cfg-grid">
-          <div class="cfg-row"><span>Afficher</span><div class="seg" id="kindSeg"></div></div>
-          <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
-          <div class="cfg-row wide"><span>Échelles des supports / résistances</span><div class="seg" id="lvSeg"></div></div>
-          <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
-            <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
-          <div class="cfg-row"><span>Moyennes <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
-          <div class="cfg-row"><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
-        </div>
-      </div>
     </div>
     <div class="lgd" id="ovLegend"></div>
     <div class="levels">
@@ -724,7 +727,7 @@ function paint(b, color) {
   b.classList.add("col");
   b.style.setProperty("--c", color);
 }
-function multiSeg(id, opts, selected, onChange, colorOf) {
+function multiSeg(id, opts, selected, onChange, colorOf, allLabel) {
   const s = $(id); s.innerHTML = "";
   opts.forEach(([v, label]) => {
     const b = document.createElement("button");
@@ -733,9 +736,21 @@ function multiSeg(id, opts, selected, onChange, colorOf) {
     b.onclick = () => onChange(selected.includes(v) ? selected.filter(x => x !== v) : selected.concat(v));
     s.appendChild(b);
   });
+  if (allLabel) {
+    const all = opts.map(o => o[0]), every = all.every(v => selected.includes(v));
+    const b = document.createElement("button");
+    b.className = "all" + (every ? " on" : "");
+    b.textContent = allLabel;
+    b.title = every ? "Tout désactiver" : "Tout sélectionner";
+    b.onclick = () => onChange(every ? [] : all.slice());
+    s.appendChild(b);
+  }
 }
 const TF_OPTS = [["D","Jour"],["W","Semaine"],["M","Mois"],["Q","Trimestre"]];
 const selMaP = () => (Array.isArray(prefs.maP) ? prefs.maP : []).filter(p => MA_PERIODS.includes(p)).sort((a, b) => a - b);
+document.querySelector("#ov .ov-body").addEventListener("scroll", e => {
+  document.querySelector("#ov .tb").classList.toggle("stuck", e.target.scrollTop > 4);
+}, { passive:true });
 function toggleCfg(open) {
   const show = open == null ? !$("cfg").classList.contains("show") : open;
   $("cfg").classList.toggle("show", show);
@@ -768,7 +783,7 @@ function renderToggles() {
   $("maHint").textContent = "(en " + unit + ")";
   const n = (selectedKinds().length ? selectedLv().length : 0) + selMaP().length;
   $("cfgCount").textContent = n ? String(n) : "";
-  multiSeg("maSeg", MA_PERIODS.map(p => [p, "MM" + p]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); }, v => MA_COL[v]);
+  multiSeg("maSeg", MA_PERIODS.map(p => [p, String(p)]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); }, v => MA_COL[v], "Toutes");
   renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
   renderSeg("rsiSeg", [[false,"Aucun"],[true,"RSI 14"]], !!prefs.rsi, v => { prefs.rsi = v; savePrefs(); renderToggles(); drawRsi(); });
   paint($("rsiSeg").children[1], RSI_COL);
@@ -776,11 +791,19 @@ function renderToggles() {
   const selK = selectedKinds();
   KINDS.forEach(([k, label]) => {
     const b = document.createElement("button");
-    b.textContent = label; if (selK.includes(k)) b.className = "on";
+    b.textContent = k === "S" ? "Sup" : "Rés"; b.title = label; if (selK.includes(k)) b.className = "on";
     paint(b, css(k === "S" ? "--sup" : "--res"));
     b.onclick = () => { const cur = selectedKinds(); prefs.kinds = cur.includes(k) ? cur.filter(x => x !== k) : cur.concat(k); savePrefs(); refreshLevels(); };
     ks.appendChild(b);
   });
+  {
+    const both = selK.length === 2, b = document.createElement("button");
+    b.className = "all" + (both ? " on" : "");
+    b.textContent = "Les 2";
+    b.title = both ? "Masquer supports et résistances" : "Afficher supports et résistances";
+    b.onclick = () => { prefs.kinds = both ? [] : ["S","R"]; savePrefs(); refreshLevels(); };
+    ks.appendChild(b);
+  }
   const lg = $("ovLegend"); lg.innerHTML = "";
   selectedLv().forEach(tf => selK.forEach(k => {
     const s = document.createElement("span");
@@ -800,7 +823,7 @@ function renderToggles() {
     const b = document.createElement("button");
     const kinds = selectedKinds().length ? selectedKinds() : ["S","R"];
     b.innerHTML = '<span class="sw">' + kinds.map(k => sample(k.toLowerCase(), tf)).join("") + "</span>" +
-      { D:"Jour", W:"Semaine", M:"Mois", Q:"Trimestre" }[tf];
+      { D:"Jour", W:"Sem.", M:"Mois", Q:"Trim." }[tf];
     b.className = "tfb" + (sel.includes(tf) ? " on" : "");
     b.onclick = () => {
       const cur = selectedLv();
@@ -809,6 +832,13 @@ function renderToggles() {
     };
     s.appendChild(b);
   });
+  {
+    const every = sel.length === LV_ORDER.length, b = document.createElement("button");
+    b.className = "all" + (every ? " on" : "");
+    b.textContent = "Toutes"; b.title = every ? "Tout désactiver" : "Tout sélectionner";
+    b.onclick = () => { prefs.lvs = every ? [] : LV_ORDER.slice(); savePrefs(); refreshLevels(); };
+    s.appendChild(b);
+  }
 }
 function autoscaleDetail(info) {
   const extra = [];
