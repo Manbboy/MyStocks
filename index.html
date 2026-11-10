@@ -1167,58 +1167,67 @@ function channels(rows, iv, pct) {
   const P = GEO_PARAMS[iv] || GEO_PARAMS.D, len = rows.length, start = Math.max(0, len - P.lb);
   const { hi, lo } = geoPivots(rows, start, P.w), tol = pct / 100 * P.k;
   const H = i => rows[i][2], L = i => rows[i][3], C = i => rows[i][4];
-  const ends = hi.concat(lo).sort((x, y) => x - y);
   const out = [];
-  [["lo", lo], ["hi", hi]].forEach(([side, piv]) => {
+  /* 1) une droite de base passe par deux creux (ou deux sommets) ;
+     2) sa parallèle est placée là où elle touche LE PLUS de sommets (ou de creux) — pas au point le plus extrême ;
+     3) le canal court tant que le cours reste dedans, et s'arrête à la première clôture nettement dehors. */
+  [["lo", lo, hi], ["hi", hi, lo]].forEach(([side, piv, opp]) => {
     for (let x = 0; x < piv.length; x++) for (let y = x + 1; y < piv.length; y++) {
       const a = piv[x], b = piv[y];
       if (b - a < 3 * P.w) continue;
-      const v = i => side === "lo" ? L(i) : H(i);
+      const v = i => side === "lo" ? L(i) : H(i), w = i => side === "lo" ? H(i) : L(i);
       const m = (v(b) - v(a)) / (b - a), base = i => v(a) + m * (i - a);
-      // on fait grandir le canal jusqu'à chaque sommet/creux suivant ; largeur = plus grand écart opposé à la droite de base
-      let width = 0, rH = -Infinity, rL = Infinity, k = a, best = null;
-      for (const e of ends) {
-        if (e <= b) continue;
-        for (; k <= e; k++) {
-          width = Math.max(width, side === "lo" ? H(k) - base(k) : base(k) - L(k));
-          rH = Math.max(rH, H(k)); rL = Math.min(rL, L(k));
+      const cand = opp.filter(p => p > a && p < len).map(p => w(p) - base(p)).filter(o => side === "lo" ? o > 0 : o < 0);
+      const tried = new Set();
+      for (const o0 of cand) {
+        const key = Math.round(o0 * 1000); if (tried.has(key)) continue; tried.add(key);
+        const width = Math.abs(o0), other = i => base(i) + o0;
+        const lower = side === "lo" ? base : other, upper = side === "lo" ? other : base;
+        const midP = Math.abs((base(a) + other(a)) / 2);
+        const band = Math.max(width * 0.08, midP * tol);
+        // durée : on avance tant que les clôtures restent dans le canal (une sortie isolée est tolérée, deux de suite = cassure)
+        let end = len - 1, broken = null, out1 = 0, inside = 0;
+        for (let k = a; k < len; k++) {
+          const c = C(k), up = c > upper(k) + band, dn = c < lower(k) - band;
+          if (up || dn) {
+            if (k <= b) { out1 = 99; break; }
+            if (++out1 >= 2) { end = k; broken = up ? "up" : "down"; break; }
+          } else { out1 = 0; inside++; }
         }
-        const span = e - a;
-        if (span < 8 * P.w || !(width > 0)) continue;
+        if (out1 >= 99) continue;
+        const span = end - a;
+        if (span < 8 * P.w || b > end) continue;
+        if (inside / (span + 1) < 0.9) continue;
+        let rH = -Infinity, rL = Infinity;
+        for (let k = a; k <= end; k++) { rH = Math.max(rH, H(k)); rL = Math.min(rL, L(k)); }
         const range = rH - rL;
-        if (width > range * 0.65) break;                                        // plus un canal, mais une zone trop large
-        const lower = i => side === "lo" ? base(i) : base(i) - width, upper = i => side === "lo" ? base(i) + width : base(i);
-        const midP = Math.abs((upper((a + e) / 2) + lower((a + e) / 2)) / 2);
-        const band = Math.max(width * 0.07, midP * tol);
-        let inside = 0;
-        for (let q = a; q <= e; q++) if (C(q) <= upper(q) + band && C(q) >= lower(q) - band) inside++;
-        if (inside / (span + 1) < 0.93) break;                                  // le cours est sorti : inutile d'allonger
-        const upT = hi.filter(p => p >= a && p <= e && Math.abs(H(p) - upper(p)) <= band);
-        const loT = lo.filter(p => p >= a && p <= e && Math.abs(L(p) - lower(p)) <= band);
+        if (width > range * 0.85 || width < range * 0.12) continue;
+        const midC = Math.abs((base((a + end) / 2) + other((a + end) / 2)) / 2);      // prix au milieu du canal
+        if (width > midC * ({ D:0.35, W:0.45, M:0.8, Q:1 }[iv] || 0.45)) continue;   // largeur raisonnable par rapport au prix
+        if (Math.abs(m) * span < width * 0.35) continue;                       // presque horizontal : c'est une fourchette, pas un canal oblique
+        const upT = hi.filter(p => p >= a && p <= end && Math.abs(H(p) - upper(p)) <= band);
+        const loT = lo.filter(p => p >= a && p <= end && Math.abs(L(p) - lower(p)) <= band);
         if (upT.length < 2 || loT.length < 2 || upT.length + loT.length < 5) continue;
         const allT = upT.concat(loT), t0 = Math.min(...allT), t1 = Math.max(...allT);
         if (t1 - t0 < 0.6 * span) continue;
-        /* un bon canal a beaucoup de contacts des deux côtés et colle au cours : la largeur est pénalisée */
-        const score = Math.min(upT.length, 8) * 10 + Math.min(loT.length, 8) * 10 + span / P.lb * 6 - width / range * 45;
-        if (!best || score > best.score) best = { e, width, upT, loT, lower, upper, band, score };
+        // sommets / creux qui transpercent nettement un bord : un vrai canal contient ses points extrêmes
+        const pierce = hi.filter(p => p >= a && p <= end && H(p) > upper(p) + band).length
+                     + lo.filter(p => p >= a && p <= end && L(p) < lower(p) - band).length;
+        // un bord qui ne touche que ses deux points d'ancrage vaut moins qu'un bord touché 3 ou 4 fois
+        const score = Math.min(upT.length, 8) * 10 + Math.min(loT.length, 8) * 10 + Math.min(upT.length, loT.length) * 8
+          + span / P.lb * 6 - width / range * 30 - pierce * 12 + (broken ? 0 : 4);
+        out.push({ a, end, m, side, broken, upT, loT, lowerAt:lower, upperAt:upper, score });
       }
-      if (!best) continue;
-      // prolongement après le dernier contact, jusqu'à la première clôture nettement hors du canal
-      let end = len - 1, broken = null;
-      for (let q = best.e + 1; q < len; q++) {
-        if (C(q) > best.upper(q) + best.band) { end = q; broken = "up"; break; }
-        if (C(q) < best.lower(q) - best.band) { end = q; broken = "down"; break; }
-      }
-      out.push({ a, end, m, side, broken, upT:best.upT, loT:best.loT, lowerAt:best.lower, upperAt:best.upper, score:best.score + (broken ? 0 : 4) });
     }
   });
   out.sort((p, q) => q.score - p.score);
   const keep = [];
   for (const c of out) {
     /* deux canaux de même sens ne se superposent pas ; un canal de sens inverse (correction dans une tendance) est accepté */
-    const overlap = keep.some(k => (k.m > 0) === (c.m > 0) && Math.min(k.end, c.end) - Math.max(k.a, c.a) > 0.4 * Math.min(k.end - k.a, c.end - c.a));
+    const overlap = keep.some(k => (k.m > 0) === (c.m > 0) && Math.min(k.end, c.end) - Math.max(k.a, c.a) > 0.4 * Math.min(k.end - k.a, c.end - c.a))
+
     if (!overlap) keep.push(c);
-    if (keep.length >= 2) break;
+    if (keep.length >= 3) break;
   }
   return keep.map(c => ({
     dir: c.m > 0 ? "up" : "down", from:rows[c.a][0], to:rows[c.end][0], broken:c.broken,
