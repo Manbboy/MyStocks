@@ -1037,6 +1037,8 @@ function flipLevels(rows, iv, pct) {
       m.retests.sort((a, b) => a.k - b.k);
     }
   }
+  merged.forEach(m => { m.retests = m.retests.filter(r => r.time > m.breakTime); });   // un retest vient toujours après la cassure
+  for (let q = merged.length - 1; q >= 0; q--) if (!merged[q].retests.length) merged.splice(q, 1);
   merged.forEach(m => m.score = m.pre + m.retests.length);
   return merged.sort((a, b) => b.score - a.score || a.pivot - b.pivot).slice(0, FLIP_MAX).sort((a, b) => b.price - a.price);
 }
