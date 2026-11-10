@@ -67,11 +67,30 @@
   .ov-body { flex:1; overflow:auto; padding:12px; max-width:1100px; width:100%; margin:0 auto; }
   .ov-ctrl { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
   .freq { font-size:13px; font-weight:600; }
-  .ov-chart { height:min(60vh,480px); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .tb { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:8px; }
+  .tb .seg button { padding:6px 8px; }
+  .cfg-btn { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:7px 9px; font-size:13px; font-weight:600; cursor:pointer; }
+  .cfg-btn[aria-expanded="true"] { background:var(--text); color:var(--bg); border-color:var(--text); }
+  .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
+  .badge:empty { display:none; }
+  .chart-wrap { position:relative; }
+  .ov-chart { height:min(72vh,620px); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .ohlc { position:absolute; top:6px; left:8px; right:64px; font-size:11px; line-height:1.45; color:var(--muted); pointer-events:none; z-index:2; }
+  .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ohlc span { margin-right:8px; }
+  .ohlc b { color:var(--text); font-weight:600; }
+  .cfg { position:absolute; top:8px; right:8px; left:8px; max-width:380px; margin-left:auto; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.18); padding:12px; z-index:5; display:none; }
+  .cfg.show { display:block; }
+  .cfg-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:14px; }
+  .cfg-x { border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; padding:2px 6px; }
+  .cfg-row { display:flex; flex-direction:column; gap:5px; padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--muted); }
+  .cfg-row small { font-size:11px; }
+  .cfg-row .seg { align-self:flex-start; }
   .levels { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px; }
   .lv { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
   .lv h3 { margin:0 0 6px; font-size:13px; }
-  .lgd { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted); margin:0 0 8px; }
+  .lgd { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted); margin:8px 0 0; }
+  .lgd:empty { display:none; }
   .lgd span, .lv h4 { display:inline-flex; align-items:center; gap:6px; }
   .lgd svg, .lv h4 svg { flex:0 0 auto; }
   .lv h4 { margin:8px 0 2px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
@@ -109,14 +128,22 @@
     <button class="close" id="ovClose">Fermer</button>
   </div>
   <div class="ov-body">
-    <div class="ov-ctrl"><span class="freq" id="ovFreq"></span><div class="seg" id="ivSeg"></div></div>
-    <div class="ov-ctrl"><span class="freq">Afficher</span><div class="seg" id="kindSeg"></div></div>
-    <div class="ov-ctrl"><span class="freq">Échelles des niveaux</span><div class="seg" id="lvSeg"></div></div>
-    <div class="ov-ctrl"><span class="freq">Moyennes mobiles</span><div class="seg" id="maSeg"></div></div>
-    <div class="ov-ctrl"><span class="freq">Échelles des moyennes</span><div class="seg" id="maTfSeg"></div></div>
-    <div class="ov-ctrl"><span class="freq">Valeurs sur l'axe de droite</span><div class="seg" id="axisSeg"></div></div>
+    <div class="tb">
+      <div class="seg" id="ivSeg"></div>
+      <button class="cfg-btn" id="cfgBtn" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>Réglages<span class="badge" id="cfgCount"></span></button>
+    </div>
+    <div class="chart-wrap">
+      <div class="ov-chart" id="ovChart"></div>
+      <div class="ohlc" id="ohlc"></div>
+      <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
+        <div class="cfg-head"><strong>Réglages</strong><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
+        <div class="cfg-row"><span>Afficher</span><div class="seg" id="kindSeg"></div></div>
+        <div class="cfg-row"><span>Supports et résistances</span><div class="seg" id="lvSeg"></div></div>
+        <div class="cfg-row"><span>Moyennes mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
+        <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
+      </div>
+    </div>
     <div class="lgd" id="ovLegend"></div>
-    <div class="ov-chart" id="ovChart"></div>
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
@@ -132,7 +159,7 @@ const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
 const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
-let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], maTf:["D"], axis:false };
+let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
 
@@ -305,7 +332,7 @@ async function openDetail(item, info) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende au-dessus du graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures (MM20·M = moyenne des 20 derniers mois). Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Niveaux calculés automatiquement à partir des sommets et creux touchés au moins deux fois : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende au-dessus du graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -352,12 +379,7 @@ function barsFor(data, iv) {
 
 /* ---------- Moyennes mobiles ---------- */
 const MA_PERIODS = [20, 50, 200];
-const MA_COLORS = {
-  20:  { D:"#93c5fd", W:"#60a5fa", M:"#2563eb", Q:"#1e3a8a" },
-  50:  { D:"#d8b4fe", W:"#c084fc", M:"#9333ea", Q:"#581c87" },
-  200: { D:"#fcd34d", W:"#f59e0b", M:"#b45309", Q:"#78350f" },
-};
-const MA_WIDTH = { D:1, W:2, M:2, Q:3 };
+const MA_COL = { 20:"#2563eb", 50:"#9333ea", 200:"#d97706" };
 /* Moyenne mobile de n chandeliers de l'échelle tf, projetée sur les chandeliers de l'échelle iv affichée */
 function maSeries(data, tf, n, iv) {
   const src = barsFor(data, tf);
@@ -418,10 +440,21 @@ function multiSeg(id, opts, selected, onChange) {
 }
 const TF_OPTS = [["D","Jour"],["W","Semaine"],["M","Mois"],["Q","Trimestre"]];
 const selMaP = () => (Array.isArray(prefs.maP) ? prefs.maP : []).filter(p => MA_PERIODS.includes(p)).sort((a, b) => a - b);
-const selMaTf = () => LV_ORDER.filter(t => (Array.isArray(prefs.maTf) ? prefs.maTf : []).includes(t));
+function toggleCfg(open) {
+  const show = open == null ? !$("cfg").classList.contains("show") : open;
+  $("cfg").classList.toggle("show", show);
+  $("cfgBtn").setAttribute("aria-expanded", show ? "true" : "false");
+}
+$("cfgBtn").onclick = e => { e.stopPropagation(); toggleCfg(); };
+$("cfgClose").onclick = () => toggleCfg(false);
+$("cfg").addEventListener("click", e => e.stopPropagation());
+document.addEventListener("click", () => toggleCfg(false));
 function renderToggles() {
+  const unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[prefs.iv || "D"];
+  $("maHint").textContent = "· en " + unit + ", comme les chandeliers";
+  const n = (selectedKinds().length ? selectedLv().length : 0) + selMaP().length;
+  $("cfgCount").textContent = n ? String(n) : "";
   multiSeg("maSeg", MA_PERIODS.map(p => [p, "MM" + p]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); });
-  multiSeg("maTfSeg", TF_OPTS, selMaTf(), v => { prefs.maTf = v; savePrefs(); refreshLevels(); });
   renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
@@ -437,11 +470,11 @@ function renderToggles() {
     s.innerHTML = sample(k.toLowerCase(), tf) + (k === "S" ? "S" : "R") + "·" + LV[tf].short + " " + LV[tf].name.toLowerCase();
     lg.appendChild(s);
   }));
-  selMaTf().forEach(tf => selMaP().forEach(n => {
+  [prefs.iv || "D"].forEach(tf => selMaP().forEach(n => {
     const s = document.createElement("span");
     const enough = ovData && barsFor(ovData, tf).length >= n;
-    s.innerHTML = '<svg width="26" height="8" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="' + MA_COLORS[n][tf] + '" stroke-width="' + (MA_WIDTH[tf] + 0.5) + '"/></svg>' +
-      "MM" + n + "·" + LV[tf].short + (enough ? "" : " (historique insuffisant)");
+    s.innerHTML = '<svg width="26" height="8" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="' + MA_COL[n] + '" stroke-width="2"/></svg>' +
+      "MM" + n + (enough ? "" : " (historique insuffisant)");
     lg.appendChild(s);
   }));
   const s = $("lvSeg"); s.innerHTML = "";
@@ -490,16 +523,17 @@ function drawMas() {
   ovMa.forEach(s => ovChart.removeSeries(s));
   ovMa = [];
   const iv = prefs.iv || "D";
-  selMaTf().forEach(tf => selMaP().forEach(n => {
+  [iv].forEach(tf => selMaP().forEach(n => {
     const pts = maSeries(ovData, tf, n, iv);
     if (!pts.length) return;
     const s = ovChart.addLineSeries({
-      color:MA_COLORS[n][tf], lineWidth:MA_WIDTH[tf], priceLineVisible:false,
+      color:MA_COL[n], lineWidth:2, priceLineVisible:false,
       lastValueVisible:!!prefs.axis, crosshairMarkerVisible:false,
-      title: prefs.axis ? "MM" + n + "·" + LV[tf].short : "",
+      title: prefs.axis ? "MM" + n : "",
       autoscaleInfoProvider: () => null,
     });
     s.setData(pts);
+    s._n = n;
     ovMa.push(s);
   }));
 }
@@ -546,11 +580,12 @@ function drawDetail() {
   renderSeg("ivSeg", INTERVALS, iv, v => { prefs.iv = v; savePrefs(); drawDetail(); });
   renderToggles();
   const ivInfo = INTERVALS.find(x => x[0] === iv);
-  $("ovFreq").textContent = "Chandeliers " + ivInfo[2];
+
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = [];
   const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), baseOptions(false));
+  ovChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.14, bottom:0.08 } });
   const c = ovChart.addCandlestickSeries({
     upColor:css("--up"), downColor:css("--down"), borderVisible:false,
     wickUpColor:css("--up"), wickDownColor:css("--down"),
@@ -564,6 +599,28 @@ function drawDetail() {
   ovLines = addDetailLevels(c, info);
   ovMa = [];
   drawMas();
+  const bySeries = new Map(rows.map(r => [r[0], r]));
+  const showOhlc = row => {
+    if (!row) return;
+    const prev = rows[rows.indexOf(row) - 1];
+    const chg = prev ? (row[4] / prev[4] - 1) * 100 : null;
+    const d = new Date(row[0] + "T00:00:00Z").toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" });
+    $("ohlc").innerHTML =
+      "<div>Chandeliers " + ivInfo[2] + " · " + d +
+      (chg == null ? "" : ' · <b class="' + (chg >= 0 ? "up" : "down") + '">' + fmtPct(Math.round(chg * 100) / 100) + "</b>") + "</div>" +
+      "<div>Ouv. <b>" + fmt(row[1]) + "</b> · Haut <b>" + fmt(row[2]) + "</b> · Bas <b>" + fmt(row[3]) + "</b> · Clôt. <b>" + fmt(row[4]) + "</b></div>";
+  };
+  showOhlc(rows[rows.length - 1]);
+  ovChart.subscribeCrosshairMove(param => {
+    const row = param && param.time ? bySeries.get(typeof param.time === "string" ? param.time :
+      param.time.year + "-" + String(param.time.month).padStart(2, "0") + "-" + String(param.time.day).padStart(2, "0")) : null;
+    let r = row || rows[rows.length - 1];
+    showOhlc(r);
+    if (row && ovMa.length) {
+      const extra = ovMa.map(s => { const v = param.seriesData.get(s); return v ? '<span style="color:' + MA_COL[s._n] + '">MM' + s._n + " <b>" + fmt(v.value) + "</b></span>" : ""; }).join("");
+      if (extra) $("ohlc").innerHTML += "<div>" + extra + "</div>";
+    }
+  });
   renderLevelLists(info);
   const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
   if (rows.length > show) {
