@@ -102,6 +102,13 @@
   .tb { display:flex; justify-content:space-between; align-items:center; gap:6px; margin:-12px -12px 8px; padding:8px 12px; position:sticky; top:-12px; z-index:8; background:var(--bg); border-bottom:1px solid transparent; }
   .tb.stuck { border-bottom-color:var(--border); box-shadow:0 4px 10px rgba(0,0,0,.06); }
   .tb .seg button { padding:6px 8px; }
+  .mmb { flex:0 0 auto; display:inline-flex; flex-direction:column; align-items:center; gap:2px; border:1px solid var(--border); background:var(--card); color:var(--muted); border-radius:10px; padding:5px 8px 4px; font-size:13px; font-weight:700; cursor:pointer; line-height:1; }
+  .mmb .mmdots { display:flex; gap:2px; opacity:.35; }
+  .mmb .mmdots i { width:6px; height:3px; border-radius:2px; display:block; }
+  .mmb.on { color:var(--text); border-color:var(--text); }
+  .mmb.on .mmdots { opacity:1; }
+  .seg .short { display:none; }
+  @media (max-width:400px) { #ivSeg .full { display:none; } #ivSeg .short { display:inline; } }
   .cfg-btn { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:7px 9px; font-size:13px; font-weight:600; cursor:pointer; }
   .cfg-btn[aria-expanded="true"] { background:var(--text); color:var(--bg); border-color:var(--text); }
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
@@ -276,6 +283,8 @@
     <div class="ov-main">
     <div class="tb">
       <div class="seg" id="ivSeg"></div>
+      <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
+      <span class="spacer"></span>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="lbl">Réglages</span><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
       <div class="cfg-head"><strong>Réglages</strong><span class="spacer"></span><div class="seg" id="themeSeg"></div><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
@@ -696,6 +705,10 @@ function goTo(dir) {
   ov.classList.add(dir > 0 ? "go-next" : "go-prev");
   openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
 }
+$("mmBtn").onclick = () => {
+  prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
+  savePrefs(); refreshLevels();
+};
 $("ovPrev").onclick = $("ovPrev2").onclick = () => goTo(-1);
 $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 /* Glisser à gauche / à droite sur les zones sans contrôle (titre, fond, listes) */
@@ -972,6 +985,8 @@ $("tolRange").addEventListener("input", e => {
   }, 120);
 });
 function renderToggles() {
+  const mmOn = selMaP().length > 0;
+  $("mmBtn").classList.toggle("on", mmOn); $("mmBtn").setAttribute("aria-pressed", mmOn ? "true" : "false");
   $("tolRange").value = tolPct();
   $("tolVal").textContent = tolPct().toLocaleString("fr-FR", { minimumFractionDigits:1 }) + " %";
   const unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[prefs.iv || "D"];
@@ -1283,6 +1298,10 @@ function renderLevelLists(info) {
 function drawDetail() {
   const info = ovItem, iv = prefs.iv || "D";
   renderSeg("ivSeg", INTERVALS, iv, v => { prefs.iv = v; savePrefs(); drawDetail(); });
+  [...$("ivSeg").children].forEach((b, k) => {
+    const full = INTERVALS[k][1], short = { D:"Jour", W:"Sem.", M:"Mois", Q:"Trim." }[INTERVALS[k][0]];
+    b.innerHTML = '<span class="full">' + full + '</span><span class="short">' + short + "</span>";
+  });
   renderToggles();
   const ivInfo = INTERVALS.find(x => x[0] === iv);
 
