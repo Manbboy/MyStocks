@@ -124,6 +124,10 @@
   .badge { background:var(--accent); color:#fff; border-radius:9px; font-size:11px; padding:0 6px; min-width:18px; text-align:center; }
   .badge:empty { display:none; }
   .chart-wrap { position:relative; }
+  .tbs { display:flex; align-items:center; gap:4px; overflow-x:auto; flex:1; min-width:0; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+         mask-image:linear-gradient(90deg, #000 calc(100% - 18px), transparent); -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 18px), transparent); padding-right:14px; }
+  .tbs::-webkit-scrollbar { display:none; }
+  .tbs > * { flex:0 0 auto; }
   .mmb.lay { padding:4px 5px; }
   .mmb.lay svg { display:block; }
   .mmb.lay small { font-size:9px; font-weight:700; margin-top:1px; }
@@ -224,6 +228,7 @@
   .lv .it.link { cursor:pointer; position:relative; padding-right:18px; border-radius:8px; }
   .lv .it.link { padding-right:28px; }
   .lv .it.pick { cursor:pointer; border-radius:8px; }
+  #boxFlip { grid-column:1 / -1; }
   .lv .it.pick:active { background:var(--chip); }
   .lv .it .go { position:absolute; right:0; top:0; bottom:0; width:28px; border:0; border-left:1px solid var(--border); background:none; color:var(--muted); font-size:22px; cursor:pointer; border-radius:0 8px 8px 0; }
   .lv .it .go:active, .lv .it .go:hover { background:var(--chip); color:var(--text); }
@@ -324,14 +329,16 @@
   <div class="ov-body">
     <div class="ov-main">
     <div class="tb">
+      <div class="tbs" id="tbs">
       <div class="seg" id="ivSeg"></div>
       <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
+      <button class="mmb" id="flipBtn" aria-pressed="false" title="Bascules de rôle : résistance devenue support (ou l'inverse)">R⇄S<span class="mmdots"><i style="background:var(--res)"></i><i style="background:var(--sup)"></i></span></button>
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
       <button class="mmb" id="rtBtn" aria-pressed="false" title="Afficher / masquer RSI Trends (chandeliers colorés)">RT<span class="mmdots"><i style="background:#4CAF50"></i><i style="background:#787B86"></i><i style="background:#FF5252"></i></span></button>
       <button class="mmb" id="volBtn" aria-pressed="false" title="Afficher / masquer les volumes">Vol<span class="mmdots"><i style="background:var(--muted);width:3px;height:5px"></i><i style="background:var(--muted);width:3px;height:3px;margin-top:2px"></i><i style="background:var(--muted);width:3px;height:5px"></i></span></button>
       <button class="mmb lay" id="quadBtn" aria-pressed="false" title="Disposition : 1, 2 ou 4 graphiques"></button>
-      <span class="spacer"></span>
+      </div>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false" aria-label="Réglages" title="Réglages"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
       <div class="cfg-head"><strong>Réglages</strong><span class="spacer"></span><div class="seg" id="themeSeg"></div><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
@@ -376,6 +383,7 @@
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
+      <div class="lv" id="boxFlip"><h3>Bascules R⇄S</h3><div id="ovFlipList"></div></div>
       <div class="lv" id="boxMa"><h3>Moyennes mobiles</h3><div id="ovMaList"></div></div>
     </div>
     <p class="ov-foot" id="ovFoot"></p>
@@ -761,6 +769,7 @@ function goTo(dir) {
   ov.classList.add(dir > 0 ? "go-next" : "go-prev");
   openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
 }
+$("flipBtn").onclick = () => { prefs.flip = !prefs.flip; hiFlip = null; savePrefs(); drawFlips(); applyHighlight(); renderToggles(); };
 $("srBtn").onclick = () => {
   const on = selectedKinds().length > 0 && selectedLv().length > 0;
   if (on) prefs.kinds = [];
@@ -872,7 +881,7 @@ $("ovPrev").onclick = $("ovPrev2").onclick = () => goTo(-1);
 $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 /* Glisser à gauche / à droite sur les zones sans contrôle (titre, fond, listes) */
 (() => {
-  const NO_SWIPE = ".chart-wrap, .rsi-chart, .cfg, .tb, button, input, select, a, .seg";
+  const NO_SWIPE = ".chart-wrap, .rsi-chart, .cfg, .tb, .tbs, button, input, select, a, .seg";
   let st = null, swiped = false;
   $("ov").addEventListener("pointerdown", e => {
     st = (e.button === 0 && !e.target.closest(NO_SWIPE)) ? { x:e.clientX, y:e.clientY, t:Date.now() } : null;
@@ -912,7 +921,7 @@ async function openDetail(item, info, pos) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine, ● marque l'origine et ▲/▼ chaque retest réussi. Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -959,6 +968,127 @@ function barsFor(data, iv) {
     barsCache[k] = aggregate(src, iv);
   }
   return barsCache[k];
+}
+
+/* ---------- Bascules de rôle (R⇄S) ----------
+   Un sommet marquant (résistance) est franchi à la clôture, puis le cours revient le tester par le dessus
+   et repart à la hausse : la résistance est devenue support (R→S). Inverse pour un creux cassé puis
+   retesté par le dessous (S→R). Le niveau reste affiché tant qu'aucune clôture ne le recasse nettement. */
+const FLIP_PARAMS = {            // fenêtre de pivot, historique analysé, chandeliers pour confirmer le rebond
+  D:{ w:8, lb:750, n:10 }, W:{ w:4, lb:520, n:8 }, M:{ w:2, lb:240, n:4 }, Q:{ w:1, lb:80, n:3 },
+};
+const FLIP_MAX = 6;            // niveaux affichés au maximum (les plus solides)
+function flipLevels(rows, iv, pct) {
+  const P_ = FLIP_PARAMS[iv] || FLIP_PARAMS.D, w = P_.w, N = P_.n;
+  const tol = pct / 100, need = Math.max(2.5 * tol, 0.04);
+  const len = rows.length, start = Math.max(0, len - P_.lb);
+  const H = i => rows[i][2], L = i => rows[i][3], C = i => rows[i][4];
+  const out = [];
+  for (let i = start + w; i < len - w; i++) {
+    let isH = true, isL = true;
+    for (let k = i - w; k <= i + w; k++) { if (H(k) > H(i)) isH = false; if (L(k) < L(i)) isL = false; }
+    [[isH, "RS", H(i)], [isL, "SR", L(i)]].forEach(([ok, type, P]) => {
+      if (!ok) return;
+      const up = type === "RS";
+      const beyond = k => up ? C(k) > P * (1 + tol) : C(k) < P * (1 - tol);          // cassure à la clôture
+      const back   = k => up ? L(k) <= P * (1 + tol) : H(k) >= P * (1 - tol);         // retour sur le niveau
+      const fails  = k => up ? C(k) < P * (1 - tol) : C(k) > P * (1 + tol);           // le niveau ne tient pas
+      // 1) cassure
+      let j = -1;
+      for (let k = i + w; k < len; k++) { if (beyond(k)) { j = k; break; } }
+      if (j < 0) return;
+      // 2) retest(s) qui tiennent, suivis d'un rebond
+      const retests = [];
+      let broken = false;
+      for (let k = j + 1; k < len; k++) {
+        if (fails(k)) { broken = true; break; }
+        if (!back(k) || k < j + 2) continue;          // un retour la semaine suivante n'est que la suite de la cassure
+        if (retests.length && k - retests[retests.length - 1].k <= N) continue;
+        const end = Math.min(len - 1, k + N);
+        let best = up ? -Infinity : Infinity;
+        for (let m = k + 1; m <= end; m++) best = up ? Math.max(best, C(m)) : Math.min(best, C(m));
+        let held = true;
+        for (let m = k; m <= end; m++) if (fails(m)) { held = false; break; }
+        const bounced = up ? best >= P * (1 + need) : best <= P * (1 - need);
+        if (held && bounced) retests.push({ k, time:rows[k][0], at: up ? L(k) : H(k) });
+      }
+      if (broken || !retests.length) return;
+      // le niveau a-t-il vraiment joué son premier rôle ? sommets (ou creux) répétés avant la cassure
+      let pre = 0, lastT = -99;
+      for (let k = Math.max(start, i - P_.lb); k < j; k++) {
+        const touch = up ? Math.abs(H(k) - P) <= P * tol : Math.abs(L(k) - P) <= P * tol;
+        if (touch && k - lastT > w) { pre++; lastT = k; }
+      }
+      if (pre < 2 && retests.length < 2) return;
+      out.push({ type, price:P, pivot:i, pivotTime:rows[i][0], breakTime:rows[j][0], retests, pre, score:pre + retests.length });
+    });
+  }
+  // fusion des niveaux proches : on garde le pivot le plus ancien (le plus « historique »), on cumule les retests
+  out.sort((a, b) => a.price - b.price);
+  const merged = [];
+  for (const f of out) {
+    const m = merged.find(x => x.type === f.type && Math.abs(x.price - f.price) <= f.price * tol * 2);   // même zone
+    if (!m) merged.push(f);
+    else {
+      if (f.pivot < m.pivot) { m.price = f.price; m.pivot = f.pivot; m.pivotTime = f.pivotTime; m.breakTime = f.breakTime; }
+      m.pre = Math.max(m.pre, f.pre);
+      const seen = new Set(m.retests.map(r => r.time));
+      f.retests.forEach(r => { if (!seen.has(r.time)) m.retests.push(r); });
+      m.retests.sort((a, b) => a.k - b.k);
+    }
+  }
+  merged.forEach(m => m.score = m.pre + m.retests.length);
+  return merged.sort((a, b) => b.score - a.score || a.pivot - b.pivot).slice(0, FLIP_MAX).sort((a, b) => b.price - a.price);
+}
+
+let ovFlips = [], flipSeries = [], hiFlip = null;
+const FLIP_COL = { RS:"#16a34a", SR:"#dc2626" };
+function drawFlips() {
+  flipSeries.forEach(s => ovChart && ovChart.removeSeries(s));
+  flipSeries = [];
+  ovFlips = [];
+  if (!prefs.flip || !ovChart || !ovData) { renderFlipList(); return; }
+  const iv = prefs.iv || "D", rows = barsFor(ovData, iv), last = rows[rows.length - 1][0];
+  ovFlips = flipLevels(rows, iv, tolPct());
+  ovFlips.forEach((f, n) => {
+    const s = ovChart.addLineSeries({ color:FLIP_COL[f.type], lineWidth:2, priceLineVisible:false, lastValueVisible:false,
+      crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    s.setData([{ time:f.pivotTime, value:f.price }, { time:last, value:f.price }]);   // la ligne part du sommet (ou du creux) d'origine
+    s._flip = n;
+    flipSeries.push(s);
+  });
+  if (hiFlip != null && hiFlip >= ovFlips.length) hiFlip = null;
+  renderFlipList();
+}
+function flipMarkers(only) {
+  const marks = [];
+  ovFlips.forEach((f, n) => {
+    if (only != null && n !== only) return;
+    const col = FLIP_COL[f.type], up = f.type === "RS";
+    marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:col, text:fmt(f.price) });
+    f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:col }));
+  });
+  return marks.sort((a, b) => a.time < b.time ? -1 : 1);
+}
+function renderFlipList() {
+  const box = $("ovFlipList"); if (!box) return;
+  $("boxFlip").style.display = prefs.flip ? "" : "none";
+  box.innerHTML = "";
+  if (!prefs.flip) return;
+  if (!ovFlips.length) { box.innerHTML = "<small>Aucune bascule nette sur cette période avec cette précision.</small>"; return; }
+  const short = d => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { month:"short", year:"numeric", timeZone:"UTC" });
+  ovFlips.forEach((f, n) => {
+    const d = document.createElement("div"); d.className = "it pick"; d.style.setProperty("--c", FLIP_COL[f.type]);
+    if (hiFlip === n) d.classList.add("sel");
+    d.onclick = () => { hiFlip = hiFlip === n ? null : n; if (hiFlip != null) { hiKey = null; hiMa = null; drawMas(); renderLevelLists(ovItem); } applyHighlight(); renderFlipList(); };
+    const a = document.createElement("span"); a.style.color = FLIP_COL[f.type];
+    a.textContent = fmt(f.price, ovItem.currency) + "  " + (f.type === "RS" ? "Résistance → Support" : "Support → Résistance");
+    const b = document.createElement("small");
+    const dist = (f.price / ovItem.last - 1) * 100;
+    b.textContent = (f.type === "RS" ? "sommet " : "creux ") + short(f.pivotTime) + " · cassé " + short(f.breakTime) + " · " +
+      f.retests.length + " retest" + (f.retests.length > 1 ? "s" : "") + " (dernier " + short(f.retests[f.retests.length - 1].time) + ") · " + fmtPct(Math.round(dist * 100) / 100);
+    d.append(a, b); box.appendChild(d);
+  });
 }
 
 /* ---------- Réactions autour d'une moyenne mobile ----------
@@ -1191,10 +1321,11 @@ $("tolRange").addEventListener("input", e => {
   clearTimeout(tolTimer);
   tolTimer = setTimeout(() => {
     savePrefs();
-    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), !!prefs.role); refreshLevels(); }
+    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), !!prefs.role); refreshLevels(); drawFlips(); applyHighlight(); }
   }, 120);
 });
 function renderToggles() {
+  $("flipBtn").classList.toggle("on", !!prefs.flip); $("flipBtn").setAttribute("aria-pressed", prefs.flip ? "true" : "false");
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
   const volOn = prefs.vol !== false;
@@ -1470,7 +1601,10 @@ function applyHighlight() {
   if (!ovCandles) return;
   const sel = lineMeta.find(m => m.key === hiKey);
   const maSel = hiMa && ovMa.some(s => s._n === hiMa) ? hiMa : null;
-  const any = !!(sel || maSel);
+  const flipSel = hiFlip != null && ovFlips[hiFlip] ? hiFlip : null;
+  const any = !!(sel || maSel || flipSel != null);
+  flipSeries.forEach(s => s.applyOptions(s._flip === flipSel ? { lineWidth:4, color:FLIP_COL[ovFlips[s._flip].type] }
+    : { lineWidth:2, color: any ? dim(FLIP_COL[ovFlips[s._flip].type]) : FLIP_COL[ovFlips[s._flip].type] }));
   /* chandeliers et volumes */
   const up = css("--up"), down = css("--down");
   ovCandles.applyOptions(any
@@ -1488,13 +1622,13 @@ function applyHighlight() {
       if (m === sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, {
         lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid }));
       else m.line.applyOptions(Object.assign({}, m.opts, { lineVisible:false }));
-    } else m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, maSel ? { color:dim(m.opts.color) } : {}));
+    } else m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, (maSel || flipSel != null) ? { color:dim(m.opts.color) } : {}));
   });
   if (!sel) {
     ovMaReact = maSel ? maReactions(ovData, prefs.iv || "D", maSel, tolPct()) : null;
     ovCandles.setMarkers(ovMaReact ? ovMaReact.events.map((e, j) => ({
       time:e.time, position:e.type === "up" ? "belowBar" : "aboveBar", shape:e.type === "up" ? "arrowUp" : "arrowDown",
-      color:MA_COL[maSel], text:String(j + 1) })) : []);
+      color:MA_COL[maSel], text:String(j + 1) })) : (prefs.flip ? flipMarkers(flipSel) : []));
     return;
   }
   ovMaReact = null;
@@ -1685,7 +1819,7 @@ function drawDetail(keep) {
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   if (ovChart) { ovChart.remove(); ovChart = null; }
   ovCandles = null; ovLines = []; ovMa = [];
-  if (ovItem !== lastDrawnItem) { hiKey = null; hiMa = null; }
+  if (ovItem !== lastDrawnItem) { hiKey = null; hiMa = null; hiFlip = null; }
   lastDrawnItem = ovItem;
   const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
@@ -1708,7 +1842,10 @@ function drawDetail(keep) {
   ovCandles = c;
   ovLines = addDetailLevels(c, info);
   ovMa = [];
+  flipSeries = [];
   drawMas();
+  drawFlips();
+  applyHighlight();
   const bySeries = new Map(rows.map(r => [r[0], r]));
   const showOhlc = row => {
     if (!row) return;

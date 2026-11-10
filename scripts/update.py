@@ -142,7 +142,7 @@ def all_levels(df: pd.DataFrame):
 def fetch_real(sym: str):
     import yfinance as yf
     t = yf.Ticker(sym)
-    df = t.history(period="max", interval="1d", auto_adjust=True)
+    df = t.history(period="max", interval="1d", auto_adjust=False)   # cours réels (ajustés des divisions, pas des dividendes), comme TradingView
     if df is None or df.empty:
         raise RuntimeError("aucune donnée")
     df = df.reset_index()
