@@ -4,14 +4,14 @@
       "name": "Market",
       "items": [
         {
-          "yahoo": "^GDAXI",
-          "tv": "XETR:DAX",
-          "name": "DAX"
-        },
-        {
           "yahoo": "^FCHI",
           "tv": "EURONEXT:PX1",
           "name": "CAC 40"
+        },
+        {
+          "yahoo": "^GDAXI",
+          "tv": "XETR:DAX",
+          "name": "DAX"
         },
         {
           "yahoo": "^BFX",
