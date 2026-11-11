@@ -158,6 +158,23 @@ def fetch_real(sym: str):
             df = pd.concat([df[~df["Date"].isin(rec["Date"])], rec], ignore_index=True).sort_values("Date").reset_index(drop=True)
     except Exception as e:
         print(f"  {sym}: 5 derniers jours indisponibles ({e})")
+    # plan B : si une séance récente manque encore, on la reconstitue à partir des cours horaires
+    try:
+        ih = t.history(period="5d", interval="60m", auto_adjust=False)
+        if ih is not None and not ih.empty:
+            ih = ih.dropna(subset=["Close"])
+            ih["D"] = pd.to_datetime(ih.index).strftime("%Y-%m-%d")
+            last = df["Date"].iloc[-1]
+            add = []
+            for d, g in ih.groupby("D"):
+                if d > last:
+                    add.append({"Date": d, "Open": g["Open"].iloc[0], "High": g["High"].max(), "Low": g["Low"].min(),
+                                "Close": g["Close"].iloc[-1], "Volume": g["Volume"].sum()})
+            if add:
+                print(f"  {sym}: séance(s) reconstituée(s) depuis l'horaire : {', '.join(a['Date'] for a in add)}")
+                df = pd.concat([df, pd.DataFrame(add)], ignore_index=True)
+    except Exception as e:
+        print(f"  {sym}: cours horaires indisponibles ({e})")
     currency = None
     try:
         currency = t.fast_info.get("currency")
