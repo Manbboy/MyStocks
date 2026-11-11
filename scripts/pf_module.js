@@ -304,13 +304,23 @@ $("txForm").addEventListener("submit", submitTx);
 $("txCancel").onclick = () => { $("txDlg").classList.remove("show"); txEdit = null; };
 
 /* --- repères d'achat / vente et PRU sur le graphique du détail --- */
-let txSeries = null, txSeries2 = null, txLines = [];
+let txSeries = null, txSeries2 = null, txLines = [], txZones = [];
+/* Début de la détention actuelle : dernière date où la quantité est repassée de 0 à plus de 0 */
+function holdStart(tx) {
+  let q = 0, start = null;
+  tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "A" ? -1 : 1)).forEach(t => {
+    if (t.type === "A") { if (q < 1e-9) start = t.date; q += +t.qty; } else q -= +t.qty;
+  });
+  return q > 1e-9 ? start : null;
+}
 function drawTxMarks() {
-  [txSeries, txSeries2].forEach(x => { if (x && ovChart) { try { ovChart.removeSeries(x); } catch (e) {} } });
-  txSeries = txSeries2 = null;
+  [txSeries, txSeries2, ...txZones].forEach(x => { if (x && ovChart) { try { ovChart.removeSeries(x); } catch (e) {} } });
+  txSeries = txSeries2 = null; txZones = [];
   if (ovCandles) txLines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
   txLines = [];
-  if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym) return;
+  const infoEl = $("ovPosInfo"); if (infoEl) infoEl.innerHTML = "";
+  if (typeof renderToggles === "function" && $("posBtn")) { const po = prefs.pos !== false && !!pfState.data; $("posBtn").classList.toggle("on", po); }
+  if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym || prefs.pos === false) return;
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   if (!rows.length || typeof rows[0][0] !== "string") return;          // pas de repères en 15 min
   const byKey = new Map(rows.map(r => [keyOf(iv, r[0]), r[0]]));
@@ -324,8 +334,27 @@ function drawTxMarks() {
         color:PF_OWNERS[own].col, text:(t.type === "A" ? "A·" : "V·") + own });
     });
     const p = pfPositions(tx).find(x => x.sym === ovSym);
-    if (p && p.qty > 0) txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
-      lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"PRU " + own }));
+    if (p && (p.qty > 0 || p.realized)) {          // résumé sous le nom : quantité, PRU, gain/perte
+      const open = p.qty > 0, v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct;
+      infoEl.insertAdjacentHTML("beforeend", '<span class="pi"><i style="background:' + PF_OWNERS[own].col + '"></i><b>' + own + '</b> ' +
+        (open ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " " : "soldée ") +
+        '<span class="' + (v >= 0 ? "up" : "down") + '">' + money(v, p.cur) + (pc != null ? " (" + fmtPct(pc) + ")" : "") + "</span></span>");
+    }
+    if (p && p.qty > 0) {
+      txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
+        lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"PRU " + own }));
+      // zone entre le PRU et le cours depuis l'achat : verte au-dessus (gain), rouge en dessous (perte)
+      const st = holdStart(tx);
+      const from = st ? (byKey.get(keyOf(iv, st)) || (rows.find(r => r[0] >= st) || [])[0]) : null;
+      if (from) {
+        const z = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:p.pru }, lineWidth:1,
+          topLineColor:"rgba(22,163,74,0.55)", topFillColor1:"rgba(22,163,74,0.22)", topFillColor2:"rgba(22,163,74,0.04)",
+          bottomLineColor:"rgba(220,38,38,0.55)", bottomFillColor1:"rgba(220,38,38,0.04)", bottomFillColor2:"rgba(220,38,38,0.22)",
+          priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+        z.setData(rows.filter(r => r[0] >= from).map(r => ({ time:r[0], value:r[4] })));
+        txZones.push(z);
+      }
+    }
   });
   if (!marks.length) return;
   marks.sort((a, b) => a.time < b.time ? -1 : a.time > b.time ? 1 : 0);

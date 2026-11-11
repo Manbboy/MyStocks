@@ -153,6 +153,9 @@
   /* Vue détaillée */
   .ov { position:fixed; top:0; left:0; right:0; height:100vh; height:100dvh; background:var(--bg); z-index:20; display:none; flex-direction:column; }
   .ov.show { display:flex; }
+  .ov-posinfo { display:flex; flex-wrap:wrap; gap:2px 10px; font-size:12px; color:var(--muted); }
+  .ov-posinfo:empty { display:none; }
+  .ov-posinfo .pi { white-space:nowrap; } .ov-posinfo i { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:3px; vertical-align:middle; }
   .ov-id { position:relative; }
   #ovTitle { cursor:pointer; }
   #ovTitle .caret { font-size:.75em; color:var(--muted); }
@@ -393,7 +396,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v32</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v33</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -424,7 +427,7 @@
 <div class="ov" id="ov">
   <div class="ov-head">
     <div class="ov-id">
-      <div class="ov-title" id="ovTitle" role="button" tabindex="0" title="Aller à une autre valeur du portefeuille"></div><div class="ov-sub" id="ovSub"></div>
+      <div class="ov-title" id="ovTitle" role="button" tabindex="0" title="Aller à une autre valeur du portefeuille"></div><div class="ov-sub" id="ovSub"></div><div class="ov-posinfo" id="ovPosInfo"></div>
       <div class="pick" id="ovPick" hidden></div>
     </div>
     <div class="ov-nav">
@@ -448,6 +451,7 @@
       <button class="mmb" id="flipBtn" aria-pressed="false" title="Bascules de rôle : résistance devenue support (ou l'inverse)">R⇄S<span class="mmdots"><i style="background:var(--res)"></i><i style="background:var(--sup)"></i></span></button>
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
       <button class="mmb" id="rtBtn" aria-pressed="false" title="Afficher / masquer RSI Trends (chandeliers colorés)">RT<span class="mmdots"><i style="background:#4CAF50"></i><i style="background:#787B86"></i><i style="background:#FF5252"></i></span></button>
+      <button class="mmb" id="posBtn" aria-pressed="false" title="Mes positions : achats / ventes, PRU et zone de gain ou de perte (portefeuille déverrouillé)">Pos.<span class="mmdots"><i style="background:#0ea5e9"></i><i style="background:#db2777"></i></span></button>
       <button class="mmb" id="volBtn" aria-pressed="false" title="Afficher / masquer les volumes">Vol<span class="mmdots"><i style="background:var(--muted);width:3px;height:5px"></i><i style="background:var(--muted);width:3px;height:3px;margin-top:2px"></i><i style="background:var(--muted);width:3px;height:5px"></i></span></button>
       </div>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false" aria-label="Réglages" title="Réglages"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="badge" id="cfgCount"></span></button>
@@ -955,6 +959,11 @@ function setVol(on) {
   renderToggles(); refreshMulti();
 }
 $("volBtn").onclick = () => setVol(prefs.vol === false);
+$("posBtn").onclick = () => {
+  if (typeof pfState !== "undefined" && !pfState.data) { toast("Déverrouillez d'abord l'onglet Portefeuille (mot de passe) pour voir vos positions.", 2400); return; }
+  prefs.pos = prefs.pos === false; savePrefs(); renderToggles(); drawTxMarks();
+  toast(prefs.pos ? "Positions affichées" : "Positions masquées", 1200);
+};
 ["tLen", "tOb", "tOs"].forEach(id => $(id).addEventListener("change", e => {
   prefs[id] = +e.target.value; savePrefs(); renderToggles(); drawRsi(); setCandles(); refreshMulti();
 }));
@@ -1826,6 +1835,8 @@ function renderToggles() {
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
   const volOn = prefs.vol !== false;
+  { const po = prefs.pos !== false && typeof pfState !== "undefined" && !!pfState.data;
+    $("posBtn").classList.toggle("on", po); $("posBtn").setAttribute("aria-pressed", po ? "true" : "false"); }
   $("volBtn").classList.toggle("on", volOn); $("volBtn").setAttribute("aria-pressed", volOn ? "true" : "false");
   $("rsiBtn").classList.toggle("on", indMode() === "rsi"); $("rsiBtn").setAttribute("aria-pressed", indMode() === "rsi" ? "true" : "false");
   $("rtBtn").classList.toggle("on", indMode() === "trend"); $("rtBtn").classList.toggle("nopane", indMode() === "trend" && prefs.rtPane === false); $("rtBtn").setAttribute("aria-pressed", indMode() === "trend" ? "true" : "false");
@@ -3261,13 +3272,23 @@ $("txForm").addEventListener("submit", submitTx);
 $("txCancel").onclick = () => { $("txDlg").classList.remove("show"); txEdit = null; };
 
 /* --- repères d'achat / vente et PRU sur le graphique du détail --- */
-let txSeries = null, txSeries2 = null, txLines = [];
+let txSeries = null, txSeries2 = null, txLines = [], txZones = [];
+/* Début de la détention actuelle : dernière date où la quantité est repassée de 0 à plus de 0 */
+function holdStart(tx) {
+  let q = 0, start = null;
+  tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "A" ? -1 : 1)).forEach(t => {
+    if (t.type === "A") { if (q < 1e-9) start = t.date; q += +t.qty; } else q -= +t.qty;
+  });
+  return q > 1e-9 ? start : null;
+}
 function drawTxMarks() {
-  [txSeries, txSeries2].forEach(x => { if (x && ovChart) { try { ovChart.removeSeries(x); } catch (e) {} } });
-  txSeries = txSeries2 = null;
+  [txSeries, txSeries2, ...txZones].forEach(x => { if (x && ovChart) { try { ovChart.removeSeries(x); } catch (e) {} } });
+  txSeries = txSeries2 = null; txZones = [];
   if (ovCandles) txLines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
   txLines = [];
-  if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym) return;
+  const infoEl = $("ovPosInfo"); if (infoEl) infoEl.innerHTML = "";
+  if (typeof renderToggles === "function" && $("posBtn")) { const po = prefs.pos !== false && !!pfState.data; $("posBtn").classList.toggle("on", po); }
+  if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym || prefs.pos === false) return;
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   if (!rows.length || typeof rows[0][0] !== "string") return;          // pas de repères en 15 min
   const byKey = new Map(rows.map(r => [keyOf(iv, r[0]), r[0]]));
@@ -3281,8 +3302,27 @@ function drawTxMarks() {
         color:PF_OWNERS[own].col, text:(t.type === "A" ? "A·" : "V·") + own });
     });
     const p = pfPositions(tx).find(x => x.sym === ovSym);
-    if (p && p.qty > 0) txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
-      lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"PRU " + own }));
+    if (p && (p.qty > 0 || p.realized)) {          // résumé sous le nom : quantité, PRU, gain/perte
+      const open = p.qty > 0, v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct;
+      infoEl.insertAdjacentHTML("beforeend", '<span class="pi"><i style="background:' + PF_OWNERS[own].col + '"></i><b>' + own + '</b> ' +
+        (open ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " " : "soldée ") +
+        '<span class="' + (v >= 0 ? "up" : "down") + '">' + money(v, p.cur) + (pc != null ? " (" + fmtPct(pc) + ")" : "") + "</span></span>");
+    }
+    if (p && p.qty > 0) {
+      txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
+        lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"PRU " + own }));
+      // zone entre le PRU et le cours depuis l'achat : verte au-dessus (gain), rouge en dessous (perte)
+      const st = holdStart(tx);
+      const from = st ? (byKey.get(keyOf(iv, st)) || (rows.find(r => r[0] >= st) || [])[0]) : null;
+      if (from) {
+        const z = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:p.pru }, lineWidth:1,
+          topLineColor:"rgba(22,163,74,0.55)", topFillColor1:"rgba(22,163,74,0.22)", topFillColor2:"rgba(22,163,74,0.04)",
+          bottomLineColor:"rgba(220,38,38,0.55)", bottomFillColor1:"rgba(220,38,38,0.04)", bottomFillColor2:"rgba(220,38,38,0.22)",
+          priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+        z.setData(rows.filter(r => r[0] >= from).map(r => ({ time:r[0], value:r[4] })));
+        txZones.push(z);
+      }
+    }
   });
   if (!marks.length) return;
   marks.sort((a, b) => a.time < b.time ? -1 : a.time > b.time ? 1 : 0);
