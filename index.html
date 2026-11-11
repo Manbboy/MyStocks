@@ -46,6 +46,8 @@
     .bar .legend { width:100%; }
     .bar { gap:6px 6px; }
     .bar > .btn { padding:6px 9px; font-size:13.5px; }
+    .bar > .btn .lbl { display:none; }
+    #addBtn, #editBtn { min-width:36px; font-size:15px; }
     .bar .spacer { display:none; }
   }
   .group { display:flex; align-items:center; gap:4px; }
@@ -379,7 +381,8 @@
 .live-dot.on::after { content:""; position:absolute; inset:-3px; border-radius:50%; background:#16a34a33; animation:livepulse 2s ease-in-out infinite; will-change:opacity; }
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 0%, 100% { opacity:0; } 50% { opacity:1; } }
-.live-btn, .day-btn { white-space:nowrap; }
+.live-btn, .day-btn, .sort-btn { white-space:nowrap; }
+.sort-btn.on { border-color:var(--accent, #2563eb); }
 .btn-cd { display:inline-block; min-width:1.6em; margin:0 3px 0 2px; padding:0 4px; border-radius:6px; background:var(--chip); color:var(--muted); font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; text-align:center; }
 .btn-cd:empty { display:none; }
 .live-cd { font-size:12px; color:var(--muted); margin-left:6px; font-variant-numeric:tabular-nums; white-space:nowrap; }
@@ -401,7 +404,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v37</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v38</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -418,9 +421,11 @@
     <div class="spacer"></div>
     <button class="btn live-btn" id="liveBtn" title="Cours en séance (≈ 15 min de retard) : toucher pour activer / désactiver"></button>
     <button class="btn day-btn" id="dayBtn" title="1J : courbe étirée sur toute la largeur, ou placée sur la journée entière (se remplit jusqu'au bord droit à la clôture)"></button>
-    <button class="btn" id="addBtn">+ Ajouter</button>
+    <button class="btn sort-btn" id="sortBtn" title="Trier les cartes">⇅</button>
+    <button class="btn" id="addBtn" title="Ajouter une valeur">+<span class="lbl"> Ajouter</span></button>
     <div class="pick live-menu" id="liveMenu" hidden></div>
-    <button class="btn" id="editBtn">Modifier</button>
+    <div class="pick live-menu" id="sortMenu" hidden></div>
+    <button class="btn" id="editBtn" title="Modifier la liste (retirer des valeurs)">✎<span class="lbl"> Modifier</span></button>
   </div>
   <div class="toast" id="toast"></div>
 
@@ -764,7 +769,9 @@ function renderGrid() {
   g.classList.toggle("editing", editing);
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
   if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">Aucune valeur. Touche « + Ajouter ».</div>';
-  pf.items.forEach(item => {
+  const order = sortedOrder(cfg.portfolios.indexOf(pf));
+  navOrder = { pi:cfg.portfolios.indexOf(pf), list:order };
+  order.map(i => pf.items[i]).forEach(item => {
     const info = withLive(item.yahoo, summary.symbols[item.yahoo] || { pending:true });
     const card = document.createElement("div"); card.className = "card"; card.dataset.sym = item.yahoo;
     const pct = info.changePct;
@@ -875,7 +882,7 @@ $("fSym").addEventListener("input", () => { $("fLookup").href = "https://finance
 $("tokForget").onclick = e => { e.preventDefault(); setTok(""); $("tokBox").classList.add("show"); toast("Jeton oublié sur cet appareil."); };
 $("fCancel").onclick = () => $("addDlg").classList.remove("show");
 $("addBtn").onclick = openAdd;
-$("editBtn").onclick = () => { editing = !editing; $("editBtn").classList.toggle("on", editing); $("editBtn").textContent = editing ? "Terminé" : "Modifier"; renderGrid(); };
+$("editBtn").onclick = () => { editing = !editing; $("editBtn").classList.toggle("on", editing); $("editBtn").innerHTML = editing ? "✓<span class=\"lbl\"> Terminé</span>" : "✎<span class=\"lbl\"> Modifier</span>"; renderGrid(); };
 $("addForm").addEventListener("submit", async e => {
   e.preventDefault();
   const sym = $("fSym").value.trim().toUpperCase(), name = $("fName").value.trim(), pi = +$("fPf").value;
@@ -928,14 +935,42 @@ let ovChart = null;
 /* ---------- Navigation entre les actions du portefeuille ---------- */
 let ovPos = { pi:0, idx:0 }, openSeq = 0;
 const hasData = it => { const s = summary.symbols[it.yahoo]; return s && !s.error; };
+/* ---------- Tri des cartes ---------- */
+const SORTS = [["add", "Ordre d'ajout"], ["perfDesc", "Meilleure variation du jour"], ["perfAsc", "Pire variation du jour"],
+  ["name", "Nom (A → Z)"], ["nearS", "Plus proche d'un support"], ["nearR", "Plus proche d'une résistance"]];
+function levelDist(info, kind) {          // écart (%) au support (ou à la résistance) le plus proche, toutes échelles
+  let best = Infinity;
+  if (!info || info.last == null) return best;
+  ["D","W","M","Q"].forEach(tf => {
+    const l = (kind === "S" ? levelsOf(info, tf).supports : levelsOf(info, tf).resistances)[0];
+    if (l && !l.extreme) best = Math.min(best, Math.abs(l.price / info.last - 1) * 100);
+  });
+  return best;
+}
+/* indices des valeurs du portefeuille pi dans l'ordre d'affichage choisi */
+function sortedOrder(pi) {
+  const items = (cfg.portfolios[pi] || { items:[] }).items, idx = items.map((_, i) => i), mode = prefs.sort || "add";
+  if (mode === "add") return idx;
+  const inf = i => withLive(items[i].yahoo, summary.symbols[items[i].yahoo] || {});
+  const key = {
+    perfDesc: i => -(inf(i).changePct ?? -Infinity), perfAsc: i => inf(i).changePct ?? Infinity,
+    nearS: i => levelDist(inf(i), "S"), nearR: i => levelDist(inf(i), "R"),
+  }[mode];
+  if (mode === "name") return idx.sort((a, b) => items[a].name.localeCompare(items[b].name, "fr"));
+  const k = new Map(idx.map(i => [i, key(i)]));
+  return idx.sort((a, b) => (k.get(a) - k.get(b)) || a - b);
+}
+let navOrder = null;                       // ordre figé à l'ouverture du détail (les cours en direct ne le bousculent pas)
 function neighbour(dir) {
   const items = (cfg.portfolios[ovPos.pi] || { items:[] }).items;
-  for (let i = ovPos.idx + dir; i >= 0 && i < items.length; i += dir) if (hasData(items[i])) return i;
+  const ord = navOrder && navOrder.pi === ovPos.pi ? navOrder.list : items.map((_, i) => i);
+  for (let k = ord.indexOf(ovPos.idx) + dir; k >= 0 && k < ord.length; k += dir) if (hasData(items[ord[k]])) return ord[k];
   return -1;
 }
 function updateNav() {
   const pf = cfg.portfolios[ovPos.pi]; if (!pf) return;
-  $("ovPos").textContent = (ovPos.idx + 1) + "/" + pf.items.length;
+  const ord = navOrder && navOrder.pi === ovPos.pi ? navOrder.list : null;
+  $("ovPos").textContent = ((ord ? ord.indexOf(ovPos.idx) : ovPos.idx) + 1) + "/" + pf.items.length;
   $("ovPos").title = pf.name + " · glisse à gauche ou à droite pour changer d'action";
   $("ovPrev").disabled = $("ovPrev2").disabled = neighbour(-1) < 0;
   $("ovNext").disabled = $("ovNext2").disabled = neighbour(1) < 0;
@@ -2669,6 +2704,27 @@ $("lvClose").onclick = closeLevel;
     m.hidden = false;
   };
   document.addEventListener("click", e => { if (!e.target.closest("#liveMenu")) $("liveMenu").hidden = true; });
+  const updSortBtn = () => { const m = SORTS.find(x => x[0] === (prefs.sort || "add"));
+    $("sortBtn").textContent = (prefs.sort || "add") === "add" ? "⇅" : "⇅ " + { perfDesc:"Var. ↓", perfAsc:"Var. ↑", name:"A→Z", nearS:"Supp.", nearR:"Rés." }[prefs.sort];
+    $("sortBtn").title = "Tri : " + m[1]; $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); };
+  updSortBtn();
+  $("sortBtn").onclick = e => {
+    e.stopPropagation();
+    const m = $("sortMenu");
+    if (!m.hidden) { m.hidden = true; return; }
+    m.innerHTML = "";
+    SORTS.forEach(([k, lab]) => {
+      const b = document.createElement("button");
+      if ((prefs.sort || "add") === k) b.className = "cur";
+      const sp = document.createElement("span"); sp.className = "nm"; sp.textContent = lab; b.appendChild(sp);
+      b.onclick = ev => { ev.stopPropagation(); m.hidden = true; prefs.sort = k; savePrefs(); updSortBtn(); render(); };
+      m.appendChild(b);
+    });
+    const r = $("sortBtn").getBoundingClientRect();
+    m.style.left = Math.max(8, Math.min(r.left, innerWidth - 250)) + "px"; m.style.top = (r.bottom + 4) + "px";
+    m.hidden = false;
+  };
+  document.addEventListener("click", e => { if (!e.target.closest("#sortMenu")) $("sortMenu").hidden = true; });
   $("dayBtn").onclick = () => {
     if (prefs.range !== "1J") { prefs.range = "1J"; savePrefs(); render(); updDayBtn(); toast("Période 1J" + (prefs.dayFull ? " · journée entière" : " · courbe ajustée"), 1500); return; }
     prefs.dayFull = !prefs.dayFull; savePrefs(); updDayBtn();
@@ -2954,7 +3010,8 @@ function closePick() { const p = $("ovPick"); if (p) p.hidden = true; }
 function openPick() {
   const p = $("ovPick"), pf = cfg.portfolios[ovPos.pi]; if (!p || !pf) return;
   p.innerHTML = "";
-  pf.items.forEach((it, idx) => {
+  (navOrder && navOrder.pi === ovPos.pi ? navOrder.list : pf.items.map((_, i) => i)).forEach(idx => {
+    const it = pf.items[idx];
     const info = withLive(it.yahoo, summary.symbols[it.yahoo] || { pending:true });
     const b = document.createElement("button");
     if (idx === ovPos.idx) b.className = "cur";
