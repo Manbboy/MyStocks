@@ -467,7 +467,11 @@ function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleStri
 
 async function getSeries(info) {
   if (!seriesCache[info.file]) {
-    seriesCache[info.file] = fetch("data/" + info.file + "?v=" + encodeURIComponent(summary.updated)).then(r => r.json());
+    // si le fichier n'est pas encore publié (juste après un ajout), on n'en garde pas l'échec en mémoire : on réessaiera
+    seriesCache[info.file] = fetch("data/" + info.file + "?v=" + encodeURIComponent(summary.updated) + "&t=" + Date.now(), { cache:"no-store" })
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(d => { if (!d || !d.rows || !d.rows.length) throw new Error("vide"); return d; })
+      .catch(e => { delete seriesCache[info.file]; throw e; });
   }
   return seriesCache[info.file];
 }
@@ -560,7 +564,13 @@ const io = new IntersectionObserver(entries => {
     if (!e.isIntersecting) return;
     io.unobserve(e.target);
     const info = summary.symbols[e.target.dataset.sym];
-    drawCard(e.target, info).catch(() => { e.target.innerHTML = '<div class="msg">Graphique indisponible</div>'; });
+    drawCard(e.target, info).catch(() => {
+      // nouvelle tentative automatique (ex. données en cours de publication)
+      e.target.innerHTML = '<div class="msg">Chargement…</div>';
+      const tries = +(e.target.dataset.tries || 0) + 1; e.target.dataset.tries = tries;
+      if (tries <= 6) setTimeout(() => { if (e.target.isConnected) { e.target.innerHTML = ""; io.observe(e.target); } }, 15000);
+      else e.target.innerHTML = '<div class="msg">Graphique indisponible</div>';
+    });
   });
 }, { rootMargin:"300px" });
 
