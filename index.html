@@ -455,7 +455,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v52</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v53</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1018,7 +1018,7 @@ let ovChart = null;
 let ovPos = { pi:0, idx:0 }, openSeq = 0;
 const hasData = it => { const s = summary.symbols[it.yahoo]; return s && !s.error; };
 /* ---------- Tri des cartes ---------- */
-const SORTS = [["add", "Ordre d'ajout"], ["perfDesc", "Meilleure variation du jour"], ["perfAsc", "Pire variation du jour"],
+const SORTS = [["add", "Ordre par défaut"], ["perfDesc", "Meilleure variation du jour"], ["perfAsc", "Pire variation du jour"],
   ["name", "Nom (A → Z)"], ["nearS", "Plus proche d'un support"], ["nearR", "Plus proche d'une résistance"]];
 function levelDist(info, kind) {          // écart (%) au support (ou à la résistance) le plus proche, toutes échelles
   let best = Infinity;
@@ -3685,7 +3685,7 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
         const rest = p.items.filter(i => !newOrder.includes(i.yahoo));
         p.items = newOrder.filter(sym => by.has(sym)).map(sym => by.get(sym)).concat(rest);
       }, "Nouvel ordre des valeurs de « " + name + " »");
-      toast("Ordre enregistré (tri « Ordre d'ajout »).", 1800);
+      toast("Ordre enregistré (tri « Ordre par défaut »).", 1800);
     } catch (err) {
       toast(err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Ordre non enregistré : jeton GitHub manquant ou invalide (bouton +)." : "Ordre non enregistré : " + err.message, 3000);
     }
