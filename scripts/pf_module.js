@@ -306,6 +306,10 @@ $("txCancel").onclick = () => { $("txDlg").classList.remove("show"); txEdit = nu
 /* --- repères d'achat / vente et PRU sur le graphique du détail --- */
 let txSeries = null, txSeries2 = null, txLines = [], txZones = [];
 /* Début de la détention actuelle : dernière date où la quantité est repassée de 0 à plus de 0 */
+/* La valeur affichée a-t-elle au moins une opération (M ou D) ? */
+function posAvail() {
+  return !!(pfState.data && ovSym && ["M", "D"].some(o => ((pfState.data[o] || {}).tx || []).some(t => t.sym === ovSym)));
+}
 function holdStart(tx) {
   let q = 0, start = null;
   tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "A" ? -1 : 1)).forEach(t => {
@@ -319,7 +323,7 @@ function drawTxMarks() {
   if (ovCandles) txLines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
   txLines = [];
   const infoEl = $("ovPosInfo"); if (infoEl) infoEl.innerHTML = "";
-  if (typeof renderToggles === "function" && $("posBtn")) { const po = prefs.pos !== false && !!pfState.data; $("posBtn").classList.toggle("on", po); }
+  if ($("posBtn")) { const av = posAvail(); $("posBtn").hidden = !av; $("posBtn").classList.toggle("on", av && prefs.pos !== false); }
   if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym || prefs.pos === false) return;
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   if (!rows.length || typeof rows[0][0] !== "string") return;          // pas de repères en 15 min

@@ -383,7 +383,7 @@
 .flash-up, .flash-down { border-radius:5px; padding:0 3px; margin:0 -3px; }
 .flash-up { animation:flashUp 1.8s ease-out; } .flash-down { animation:flashDown 1.8s ease-out; }
 .live-menu { position:fixed; width:auto; min-width:220px; }
-.day-btn[hidden] { display:none; }
+.day-btn[hidden], .mmb[hidden] { display:none; }
 .day-btn.dim { opacity:.55; }
 #rtBtn.on.nopane { border-style:dashed; }
 .live-btn.on { border-color:#16a34a; color:#16a34a; background:var(--card); }
@@ -396,7 +396,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v33</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v34</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -960,7 +960,6 @@ function setVol(on) {
 }
 $("volBtn").onclick = () => setVol(prefs.vol === false);
 $("posBtn").onclick = () => {
-  if (typeof pfState !== "undefined" && !pfState.data) { toast("Déverrouillez d'abord l'onglet Portefeuille (mot de passe) pour voir vos positions.", 2400); return; }
   prefs.pos = prefs.pos === false; savePrefs(); renderToggles(); drawTxMarks();
   toast(prefs.pos ? "Positions affichées" : "Positions masquées", 1200);
 };
@@ -1835,7 +1834,8 @@ function renderToggles() {
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
   const volOn = prefs.vol !== false;
-  { const po = prefs.pos !== false && typeof pfState !== "undefined" && !!pfState.data;
+  { const av = typeof posAvail === "function" && posAvail(), po = av && prefs.pos !== false;
+    $("posBtn").hidden = !av;                     // bouton visible seulement si cette valeur a eu un achat ou une vente
     $("posBtn").classList.toggle("on", po); $("posBtn").setAttribute("aria-pressed", po ? "true" : "false"); }
   $("volBtn").classList.toggle("on", volOn); $("volBtn").setAttribute("aria-pressed", volOn ? "true" : "false");
   $("rsiBtn").classList.toggle("on", indMode() === "rsi"); $("rsiBtn").setAttribute("aria-pressed", indMode() === "rsi" ? "true" : "false");
@@ -3274,6 +3274,10 @@ $("txCancel").onclick = () => { $("txDlg").classList.remove("show"); txEdit = nu
 /* --- repères d'achat / vente et PRU sur le graphique du détail --- */
 let txSeries = null, txSeries2 = null, txLines = [], txZones = [];
 /* Début de la détention actuelle : dernière date où la quantité est repassée de 0 à plus de 0 */
+/* La valeur affichée a-t-elle au moins une opération (M ou D) ? */
+function posAvail() {
+  return !!(pfState.data && ovSym && ["M", "D"].some(o => ((pfState.data[o] || {}).tx || []).some(t => t.sym === ovSym)));
+}
 function holdStart(tx) {
   let q = 0, start = null;
   tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "A" ? -1 : 1)).forEach(t => {
@@ -3287,7 +3291,7 @@ function drawTxMarks() {
   if (ovCandles) txLines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
   txLines = [];
   const infoEl = $("ovPosInfo"); if (infoEl) infoEl.innerHTML = "";
-  if (typeof renderToggles === "function" && $("posBtn")) { const po = prefs.pos !== false && !!pfState.data; $("posBtn").classList.toggle("on", po); }
+  if ($("posBtn")) { const av = posAvail(); $("posBtn").hidden = !av; $("posBtn").classList.toggle("on", av && prefs.pos !== false); }
   if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym || prefs.pos === false) return;
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   if (!rows.length || typeof rows[0][0] !== "string") return;          // pas de repères en 15 min
