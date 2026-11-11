@@ -1216,7 +1216,19 @@ function channels(rows, iv, pct) {
         // le test strict ne s'applique qu'au bord d'appui (la base) ; la parallèle garde la marge normale
         const pierce = side === "lo" ? lo.filter(p => p >= a && p <= end && L(p) < lower(p) - pb).length
                                      : hi.filter(p => p >= a && p <= end && H(p) > upper(p) + pb).length;
-        const baseT = piv.filter(p => p >= a && p <= end && Math.abs(v(p) - base(p)) <= pb).length;
+        // règle stricte : aucun sommet ni creux ne traverse un bord jusqu'au dernier contact (la cassure vient après)
+        const wO = side === "lo" ? (i => H(i) - upper(i)) : (i => lower(i) - L(i));
+        const wB = side === "lo" ? (i => lower(i) - L(i)) : (i => H(i) - upper(i));
+        // contacts de la parallèle : chaque passage du cours contre le bord (semaines voisines regroupées)
+        const oT = []; for (let k = a; k <= end; k++) if (Math.abs(wO(k)) <= band) { if (!oT.length || k - oT[oT.length - 1] > P.w) oT.push(k); else if (Math.abs(wO(k)) < Math.abs(wO(oT[oT.length - 1]))) oT[oT.length - 1] = k; }
+        const bAll = (side === "lo" ? loT : upT);
+        const lastT = Math.max(oT.length ? oT[oT.length - 1] : a, ...bAll);
+        let pierceO = 0, pierceB = 0;
+        for (let k = a; k <= lastT; k++) { if (wO(k) > pb) pierceO++; if (wB(k) > pb) pierceB++; }
+        if (pierceO || pierceB) continue;
+        if (side === "lo") { upT.length = 0; upT.push(...oT); } else { loT.length = 0; loT.push(...oT); }
+        if (upT.length < 2 || loT.length < 2) continue;
+                const baseT = piv.filter(p => p >= a && p <= end && Math.abs(v(p) - base(p)) <= pb).length;
         // un appui régulier (contacts répartis tout du long) vaut mieux qu'un appui avec un long trou au milieu
         const bT = (side === "lo" ? loT : upT).slice().sort((p, q) => p - q);
         let gap = 0; for (let k = 1; k < bT.length; k++) gap = Math.max(gap, bT[k] - bT[k - 1]);
