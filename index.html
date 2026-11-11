@@ -294,6 +294,8 @@
 .live-dot.on { background:#16a34a; box-shadow:0 0 0 2px #16a34a33; animation:livepulse 2s infinite; }
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 50% { box-shadow:0 0 0 4px #16a34a22; } }
+.live-btn { white-space:nowrap; }
+.live-btn.on { border-color:#16a34a; color:#16a34a; }
 .ver { font-size:11px; color:#9ca3af; }
 .live-status { font-size:12px; margin-left:6px; white-space:nowrap; cursor:pointer; }
 .live-status.ok { color:#16a34a; } .live-status.ko { color:#9ca3af; }
@@ -316,6 +318,7 @@
     <div class="group"><label>Période</label><div class="seg" id="rangeSeg"></div></div>
     <div class="legend"><span><i style="color:var(--sup)"></i>Support</span><span><i style="color:var(--res)"></i>Résistance</span></div>
     <div class="spacer"></div>
+    <button class="btn live-btn" id="liveBtn" title="Cours en séance (≈ 15 min de retard) : toucher pour activer / désactiver"></button>
     <button class="btn" id="addBtn">+ Ajouter</button>
     <button class="btn" id="editBtn">Modifier</button>
   </div>
@@ -2430,8 +2433,13 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v4</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
-  $("liveStatus").onclick = () => { prefs.live = !liveOn(); savePrefs(); render(); startLive(); if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; } };
+  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v5</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  const toggleLive = () => {
+    prefs.live = !liveOn(); savePrefs(); updLiveBtn(); render(); startLive();
+    if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
+    toast(liveOn() ? "Cours en séance activés" : "Cours en séance désactivés : clôtures uniquement", 1800);
+  };
+  $("liveStatus").onclick = toggleLive; $("liveBtn").onclick = toggleLive; updLiveBtn();
   if (summary.demo) $("demo").style.display = "block";
   render();
   startLive();
@@ -2442,6 +2450,11 @@ const LIVE_URL = "https://cours-live.manbboy.workers.dev";
 const liveQuotes = {};      // sym -> { price, prevClose, time, day, state }
 let liveTimer = null, liveLast = 0, liveDiag = "";
 function liveOn() { return prefs.live !== false; }
+function updLiveBtn() {
+  const b = $("liveBtn"); if (!b) return;
+  b.innerHTML = liveOn() ? '<span class="live-dot on"></span>En direct' : '<span class="live-dot off"></span>Clôtures';
+  b.classList.toggle("on", liveOn());
+}
 function withLive(sym, info) {
   const q = liveQuotes[sym];
   if (!liveOn() || !q || !info || info.pending || info.error) return info;
