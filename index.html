@@ -88,9 +88,10 @@
   .pf-pos.closed { opacity:.7; }
   .pf-pos .r1 { display:flex; justify-content:space-between; gap:8px; font-size:15px; }
   .pf-pos .r1 span { font-weight:700; white-space:nowrap; }
-  .pf-pos .r2 { font-size:12px; color:var(--muted); margin-top:3px; }
+  .pf-pos .r2 { font-size:10.5px; line-height:1.4; color:var(--muted); margin-top:2px; letter-spacing:.01em; }
+  .pf-pos .r2 span { font-weight:500; }
   .pf-tx { margin-top:8px; border-top:1px solid var(--border); padding-top:6px; display:flex; flex-direction:column; gap:3px; }
-  .pf-tx > div { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .pf-tx > div { display:flex; align-items:center; gap:8px; font-size:11.5px; }
   .pf-tx .ty { font-weight:700; min-width:44px; } .pf-tx .ty { font-size:11px; padding:1px 7px; border-radius:999px; text-align:center; }   /* achat bleu, vente violet : le vert/rouge reste réservé aux gains/pertes */
   .pf-tx .ty.a { color:var(--buy); background:color-mix(in srgb, var(--buy) 16%, transparent); }
   .pf-tx .ty.v { color:var(--sell); background:color-mix(in srgb, var(--sell) 16%, transparent); }
@@ -425,7 +426,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v44</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v45</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
