@@ -80,13 +80,14 @@ function allSymbols() {
 function pfPositions(tx) {
   const by = new Map();
   tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.t || 0) - (b.t || 0)).forEach(t => {
-    const p = by.get(t.sym) || { sym:t.sym, qty:0, cost:0, realized:0, bought:0, fees:0, first:t.date, tx:[] };
+    const p = by.get(t.sym) || { sym:t.sym, qty:0, cost:0, realized:0, soldCost:0, bought:0, fees:0, first:t.date, tx:[] };
     const fees = +t.fees || 0;
     p.fees += fees; p.tx.push(t);
     if (t.type === "A") { p.qty += +t.qty; p.cost += t.qty * t.price + fees; p.bought += t.qty * t.price + fees; }
     else {
       const avg = p.qty > 0 ? p.cost / p.qty : 0, q = Math.min(+t.qty, p.qty);
       p.realized += q * t.price - fees - q * avg;
+      p.soldCost += q * avg;                     // prix de revient des actions vendues : base du % réalisé
       p.cost -= q * avg; p.qty -= q;
       if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; }
     }
@@ -100,7 +101,8 @@ function pfPositions(tx) {
     const value = p.qty > 0 && price != null ? p.qty * price : 0;
     const latent = p.qty > 0 && price != null ? value - p.cost : 0;
     return Object.assign(p, { name:it.name, item:it, cur:info.currency || "EUR", price, pru, value, latent,
-      latentPct: p.cost > 0 ? latent / p.cost * 100 : null, dayPct:info.changePct });
+      latentPct: p.cost > 0 ? latent / p.cost * 100 : null, dayPct:info.changePct,
+      realizedPct: p.soldCost > 0 ? p.realized / p.soldCost * 100 : null });
   }).sort((a, b) => (b.qty > 0) - (a.qty > 0) || b.value - a.value || a.name.localeCompare(b.name));
 }
 
@@ -165,8 +167,8 @@ async function renderPf() {
   }
   /* totaux par devise */
   const tot = {};
-  pos.forEach(p => { const t = tot[p.cur] = tot[p.cur] || { cost:0, value:0, latent:0, realized:0 };
-    t.cost += p.cost; t.value += p.value; t.latent += p.latent; t.realized += p.realized; });
+  pos.forEach(p => { const t = tot[p.cur] = tot[p.cur] || { cost:0, value:0, latent:0, realized:0, soldCost:0 };
+    t.cost += p.cost; t.value += p.value; t.latent += p.latent; t.realized += p.realized; t.soldCost += p.soldCost; });
   const sum = document.createElement("div"); sum.className = "pf-sum" + (prefs.pfCompact ? " compact" : "");
   Object.entries(tot).forEach(([cur, t]) => {
     const pct = t.cost > 0 ? t.latent / t.cost * 100 : null;
@@ -174,7 +176,7 @@ async function renderPf() {
       '<div><span>Investi</span><b>' + fmt(t.cost, cur) + '</b></div>' +
       '<div><span>Valeur</span><b>' + fmt(t.value, cur) + '</b></div>' +
       '<div><span>Plus-value latente</span><b class="' + (t.latent >= 0 ? "up" : "down") + '">' + money(t.latent, cur) + (pct != null ? " (" + fmtPct(pct) + ")" : "") + '</b></div>' +
-      '<div><span>Réalisé (ventes)</span><b class="' + (t.realized >= 0 ? "up" : "down") + '">' + money(t.realized, cur) + '</b></div>');
+      '<div><span>Réalisé (ventes)</span><b class="' + (t.realized >= 0 ? "up" : "down") + '">' + money(t.realized, cur) + (t.soldCost > 0 ? " (" + fmtPct(t.realized / t.soldCost * 100) + ")" : "") + '</b></div>');
   });
   box.appendChild(sum);
 
@@ -187,11 +189,11 @@ async function renderPf() {
     const open = p.qty > 0;
     c.innerHTML =
       '<div class="r1"><b class="nm"></b><span class="' + (open ? (p.latent >= 0 ? "up" : "down") : (p.realized >= 0 ? "up" : "down")) + '">' +
-        (open ? money(p.latent, p.cur) + (p.latentPct != null ? " · " + fmtPct(p.latentPct) : "") : "Soldée · " + money(p.realized, p.cur)) + '</span></div>' +
+        (open ? money(p.latent, p.cur) + (p.latentPct != null ? " · " + fmtPct(p.latentPct) : "") : "Soldée · " + money(p.realized, p.cur) + (p.realizedPct != null ? " · " + fmtPct(p.realizedPct) : "")) + '</span></div>' +
       '<div class="r2">' + (open
         ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " → cours " + fmt(p.price, p.cur) + (p.dayPct != null ? ' <span class="' + (p.dayPct >= 0 ? "up" : "down") + '">(' + fmtPct(p.dayPct) + " auj.)</span>" : "")
         : "Aucune action détenue") +
-      (open && Math.abs(p.realized) > 0.005 ? ' · réalisé <span class="' + (p.realized >= 0 ? "up" : "down") + '">' + money(p.realized, p.cur) + '</span>' : "") + '</div>';
+      (open && Math.abs(p.realized) > 0.005 ? ' · réalisé <span class="' + (p.realized >= 0 ? "up" : "down") + '">' + money(p.realized, p.cur) + (p.realizedPct != null ? " (" + fmtPct(p.realizedPct) + ")" : "") + '</span>' : "") + '</div>';
     c.querySelector(".nm").textContent = p.name;
     if (prefs.pfCompact) c.querySelector(".r1").insertAdjacentHTML("beforeend", '<em class="val">' + (open ? fmt(p.value, p.cur) : "–") + '</em>');
     const tl = document.createElement("div"); tl.className = "pf-tx";
@@ -215,8 +217,8 @@ async function renderPf() {
   const nOpen = openL.children.length, nClosed = closedL.children.length;
   if (nOpen) { box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions ouvertes <span>' + nOpen + '</span></h3>'); box.appendChild(openL); }
   if (nClosed) {
-    const rz = pos.filter(p => p.qty === 0).reduce((o, p) => (o[p.cur] = (o[p.cur] || 0) + p.realized, o), {});
-    const txt = Object.entries(rz).map(([cur, v]) => '<b class="' + (v >= 0 ? "up" : "down") + '">' + money(v, cur) + "</b>").join(" · ");
+    const rz = pos.filter(p => p.qty === 0).reduce((o, p) => { const r = o[p.cur] = o[p.cur] || { v:0, c:0 }; r.v += p.realized; r.c += p.soldCost; return o; }, {});
+    const txt = Object.entries(rz).map(([cur, r]) => '<b class="' + (r.v >= 0 ? "up" : "down") + '">' + money(r.v, cur) + (r.c > 0 ? " · " + fmtPct(r.v / r.c * 100) : "") + "</b>").join(" · ");
     box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions soldées <span>' + nClosed + '</span><em>' + txt + '</em></h3>'); box.appendChild(closedL);
   }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
