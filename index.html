@@ -165,6 +165,12 @@
   .grid.compact .near { grid-column:4; grid-row:1; margin:0; text-align:right; font-size:11px; }
   @media (max-width:420px) { .grid.compact .tr-h, .grid.compact .card-head { grid-template-columns:minmax(0, 1fr) 64px 60px 78px; column-gap:6px; padding-left:10px; padding-right:10px; } }
   .cmp-btn { min-width:36px; font-size:15px; }
+  /* déplacement des cartes (appui long) */
+  #grid .card { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  .drag-ghost { position:fixed; display:block; padding:0; overflow:hidden; border:1px solid var(--accent); z-index:200; pointer-events:none; opacity:.92; transform:scale(1.03); box-shadow:0 12px 30px rgba(0,0,0,.35); border-radius:12px; background:var(--card); }
+  .drag-src { opacity:.25; outline:2px dashed var(--muted); outline-offset:-2px; }
+  .drag-ghost.grid { padding:0; gap:0; }
+  body.dragging { overscroll-behavior:none; }
   .card { position:relative; }
   .grid { display:grid; gap:8px; padding:12px 0 40px; grid-template-columns:repeat(var(--cols,3), minmax(0,1fr)); }
   .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; }
@@ -449,7 +455,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v51</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v52</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3617,6 +3623,102 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
   if ($("ov").classList.contains("show")) drawTxMarks();
   const a = cfg.portfolios[prefs.active]; if (a && a.name === "Hold" && prefs.view !== "pf") render();      // onglet Hold : maintenant qu'on connaît les positions
 }); }, 1500);
+
+
+/* ===== Réorganiser les cartes : appui long puis glisser (cartes et tableau compact) ===== */
+(function () {
+  const LONG = 420, MOVE_TOL = 8;
+  let st = null;                 // { card, x0, y0, timer, active, ghost, dx, dy, lastX, lastY, raf }
+  const grid = () => $("grid");
+  const cards = () => [...grid().querySelectorAll(".card[data-sym]")];
+  function begin(card, x, y) {
+    const r = card.getBoundingClientRect();
+    const ghost = document.createElement("div");
+    ghost.className = "drag-ghost" + (grid().classList.contains("compact") ? " grid compact" : "");
+    const cl = card.cloneNode(true); cl.style.margin = "0"; ghost.appendChild(cl);
+    const src = card.querySelectorAll("canvas"), dst = cl.querySelectorAll("canvas");
+    src.forEach((c, k) => { try { dst[k].getContext("2d").drawImage(c, 0, 0); } catch (e) {} });
+    Object.assign(ghost.style, { width:r.width + "px", height:r.height + "px", left:r.left + "px", top:r.top + "px" });
+    document.body.appendChild(ghost);
+    card.classList.add("drag-src");
+    st.active = true; st.ghost = ghost; st.dx = x - r.left; st.dy = y - r.top;
+    if (navigator.vibrate) try { navigator.vibrate(30); } catch (e) {}
+    document.body.classList.add("dragging");
+  }
+  function move(x, y) {
+    st.lastX = x; st.lastY = y;
+    if (!grid().classList.contains("compact")) st.ghost.style.left = (x - st.dx) + "px"; st.ghost.style.top = (y - st.dy) + "px";
+    // carte sous le doigt : on insère la carte déplacée avant ou après elle
+    st.ghost.style.display = "none";
+    const el = document.elementFromPoint(x, y);
+    st.ghost.style.display = "";
+    const over = el && el.closest(".card[data-sym]");
+    if (over && over !== st.card && over.parentNode === st.card.parentNode) {
+      const r = over.getBoundingClientRect();
+      const table = grid().classList.contains("compact");
+      const after = table ? y > r.top + r.height / 2 : (y > r.bottom - r.height / 3 || (y > r.top + r.height / 3 && x > r.left + r.width / 2));
+      over.parentNode.insertBefore(st.card, after ? over.nextSibling : over);
+    }
+    // défilement automatique près des bords de l'écran
+    const edge = 70;
+    cancelAnimationFrame(st.raf);
+    const v = y < edge ? -(edge - y) / 4 : y > innerHeight - edge ? (y - innerHeight + edge) / 4 : 0;
+    if (v) { const step = () => { if (!st || !st.active) return; scrollBy(0, v); st.raf = requestAnimationFrame(step); }; st.raf = requestAnimationFrame(step); }
+  }
+  async function end(save) {
+    const s = st; st = null;
+    if (!s) return;
+    clearTimeout(s.timer); cancelAnimationFrame(s.raf);
+    if (!s.active) return;
+    s.ghost.remove(); s.card.classList.remove("drag-src"); document.body.classList.remove("dragging");
+    s.card._justDragged = true; setTimeout(() => { s.card._justDragged = false; }, 400);
+    const order = cards().map(c => c.dataset.sym);
+    if (!save || order.join("|") === s.before) return;
+    const pf = cfg.portfolios[prefs.active]; if (!pf) return;
+    const name = pf.name, saved = new Set(pf.items.filter(i => !i.auto).map(i => i.yahoo));
+    const newOrder = order.filter(sym => saved.has(sym));
+    prefs.sort = "add"; savePrefs();
+    try {
+      await ghUpdate(c => {
+        const p = c.portfolios.find(x => x.name === name); if (!p) return;
+        const by = new Map(p.items.map(i => [i.yahoo, i]));
+        const rest = p.items.filter(i => !newOrder.includes(i.yahoo));
+        p.items = newOrder.filter(sym => by.has(sym)).map(sym => by.get(sym)).concat(rest);
+      }, "Nouvel ordre des valeurs de « " + name + " »");
+      toast("Ordre enregistré (tri « Ordre d'ajout »).", 1800);
+    } catch (err) {
+      toast(err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Ordre non enregistré : jeton GitHub manquant ou invalide (bouton +)." : "Ordre non enregistré : " + err.message, 3000);
+    }
+    render();
+  }
+  function down(e, x, y) {
+    const card = e.target.closest && e.target.closest("#grid .card[data-sym]");
+    if (!card || e.target.closest(".rm") || document.body.classList.contains("editing-none")) return;
+    st = { card, x0:x, y0:y, active:false, before:cards().map(c => c.dataset.sym).join("|") };
+    st.timer = setTimeout(() => { if (st && !st.active) begin(card, st.x0, st.y0); }, LONG);
+  }
+  // tactile
+  document.addEventListener("touchstart", e => { if (e.touches.length === 1) down(e, e.touches[0].clientX, e.touches[0].clientY); }, { passive:true });
+  document.addEventListener("touchmove", e => {
+    if (!st) return;
+    const t = e.touches[0];
+    if (!st.active) { if (Math.hypot(t.clientX - st.x0, t.clientY - st.y0) > MOVE_TOL) { clearTimeout(st.timer); st = null; } return; }
+    e.preventDefault(); move(t.clientX, t.clientY);
+  }, { passive:false });
+  document.addEventListener("touchend", () => end(true));
+  document.addEventListener("touchcancel", () => end(false));
+  // souris (ordinateur)
+  document.addEventListener("mousedown", e => { if (e.button === 0) down(e, e.clientX, e.clientY); });
+  document.addEventListener("mousemove", e => {
+    if (!st) return;
+    if (!st.active) { if (Math.hypot(e.clientX - st.x0, e.clientY - st.y0) > MOVE_TOL) { clearTimeout(st.timer); st = null; } return; }
+    e.preventDefault(); move(e.clientX, e.clientY);
+  });
+  document.addEventListener("mouseup", () => end(true));
+  // pas de menu contextuel ni d'ouverture du détail après un déplacement
+  document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("#grid .card")) e.preventDefault(); });
+  document.addEventListener("click", e => { const c = e.target.closest && e.target.closest("#grid .card"); if (c && c._justDragged) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();
 
 </script>
 </body>
