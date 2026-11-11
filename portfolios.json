@@ -397,6 +397,11 @@
           "yahoo": "ALCPB.PA",
           "tv": "EURONEXT:ALCPB",
           "name": "Capital B"
+        },
+        {
+          "yahoo": "IPS",
+          "tv": "IPS",
+          "name": "Ips"
         }
       ]
     },
