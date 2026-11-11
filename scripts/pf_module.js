@@ -184,8 +184,9 @@ async function renderPf() {
   // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
   const openL = document.createElement("div"), closedL = document.createElement("div");
   openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
+  const openB = [], closedB = [];                // cartes à répartir ensuite par groupe (Europe, États-Unis, trackers, cryptos)
   pos.forEach(p => {
-    const list = p.qty > 0 ? openL : closedL;
+    const list = p.qty > 0 ? openB : closedB;
     const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
     const open = p.qty > 0;
     c.innerHTML =
@@ -213,9 +214,16 @@ async function renderPf() {
       if (pi < 0 || !summary.symbols[p.sym]) { toast("Ajoutez d'abord cette valeur à un onglet pour voir son graphique.", 2200); return; }
       openDetail(p.item, summary.symbols[p.sym], { pi, idx:cfg.portfolios[pi].items.findIndex(i => i.yahoo === p.sym) });
     };
-    list.appendChild(c);
+    c._cat = pfCat(p); list.push(c);
   });
-  const nOpen = openL.children.length, nClosed = closedL.children.length;
+  const fill = (L, B) => PF_CATS.forEach(([k, lab]) => {
+    const g = B.filter(c => c._cat === k); if (!g.length) return;
+    L.insertAdjacentHTML("beforeend", '<div class="pf-sub">' + lab + ' <span>' + g.length + '</span></div>');
+    g.forEach(c => L.appendChild(c));
+    if (prefs.pfCompact && g.length % 2) L.insertAdjacentHTML("beforeend", '<div class="pf-fill"></div>');   // case vide pour finir la ligne en 2 colonnes
+  });
+  fill(openL, openB); fill(closedL, closedB);
+  const nOpen = openB.length, nClosed = closedB.length;
   if (nOpen) { box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions ouvertes <span>' + nOpen + '</span></h3>'); box.appendChild(openL); }
   if (nClosed) {
     const rz = pos.filter(p => p.qty === 0).reduce((o, p) => { const r = o[p.cur] = o[p.cur] || { v:0, c:0 }; r.v += p.realized; r.c += p.soldCost; return o; }, {});
@@ -223,6 +231,17 @@ async function renderPf() {
     box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions soldées <span>' + nClosed + '</span><em>' + txt + '</em></h3>'); box.appendChild(closedL);
   }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
+}
+/* Groupes de positions : Europe, États-Unis (autre fuseau horaire), trackers, cryptos */
+const PF_CATS = [["eu", "Europe"], ["us", "États-Unis"], ["etf", "Trackers (ETF)"], ["crypto", "Cryptos"], ["other", "Autres"]];
+const EU_SUFFIX = /\.(PA|AS|BR|DE|F|MI|MC|LS|L|IR|SW|VI|ST|HE|CO|OL|WA|PR|AT)$/;
+function pfCat(p) {
+  const info = summary.symbols[p.sym] || {}, ty = (info.type || "").toUpperCase(), nm = (p.name || "") + " " + p.sym;
+  if (ty === "CRYPTOCURRENCY" || /-(USD|EUR|USDT)$/.test(p.sym)) return "crypto";
+  if (ty === "ETF" || ty === "MUTUALFUND" || /\b(iShares|ETF|UCITS|Vanguard|Amundi|Lyxor|SPDR|Xtrackers|Tracker)\b/i.test(nm)) return "etf";
+  if (EU_SUFFIX.test(p.sym)) return "eu";
+  if (!/\./.test(p.sym) && !/^\^/.test(p.sym)) return "us";
+  return "other";
 }
 function delTx(own, t, name) {
   $("confText").textContent = "Supprimer " + (t.type === "A" ? "l'achat" : "la vente") + " de " + name + " du " + new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" }) + " (portefeuille " + own + ") ?";

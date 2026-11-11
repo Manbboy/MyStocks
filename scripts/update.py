@@ -139,6 +139,9 @@ def all_levels(df: pd.DataFrame):
     return out
 
 
+KIND = {}
+
+
 def fetch_real(sym: str):
     import yfinance as yf
     t = yf.Ticker(sym)
@@ -178,6 +181,10 @@ def fetch_real(sym: str):
     currency = None
     try:
         currency = t.fast_info.get("currency")
+    except Exception:
+        pass
+    try:   # type d'instrument (EQUITY, ETF, CRYPTOCURRENCY, INDEX, FUTURE…) : sert à regrouper les positions
+        KIND[sym] = (t.history_metadata or {}).get("instrumentType")
     except Exception:
         pass
     return df[["Date", "Open", "High", "Low", "Close", "Volume"]].dropna(subset=["Close"]), currency
@@ -233,6 +240,7 @@ def main():
                 "change": round(last - prev, 4),
                 "changePct": round((last / prev - 1) * 100, 2) if prev else None,
                 "currency": currency,
+                "type": KIND.get(sym),
                 "supports": sup,
                 "resistances": res,
                 "levels": levels,
