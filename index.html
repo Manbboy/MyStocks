@@ -164,6 +164,17 @@
   .grid.compact .chg { grid-column:3; grid-row:1; text-align:right; font-size:13.5px; font-weight:600; font-variant-numeric:tabular-nums; }
   .grid.compact .near { grid-column:4; grid-row:1; margin:0; text-align:right; font-size:11px; }
   @media (max-width:420px) { .grid.compact .tr-h, .grid.compact .card-head { grid-template-columns:minmax(0, 1fr) 64px 60px 78px; column-gap:6px; padding-left:10px; padding-right:10px; } }
+  /* onglet Hold en compact : tableau sur 2 colonnes (3 sur tablette), lecture de haut en bas */
+  .grid.compact .tbl.multi { columns:2; column-gap:0; column-rule:1px solid var(--border); }
+  .grid.compact .tbl.multi .tr-h { display:none; }
+  .grid.compact .tbl.multi .card { break-inside:avoid; background:transparent; }
+  .grid.compact .tbl.multi .card-head { grid-template-columns:minmax(0, 1fr) auto; column-gap:6px; row-gap:2px; padding:7px 10px; }
+  .grid.compact .tbl.multi .nm { grid-column:1; grid-row:1; font-size:13.5px; }
+  .grid.compact .tbl.multi .chg { grid-column:2; grid-row:1; font-size:13px; }
+  .grid.compact .tbl.multi .px2 { grid-column:1; grid-row:2; text-align:left; font-size:12px; font-weight:500; }
+  .grid.compact .tbl.multi .near { grid-column:2; grid-row:2; font-size:10px; }
+  .drag-ghost .tbl.multi { columns:1; }
+  @media (min-width:700px) { .grid.compact .tbl.multi { columns:3; } }
   .cmp-btn { min-width:36px; font-size:15px; }
   /* déplacement des cartes (appui long) */
   #grid .card { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
@@ -455,7 +466,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v53</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v54</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -828,7 +839,7 @@ function renderGrid() {
   g.classList.toggle("compact", !!prefs.gridCompact);
   let host = g;
   if (prefs.gridCompact && pf.items.length) {
-    host = document.createElement("div"); host.className = "tbl";
+    host = document.createElement("div"); host.className = "tbl" + (pf.name === "Hold" ? " multi" : "");
     host.innerHTML = '<div class="tr-h"><span>Valeur</span><span>Cours</span><span>Jour</span><span>Niveau</span></div>';
     g.appendChild(host);
   }
@@ -3635,7 +3646,9 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
     const r = card.getBoundingClientRect();
     const ghost = document.createElement("div");
     ghost.className = "drag-ghost" + (grid().classList.contains("compact") ? " grid compact" : "");
-    const cl = card.cloneNode(true); cl.style.margin = "0"; ghost.appendChild(cl);
+    const cl = card.cloneNode(true); cl.style.margin = "0";
+    if (card.parentNode.classList.contains("multi")) { const w = document.createElement("div"); w.className = "tbl multi"; w.appendChild(cl); ghost.appendChild(w); }
+    else ghost.appendChild(cl);
     const src = card.querySelectorAll("canvas"), dst = cl.querySelectorAll("canvas");
     src.forEach((c, k) => { try { dst[k].getContext("2d").drawImage(c, 0, 0); } catch (e) {} });
     Object.assign(ghost.style, { width:r.width + "px", height:r.height + "px", left:r.left + "px", top:r.top + "px" });
@@ -3647,7 +3660,7 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
   }
   function move(x, y) {
     st.lastX = x; st.lastY = y;
-    if (!grid().classList.contains("compact")) st.ghost.style.left = (x - st.dx) + "px"; st.ghost.style.top = (y - st.dy) + "px";
+    if (!grid().classList.contains("compact") || st.card.parentNode.classList.contains("multi")) st.ghost.style.left = (x - st.dx) + "px"; st.ghost.style.top = (y - st.dy) + "px";
     // carte sous le doigt : on insère la carte déplacée avant ou après elle
     st.ghost.style.display = "none";
     const el = document.elementFromPoint(x, y);
