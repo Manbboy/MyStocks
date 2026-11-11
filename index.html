@@ -320,7 +320,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v11</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v12</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -827,6 +827,7 @@ function goTo(dir) {
   const ov = $("ov");
   ov.classList.remove("go-next", "go-prev"); void ov.offsetWidth;
   ov.classList.add(dir > 0 ? "go-next" : "go-prev");
+  navKeep = captureView();            // même zoom (nombre de chandeliers visibles) sur la valeur suivante
   openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
 }
 $("chanBtn").onclick = () => { prefs.chan = !prefs.chan; hiGeo = null; savePrefs(); drawGeo(); applyHighlight(); renderToggles(); refreshMulti(); };
@@ -1014,7 +1015,9 @@ $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
   });
 })();
 
+let navKeep = null;
 async function openDetail(item, info, pos) {
+  const keepView = pos ? navKeep : null; navKeep = null;
   info = withLive(item.yahoo, info);
   if (pos) ovPos = pos;
   else ovPos = { pi:prefs.active, idx:Math.max(0, (cfg.portfolios[prefs.active] || { items:[] }).items.indexOf(item)) };
@@ -1048,7 +1051,7 @@ async function openDetail(item, info, pos) {
   ovItem = info;
   ovData = data; ovSym = item.yahoo;
   ovLevels = computeLevels(ovData, info.last, tolPct(), !!prefs.role);
-  drawDetail();
+  drawDetail(keepView);
 }
 
 const INTERVALS = [["I","15 min","de 15 minutes"],["D","Jour","journaliers"],["W","Semaine","hebdomadaires"],["M","Mois","mensuels"],["Q","Trimestre","trimestriels"]];
@@ -2156,7 +2159,7 @@ function captureView() {
   if (!lr) return null;
   const rows = barsFor(ovData, prefs.iv || "D");
   const last = rows.length - 1, toIdx = Math.min(last, Math.max(0, Math.round(lr.to)));
-  return { width:lr.to - lr.from, gap:Math.max(0, lr.to - last), toTime:rows[toIdx][0] };
+  return { width:lr.to - lr.from, gap:Math.max(0, lr.to - last), toTime:rows[toIdx][0], atEnd: toIdx === last, iv: prefs.iv || "D" };
 }
 /* Cadrage par défaut d'une action (celui de l'ouverture) */
 function defaultView(rows, iv) {
@@ -2286,10 +2289,11 @@ function drawDetail(keep) {
     }
   });
   renderLevelLists(info);
-  if (keep && keep.width > 0 && iv !== "I" && typeof keep.toTime !== "number") {   // passage de/vers 15 min : cadrage par défaut
+  const keepOk = keep && keep.width > 0 && (keep.iv === iv || (iv !== "I" && keep.iv !== "I"));
+  if (keepOk) {   // passage de/vers 15 min : cadrage par défaut
     /* même nombre de chandeliers à l'écran, bord droit sur la même date */
     const k = keyOf(iv, keep.toTime);
-    let idx = rows.findIndex(r => keyOf(iv, r[0]) === k);
+    let idx = keep.atEnd ? rows.length - 1 : rows.findIndex(r => keyOf(iv, r[0]) === k);   // calé à droite : on reste calé sur la dernière bougie
     if (idx < 0) idx = rows.length - 1;
     const to = idx + (idx === rows.length - 1 ? keep.gap : 0);
     ovChart.timeScale().setVisibleLogicalRange({ from:to - keep.width, to });
