@@ -4,15 +4,7 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - run: pip install -q yfinance
       - run: |
-          python - <<'PY'
-          import yfinance as yf
-          for s in ["ES=F","NQ=F","YM=F","FDAX=F","FESX=F","FCE=F","DY=F","FDXM=F","DAX=F","STXE=F","^STOXX50E","FBEL=F","FTI=F","Z=F"]:
-              try:
-                  h=yf.Ticker(s).history(period="5d",interval="1d")
-                  h2=yf.Ticker(s).history(period="max",interval="1d")
-                  name=(yf.Ticker(s).fast_info.get("currency"))
-                  print("SYM",s,"rows5d",len(h),"max",len(h2), h2.index[0].date() if len(h2) else None, round(float(h["Close"].iloc[-1]),2) if len(h) else None, name)
-              except Exception as e: print("SYM",s,"ERR",e)
-          PY
+          for s in fdax.f fx.f fce.f fesx.f dax.f ^dax es.f; do echo "STQ $s: $(curl -s "https://stooq.com/q/l/?s=$s&f=sd2t2ohlcv&h&e=csv" | tail -1)"; done
+          for s in FDAX1! ; do :; done
+          echo "CNBC: $(curl -s 'https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=@DX.1|@SX5E.1|@FCE.1&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json' | head -c 1500)"
