@@ -44,6 +44,8 @@
     .group label .sm { display:inline; font-size:17px; line-height:1; }
     .bar-row .seg button { padding:6px 5.5px; font-size:12.5px; }
     .bar .legend { width:100%; }
+    .bar { gap:6px 6px; }
+    .bar > .btn { padding:6px 9px; font-size:13.5px; }
     .bar .spacer { display:none; }
   }
   .group { display:flex; align-items:center; gap:4px; }
@@ -305,7 +307,8 @@
 .live-dot.on { background:#16a34a; box-shadow:0 0 0 2px #16a34a33; animation:livepulse 2s infinite; }
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 50% { box-shadow:0 0 0 4px #16a34a22; } }
-.live-btn { white-space:nowrap; }
+.live-btn, .day-btn { white-space:nowrap; }
+.day-btn[hidden] { display:none; }
 #rtBtn.on.nopane { border-style:dashed; }
 .live-btn.on { border-color:#16a34a; color:#16a34a; background:var(--card); }
 .ver { font-size:12px; font-weight:500; color:var(--muted); vertical-align:middle; margin-left:4px; }
@@ -317,7 +320,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v10</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v11</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -333,6 +336,7 @@
     <div class="legend"><span><i style="color:var(--sup)"></i>Support</span><span><i style="color:var(--res)"></i>Résistance</span></div>
     <div class="spacer"></div>
     <button class="btn live-btn" id="liveBtn" title="Cours en séance (≈ 15 min de retard) : toucher pour activer / désactiver"></button>
+    <button class="btn day-btn" id="dayBtn" title="1J : courbe étirée sur toute la largeur, ou placée sur la journée entière (se remplit jusqu'au bord droit à la clôture)"></button>
     <button class="btn" id="addBtn">+ Ajouter</button>
     <button class="btn" id="editBtn">Modifier</button>
   </div>
@@ -692,7 +696,7 @@ function renderGrid() {
 function render() {
   renderTabs();
   renderSeg("colsSeg", COLS.map(c => [c, String(c)]), prefs.cols, v => { prefs.cols = v; savePrefs(); render(); });
-  renderSeg("rangeSeg", RANGES, prefs.range, v => { prefs.range = v; savePrefs(); render(); });
+  renderSeg("rangeSeg", RANGES, prefs.range, v => { prefs.range = v; savePrefs(); render(); if (typeof updDayBtn === "function") updDayBtn(); });
   renderGrid();
 }
 
@@ -2460,6 +2464,11 @@ $("lvClose").onclick = closeLevel;
     toast(liveOn() ? "Cours en séance activés" : "Cours en séance désactivés : clôtures uniquement", 1800);
   };
   $("liveStatus").onclick = toggleLive; $("liveBtn").onclick = toggleLive; updLiveBtn();
+  $("dayBtn").onclick = () => {
+    prefs.dayFull = !prefs.dayFull; savePrefs(); updDayBtn();
+    toast(prefs.dayFull ? "1J : graphique sur toute la journée de cotation" : "1J : courbe étirée sur toute la largeur", 1600);
+    for (const c of dayCards.values()) { const d = dayCache[c.sym] && dayCache[c.sym].data; if (d) { c.series.setData(dayPts(d)); c.chart.timeScale().fitContent(); } }
+  };
   if (summary.demo) $("demo").style.display = "block";
   render();
   startLive();
@@ -2470,7 +2479,13 @@ const LIVE_URL = "https://cours-live.manbboy.workers.dev";
 const liveQuotes = {};      // sym -> { price, prevClose, time, day, state }
 let liveTimer = null, liveLast = 0, liveDiag = "";
 function liveOn() { return prefs.live !== false; }
+function updDayBtn() {
+  const b = $("dayBtn"); if (!b) return;
+  b.hidden = !(liveOn() && prefs.range === "1J");
+  b.textContent = prefs.dayFull ? "⇥ Journée" : "↔ Ajusté";
+}
 function updLiveBtn() {
+  updDayBtn();
   const b = $("liveBtn"); if (!b) return;
   b.innerHTML = liveOn() ? '<span class="live-dot on"></span>Direct' : '<span class="live-dot off"></span>Clôtures';
   b.classList.toggle("on", liveOn());
@@ -2619,11 +2634,39 @@ async function fetchDay(sym, force) {
     const last = dayOf(bars[bars.length - 1][0]);
     const today = bars.filter(b => dayOf(b[0]) === last), before = bars.filter(b => dayOf(b[0]) < last);
     const prev = before.length ? before[before.length - 1][4] : d.prevClose;
-    const out = { day:last, prev, pts:today.map(b => ({ time:b[0] + tzShift(b[0], "Europe/Brussels"), value:b[4] })) };
+    const out = { day:last, prev, tz, sym, pts:today.map(b => ({ time:b[0] + tzShift(b[0], "Europe/Brussels"), value:b[4] })) };
     if (d.price != null && out.pts.length) out.pts[out.pts.length - 1].value = d.price;
     dayCache[sym] = { t:Date.now(), data:out };
     return out;
   } catch (e) { return c ? c.data : null; }
+}
+/* Horaires de séance (heure locale de la bourse) ; null = cotation continue, on prend la journée de minuit à minuit */
+function sessionHours(d) {
+  const tz = d.tz || "", sym = d.sym || "";
+  if (/=F$/.test(sym) || /-USD$/.test(sym) || tz === "UTC") return { tz:"Europe/Brussels", open:"00:00", close:"24:00" };
+  if (tz.startsWith("America/")) return { tz, open:"09:30", close:"16:00" };
+  if (tz === "Europe/London") return { tz, open:"08:00", close:"16:30" };
+  if (tz.startsWith("Europe/")) return { tz, open:"09:00", close:"17:30" };
+  return null;
+}
+function localToEpoch(day, hhmm, tz) {        // « 2026-11-11 », « 09:00 » dans le fuseau tz -> secondes UTC
+  const [y, m, dd] = day.split("-").map(Number), [h, mi] = hhmm.split(":").map(Number);
+  const guess = Date.UTC(y, m - 1, dd, h, mi) / 1000;
+  return guess - tzShift(guess, tz);
+}
+/* Points de la courbe 1J ; en mode « Journée », points vides jusqu'à la clôture pour réserver la place à droite */
+function dayPts(d) {
+  if (!prefs.dayFull || !d.pts.length) return d.pts;
+  const sh = sessionHours(d); if (!sh) return d.pts;
+  const lastT = d.pts[d.pts.length - 1].time, shiftB = t => t + tzShift(t, "Europe/Brussels");
+  let day = d.day;
+  if (sh.tz === "Europe/Brussels") day = new Date(lastT * 1000).toISOString().slice(0, 10);
+  const open = shiftB(localToEpoch(day, sh.open, sh.tz)), close = shiftB(localToEpoch(day, sh.close === "24:00" ? "23:55" : sh.close, sh.tz));
+  const out = [];
+  for (let t = open; t < d.pts[0].time; t += 300) out.push({ time:t });
+  out.push(...d.pts);
+  for (let t = lastT + 300; t <= close; t += 300) out.push({ time:t });
+  return out;
 }
 function dayStyle(d) {
   const up = d.pts.length && d.pts[d.pts.length - 1].value >= d.prev;
@@ -2647,7 +2690,7 @@ async function drawCardDay(el, info) {
     autoscaleInfoProvider: o => { const r = o(); if (!r || d.prev == null) return r;
       return { priceRange:{ minValue:Math.min(r.priceRange.minValue, d.prev), maxValue:Math.max(r.priceRange.maxValue, d.prev) } }; },
   }));
-  s.setData(d.pts);
+  s.setData(dayPts(d));
   if (d.prev != null) s.createPriceLine({ price:d.prev, color:css("--muted"), lineWidth:1, lineStyle:LW.LineStyle.Dotted, axisLabelVisible:false, title:"" });
   chart.timeScale().fitContent();
   charts.push(chart);
@@ -2658,7 +2701,7 @@ async function refreshDayCards() {
     if (!el.isConnected) { dayCards.delete(el); continue; }
     const d = await fetchDay(c.sym, true);
     if (!d || !d.pts.length) continue;
-    try { c.series.applyOptions(dayStyle(d)); c.series.setData(d.pts); c.chart.timeScale().fitContent(); } catch (e) {}
+    try { c.series.applyOptions(dayStyle(d)); c.series.setData(dayPts(d)); c.chart.timeScale().fitContent(); } catch (e) {}
   }
 }
 
