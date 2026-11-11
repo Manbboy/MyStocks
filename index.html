@@ -104,6 +104,9 @@
   .pf-sum.compact { grid-template-columns:repeat(4, minmax(0, 1fr)); gap:4px; }
   .pf-sum.compact > div { padding:6px 8px; border-radius:9px; }
   .pf-sum.compact span { font-size:10px; } .pf-sum.compact b { font-size:13px; }
+  .pf-grp { display:flex; align-items:baseline; gap:8px; font-size:14px; margin:14px 2px 6px; color:var(--text); }
+  .pf-grp span { font-size:12px; color:var(--muted); font-weight:500; }
+  .pf-grp em { margin-left:auto; font-style:normal; font-size:13px; }
   .pf-note { margin-top:12px; }
   .tx-type { display:flex; gap:16px; margin:4px 0 6px; }
   .tx-type label { flex-direction:row !important; align-items:center; gap:6px !important; font-size:15px !important; color:var(--text) !important; margin:0 !important; }
@@ -389,7 +392,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v28</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v29</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3131,8 +3134,11 @@ async function renderPf() {
   });
   box.appendChild(sum);
 
-  const list = document.createElement("div"); list.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
+  // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
+  const openL = document.createElement("div"), closedL = document.createElement("div");
+  openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
   pos.forEach(p => {
+    const list = p.qty > 0 ? openL : closedL;
     const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
     const open = p.qty > 0;
     c.innerHTML =
@@ -3161,7 +3167,13 @@ async function renderPf() {
     };
     list.appendChild(c);
   });
-  box.appendChild(list);
+  const nOpen = openL.children.length, nClosed = closedL.children.length;
+  if (nOpen) { box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions ouvertes <span>' + nOpen + '</span></h3>'); box.appendChild(openL); }
+  if (nClosed) {
+    const rz = pos.filter(p => p.qty === 0).reduce((o, p) => (o[p.cur] = (o[p.cur] || 0) + p.realized, o), {});
+    const txt = Object.entries(rz).map(([cur, v]) => '<b class="' + (v >= 0 ? "up" : "down") + '">' + money(v, cur) + "</b>").join(" · ");
+    box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions soldées <span>' + nClosed + '</span><em>' + txt + '</em></h3>'); box.appendChild(closedL);
+  }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
 }
 function delTx(own, t, name) {

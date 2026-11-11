@@ -178,8 +178,11 @@ async function renderPf() {
   });
   box.appendChild(sum);
 
-  const list = document.createElement("div"); list.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
+  // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
+  const openL = document.createElement("div"), closedL = document.createElement("div");
+  openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
   pos.forEach(p => {
+    const list = p.qty > 0 ? openL : closedL;
     const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
     const open = p.qty > 0;
     c.innerHTML =
@@ -208,7 +211,13 @@ async function renderPf() {
     };
     list.appendChild(c);
   });
-  box.appendChild(list);
+  const nOpen = openL.children.length, nClosed = closedL.children.length;
+  if (nOpen) { box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions ouvertes <span>' + nOpen + '</span></h3>'); box.appendChild(openL); }
+  if (nClosed) {
+    const rz = pos.filter(p => p.qty === 0).reduce((o, p) => (o[p.cur] = (o[p.cur] || 0) + p.realized, o), {});
+    const txt = Object.entries(rz).map(([cur, v]) => '<b class="' + (v >= 0 ? "up" : "down") + '">' + money(v, cur) + "</b>").join(" · ");
+    box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions soldées <span>' + nClosed + '</span><em>' + txt + '</em></h3>'); box.appendChild(closedL);
+  }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
 }
 function delTx(own, t, name) {
