@@ -466,7 +466,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v55</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v56</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2295,8 +2295,33 @@ function toggleLevelKey(tf, p, i) {
 }
 function toggleMa(n) {
   hiMa = hiMa === n ? null : n;
+  const g = hiGeo != null;
   if (hiMa) { hiKey = null; hiGeo = null; hiFlip = null; }
-  drawMas(); renderLevelLists(ovItem); applyHighlight();
+  if (g && hiGeo == null) drawGeo();
+  drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight();
+}
+function toggleGeo(n) {
+  hiGeo = hiGeo === n ? null : n;
+  if (hiGeo != null) { hiKey = null; hiMa = null; hiFlip = null; }
+  drawGeo(); drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight();
+  if (hiGeo != null) showSel(ovGeo[hiGeo].from, geoSeries.filter(x => x._geo === hiGeo));
+}
+/* Fait apparaître l'élément choisi : recule le début de la vue jusqu'à son départ et l'inclut dans l'échelle des prix */
+function showSel(t0, series) {
+  if (!ovChart) return;
+  series.forEach(x => x.applyOptions({ autoscaleInfoProvider:o => o() }));
+  const rows = barsFor(ovData, prefs.iv || "D"), i0 = rows.findIndex(r => r[0] >= t0);
+  const lr = ovChart.timeScale().getVisibleLogicalRange();
+  if (lr && i0 >= 0 && i0 < lr.from) ovChart.timeScale().setVisibleLogicalRange({ from:Math.max(0, i0 - 3), to:lr.to });
+}
+function toggleFlip(n) {
+  hiFlip = hiFlip === n ? null : n;
+  const g = hiGeo != null;
+  if (hiFlip != null) { hiKey = null; hiMa = null; hiGeo = null; }
+  if (g && hiGeo == null) drawGeo();
+  drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight();
+  flipSeries.forEach(x => x.applyOptions({ autoscaleInfoProvider:x._flip === hiFlip ? (o => o()) : () => null }));
+  if (hiFlip != null) showSel(ovFlips[hiFlip].pivotTime, []);
 }
 function renderQuick() {
   const box = $("quick"); if (!box) return;
@@ -2306,6 +2331,17 @@ function renderQuick() {
       on:hiKey === m.key, act:() => toggleLevelKey(m.tf, m.p, m.i), tip:(m.p === "R" ? "Résistance " : "Support ") + fmt(m.opts.price) }));
     ovMa.forEach(sr => { const d = sr.data ? sr.data() : null, v = d && d.length ? d[d.length - 1].value : null;
       if (v != null) items.push({ price:v, c:MA_COL[sr._n], t:"MM" + sr._n, on:hiMa === sr._n, act:() => toggleMa(sr._n), tip:"Moyenne mobile " + sr._n + " · " + fmt(v) }); });
+    /* canaux, obliques et bascules R⇄S : une pastille chacun, au niveau où ils passent aujourd'hui */
+    const cnt = {}, lab = t => { cnt[t] = (cnt[t] || 0) + 1; return t; };
+    const geoT = it => it.g === "chan" ? "Canal" + (it.dir === "up" ? "↗" : "↘") : "Obl·" + (it.kind === "sup" ? "S" : "R") + (it.m >= 0 ? "↗" : "↘");
+    const geoTs = ovGeo.map(geoT), flipTs = ovFlips.map(f => f.type === "RS" ? "R→S" : "S→R");
+    geoTs.concat(flipTs).forEach(lab);
+    const seen = {}, num = t => cnt[t] > 1 ? t + (seen[t] = (seen[t] || 0) + 1) : t;
+    ovGeo.forEach((it, n) => items.push({ price:it.g === "chan" ? (it.up1 + it.lo1) / 2 : it.v1,
+      c:it.g === "chan" ? CHAN_COL : TL_COL[it.kind], t:num(geoTs[n]), on:hiGeo === n, act:() => toggleGeo(n),
+      tip:(it.g === "chan" ? "Canal " : "Oblique ") + fmt(it.g === "chan" ? (it.up1 + it.lo1) / 2 : it.v1) }));
+    ovFlips.forEach((f, n) => items.push({ price:f.price, c:FLIP_COL[f.type], t:num(flipTs[n]), on:hiFlip === n, act:() => toggleFlip(n),
+      tip:(f.type === "RS" ? "Résistance devenue support " : "Support devenu résistance ") + fmt(f.price) }));
   }
   items.sort((a, b) => b.price - a.price);
   const sig = items.map(x => x.t + (x.on ? "*" : "")).join("|");
@@ -2428,7 +2464,7 @@ function onLevelTap(info, tf, p, i, el) {
   document.querySelectorAll("#ovRes .it.sel, #ovSup .it.sel").forEach(x => x.classList.remove("sel"));
   if (hiKey === key) { hiKey = null; applyHighlight(); return; }   // 2e toucher : on désactive
   if (hiMa) { hiMa = null; drawMas(); renderMaList(info); }
-  hiKey = key; hiGeo = null; drawGeo();
+  hiKey = key; hiGeo = null; hiFlip = null; drawGeo(); renderFlipList();
   applyHighlight();
   el.classList.add("sel");
   const ch = $("ovChart").getBoundingClientRect();
