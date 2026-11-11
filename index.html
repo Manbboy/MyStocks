@@ -327,6 +327,7 @@
 .flash-up { animation:flashUp 1.2s ease-out; border-radius:4px; } .flash-down { animation:flashDown 1.2s ease-out; border-radius:4px; }
 .live-menu { position:fixed; width:auto; min-width:220px; }
 .day-btn[hidden] { display:none; }
+.day-btn.dim { opacity:.55; }
 #rtBtn.on.nopane { border-style:dashed; }
 .live-btn.on { border-color:#16a34a; color:#16a34a; background:var(--card); }
 .ver { font-size:12px; font-weight:500; color:var(--muted); vertical-align:middle; margin-left:4px; }
@@ -338,7 +339,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v19</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v20</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2531,13 +2532,14 @@ $("lvClose").onclick = closeLevel;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
   $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   const toggleLive = () => {
-    prefs.live = !liveOn(); if (!liveOn() && prefs.range === "1J") prefs.range = "1M"; savePrefs(); updLiveBtn(); render(); startLive();
+    prefs.live = !liveOn(); if (!liveOn() && prefs.range === "1J") { prefs.range = "1M"; prefs.backTo1J = true; } if (liveOn() && prefs.backTo1J) { prefs.range = "1J"; prefs.backTo1J = false; } savePrefs(); updLiveBtn(); render(); startLive();
     if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
     toast(liveOn() ? "Cours en séance activés" : "Cours en séance désactivés : clôtures uniquement", 1800);
   };
   const setLive = (on, sec) => {
     prefs.live = on; if (sec) prefs.liveSec = sec;
-    if (!on && prefs.range === "1J") prefs.range = "1M";     // la période 1J n'existe qu'en direct
+    if (!on && prefs.range === "1J") { prefs.range = "1M"; prefs.backTo1J = true; }   // la période 1J n'existe qu'en direct
+    if (on && prefs.backTo1J) { prefs.range = "1J"; prefs.backTo1J = false; }        // retour en direct : on retrouve 1J
     savePrefs(); updLiveBtn(); render(); startLive();
     if (!on) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
     toast(on ? "Direct : mise à jour toutes les " + liveSec() + " s" : "Cours en séance désactivés : clôtures uniquement", 1800);
@@ -2562,6 +2564,7 @@ $("lvClose").onclick = closeLevel;
   };
   document.addEventListener("click", e => { if (!e.target.closest("#liveMenu")) $("liveMenu").hidden = true; });
   $("dayBtn").onclick = () => {
+    if (prefs.range !== "1J") { prefs.range = "1J"; savePrefs(); render(); updDayBtn(); toast("Période 1J" + (prefs.dayFull ? " · journée entière" : " · courbe ajustée"), 1500); return; }
     prefs.dayFull = !prefs.dayFull; savePrefs(); updDayBtn();
     toast(prefs.dayFull ? "1J : graphique sur toute la journée de cotation" : "1J : courbe étirée sur toute la largeur", 1600);
     for (const c of dayCards.values()) { const d = dayCache[c.sym] && dayCache[c.sym].data; if (d) { c.series.setData(dayPts(d)); c.chart.timeScale().fitContent(); } }
@@ -2579,7 +2582,8 @@ function liveOn() { return prefs.live !== false; }
 function liveSec() { return [5, 15, 30, 60].includes(+prefs.liveSec) ? +prefs.liveSec : 60; }   // fréquence du mode Direct
 function updDayBtn() {
   const b = $("dayBtn"); if (!b) return;
-  b.hidden = !(liveOn() && prefs.range === "1J");
+  b.hidden = !liveOn();                          // visible en direct ; hors 1J, le toucher passe en 1J
+  b.classList.toggle("dim", prefs.range !== "1J"); b.title = prefs.range !== "1J" ? "Passer en période 1J (séance du jour)" : "1J : courbe étirée ou journée entière";
   b.textContent = prefs.dayFull ? "⇥ Journée" : "↔ Ajusté";
 }
 function updLiveBtn() {
