@@ -388,6 +388,7 @@
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 0%, 100% { opacity:0; } 50% { opacity:1; } }
 .live-btn, .day-btn, .sort-btn { white-space:nowrap; }
+.bar > .btn[hidden] { display:none; }
 .sort-btn.on { border-color:var(--accent, #2563eb); }
 .btn-cd { display:inline-block; min-width:1.6em; margin:0 3px 0 2px; padding:0 4px; border-radius:6px; background:var(--chip); color:var(--muted); font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; text-align:center; }
 .btn-cd:empty { display:none; }
@@ -410,7 +411,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v39</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v40</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -775,7 +776,10 @@ function renderGrid() {
   g.classList.toggle("compact", prefs.cols >= 3);
   g.classList.toggle("editing", editing);
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
-  if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">Aucune valeur. Touche « + Ajouter ».</div>';
+  if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">' + (pf.virtual
+    ? (typeof pfState !== "undefined" && pfState.data ? "Aucune position ouverte dans les portefeuilles M et D." : "Déverrouillez l'onglet Portefeuille (mot de passe) pour voir ici les valeurs que vous détenez.")
+    : "Aucune valeur. Touche « + Ajouter ».") + '</div>';
+  $("addBtn").hidden = $("editBtn").hidden = !!pf.virtual;     // Hold se remplit tout seul depuis le portefeuille
   const order = sortedOrder(cfg.portfolios.indexOf(pf));
   navOrder = { pi:cfg.portfolios.indexOf(pf), list:order };
   order.map(i => pf.items[i]).forEach(item => {
@@ -827,7 +831,21 @@ function renderGrid() {
   });
 }
 
+/* Onglet « Hold » : toutes les valeurs encore détenues (M ou D), construit à partir du portefeuille chiffré, jamais enregistré dans portfolios.json */
+function ensureHold() {
+  if (!cfg) return;
+  cfg.portfolios = cfg.portfolios.filter(p => !p.virtual);
+  const items = [], seen = new Set(), by = new Map();
+  cfg.portfolios.forEach(p => p.items.forEach(it => { if (!by.has(it.yahoo)) by.set(it.yahoo, it); }));
+  if (typeof pfState !== "undefined" && pfState.data) ["M", "D"].forEach(o => {
+    pfPositions((pfState.data[o] || {}).tx || []).forEach(ps => {
+      if (ps.qty > 0 && !seen.has(ps.sym) && by.has(ps.sym)) { seen.add(ps.sym); items.push(by.get(ps.sym)); }
+    });
+  });
+  cfg.portfolios.push({ name:"Hold", items, virtual:true });
+}
 function render() {
+  ensureHold();
   renderTabs();
   if (prefs.view === "pf" && typeof renderPf === "function") { renderPf(); return; }
   document.body.classList.remove("pf-mode"); if ($("pfView")) $("pfView").hidden = true;
@@ -2729,6 +2747,7 @@ $("lvClose").onclick = closeLevel;
     $("grid").innerHTML = '<div class="msg">Impossible de charger les données. La première mise à jour a-t-elle tourné ?</div>';
     return;
   }
+  ensureHold();
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
   $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
@@ -3466,7 +3485,10 @@ function drawTxMarks() {
   txSeries2.setMarkers(marks.filter(m => m.position === "aboveBar"));
 }
 // le portefeuille est lu au démarrage (s'il est déverrouillé) pour afficher les repères dans les autres onglets
-setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => { if ($("ov").classList.contains("show")) drawTxMarks(); }); }, 1500);
+setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
+  if ($("ov").classList.contains("show")) drawTxMarks();
+  const a = cfg.portfolios[prefs.active]; if (a && a.virtual && prefs.view !== "pf") render();      // onglet Hold : maintenant qu'on connaît les positions
+}); }, 1500);
 
 </script>
 </body>

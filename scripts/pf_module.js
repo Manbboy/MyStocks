@@ -371,5 +371,8 @@ function drawTxMarks() {
   txSeries2.setMarkers(marks.filter(m => m.position === "aboveBar"));
 }
 // le portefeuille est lu au démarrage (s'il est déverrouillé) pour afficher les repères dans les autres onglets
-setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => { if ($("ov").classList.contains("show")) drawTxMarks(); }); }, 1500);
+setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
+  if ($("ov").classList.contains("show")) drawTxMarks();
+  const a = cfg.portfolios[prefs.active]; if (a && a.virtual && prefs.view !== "pf") render();      // onglet Hold : maintenant qu'on connaît les positions
+}); }, 1500);
 
