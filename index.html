@@ -148,6 +148,12 @@
   .card .rm { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:12px; border:0; background:var(--down); color:#fff; font-size:13px; cursor:pointer; display:none; z-index:3; }
   .editing .card .rm { display:block; }
   .card-tap { position:absolute; inset:0; z-index:2; -webkit-tap-highlight-color:transparent; }
+  /* mode compact des onglets : cartes sans graphique */
+  .grid.compact { gap:6px; }
+  .grid.compact .chart, .grid.compact .card-tap { display:none; }
+  .grid.compact .card { padding-bottom:2px; }
+  .grid.compact .card-head { padding-bottom:8px; }
+  .cmp-btn { min-width:36px; font-size:15px; }
   .card { position:relative; }
   .grid { display:grid; gap:8px; padding:12px 0 40px; grid-template-columns:repeat(var(--cols,3), minmax(0,1fr)); }
   .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; }
@@ -432,7 +438,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v48</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v49</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -450,6 +456,7 @@
     <button class="btn live-btn" id="liveBtn" title="Cours en séance (≈ 15 min de retard) : toucher pour activer / désactiver"></button>
     <button class="btn day-btn" id="dayBtn" title="1J : courbe étirée sur toute la largeur, ou placée sur la journée entière (se remplit jusqu'au bord droit à la clôture)"></button>
     <button class="btn sort-btn" id="sortBtn" title="Trier les cartes">⇅</button>
+    <button class="btn cmp-btn" id="cmpBtn" title="Mode compact (sans graphiques)">≡</button>
     <button class="btn" id="addBtn" title="Ajouter une valeur">+<span class="lbl"> Ajouter</span></button>
     <div class="pick live-menu" id="liveMenu" hidden></div>
     <div class="pick live-menu" id="sortMenu" hidden></div>
@@ -801,6 +808,9 @@ function renderGrid() {
     ? (typeof pfState !== "undefined" && pfState.data ? "Aucune position ouverte dans les portefeuilles M et D." : "Déverrouillez l'onglet Portefeuille (mot de passe) pour voir ici les valeurs que vous détenez.")
     : "Aucune valeur. Touche « + Ajouter ».") + '</div>';
   $("addBtn").hidden = $("editBtn").hidden = !!pf.virtual;
+  g.classList.toggle("compact", !!prefs.gridCompact);
+  $("cmpBtn").textContent = prefs.gridCompact ? "▦" : "≡"; $("cmpBtn").classList.toggle("on", !!prefs.gridCompact);
+  $("cmpBtn").title = prefs.gridCompact ? "Afficher les graphiques" : "Mode compact (sans graphiques)";
   const order = sortedOrder(cfg.portfolios.indexOf(pf));
   navOrder = { pi:cfg.portfolios.indexOf(pf), list:order };
   order.map(i => pf.items[i]).forEach(item => {
@@ -842,7 +852,7 @@ function renderGrid() {
         el.title = fmt(nr.price, info.currency);
       }
       chartEl.dataset.sym = item.yahoo;
-      io.observe(chartEl);
+      if (!prefs.gridCompact) io.observe(chartEl);      // mode compact : pas de graphique
       card.onclick = () => openDetail(item, info);
       // calque transparent au-dessus du graphique : un toucher n'importe où sur la carte ouvre le détail
       // (sur téléphone, le graphique « avale » les touchers et le clic ne partait que depuis le titre)
@@ -2811,6 +2821,8 @@ $("lvClose").onclick = closeLevel;
     $("sortBtn").textContent = (prefs.sort || "add") === "add" ? "⇅" : "⇅ " + { perfDesc:"Var. ↓", perfAsc:"Var. ↑", name:"A→Z", nearS:"Supp.", nearR:"Rés." }[prefs.sort];
     $("sortBtn").title = "Tri : " + m[1]; $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); };
   updSortBtn();
+  $("cmpBtn").onclick = () => { prefs.gridCompact = !prefs.gridCompact; savePrefs(); render();
+    toast(prefs.gridCompact ? "Mode compact : sans graphiques" : "Graphiques affichés", 1300); };
   $("sortBtn").onclick = e => {
     e.stopPropagation();
     const m = $("sortMenu");
@@ -2850,7 +2862,7 @@ function updDayBtn() {
   const b = $("dayBtn"); if (!b) return;
   b.hidden = !liveOn();                          // visible en direct ; hors 1J, le toucher passe en 1J
   b.classList.toggle("dim", prefs.range !== "1J"); b.title = prefs.range !== "1J" ? "Passer en période 1J (séance du jour)" : "1J : courbe étirée ou journée entière";
-  b.textContent = prefs.dayFull ? "⇥ Journée" : "↔ Ajusté";
+  b.innerHTML = prefs.dayFull ? "⇥<span class=\"lbl\"> Journée</span>" : "↔<span class=\"lbl\"> Ajusté</span>";   // texte masqué sur téléphone
 }
 function updLiveBtn() {
   updDayBtn();
