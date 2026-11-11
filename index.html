@@ -41,9 +41,8 @@
     .bar-row { width:100%; gap:6px; overflow-x:auto; scrollbar-width:none; }
     .bar-row::-webkit-scrollbar { display:none; }
     .group label .lg { display:none; }
-    .group label .sm { display:inline; font-size:13px; }
-    .bar-row .seg button { padding:5px 6px; font-size:12px; }
-    #colsSeg button:nth-child(n+5) { display:none; }      /* 5 et 6 par ligne : illisibles sur un téléphone */
+    .group label .sm { display:inline; font-size:17px; line-height:1; }
+    .bar-row .seg button { padding:5px 4.5px; font-size:12px; }
     .bar .legend { width:100%; }
     .bar .spacer { display:none; }
   }
@@ -307,6 +306,7 @@
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 50% { box-shadow:0 0 0 4px #16a34a22; } }
 .live-btn { white-space:nowrap; }
+#rtBtn.on.nopane { border-style:dashed; }
 .live-btn.on { border-color:#16a34a; color:#16a34a; background:var(--card); }
 .ver { font-size:11px; color:#9ca3af; }
 .live-status { font-size:12px; margin-left:6px; white-space:nowrap; cursor:pointer; }
@@ -845,7 +845,11 @@ $("volBtn").onclick = () => setVol(prefs.vol === false);
   prefs[id] = +e.target.value; savePrefs(); renderToggles(); drawRsi(); setCandles(); refreshMulti();
 }));
 $("rsiBtn").onclick = () => setInd(indMode() === "rsi" ? "none" : "rsi");
-$("rtBtn").onclick = () => setInd(indMode() === "trend" ? "none" : "trend");
+$("rtBtn").onclick = () => {
+  if (indMode() !== "trend") { prefs.rtPane = true; setInd("trend"); toast("RSI Trends : chandeliers colorés + graphique RSI", 1500); }
+  else if (prefs.rtPane !== false) { prefs.rtPane = false; setInd("trend"); toast("RSI Trends : chandeliers colorés seuls", 1500); }
+  else { prefs.rtPane = true; setInd("none"); toast("RSI Trends désactivé", 1200); }
+};
 $("mmBtn").onclick = () => {
   prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
   savePrefs(); refreshLevels();
@@ -904,7 +908,7 @@ function drawQuad() {
     const rows = barsFor(ovData, tf);
     const chg = document.createElement("span"); chg.className = "qchg";
     if (rows.length > 1) { const p = (rows[rows.length - 1][4] / rows[rows.length - 2][4] - 1) * 100; chg.textContent = fmtPct(Math.round(p * 100) / 100); chg.classList.add(p >= 0 ? "up" : "down"); }
-    const withRsi = indMode() !== "none";
+    const withRsi = paneOn();
     let rbox = null;
     if (withRsi) { cell.classList.add("wr"); rbox = document.createElement("div"); rbox.className = "qr"; }
     cell.append(box, lab, chg); if (rbox) cell.appendChild(rbox); $("quad").appendChild(cell);
@@ -1707,7 +1711,7 @@ function renderToggles() {
   const volOn = prefs.vol !== false;
   $("volBtn").classList.toggle("on", volOn); $("volBtn").setAttribute("aria-pressed", volOn ? "true" : "false");
   $("rsiBtn").classList.toggle("on", indMode() === "rsi"); $("rsiBtn").setAttribute("aria-pressed", indMode() === "rsi" ? "true" : "false");
-  $("rtBtn").classList.toggle("on", indMode() === "trend"); $("rtBtn").setAttribute("aria-pressed", indMode() === "trend" ? "true" : "false");
+  $("rtBtn").classList.toggle("on", indMode() === "trend"); $("rtBtn").classList.toggle("nopane", indMode() === "trend" && prefs.rtPane === false); $("rtBtn").setAttribute("aria-pressed", indMode() === "trend" ? "true" : "false");
   renderSeg("volSeg", [[true,"Afficher"],[false,"Masquer"]], volOn, v => setVol(v));
   const mmOn = selMaP().length > 0;
   $("mmBtn").classList.toggle("on", mmOn); $("mmBtn").setAttribute("aria-pressed", mmOn ? "true" : "false");
@@ -1729,7 +1733,7 @@ function renderToggles() {
   });
   renderSeg("themeSeg", [["auto","Auto"],["light","☀"],["dark","☾"]], prefs.theme || "auto", v => { renderToggles(); setTheme(v); });
   [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème automatique", "Thème clair", "Thème sombre"][i]);
-  renderSeg("rsiSeg", [["none","Aucun"],["rsi","RSI 14"],["trend","RSI Trends"]], indMode(), v => setInd(v));
+  renderSeg("rsiSeg", [["none","Aucun"],["rsi","RSI 14"],["trend","RSI Trends"]], indMode(), v => { if (v === "trend") prefs.rtPane = true; setInd(v); });
   paint($("rsiSeg").children[1], RSI_COL);
   paint($("rsiSeg").children[2], RSI_COL);
   $("trendRow").style.display = indMode() === "trend" ? "" : "none";
@@ -1852,6 +1856,7 @@ function setInd(mode) {
   savePrefs(); renderToggles(); drawRsi(); setCandles(); refreshMulti();
 }
 const trendOn = () => indMode() === "trend" && prefs.trendBars !== false;
+const paneOn = () => indMode() !== "none" && !(indMode() === "trend" && prefs.rtPane === false);   // graphique RSI sous les chandeliers
 /* État RSI Trends de chaque chandelier : 1 haussier (RSI > 60), -1 baissier (RSI < 40), 0 sans tendance */
 function trendStates(rows) {
   const ob = TREND.ob, os = TREND.os;
@@ -1895,7 +1900,7 @@ function drawRsi() {
   if (rsiChart) { rsiChart.remove(); rsiChart = null; rsiSeries = null; }
   rsiMap = new Map();
   const box = $("rsiChart");
-  const showRsi = !!prefs.rsi && splitN() === 1;
+  const showRsi = paneOn() && splitN() === 1;
   box.classList.toggle("show", showRsi);
   box.parentElement.classList.toggle("with-rsi", showRsi);
   if (!ovChart) return;
@@ -2447,7 +2452,7 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v6</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v7</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   const toggleLive = () => {
     prefs.live = !liveOn(); savePrefs(); updLiveBtn(); render(); startLive();
     if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
