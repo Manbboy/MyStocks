@@ -37,6 +37,21 @@
           "yahoo": "BTC-USD",
           "tv": "BINANCE:BTCUSDT",
           "name": "Bitcoin (BTC/USDT)"
+        },
+        {
+          "yahoo": "ES=F",
+          "tv": "CME_MINI:ES1!",
+          "name": "Future S&P 500"
+        },
+        {
+          "yahoo": "NQ=F",
+          "tv": "CME_MINI:NQ1!",
+          "name": "Future Nasdaq 100"
+        },
+        {
+          "yahoo": "YM=F",
+          "tv": "CBOT_MINI:YM1!",
+          "name": "Future Dow Jones"
         }
       ]
     },

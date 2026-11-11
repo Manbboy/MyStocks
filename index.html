@@ -289,6 +289,14 @@
   .lv small { display:block; color:var(--muted); font-weight:400; font-size:12px; }
   .ov-foot { font-size:12px; color:var(--muted); margin:12px 0 30px; line-height:1.5; }
   .ov-foot a { color:var(--accent); }
+
+.live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+.live-dot.on { background:#16a34a; box-shadow:0 0 0 2px #16a34a33; animation:livepulse 2s infinite; }
+.live-dot.off { background:#9ca3af; }
+@keyframes livepulse { 50% { box-shadow:0 0 0 4px #16a34a22; } }
+.live-status { font-size:12px; margin-left:6px; white-space:nowrap; cursor:pointer; }
+.live-status.ok { color:#16a34a; } .live-status.ko { color:#9ca3af; }
+.beta-tag { font-size:11px; font-weight:600; background:#f59e0b; color:#fff; border-radius:6px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -553,7 +561,10 @@ async function drawCard(el, info) {
     priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false,
     autoscaleInfoProvider: autoscaleWith(info),
   });
-  s.setData(rows.map(r => ({ time:r[0], value:r[4] })));
+  const pts = rows.map(r => ({ time:r[0], value:r[4] }));
+  const lq = liveOn() && liveQuotes[el.dataset.sym];
+  if (lq && pts.length) { if (lq.day > pts[pts.length - 1].time) pts.push({ time:lq.day, value:lq.price }); else if (lq.day === pts[pts.length - 1].time) pts[pts.length - 1].value = lq.price; }
+  s.setData(pts);
   addLevels(s, info, prefs.cols <= 2);
   chart.timeScale().fitContent();
   charts.push(chart);
@@ -604,8 +615,8 @@ function renderGrid() {
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
   if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">Aucune valeur. Touche « + Ajouter ».</div>';
   pf.items.forEach(item => {
-    const info = summary.symbols[item.yahoo] || { pending:true };
-    const card = document.createElement("div"); card.className = "card";
+    const info = withLive(item.yahoo, summary.symbols[item.yahoo] || { pending:true });
+    const card = document.createElement("div"); card.className = "card"; card.dataset.sym = item.yahoo;
     const pct = info.changePct;
     const cls = pct == null ? "" : pct >= 0 ? "up" : "down";
     card.innerHTML =
@@ -629,6 +640,7 @@ function renderGrid() {
       card.querySelector(".px").textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
       card.querySelector(".px2").textContent = fmt(info.last, null);
       card.querySelector(".chg").textContent = fmtPct(pct);
+      if (info.live) card.querySelector(".nm").insertAdjacentHTML("afterbegin", liveDot(info));
       const nr = nearestLevel(info);
       if (nr) {
         const el = card.querySelector(".near");
@@ -966,6 +978,7 @@ $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 })();
 
 async function openDetail(item, info, pos) {
+  info = withLive(item.yahoo, info);
   if (pos) ovPos = pos;
   else ovPos = { pi:prefs.active, idx:Math.max(0, (cfg.portfolios[prefs.active] || { items:[] }).items.indexOf(item)) };
   updateNav();
@@ -993,27 +1006,27 @@ async function openDetail(item, info, pos) {
   $("ovFoot").append(t, a);
 
   const seq = ++openSeq;
-  const data = await getSeries(info);
+  const data = await withLiveData(item.yahoo, await getSeries(info));
   if (seq !== openSeq) return;          // une autre action a été ouverte entre-temps
   ovItem = info;
-  ovData = data;
+  ovData = data; ovSym = item.yahoo;
   ovLevels = computeLevels(ovData, info.last, tolPct(), !!prefs.role);
   drawDetail();
 }
 
-const INTERVALS = [["D","Jour","journaliers"],["W","Semaine","hebdomadaires"],["M","Mois","mensuels"],["Q","Trimestre","trimestriels"]];
-let ovItem = null, ovData = null, ovItemName = "";
+const INTERVALS = [["I","15 min","de 15 minutes"],["D","Jour","journaliers"],["W","Semaine","hebdomadaires"],["M","Mois","mensuels"],["Q","Trimestre","trimestriels"]];
+let ovItem = null, ovData = null, ovItemName = "", ovSym = null;
 
 /* Regroupe les séances journalières en chandeliers semaine / mois / trimestre */
 function keyOf(iv, d) {
-  if (iv === "D") return d;
-  if (iv === "W") { const dt = new Date(d + "T00:00:00Z"); const day = (dt.getUTCDay() + 6) % 7; dt.setUTCDate(dt.getUTCDate() - day); return dt.toISOString().slice(0, 10); }
+  if (iv === "D" || iv === "I") return d;
+  if (iv === "W") { const dt = dOf(d); const day = (dt.getUTCDay() + 6) % 7; dt.setUTCDate(dt.getUTCDate() - day); return dt.toISOString().slice(0, 10); }
   if (iv === "M") return d.slice(0, 7);
   return d.slice(0, 4) + "-Q" + Math.floor((+d.slice(5, 7) - 1) / 3);
 }
 /* Regroupe des chandeliers (journaliers ou mensuels) en semaine / mois / trimestre */
 function aggregate(rows, iv) {
-  if (iv === "D") return rows;
+  if (iv === "D" || iv === "I") return rows;
   const out = [];
   let cur = null, k0 = null;
   for (const r of rows) {
@@ -1027,6 +1040,7 @@ function aggregate(rows, iv) {
 /* Chandeliers d'une échelle ; mois et trimestres utilisent tout l'historique disponible */
 const barsCache = {};
 function barsFor(data, iv) {
+  if (iv === "I") return data.intraday || [];
   const k = data.symbol + "|" + iv;
   if (!barsCache[k]) {
     const src = (iv === "M" || iv === "Q") && data.long && data.long.length ? data.long : data.rows;
@@ -1324,7 +1338,7 @@ function renderGeoList() {
   box.innerHTML = "";
   if (!prefs.chan && !prefs.tl) return;
   if (!ovGeo.length) { box.innerHTML = "<small>Aucun canal ni oblique net dans cette unité avec cette précision.</small>"; return; }
-  const short = d => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { month:"short", year:"numeric", timeZone:"UTC" });
+  const short = d => dOf(d).toLocaleDateString("fr-FR", { month:"short", year:"numeric", timeZone:"UTC" });
   ovGeo.forEach((it, n) => {
     const d = document.createElement("div"); d.className = "it pick";
     const col = it.g === "chan" ? CHAN_COL : TL_COL[it.kind];
@@ -1408,7 +1422,7 @@ function renderFlipList() {
   box.innerHTML = "";
   if (!prefs.flip) return;
   if (!ovFlips.length) { box.innerHTML = "<small>Aucune bascule nette sur cette période avec cette précision.</small>"; return; }
-  const short = d => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { month:"short", year:"numeric", timeZone:"UTC" });
+  const short = d => dOf(d).toLocaleDateString("fr-FR", { month:"short", year:"numeric", timeZone:"UTC" });
   ovFlips.forEach((f, n) => {
     const d = document.createElement("div"); d.className = "it pick"; d.style.setProperty("--c", FLIP_COL[f.type]);
     if (hiFlip === n) d.classList.add("sel");
@@ -1429,7 +1443,7 @@ function renderFlipList() {
    Rejet  : l'inverse, par le dessous, avec une baisse d'au moins 2 × la précision.
    Test   : chaque nouveau contact avec la moyenne (réaction ou non). */
 const MA_REACT_BARS = 5;
-const MA_LOOKBACK = { D:250, W:156, M:120, Q:40 };
+const MA_LOOKBACK = { I:300, D:250, W:156, M:120, Q:40 };
 function maReactions(data, iv, n, pct) {
   const rows = barsFor(data, iv), len = rows.length;
   const ma = new Array(len).fill(null);
@@ -2033,7 +2047,7 @@ function onLevelTap(info, tf, p, i, el) {
 function renderMaList(info) {
   const box = $("ovMaList"); box.innerHTML = "";
   const iv = prefs.iv || "D";
-  const unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
+  const unit = { I:"chandeliers de 15 min", D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
   MA_PERIODS.forEach(n => {
     const pts = maSeries(ovData, iv, n, iv);
     const d = document.createElement("div"); d.className = "it" + (pts.length ? " pick" : "");
@@ -2108,7 +2122,7 @@ function captureView() {
 }
 /* Cadrage par défaut d'une action (celui de l'ouverture) */
 function defaultView(rows, iv) {
-  const show = { D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
+  const show = { I: 9999, D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
   if (rows.length > show) ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
   else ovChart.timeScale().fitContent();
 }
@@ -2133,7 +2147,7 @@ function fitAll() {
   setFitLabel();
   const rows = barsFor(ovData, prefs.iv || "D");
   if (rows.length) toast("Tout l'historique en " + { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[prefs.iv || "D"] + " : depuis " +
-    new Date(rows[0][0] + "T00:00:00Z").toLocaleDateString("fr-FR", { month:"long", year:"numeric", timeZone:"UTC" }) +
+    dOf(rows[0][0]).toLocaleDateString("fr-FR", { month:"long", year:"numeric", timeZone:"UTC" }) +
     ((prefs.iv || "D") === "D" || prefs.iv === "W" ? " (plus ancien en M ou T)" : ""), 2600);
 }
 $("fitBtn").onclick = fitAll;
@@ -2148,11 +2162,13 @@ function resetView() {
 }
 function drawDetail(keep) {
   fitPrev = null; if ($("fitBtn")) setFitLabel();
+  if (prefs.iv === "I" && !hasIntraday()) prefs.iv = "D";     // 15 min indisponible pour cette valeur : retour au jour
   const info = ovItem, iv = prefs.iv || "D";
-  renderSeg("ivSeg", INTERVALS, iv, v => { const keep = captureView(); prefs.iv = v; savePrefs(); drawDetail(keep); });
+  const ivs = hasIntraday() ? INTERVALS : INTERVALS.filter(x => x[0] !== "I");
+  renderSeg("ivSeg", ivs, iv, v => { const keep = captureView(); prefs.iv = v; savePrefs(); drawDetail(keep); });
   [...$("ivSeg").children].forEach((b, k) => {
-    b.textContent = { D:"J", W:"S", M:"M", Q:"T" }[INTERVALS[k][0]];
-    b.title = "Chandeliers " + INTERVALS[k][2];
+    b.textContent = { I:"15'", D:"J", W:"S", M:"M", Q:"T" }[ivs[k][0]];
+    b.title = "Chandeliers " + ivs[k][2];
   });
   renderToggles();
   const ivInfo = INTERVALS.find(x => x[0] === iv);
@@ -2199,7 +2215,8 @@ function drawDetail(keep) {
     if (!row) return;
     const prev = rows[rows.indexOf(row) - 1];
     const chg = prev ? (row[4] / prev[4] - 1) * 100 : null;
-    const d = new Date(row[0] + "T00:00:00Z").toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" });
+    const d = dOf(row[0]).toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" })
+      + (typeof row[0] === "number" ? " " + dOf(row[0]).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit", timeZone:"UTC" }) : "");
     $("ohlc").innerHTML =
       "<div>Chandeliers " + ivInfo[2] + " · " + d +
       (chg == null ? "" : ' · <b class="' + (chg >= 0 ? "up" : "down") + '">' + fmtPct(Math.round(chg * 100) / 100) + "</b>") + "</div>" +
@@ -2207,7 +2224,7 @@ function drawDetail(keep) {
   };
   showOhlc(rows[rows.length - 1]);
   ovChart.subscribeCrosshairMove(param => {
-    const row = param && param.time ? bySeries.get(typeof param.time === "string" ? param.time :
+    const row = param && param.time ? bySeries.get(typeof param.time !== "object" ? param.time :
       param.time.year + "-" + String(param.time.month).padStart(2, "0") + "-" + String(param.time.day).padStart(2, "0")) : null;
     if (rsiChart && rsiSeries && !crossSync) {
       crossSync = true;
@@ -2252,7 +2269,7 @@ document.addEventListener("keydown", e => {
 
 /* ---------- Détail d'un support / d'une résistance ---------- */
 let lvChart = null;
-const fmtDate = d => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" });
+const fmtDate = d => dOf(d).toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" });
 function openLevel(info, tf, p, i) {
   const k = p === "S" ? "supports" : "resistances";
   const L = levelsOf(info, tf), l = L[k][i];
@@ -2269,7 +2286,7 @@ function openLevel(info, tf, p, i) {
   const dist = (l.price / info.last - 1) * 100;
   const nH = hits.filter(h => h[2] === "H").length, nL = hits.length - nH;
   const last = hits.length ? hits[hits.length - 1][0] : l.last;
-  const ago = last ? Math.round((Date.now() - new Date(last + "T00:00:00Z")) / 86400000) : null;
+  const ago = last ? Math.round((Date.now() - dOf(last)) / 86400000) : null;
   let role = "";
   if (nH && nL) role = p === "S" ? "Ancienne résistance devenue support" : "Ancien support devenu résistance";
   else if (nH) role = p === "R" ? "Sommets répétés : le cours a buté dessus" : "Ancienne résistance, franchie par le cours";
@@ -2331,7 +2348,7 @@ function closeLevel() {
   if (lvChart) { lvChart.remove(); lvChart = null; }
 }
 function openMaDetail(info, n) {
-  const iv = prefs.iv || "D", unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
+  const iv = prefs.iv || "D", unit = { I:"chandeliers de 15 min", D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
   const R = maReactions(ovData, iv, n, tolPct()), col = MA_COL[n];
   const pts = maSeries(ovData, iv, n, iv), cur = pts.length ? pts[pts.length - 1].value : null;
   const up = R.events.filter(e => e.type === "up"), dn = R.events.filter(e => e.type === "down");
@@ -2395,10 +2412,142 @@ $("lvClose").onclick = closeLevel;
     return;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
-  $("updated").textContent = "Mis à jour le " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " · cours de clôture (Yahoo Finance)";
+  $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
+  $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  $("liveStatus").onclick = () => { prefs.live = !liveOn(); savePrefs(); render(); startLive(); if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; } };
   if (summary.demo) $("demo").style.display = "block";
   render();
+  startLive();
 })();
+
+/* ===== Cours en séance (relais Cloudflare « cours-live », retard ≈ 15 min selon la bourse) ===== */
+const LIVE_URL = "https://cours-live.manbboy.workers.dev";
+const liveQuotes = {};      // sym -> { price, prevClose, time, day, state }
+let liveTimer = null, liveLast = 0;
+function liveOn() { return prefs.live !== false; }
+function withLive(sym, info) {
+  const q = liveQuotes[sym];
+  if (!liveOn() || !q || !info || info.pending || info.error) return info;
+  if (info.date && q.day < info.date) return info;   // la clôture connue est plus récente
+  const pct = q.prevClose ? (q.price / q.prevClose - 1) * 100 : info.changePct;
+  return Object.assign({}, info, { last:q.price, changePct:pct, date:q.day, live:q });
+}
+function liveDot(info) {
+  const q = info.live, t = new Date(q.time * 1000).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
+  return '<span class="live-dot ' + (q.state === "ouvert" ? "on" : "off") + '" title="' + (q.state === "ouvert" ? "Séance en cours" : "Marché fermé") + " · cours de " + t + '"></span>';
+}
+async function pollLive(force) {
+  if (!liveOn() || document.hidden) return;
+  if (!force && Date.now() - liveLast < 55000) return;
+  liveLast = Date.now();
+  const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
+  const syms = new Set(pf.items.map(i => i.yahoo));
+  if ($("ov").classList.contains("show") && cfg.portfolios[ovPos.pi]) { const it = cfg.portfolios[ovPos.pi].items[ovPos.idx]; if (it) syms.add(it.yahoo); }
+  const list = [...syms];
+  try {
+    for (let k = 0; k < list.length; k += 40) {
+      const r = await fetch(LIVE_URL + "/quote?s=" + encodeURIComponent(list.slice(k, k + 40).join(",")));
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      (d.quotes || []).forEach(q => {
+        if (q.error || q.price == null || !q.time) return;
+        const day = new Date(q.time * 1000).toLocaleDateString("sv-SE", { timeZone: q.tz || "Europe/Paris" });
+        liveQuotes[q.sym] = { price:q.price, prevClose:q.prevClose, time:q.time, day, state:q.state };
+      });
+    }
+    setLiveStatus(true);
+    refreshLiveCards();
+    refreshDetailLive();
+  } catch (e) { setLiveStatus(false); }
+}
+function setLiveStatus(ok) {
+  const el = $("liveStatus"); if (!el) return;
+  el.textContent = ok ? "● En séance · maj " + new Date().toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }) : "○ Cours en séance indisponibles";
+  el.className = "live-status " + (ok ? "ok" : "ko");
+}
+function refreshLiveCards() {
+  document.querySelectorAll("#grid .card[data-sym]").forEach(card => {
+    const sym = card.dataset.sym;
+    const info = withLive(sym, summary.symbols[sym]); if (!info || !info.live) return;
+    const pct = info.changePct;
+    card.querySelector(".px").textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
+    card.querySelector(".px2").textContent = fmt(info.last, null);
+    const ch = card.querySelector(".chg"); ch.textContent = fmtPct(pct); ch.className = "chg " + (pct >= 0 ? "up" : "down");
+    const nm = card.querySelector(".nm"); const old = nm.querySelector(".live-dot"); if (old) old.remove();
+    nm.insertAdjacentHTML("afterbegin", liveDot(info));
+  });
+}
+function startLive() {
+  clearInterval(liveTimer);
+  if (!liveOn()) return;
+  pollLive(true);
+  liveTimer = setInterval(() => pollLive(false), 60000);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) pollLive(false); });
+
+/* ----- Détail : chandeliers de 15 min et bougie du jour (à partir du relais) ----- */
+// Les dates sont « AAAA-MM-JJ » ; les chandeliers 15 min ont un horodatage (secondes, heure de Bruxelles)
+function dOf(d) { return typeof d === "number" ? new Date(d * 1000) : new Date(d + "T00:00:00Z"); }
+function hasIntraday() { return !!(ovData && ovData.intraday && ovData.intraday.length > 5); }
+function tzShift(t, tz) {             // décalage (s) entre UTC et le fuseau, à l'instant t
+  const p = new Intl.DateTimeFormat("en-US", { timeZone:tz, hourCycle:"h23", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", second:"2-digit" })
+    .formatToParts(new Date(t * 1000)).reduce((o, x) => (o[x.type] = x.value, o), {});
+  return (Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) / 1000) - t;
+}
+async function fetchIntraday(sym) {
+  const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const r = await fetch(LIVE_URL + "/chart?s=" + encodeURIComponent(sym) + "&range=5d&interval=15m", { signal:ctl.signal });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d && d.bars && d.bars.length ? d : null;
+  } catch (e) { return null; } finally { clearTimeout(to); }
+}
+async function withLiveData(sym, data) {
+  if (!liveOn() || !data || !data.rows || !data.rows.length) return data;
+  const c = await fetchIntraday(sym);
+  if (!c) return data;
+  const tz = c.tz || "Europe/Paris";
+  const dayOf = t => new Date(t * 1000).toLocaleDateString("sv-SE", { timeZone:tz });
+  const bars = c.bars.filter(b => b[1] != null && b[2] != null && b[3] != null);
+  const intraday = bars.map(b => [b[0] + tzShift(b[0], "Europe/Brussels"), b[1], b[2], b[3], b[4], b[5] || 0]);
+  // bougie du jour : séance la plus récente des chandeliers 15 min
+  const lastDay = dayOf(bars[bars.length - 1][0]);
+  const today = bars.filter(b => dayOf(b[0]) === lastDay);
+  const out = Object.assign({}, data, { intraday, symbol:(data.symbol || sym) + "@" + bars[bars.length - 1][0] });
+  if (today.length) {
+    const cdl = [lastDay, today[0][1], Math.max(...today.map(b => b[2])), Math.min(...today.map(b => b[3])),
+                 c.price != null ? c.price : today[today.length - 1][4], today.reduce((a, b) => a + (b[5] || 0), 0)];
+    cdl[2] = Math.max(cdl[2], cdl[4]); cdl[3] = Math.min(cdl[3], cdl[4]);
+    const rows = data.rows.slice(), lr = rows[rows.length - 1];
+    if (lastDay > lr[0]) rows.push(cdl);
+    else if (lastDay === lr[0]) rows[rows.length - 1] = [lr[0], lr[1], Math.max(lr[2], cdl[2]), Math.min(lr[3], cdl[3]), cdl[4], Math.max(lr[5] || 0, cdl[5])];
+    out.rows = rows;
+    if (data.long && data.long.length) {           // historique mensuel : met à jour le mois en cours
+      const long = data.long.slice(), lm = long[long.length - 1], d = rows[rows.length - 1];
+      if (d[0].slice(0, 7) === String(lm[0]).slice(0, 7)) long[long.length - 1] = [lm[0], lm[1], Math.max(lm[2], d[2]), Math.min(lm[3], d[3]), d[4], lm[5]];
+      else if (d[0] > lm[0]) long.push(d.slice());
+      out.long = long;
+    }
+  }
+  return out;
+}
+// détail ouvert : met à jour la dernière bougie sans changer le cadrage
+async function refreshDetailLive() {
+  if (!$("ov").classList.contains("show") || !ovData || !ovSym || !ovCandles) return;
+  if (typeof splitN === "function" && splitN() > 1) return;
+  const base = await getSeries(summary.symbols[ovSym] || ovItem);
+  const nd = await withLiveData(ovSym, base);
+  if (!nd || nd === base || !ovCandles) return;
+  const iv = prefs.iv || "D";
+  const oldLen = barsFor(ovData, iv).length;
+  ovData = nd;
+  const rows = barsFor(ovData, iv);
+  if (!rows.length || rows.length < oldLen) return;
+  const cd = candleData(rows.slice(-Math.min(rows.length, 60)), false);
+  try { ovCandles.update(cd[cd.length - 1]); } catch (e) {}
+}
+
 </script>
 </body>
 </html>
