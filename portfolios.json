@@ -474,14 +474,14 @@
           "name": "PayPal"
         },
         {
-          "yahoo": "RCO.PA",
-          "tv": "EURONEXT:RCO",
-          "name": "Rémy Cointreau"
-        },
-        {
           "yahoo": "IWDA.AS",
           "tv": "EURONEXT:IWDA",
           "name": "iShares MSCI World"
+        },
+        {
+          "yahoo": "RCO.PA",
+          "tv": "EURONEXT:RCO",
+          "name": "Rémy Cointreau"
         },
         {
           "yahoo": "RNO.PA",
