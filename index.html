@@ -42,7 +42,7 @@
     .bar-row::-webkit-scrollbar { display:none; }
     .group label .lg { display:none; }
     .group label .sm { display:inline; font-size:17px; line-height:1; }
-    .bar-row .seg button { padding:5px 4.5px; font-size:12px; }
+    .bar-row .seg button { padding:6px 6.5px; font-size:12.5px; }
     .bar .legend { width:100%; }
     .bar .spacer { display:none; }
   }
@@ -2452,7 +2452,7 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v7</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v8</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   const toggleLive = () => {
     prefs.live = !liveOn(); savePrefs(); updLiveBtn(); render(); startLive();
     if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
