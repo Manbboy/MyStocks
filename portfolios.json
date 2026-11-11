@@ -429,11 +429,6 @@
       "name": "Hold",
       "items": [
         {
-          "yahoo": "AVGO",
-          "tv": "NASDAQ:AVGO",
-          "name": "Broadcom"
-        },
-        {
           "yahoo": "DSY.PA",
           "tv": "EURONEXT:DSY",
           "name": "Dassault Systèmes"
@@ -447,11 +442,6 @@
           "yahoo": "FDJU.PA",
           "tv": "EURONEXT:FDJU",
           "name": "FDJ United"
-        },
-        {
-          "yahoo": "HO.PA",
-          "tv": "EURONEXT:HO",
-          "name": "Thales"
         },
         {
           "yahoo": "FISV",
@@ -469,6 +459,11 @@
           "name": "Netflix"
         },
         {
+          "yahoo": "AVGO",
+          "tv": "NASDAQ:AVGO",
+          "name": "Broadcom"
+        },
+        {
           "yahoo": "NKE",
           "tv": "NYSE:NKE",
           "name": "Nike"
@@ -484,14 +479,19 @@
           "name": "Rémy Cointreau"
         },
         {
+          "yahoo": "RNO.PA",
+          "tv": "EURONEXT:RNO",
+          "name": "Renault"
+        },
+        {
           "yahoo": "SAN.PA",
           "tv": "EURONEXT:SAN",
           "name": "Sanofi"
         },
         {
-          "yahoo": "RNO.PA",
-          "tv": "EURONEXT:RNO",
-          "name": "Renault"
+          "yahoo": "HO.PA",
+          "tv": "EURONEXT:HO",
+          "name": "Thales"
         },
         {
           "yahoo": "VLTSA.PA",
