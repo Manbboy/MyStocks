@@ -294,6 +294,7 @@
 .live-dot.on { background:#16a34a; box-shadow:0 0 0 2px #16a34a33; animation:livepulse 2s infinite; }
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 50% { box-shadow:0 0 0 4px #16a34a22; } }
+.ver { font-size:11px; color:#9ca3af; }
 .live-status { font-size:12px; margin-left:6px; white-space:nowrap; cursor:pointer; }
 .live-status.ok { color:#16a34a; } .live-status.ko { color:#9ca3af; }
 .beta-tag { font-size:11px; font-weight:600; background:#f59e0b; color:#fff; border-radius:6px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
@@ -2413,7 +2414,7 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v3</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   $("liveStatus").onclick = () => { prefs.live = !liveOn(); savePrefs(); render(); startLive(); if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; } };
   if (summary.demo) $("demo").style.display = "block";
   render();
@@ -2423,7 +2424,7 @@ $("lvClose").onclick = closeLevel;
 /* ===== Cours en séance (relais Cloudflare « cours-live », retard ≈ 15 min selon la bourse) ===== */
 const LIVE_URL = "https://cours-live.manbboy.workers.dev";
 const liveQuotes = {};      // sym -> { price, prevClose, time, day, state }
-let liveTimer = null, liveLast = 0;
+let liveTimer = null, liveLast = 0, liveDiag = "";
 function liveOn() { return prefs.live !== false; }
 function withLive(sym, info) {
   const q = liveQuotes[sym];
@@ -2498,15 +2499,17 @@ async function fetchIntraday(sym) {
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 8000);
   try {
     const r = await fetch(LIVE_URL + "/chart?s=" + encodeURIComponent(sym) + "&range=5d&interval=15m", { signal:ctl.signal });
-    if (!r.ok) return null;
+    if (!r.ok) { console.warn("relais /chart", r.status); return null; }
     const d = await r.json();
+    if (!(d && d.bars && d.bars.length)) console.warn("relais /chart sans chandeliers", d && d.error);
     return d && d.bars && d.bars.length ? d : null;
-  } catch (e) { return null; } finally { clearTimeout(to); }
+  } catch (e) { console.warn("relais /chart", e); return null; } finally { clearTimeout(to); }
 }
 async function withLiveData(sym, data) {
   if (!liveOn() || !data || !data.rows || !data.rows.length) return data;
   const c = await fetchIntraday(sym);
-  if (!c) return data;
+  if (!c) { liveDiag = "15 min indisponible"; return data; }
+  liveDiag = "";
   const tz = c.tz || "Europe/Paris";
   const dayOf = t => new Date(t * 1000).toLocaleDateString("sv-SE", { timeZone:tz });
   const bars = c.bars.filter(b => b[1] != null && b[2] != null && b[3] != null);
