@@ -140,6 +140,8 @@
   .tbs { display:flex; align-items:center; gap:4px; overflow-x:auto; flex:1; min-width:0; scrollbar-width:none; -webkit-overflow-scrolling:touch;
          mask-image:linear-gradient(90deg, #000 calc(100% - 18px), transparent); -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 18px), transparent); padding-right:14px; }
   .tbs::-webkit-scrollbar { display:none; }
+  .tb-br { display:none; }
+  .tbs.two .tb-br { display:block; flex-basis:100%; height:0; }
   .tbs.two { flex-wrap:wrap; overflow-x:visible; row-gap:5px; mask-image:none; -webkit-mask-image:none; padding-right:0; }
   .tbs > * { flex:0 0 auto; }
   .mmb.lay { padding:4px 5px; }
@@ -321,7 +323,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v13</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v14</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -364,6 +366,8 @@
     <div class="tb">
       <div class="tbs" id="tbs">
       <div class="seg" id="ivSeg"></div>
+      <button class="mmb lay" id="quadBtn" aria-pressed="false" title="Disposition : 1, 2 ou 4 graphiques"></button>
+      <span class="tb-br" aria-hidden="true"></span>
       <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
       <button class="mmb" id="chanBtn" aria-pressed="false" title="Canaux : deux obliques parallèles qui encadrent le cours">Canal<span class="mmdots"><i style="background:#0891b2;width:12px;transform:rotate(-18deg)"></i></span></button>
@@ -372,7 +376,6 @@
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
       <button class="mmb" id="rtBtn" aria-pressed="false" title="Afficher / masquer RSI Trends (chandeliers colorés)">RT<span class="mmdots"><i style="background:#4CAF50"></i><i style="background:#787B86"></i><i style="background:#FF5252"></i></span></button>
       <button class="mmb" id="volBtn" aria-pressed="false" title="Afficher / masquer les volumes">Vol<span class="mmdots"><i style="background:var(--muted);width:3px;height:5px"></i><i style="background:var(--muted);width:3px;height:3px;margin-top:2px"></i><i style="background:var(--muted);width:3px;height:5px"></i></span></button>
-      <button class="mmb lay" id="quadBtn" aria-pressed="false" title="Disposition : 1, 2 ou 4 graphiques"></button>
       </div>
       <button class="cfg-btn" id="cfgBtn" aria-expanded="false" aria-label="Réglages" title="Réglages"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M9.5 2.5v3M5.5 10.5v3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span class="badge" id="cfgCount"></span></button>
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
