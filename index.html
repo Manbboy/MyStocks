@@ -346,7 +346,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v24</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v25</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2537,7 +2537,7 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span><span id="liveCd" class="live-cd" title="Prochaine mise à jour"></span>');
+  $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   const toggleLive = () => {
     prefs.live = !liveOn(); if (!liveOn() && prefs.range === "1J") { prefs.range = "1M"; prefs.backTo1J = true; } if (liveOn() && prefs.backTo1J) { prefs.range = "1J"; prefs.backTo1J = false; } savePrefs(); updLiveBtn(); render(); startLive();
     if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
