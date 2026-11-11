@@ -466,7 +466,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v54</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v55</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2311,16 +2311,12 @@ function renderQuick() {
   const sig = items.map(x => x.t + (x.on ? "*" : "")).join("|");
   if (box._sig !== sig) {
     box._sig = sig; box.innerHTML = "";
-    const last = ovItem && ovItem.last;
-    let curDone = false;
     items.forEach(x => {
-      if (!curDone && last != null && x.price < last) { curDone = true; box.insertAdjacentHTML("beforeend", '<span class="q-cur" title="Cours actuel">● ' + fmt(last) + "</span>"); }
       const b = document.createElement("button"); b.className = "q-chip" + (x.on ? " on" : "");
       b.style.setProperty("--c", x.c); b.textContent = x.t; b.title = x.tip;
       b.onclick = e => { e.stopPropagation(); x.act(); };
       box.appendChild(b);
     });
-    if (!curDone && items.length && last != null) box.insertAdjacentHTML("beforeend", '<span class="q-cur">● ' + fmt(last) + "</span>");
     const sel = box.querySelector(".on"); if (sel) sel.scrollIntoView({ block:"nearest", inline:"center" });
   }
   const h = items.length ? box.offsetHeight + 6 : 0;
