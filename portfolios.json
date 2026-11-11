@@ -449,6 +449,11 @@
           "name": "FDJ United"
         },
         {
+          "yahoo": "HO.PA",
+          "tv": "EURONEXT:HO",
+          "name": "Thales"
+        },
+        {
           "yahoo": "FISV",
           "tv": "NASDAQ:FISV",
           "name": "Fiserv"
@@ -487,11 +492,6 @@
           "yahoo": "RNO.PA",
           "tv": "EURONEXT:RNO",
           "name": "Renault"
-        },
-        {
-          "yahoo": "HO.PA",
-          "tv": "EURONEXT:HO",
-          "name": "Thales"
         },
         {
           "yahoo": "VLTSA.PA",
