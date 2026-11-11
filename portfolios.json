@@ -479,6 +479,11 @@
           "name": "Rémy Cointreau"
         },
         {
+          "yahoo": "IWDA.AS",
+          "tv": "EURONEXT:IWDA",
+          "name": "iShares MSCI World"
+        },
+        {
           "yahoo": "RNO.PA",
           "tv": "EURONEXT:RNO",
           "name": "Renault"
@@ -502,11 +507,6 @@
           "yahoo": "ZAL.DE",
           "tv": "XETR:ZAL",
           "name": "Zalando"
-        },
-        {
-          "yahoo": "IWDA.AS",
-          "tv": "EURONEXT:IWDA",
-          "name": "iShares MSCI World"
         },
         {
           "yahoo": "BTC-EUR",
