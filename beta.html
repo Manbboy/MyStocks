@@ -533,14 +533,24 @@ $("themeBtn").onclick = () => {
 /* Réticule : libre (suit le doigt / la souris) ou aimanté (suit les cours) */
 const crossOpt = () => ({ mode: prefs.cross === "magnet" ? LW.CrosshairMode.Magnet : LW.CrosshairMode.Normal });
 
+/* Étiquette de date du réticule : avec l'heure pour les chandeliers 15 min */
+function crossTime(t) {
+  if (typeof t === "number") {
+    const d = new Date(t * 1000);
+    return d.toLocaleDateString("fr-FR", { weekday:"short", day:"2-digit", month:"short", timeZone:"UTC" }) + " " + d.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit", timeZone:"UTC" });
+  }
+  const s = typeof t === "string" ? t : t.year + "-" + String(t.month).padStart(2, "0") + "-" + String(t.day).padStart(2, "0");
+  const d = new Date(s + "T00:00:00Z");
+  return d.toLocaleDateString("fr-FR", { day:"2-digit", month:"short", timeZone:"UTC" }) + " '" + s.slice(2, 4);
+}
 function baseOptions(small) {
   return {
     autoSize:true,
     layout:{ background:{ type:"solid", color:"transparent" }, textColor:css("--muted"), fontSize: small ? 9 : 11, attributionLogo:false },
     grid:{ vertLines:{ visible:false }, horzLines:{ color:css("--grid") } },
     rightPriceScale:{ borderVisible:false },
-    timeScale:{ borderVisible:false },
-    localization:{ locale:"fr-FR" },
+    timeScale:{ borderVisible:false, timeVisible:true, secondsVisible:false },   // heures visibles en 15 min (sans effet sur les jours)
+    localization:{ locale:"fr-FR", timeFormatter:crossTime },
   };
 }
 
@@ -2123,6 +2133,12 @@ function captureView() {
 }
 /* Cadrage par défaut d'une action (celui de l'ouverture) */
 function defaultView(rows, iv) {
+  if (iv === "I" && rows.length) {      // 15 min : la dernière séance (aujourd'hui, ou la veille avant l'ouverture)
+    const lastDay = Math.floor(rows[rows.length - 1][0] / 86400);
+    let i0 = rows.length - 1; while (i0 > 0 && Math.floor(rows[i0 - 1][0] / 86400) === lastDay) i0--;
+    ovChart.timeScale().setVisibleLogicalRange({ from:i0 - 0.5, to:rows.length - 0.5 + 2 });
+    return;
+  }
   const show = { I: 9999, D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
   if (rows.length > show) ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
   else ovChart.timeScale().fitContent();
@@ -2243,7 +2259,7 @@ function drawDetail(keep) {
     }
   });
   renderLevelLists(info);
-  if (keep && keep.width > 0) {
+  if (keep && keep.width > 0 && iv !== "I" && typeof keep.toTime !== "number") {   // passage de/vers 15 min : cadrage par défaut
     /* même nombre de chandeliers à l'écran, bord droit sur la même date */
     const k = keyOf(iv, keep.toTime);
     let idx = rows.findIndex(r => keyOf(iv, r[0]) === k);
@@ -2414,7 +2430,7 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v3</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v4</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   $("liveStatus").onclick = () => { prefs.live = !liveOn(); savePrefs(); render(); startLive(); if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; } };
   if (summary.demo) $("demo").style.display = "block";
   render();
