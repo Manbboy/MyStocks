@@ -396,7 +396,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v34</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v35</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -671,7 +671,7 @@ function crossTime(t) {
 function baseOptions(small) {
   return {
     autoSize:true,
-    layout:{ background:{ type:"solid", color:"transparent" }, textColor:css("--muted"), fontSize: small ? 9 : 11, attributionLogo:false },
+    layout:{ background:{ type:"solid", color:"transparent" }, textColor:css("--muted"), fontSize: small ? 9 : 10, attributionLogo:false },
     grid:{ vertLines:{ visible:false }, horzLines:{ color:css("--grid") } },
     rightPriceScale:{ borderVisible:false },
     timeScale:{ borderVisible:false, timeVisible:true, secondsVisible:false },   // heures visibles en 15 min (sans effet sur les jours)
@@ -3314,7 +3314,7 @@ function drawTxMarks() {
     }
     if (p && p.qty > 0) {
       txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
-        lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"PRU " + own }));
+        lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));       // étiquette réduite au prix sur l'axe (le détail est sous le nom)
       // zone entre le PRU et le cours depuis l'achat : verte au-dessus (gain), rouge en dessous (perte)
       const st = holdStart(tx);
       const from = st ? (byKey.get(keyOf(iv, st)) || (rows.find(r => r[0] >= st) || [])[0]) : null;

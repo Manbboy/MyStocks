@@ -346,7 +346,7 @@ function drawTxMarks() {
     }
     if (p && p.qty > 0) {
       txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
-        lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"PRU " + own }));
+        lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));       // étiquette réduite au prix sur l'axe (le détail est sous le nom)
       // zone entre le PRU et le cours depuis l'achat : verte au-dessus (gain), rouge en dessous (perte)
       const st = holdStart(tx);
       const from = st ? (byKey.get(keyOf(iv, st)) || (rows.find(r => r[0] >= st) || [])[0]) : null;
