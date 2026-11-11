@@ -479,14 +479,14 @@
           "name": "Rémy Cointreau"
         },
         {
-          "yahoo": "RNO.PA",
-          "tv": "EURONEXT:RNO",
-          "name": "Renault"
-        },
-        {
           "yahoo": "SAN.PA",
           "tv": "EURONEXT:SAN",
           "name": "Sanofi"
+        },
+        {
+          "yahoo": "RNO.PA",
+          "tv": "EURONEXT:RNO",
+          "name": "Renault"
         },
         {
           "yahoo": "HO.PA",
