@@ -151,7 +151,11 @@ async function renderPf() {
   lockB.onclick = () => { setPfPass(""); pfState.data = null; renderPf(); };
   const addB = document.createElement("button"); addB.className = "btn primary"; addB.textContent = "+ Opération";
   addB.onclick = () => openTxDlg();
-  head.append(addB, lockB);
+  const cmpB = document.createElement("button"); cmpB.className = "btn" + (prefs.pfCompact ? " on" : "");
+  cmpB.textContent = prefs.pfCompact ? "☰ Détaillé" : "≡ Compact";
+  cmpB.title = prefs.pfCompact ? "Afficher les achats et ventes de chaque valeur" : "Une ligne par valeur, sans le détail des opérations";
+  cmpB.onclick = () => { prefs.pfCompact = !prefs.pfCompact; savePrefs(); renderPf(); };
+  head.append(cmpB, addB, lockB);
 
   const own = pfOwner(), tx = (pfState.data[own] && pfState.data[own].tx) || [];
   const pos = pfPositions(tx);
@@ -163,7 +167,7 @@ async function renderPf() {
   const tot = {};
   pos.forEach(p => { const t = tot[p.cur] = tot[p.cur] || { cost:0, value:0, latent:0, realized:0 };
     t.cost += p.cost; t.value += p.value; t.latent += p.latent; t.realized += p.realized; });
-  const sum = document.createElement("div"); sum.className = "pf-sum";
+  const sum = document.createElement("div"); sum.className = "pf-sum" + (prefs.pfCompact ? " compact" : "");
   Object.entries(tot).forEach(([cur, t]) => {
     const pct = t.cost > 0 ? t.latent / t.cost * 100 : null;
     sum.insertAdjacentHTML("beforeend",
@@ -174,7 +178,7 @@ async function renderPf() {
   });
   box.appendChild(sum);
 
-  const list = document.createElement("div"); list.className = "pf-list";
+  const list = document.createElement("div"); list.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
   pos.forEach(p => {
     const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
     const open = p.qty > 0;
@@ -186,6 +190,7 @@ async function renderPf() {
         : "Aucune action détenue") +
       (open && Math.abs(p.realized) > 0.005 ? ' · réalisé <span class="' + (p.realized >= 0 ? "up" : "down") + '">' + money(p.realized, p.cur) + '</span>' : "") + '</div>';
     c.querySelector(".nm").textContent = p.name;
+    if (prefs.pfCompact) c.querySelector(".r1").insertAdjacentHTML("beforeend", '<em class="val">' + (open ? fmt(p.value, p.cur) : "–") + '</em>');
     const tl = document.createElement("div"); tl.className = "pf-tx";
     p.tx.slice().reverse().forEach(t => {
       const row = document.createElement("div");
