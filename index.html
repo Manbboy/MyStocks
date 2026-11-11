@@ -140,6 +140,7 @@
   .tbs { display:flex; align-items:center; gap:4px; overflow-x:auto; flex:1; min-width:0; scrollbar-width:none; -webkit-overflow-scrolling:touch;
          mask-image:linear-gradient(90deg, #000 calc(100% - 18px), transparent); -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 18px), transparent); padding-right:14px; }
   .tbs::-webkit-scrollbar { display:none; }
+  .tbs.two { flex-wrap:wrap; overflow-x:visible; row-gap:5px; mask-image:none; -webkit-mask-image:none; padding-right:0; }
   .tbs > * { flex:0 0 auto; }
   .mmb.lay { padding:4px 5px; }
   .mmb.lay svg { display:block; }
@@ -320,7 +321,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v12</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v13</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -392,6 +393,7 @@
             <label>Haut<input type="number" id="tOb" min="1" max="99" step="1" inputmode="numeric"></label>
             <label>Bas<input type="number" id="tOs" min="1" max="99" step="1" inputmode="numeric"></label></div></div>
         <div class="cfg-row"><span>Réticule</span><div class="seg" id="crossSeg"></div></div>
+        <div class="cfg-row"><span>Raccourcis</span><div class="seg" id="tbRowsSeg"></div></div>
         <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
         <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
       </div>
@@ -1730,6 +1732,7 @@ function renderToggles() {
   const n = (selectedKinds().length ? selectedLv().length : 0) + selMaP().length;
   $("cfgCount").textContent = n ? String(n) : "";
   multiSeg("maSeg", MA_PERIODS.map(p => [p, String(p)]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); }, v => MA_COL[v], "Tout/rien");
+  renderSeg("tbRowsSeg", [[1,"1 ligne"],[2,"2 lignes"]], prefs.tbRows === 2 ? 2 : 1, v => { prefs.tbRows = v; savePrefs(); applyTbRows(); renderToggles(); });
   renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
   renderSeg("crossSeg", [["free","Libre"],["magnet","Sur le cours"]], prefs.cross === "magnet" ? "magnet" : "free", v => {
     prefs.cross = v; savePrefs(); renderToggles();
@@ -1863,6 +1866,9 @@ function setInd(mode) {
   if (mode !== "none") prefs.indLast = mode;
   savePrefs(); renderToggles(); drawRsi(); setCandles(); refreshMulti();
 }
+/* Barre de raccourcis du détail : une ligne qui défile, ou deux lignes sans défilement */
+function applyTbRows() { const t = $("tbs"); if (t) t.classList.toggle("two", prefs.tbRows === 2); }
+applyTbRows();
 const trendOn = () => indMode() === "trend" && prefs.trendBars !== false;
 const paneOn = () => indMode() !== "none" && !(indMode() === "trend" && prefs.rtPane === false);   // graphique RSI sous les chandeliers
 /* État RSI Trends de chaque chandelier : 1 haussier (RSI > 60), -1 baissier (RSI < 40), 0 sans tendance */
