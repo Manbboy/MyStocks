@@ -308,7 +308,7 @@
 .live-btn { white-space:nowrap; }
 #rtBtn.on.nopane { border-style:dashed; }
 .live-btn.on { border-color:#16a34a; color:#16a34a; background:var(--card); }
-.ver { font-size:11px; color:#9ca3af; }
+.ver { font-size:12px; font-weight:500; color:var(--muted); vertical-align:middle; margin-left:4px; }
 .live-status { font-size:12px; margin-left:6px; white-space:nowrap; cursor:pointer; }
 .live-status.ok { color:#16a34a; } .live-status.ko { color:#9ca3af; }
 .beta-tag { font-size:11px; font-weight:600; background:#f59e0b; color:#fff; border-radius:6px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
@@ -317,7 +317,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions</h1>
+    <h1>Mes actions <span class="ver" id="appVer">v9</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2452,7 +2452,7 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span class="ver">· v8</span> <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   const toggleLive = () => {
     prefs.live = !liveOn(); savePrefs(); updLiveBtn(); render(); startLive();
     if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
