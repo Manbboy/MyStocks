@@ -324,6 +324,7 @@
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 0%, 100% { opacity:0; } 50% { opacity:1; } }
 .live-btn, .day-btn { white-space:nowrap; }
+.live-cd { font-size:12px; color:var(--muted); margin-left:6px; font-variant-numeric:tabular-nums; white-space:nowrap; }
 @keyframes flashUp { 0%, 35% { background:#16a34a; color:#fff; } 100% { background:transparent; } }
 @keyframes flashDown { 0%, 35% { background:#dc2626; color:#fff; } 100% { background:transparent; } }
 .flash-up, .flash-down { border-radius:5px; padding:0 3px; margin:0 -3px; }
@@ -342,7 +343,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v22</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v23</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2533,7 +2534,7 @@ $("lvClose").onclick = closeLevel;
   }
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
-  $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
+  $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span><span id="liveCd" class="live-cd" title="Prochaine mise à jour"></span>');
   const toggleLive = () => {
     prefs.live = !liveOn(); if (!liveOn() && prefs.range === "1J") { prefs.range = "1M"; prefs.backTo1J = true; } if (liveOn() && prefs.backTo1J) { prefs.range = "1J"; prefs.backTo1J = false; } savePrefs(); updLiveBtn(); render(); startLive();
     if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
@@ -2665,13 +2666,29 @@ function refreshLiveCards() {
     if (old && old.className === dot.className) old.title = dot.title; else { if (old) old.remove(); nm.insertAdjacentElement("afterbegin", dot); }
   });
 }
+/* Une horloge à la seconde : compte à rebours affiché, et mise à jour de toutes les cartes quand il arrive à 0 */
+let liveNext = 0, liveBusy = false;
+function liveTick() {
+  const cd = $("liveCd");
+  if (!liveOn()) { if (cd) cd.textContent = ""; return; }
+  if (document.hidden) return;
+  const left = Math.ceil((liveNext - Date.now()) / 1000);
+  if (left <= 0 && !liveBusy) {
+    liveBusy = true; if (cd) cd.textContent = "↻ …";
+    liveNext = Date.now() + liveSec() * 1000;
+    pollLive(true).finally(() => { liveBusy = false; liveTick(); });
+    return;
+  }
+  if (cd && !liveBusy) cd.textContent = "↻ " + Math.max(1, left) + " s";
+}
 function startLive() {
   clearInterval(liveTimer);
-  if (!liveOn()) return;
-  pollLive(true);
-  liveTimer = setInterval(() => pollLive(false), liveSec() * 1000);
+  liveNext = 0;
+  if (!liveOn()) { const cd = $("liveCd"); if (cd) cd.textContent = ""; return; }
+  liveTick();
+  liveTimer = setInterval(liveTick, 1000);
 }
-document.addEventListener("visibilitychange", () => { if (!document.hidden) pollLive(false); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && liveOn()) { if (Date.now() - liveLast > liveSec() * 1000) liveNext = 0; liveTick(); } });
 
 /* ----- Détail : chandeliers de 15 min et bougie du jour (à partir du relais) ----- */
 // Les dates sont « AAAA-MM-JJ » ; les chandeliers 15 min ont un horodatage (secondes, heure de Bruxelles)
