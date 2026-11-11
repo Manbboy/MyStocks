@@ -148,11 +148,22 @@
   .card .rm { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:12px; border:0; background:var(--down); color:#fff; font-size:13px; cursor:pointer; display:none; z-index:3; }
   .editing .card .rm { display:block; }
   .card-tap { position:absolute; inset:0; z-index:2; -webkit-tap-highlight-color:transparent; }
-  /* mode compact des onglets : cartes sans graphique */
-  .grid.compact { gap:6px; }
-  .grid.compact .chart, .grid.compact .card-tap { display:none; }
-  .grid.compact .card { padding-bottom:2px; }
-  .grid.compact .card-head { padding-bottom:8px; }
+  /* mode compact des onglets : tableau (une ligne par valeur, colonnes alignées) */
+  .grid.compact { display:block; padding-top:8px; }
+  .grid.compact .tbl { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .grid.compact .tr-h, .grid.compact .card-head { display:grid; grid-template-columns:minmax(0, 1fr) 76px 66px minmax(0, 104px); column-gap:10px; align-items:baseline; padding:8px 12px; }
+  .grid.compact .tr-h { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; border-bottom:1px solid var(--border); background:var(--chip); padding:6px 12px; }
+  .grid.compact .tr-h span:nth-child(n+2) { text-align:right; }
+  .grid.compact .card { border:0; border-bottom:1px solid var(--border); border-radius:0; background:transparent; }
+  .grid.compact .card:last-child { border-bottom:0; }
+  .grid.compact .card:nth-child(even) { background:rgba(127,127,127,.05); }
+  .grid.compact .row1, .grid.compact .row2 { display:contents; }
+  .grid.compact .chart, .grid.compact .card-tap, .grid.compact .px, .grid.compact .sym { display:none; }
+  .grid.compact .nm { grid-column:1; grid-row:1; font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .grid.compact .px2 { grid-column:2; grid-row:1; text-align:right; font-size:13.5px; color:var(--text); font-variant-numeric:tabular-nums; }
+  .grid.compact .chg { grid-column:3; grid-row:1; text-align:right; font-size:13.5px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .grid.compact .near { grid-column:4; grid-row:1; margin:0; text-align:right; font-size:11px; }
+  @media (max-width:420px) { .grid.compact .tr-h, .grid.compact .card-head { grid-template-columns:minmax(0, 1fr) 64px 60px 78px; column-gap:6px; padding-left:10px; padding-right:10px; } }
   .cmp-btn { min-width:36px; font-size:15px; }
   .card { position:relative; }
   .grid { display:grid; gap:8px; padding:12px 0 40px; grid-template-columns:repeat(var(--cols,3), minmax(0,1fr)); }
@@ -438,7 +449,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v50</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v51</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -809,6 +820,12 @@ function renderGrid() {
     : "Aucune valeur. Touche « + Ajouter ».") + '</div>';
   $("addBtn").hidden = $("editBtn").hidden = !!pf.virtual;
   g.classList.toggle("compact", !!prefs.gridCompact);
+  let host = g;
+  if (prefs.gridCompact && pf.items.length) {
+    host = document.createElement("div"); host.className = "tbl";
+    host.innerHTML = '<div class="tr-h"><span>Valeur</span><span>Cours</span><span>Jour</span><span>Niveau</span></div>';
+    g.appendChild(host);
+  }
   $("cmpBtn").textContent = prefs.gridCompact ? "▦" : "≡"; $("cmpBtn").classList.toggle("on", !!prefs.gridCompact);
   $("cmpBtn").title = prefs.gridCompact ? "Afficher les graphiques" : "Mode compact (sans graphiques)";
   const order = sortedOrder(cfg.portfolios.indexOf(pf));
@@ -845,7 +862,7 @@ function renderGrid() {
         const el = card.querySelector(".near");
         el.className = "near " + (nr.kind === "S" ? "s" : "r");
         const pctTxt = nr.dist < 0.05 ? "< 0,1 %" : nr.dist.toLocaleString(NUM_LOC, { minimumFractionDigits:1, maximumFractionDigits:1 }) + " %";
-        el.textContent = prefs.cols >= 3
+        el.textContent = prefs.cols >= 3 || prefs.gridCompact
           ? (nr.kind === "S" ? "▲ S·" : "▼ R·") + LV[nr.tf].short + " à " + pctTxt
           : (nr.kind === "S" ? "▲ Proche support " + { D:"journalier", W:"hebdomadaire", M:"mensuel", Q:"trimestriel" }[nr.tf]
                              : "▼ Proche résistance " + { D:"journalière", W:"hebdomadaire", M:"mensuelle", Q:"trimestrielle" }[nr.tf]) + " à " + pctTxt;
@@ -858,7 +875,7 @@ function renderGrid() {
       // (sur téléphone, le graphique « avale » les touchers et le clic ne partait que depuis le titre)
       const tap = document.createElement("div"); tap.className = "card-tap"; card.appendChild(tap);
     }
-    g.appendChild(card);
+    host.appendChild(card);
   });
 }
 
