@@ -1,0 +1,5 @@
+# Configuration du relais Cloudflare "cours-live" (déployé depuis ce dossier)
+name = "cours-live"
+main = "cours-live.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
