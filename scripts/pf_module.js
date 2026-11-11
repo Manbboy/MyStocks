@@ -223,6 +223,13 @@ function delTx(own, t, name) {
     } catch (err) { $("confErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide." : err.message; }
   };
 }
+/* « 1.234,50 », « 1234,5 » ou « 1234.5 » -> 1234.5 */
+function numIn(v) {
+  v = String(v).replace(/[\s\u202f\u00a0]/g, "");
+  if (v.includes(",")) v = v.replace(/\./g, "").replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, "");
+  return +v;
+}
 function openTxDlg() {
   const own = pfOwner(), sel = $("txSym"); sel.innerHTML = "";
   [...allSymbols().values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
@@ -240,7 +247,7 @@ async function submitTx(e) {
   const own = pfOwner();
   const t = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:Date.now(),
     type:document.querySelector('input[name="txType"]:checked').value, sym:$("txSym").value, date:$("txDate").value,
-    qty:+String($("txQty").value).replace(",", "."), price:+String($("txPrice").value).replace(",", "."), fees:+String($("txFees").value || 0).replace(",", ".") };
+    qty:numIn($("txQty").value), price:numIn($("txPrice").value), fees:numIn($("txFees").value || "0") };
   if (!t.sym || !t.date || !(t.qty > 0) || !(t.price > 0) || !(t.fees >= 0)) { $("txErr").textContent = "Vérifiez la date, la quantité, le prix et les frais."; return; }
   if (t.type === "V") {
     const held = pfPositions(((pfState.data[own] || {}).tx || []).filter(x => x.date <= t.date)).find(p => p.sym === t.sym);

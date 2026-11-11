@@ -389,7 +389,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v27</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v28</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -577,13 +577,14 @@ const $ = id => document.getElementById(id);
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
 const CUR = { EUR:"€", USD:"$", GBP:"£", GBp:"p", CHF:"CHF" };
+const NUM_LOC = "de-DE";          // 22.500,75 : point pour les milliers, virgule pour les décimales
 function fmt(v, cur) {
   if (v == null || isNaN(v)) return "–";
   const d = Math.abs(v) < 20 ? 3 : 2;
-  const s = v.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:d });
+  const s = v.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:d });
   return cur && CUR[cur] ? s + " " + CUR[cur] : s;
 }
-function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:2 }) + "\u202f%"; }
+function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }) + "\u202f%"; }
 
 async function getSeries(info) {
   if (!seriesCache[info.file]) {
@@ -644,6 +645,11 @@ $("themeBtn").onclick = () => {
 /* Réticule : libre (suit le doigt / la souris) ou aimanté (suit les cours) */
 const crossOpt = () => ({ mode: prefs.cross === "magnet" ? LW.CrosshairMode.Magnet : LW.CrosshairMode.Normal });
 
+/* Prix sur l'axe des graphiques : 8.900,00 */
+function axisPrice(v) {
+  const d = Math.abs(v) >= 1 ? 2 : 4;
+  return v.toLocaleString(NUM_LOC, { minimumFractionDigits:d, maximumFractionDigits:d });
+}
 /* Étiquette de date du réticule : avec l'heure pour les chandeliers 15 min */
 function crossTime(t) {
   if (typeof t === "number") {
@@ -661,7 +667,7 @@ function baseOptions(small) {
     grid:{ vertLines:{ visible:false }, horzLines:{ color:css("--grid") } },
     rightPriceScale:{ borderVisible:false },
     timeScale:{ borderVisible:false, timeVisible:true, secondsVisible:false },   // heures visibles en 15 min (sans effet sur les jours)
-    localization:{ locale:"fr-FR", timeFormatter:crossTime },
+    localization:{ locale:"fr-FR", timeFormatter:crossTime, priceFormatter:axisPrice },
   };
 }
 
@@ -774,7 +780,7 @@ function renderGrid() {
       if (nr) {
         const el = card.querySelector(".near");
         el.className = "near " + (nr.kind === "S" ? "s" : "r");
-        const pctTxt = nr.dist < 0.05 ? "< 0,1 %" : nr.dist.toLocaleString("fr-FR", { minimumFractionDigits:1, maximumFractionDigits:1 }) + " %";
+        const pctTxt = nr.dist < 0.05 ? "< 0,1 %" : nr.dist.toLocaleString(NUM_LOC, { minimumFractionDigits:1, maximumFractionDigits:1 }) + " %";
         el.textContent = prefs.cols >= 3
           ? (nr.kind === "S" ? "▲ S·" : "▼ R·") + LV[nr.tf].short + " à " + pctTxt
           : (nr.kind === "S" ? "▲ Proche support " + { D:"journalier", W:"hebdomadaire", M:"mensuel", Q:"trimestriel" }[nr.tf]
@@ -1802,7 +1808,7 @@ document.addEventListener("pointerdown", e => {
 let tolTimer = null;
 $("tolRange").addEventListener("input", e => {
   prefs.tol = +e.target.value;
-  $("tolVal").textContent = tolPct().toLocaleString("fr-FR", { minimumFractionDigits:1 }) + " %";
+  $("tolVal").textContent = tolPct().toLocaleString(NUM_LOC, { minimumFractionDigits:1 }) + " %";
   clearTimeout(tolTimer);
   tolTimer = setTimeout(() => {
     savePrefs();
@@ -1823,7 +1829,7 @@ function renderToggles() {
   const mmOn = selMaP().length > 0;
   $("mmBtn").classList.toggle("on", mmOn); $("mmBtn").setAttribute("aria-pressed", mmOn ? "true" : "false");
   $("tolRange").value = tolPct();
-  $("tolVal").textContent = tolPct().toLocaleString("fr-FR", { minimumFractionDigits:1 }) + " %";
+  $("tolVal").textContent = tolPct().toLocaleString(NUM_LOC, { minimumFractionDigits:1 }) + " %";
   const unit = { D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[prefs.iv || "D"];
   $("maHint").textContent = "(en " + unit + ")";
   const n = (selectedKinds().length ? selectedLv().length : 0) + selMaP().length;
@@ -2427,7 +2433,7 @@ function drawDetail(keep) {
     if (row && (ovMa.length || rsiChart)) {
       let extra = ovMa.map(s => { const v = param.seriesData.get(s); return v ? '<span style="color:' + MA_COL[s._n] + '">MM' + s._n + " <b>" + fmt(v.value) + "</b></span>" : ""; }).join("");
       const rv = rsiMap.get(row[0]);
-      if (rv != null) extra += '<span style="color:' + RSI_COL + '">RSI <b>' + rv.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + "</b></span>";
+      if (rv != null) extra += '<span style="color:' + RSI_COL + '">RSI <b>' + rv.toLocaleString(NUM_LOC, { maximumFractionDigits:1 }) + "</b></span>";
       if (extra) $("ohlc").innerHTML += "<div>" + extra + "</div>";
     }
   });
@@ -2554,8 +2560,8 @@ function openMaDetail(info, n) {
     ["Écart du cours", cur != null ? fmtPct(Math.round((info.last / cur - 1) * 10000) / 100) : "–"],
     ["Contacts (tests)", String(R.tests)],
     ["Réactions", R.events.length + (R.tests ? " (" + Math.round(R.events.length / R.tests * 100) + " % des tests)" : "")],
-    ["Rebonds ▲", up.length + (up.length ? " · moy. +" + avg(up).toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %" : "")],
-    ["Rejets ▼", dn.length + (dn.length ? " · moy. −" + avg(dn).toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %" : "")],
+    ["Rebonds ▲", up.length + (up.length ? " · moy. +" + avg(up).toLocaleString(NUM_LOC, { maximumFractionDigits:1 }) + " %" : "")],
+    ["Rejets ▼", dn.length + (dn.length ? " · moy. −" + avg(dn).toLocaleString(NUM_LOC, { maximumFractionDigits:1 }) + " %" : "")],
     ["Dernière réaction", last ? fmtDate(last.time) : "–"],
   ];
   $("lvStats").innerHTML = "";
@@ -2570,8 +2576,8 @@ function openMaDetail(info, n) {
     b.textContent = "MM" + n + " à " + fmt(e.price, info.currency) + " · puis " + fmtPct(Math.round(e.move * 100) / 100) + " en " + MA_REACT_BARS + " chandeliers";
     d.append(a, b); $("lvHits").appendChild(d);
   });
-  $("lvFoot").textContent = "Rebond : le cours arrive par le dessus, touche la MM" + n + " (à " + tolPct().toLocaleString("fr-FR") +
-    " % près, réglage « Précision des contacts ») puis remonte d'au moins " + Math.max(2 * tolPct(), 1.5).toLocaleString("fr-FR") +
+  $("lvFoot").textContent = "Rebond : le cours arrive par le dessus, touche la MM" + n + " (à " + tolPct().toLocaleString(NUM_LOC) +
+    " % près, réglage « Précision des contacts ») puis remonte d'au moins " + Math.max(2 * tolPct(), 1.5).toLocaleString(NUM_LOC) +
     " % en " + MA_REACT_BARS + " chandeliers sans la casser. Rejet : l'inverse, par le dessous. Analyse sur les " + (MA_LOOKBACK[iv] || 250) + " derniers chandeliers.";
 
   if (lvChart) { lvChart.remove(); lvChart = null; }
@@ -3170,6 +3176,13 @@ function delTx(own, t, name) {
     } catch (err) { $("confErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide." : err.message; }
   };
 }
+/* « 1.234,50 », « 1234,5 » ou « 1234.5 » -> 1234.5 */
+function numIn(v) {
+  v = String(v).replace(/[\s\u202f\u00a0]/g, "");
+  if (v.includes(",")) v = v.replace(/\./g, "").replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, "");
+  return +v;
+}
 function openTxDlg() {
   const own = pfOwner(), sel = $("txSym"); sel.innerHTML = "";
   [...allSymbols().values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
@@ -3187,7 +3200,7 @@ async function submitTx(e) {
   const own = pfOwner();
   const t = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:Date.now(),
     type:document.querySelector('input[name="txType"]:checked').value, sym:$("txSym").value, date:$("txDate").value,
-    qty:+String($("txQty").value).replace(",", "."), price:+String($("txPrice").value).replace(",", "."), fees:+String($("txFees").value || 0).replace(",", ".") };
+    qty:numIn($("txQty").value), price:numIn($("txPrice").value), fees:numIn($("txFees").value || "0") };
   if (!t.sym || !t.date || !(t.qty > 0) || !(t.price > 0) || !(t.fees >= 0)) { $("txErr").textContent = "Vérifiez la date, la quantité, le prix et les frais."; return; }
   if (t.type === "V") {
     const held = pfPositions(((pfState.data[own] || {}).tx || []).filter(x => x.date <= t.date)).find(p => p.sym === t.sym);
