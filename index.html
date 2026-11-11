@@ -323,7 +323,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v15</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v16</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1984,7 +1984,35 @@ let lineMeta = [];          // [{ line, key, opts }] pour pouvoir mettre une lig
 let hiKey = null;
 let hiMa = null;            // moyenne mobile mise en évidence (20, 50 ou 200)
 let ovVol = null;           // niveau actuellement mis en évidence ("D|S|0")
+let ovLvSegs = [];
+function levelSegment(l, opts) {
+  if (!ovChart || !ovData) return null;
+  const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
+  if (!rows.length) return null;
+  const h0 = (l.hits || [])[0];
+  let t0 = null;
+  if (h0) {
+    const k = keyOf(iv, h0[0]);
+    const r = rows.find(r => keyOf(iv, r[0]) === k) || (typeof rows[0][0] === "string" && iv === "D" ? rows.find(r => r[0] >= h0[0]) : null);
+    t0 = r ? r[0] : null;
+  }
+  if (t0 == null) return null;                        // date d'origine inconnue dans cette unité : ligne sur toute la largeur
+  const t1 = rows[rows.length - 1][0];
+  if (t0 === t1) return null;
+  const s = ovChart.addLineSeries({ color:opts.color, lineWidth:opts.lineWidth, lineStyle:opts.lineStyle, priceLineVisible:false,
+    lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+  s.setData([{ time:t0, value:opts.price }, { time:t1, value:opts.price }]);
+  s.setMarkers([{ time:t0, position:"inBar", shape:"circle", color:opts.color, size:0.6 }]);
+  ovLvSegs.push(s);
+  return s;
+}
+function setLvLine(m, o) {                    // applique un style au niveau (trait partiel + étiquette d'axe)
+  if (!m.seg) { m.line.applyOptions(o); return; }
+  m.line.applyOptions(Object.assign({}, o, { lineVisible:false }));
+  m.seg.applyOptions({ color:o.color, lineWidth:o.lineWidth, lineStyle:o.lineStyle, visible:o.lineVisible !== false });
+}
 function addDetailLevels(series, info) {
+  ovLvSegs.forEach(x => { try { ovChart.removeSeries(x); } catch (e) {} }); ovLvSegs = [];
   const lines = [];
   lineMeta = [];
   selectedLv().forEach(tf => {
@@ -1994,9 +2022,11 @@ function addDetailLevels(series, info) {
       L[k].forEach((l, i) => {
         const opts = { price:l.price, color:colorOf(c, tf), lineWidth:st.width, lineStyle:st.style,
           axisLabelVisible:false, title:"" };
-        const line = series.createPriceLine(opts);
+        // le trait part du premier contact (●) au lieu de traverser tout le graphique ; la ligne de prix ne sert plus qu'à l'étiquette sur l'axe
+        const seg = levelSegment(l, opts);
+        const line = series.createPriceLine(Object.assign({}, opts, seg ? { lineVisible:false } : {}));
         lines.push(line);
-        lineMeta.push({ line, key:tf + "|" + p + "|" + i, opts, level:l, tf, p, i });
+        lineMeta.push({ line, seg, key:tf + "|" + p + "|" + i, opts, level:l, tf, p, i });
       }));
   });
   if (hiKey && !lineMeta.some(m => m.key === hiKey)) hiKey = null;
@@ -2029,10 +2059,10 @@ function applyHighlight() {
   /* supports / résistances : le niveau choisi seul ; si une moyenne est choisie, les niveaux s'estompent */
   lineMeta.forEach(m => {
     if (sel) {
-      if (m === sel) m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, {
+      if (m === sel) setLvLine(m, Object.assign({ lineVisible:true }, m.opts, {
         lineWidth:Math.max(3, m.opts.lineWidth + 1), lineStyle:LW.LineStyle.Solid }));
-      else m.line.applyOptions(Object.assign({}, m.opts, { lineVisible:false }));
-    } else m.line.applyOptions(Object.assign({ lineVisible:true }, m.opts, (maSel || flipSel != null || geoSel != null) ? { color:dim(m.opts.color) } : {}));
+      else setLvLine(m, Object.assign({}, m.opts, { lineVisible:false }));
+    } else setLvLine(m, Object.assign({ lineVisible:true }, m.opts, (maSel || flipSel != null || geoSel != null) ? { color:dim(m.opts.color) } : {}));
   });
   if (!sel) {
     ovMaReact = maSel ? maReactions(ovData, prefs.iv || "D", maSel, tolPct()) : null;
@@ -2242,7 +2272,7 @@ function drawDetail(keep) {
 
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   if (ovChart) { ovChart.remove(); ovChart = null; }
-  ovCandles = null; ovLines = []; ovMa = [];
+  ovCandles = null; ovLines = []; ovMa = []; ovLvSegs = [];
   if (ovItem !== lastDrawnItem) { hiKey = null; hiMa = null; hiFlip = null; hiGeo = null; }
   lastDrawnItem = ovItem;
   const rows = barsFor(ovData, iv);
