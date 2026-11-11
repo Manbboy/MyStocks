@@ -466,7 +466,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v56</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v57</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2327,23 +2327,27 @@ function renderQuick() {
   const box = $("quick"); if (!box) return;
   const items = [];
   if (ovCandles && typeof splitN === "function" && splitN() === 1) {
-    lineMeta.forEach(m => items.push({ price:m.opts.price, c:m.opts.color, t:m.p + (m.i + 1) + "·" + LV[m.tf].short,
+    lineMeta.forEach(m => items.push({ grp:1, price:m.opts.price, c:m.opts.color, t:m.p + (m.i + 1) + "·" + LV[m.tf].short,
       on:hiKey === m.key, act:() => toggleLevelKey(m.tf, m.p, m.i), tip:(m.p === "R" ? "Résistance " : "Support ") + fmt(m.opts.price) }));
     ovMa.forEach(sr => { const d = sr.data ? sr.data() : null, v = d && d.length ? d[d.length - 1].value : null;
-      if (v != null) items.push({ price:v, c:MA_COL[sr._n], t:"MM" + sr._n, on:hiMa === sr._n, act:() => toggleMa(sr._n), tip:"Moyenne mobile " + sr._n + " · " + fmt(v) }); });
+      if (v != null) items.push({ grp:0, price:v, c:MA_COL[sr._n], t:"MM" + sr._n, on:hiMa === sr._n, act:() => toggleMa(sr._n), tip:"Moyenne mobile " + sr._n + " · " + fmt(v) }); });
     /* canaux, obliques et bascules R⇄S : une pastille chacun, au niveau où ils passent aujourd'hui */
     const cnt = {}, lab = t => { cnt[t] = (cnt[t] || 0) + 1; return t; };
     const geoT = it => it.g === "chan" ? "Canal" + (it.dir === "up" ? "↗" : "↘") : "Obl·" + (it.kind === "sup" ? "S" : "R") + (it.m >= 0 ? "↗" : "↘");
     const geoTs = ovGeo.map(geoT), flipTs = ovFlips.map(f => f.type === "RS" ? "R→S" : "S→R");
     geoTs.concat(flipTs).forEach(lab);
-    const seen = {}, num = t => cnt[t] > 1 ? t + (seen[t] = (seen[t] || 0) + 1) : t;
-    ovGeo.forEach((it, n) => items.push({ price:it.g === "chan" ? (it.up1 + it.lo1) / 2 : it.v1,
-      c:it.g === "chan" ? CHAN_COL : TL_COL[it.kind], t:num(geoTs[n]), on:hiGeo === n, act:() => toggleGeo(n),
+    ovGeo.forEach((it, n) => items.push({ grp:it.g === "chan" ? 2 : 3, price:it.g === "chan" ? (it.up1 + it.lo1) / 2 : it.v1,
+      c:it.g === "chan" ? CHAN_COL : TL_COL[it.kind], t:geoTs[n], nb:1, on:hiGeo === n, act:() => toggleGeo(n),
       tip:(it.g === "chan" ? "Canal " : "Oblique ") + fmt(it.g === "chan" ? (it.up1 + it.lo1) / 2 : it.v1) }));
-    ovFlips.forEach((f, n) => items.push({ price:f.price, c:FLIP_COL[f.type], t:num(flipTs[n]), on:hiFlip === n, act:() => toggleFlip(n),
+    ovFlips.forEach((f, n) => items.push({ grp:4, price:f.price, c:FLIP_COL[f.type], t:flipTs[n], nb:1, on:hiFlip === n, act:() => toggleFlip(n),
       tip:(f.type === "RS" ? "Résistance devenue support " : "Support devenu résistance ") + fmt(f.price) }));
   }
-  items.sort((a, b) => b.price - a.price);
+  // même ordre que les boutons (MM, S/R, Canal, Obl., R⇄S), puis du prix le plus haut au plus bas
+  items.sort((a, b) => a.grp - b.grp || b.price - a.price);
+  // numérotation dans l'ordre affiché quand plusieurs éléments portent le même nom
+  const cntAll = {}, seenAll = {};
+  items.forEach(x => { if (x.nb) cntAll[x.t] = (cntAll[x.t] || 0) + 1; });
+  items.forEach(x => { if (x.nb && cntAll[x.t] > 1) x.t += (seenAll[x.t] = (seenAll[x.t] || 0) + 1); });
   const sig = items.map(x => x.t + (x.on ? "*" : "")).join("|");
   if (box._sig !== sig) {
     box._sig = sig; box.innerHTML = "";
