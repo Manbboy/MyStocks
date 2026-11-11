@@ -149,6 +149,7 @@ async function renderPf() {
     return;
   }
 
+  if (pfImportPending) { const raw = pfImportPending; pfImportPending = null; setTimeout(() => askImport(raw), 50); }
   const lockB = document.createElement("button"); lockB.className = "btn"; lockB.textContent = "🔒";
   lockB.title = "Verrouiller sur cet appareil (oublie le mot de passe)";
   lockB.onclick = () => { setPfPass(""); pfState.data = null; renderPf(); };
@@ -242,6 +243,50 @@ function pfCat(p) {
   if (EU_SUFFIX.test(p.sym)) return "eu";
   if (!/\./.test(p.sym) && !/^\^/.test(p.sym)) return "us";
   return "other";
+}
+/* ----- Import par lien : #pfimport=<base64url {owner, tx:[{type,sym,date,qty,price,fees}]}> ----- */
+let pfImportPending = null;
+window.addEventListener("hashchange", () => {        // lien ouvert alors que la page est déjà affichée
+  if (/^#pfimport=/.test(location.hash) && cfg) { pfImportPending = location.hash.slice(10); prefs.view = "pf"; render(); }
+});
+function askImport(raw) {
+  history.replaceState(null, "", location.pathname + location.search);       // on retire les données de l'adresse
+  let pack;
+  try { pack = JSON.parse(decodeURIComponent(escape(atob(raw.replace(/-/g, "+").replace(/_/g, "/"))))); } catch (e) { toast("Lien d'import illisible.", 2500); return; }
+  const own = pack.owner === "D" ? "D" : "M", cur = ((pfState.data[own] || {}).tx || []);
+  const same = (a, b) => a.sym === b.sym && a.date === b.date && a.type === b.type && Math.abs(a.qty - b.qty) < 1e-9 && Math.abs(a.price - b.price) < 1e-9 && Math.abs((+a.fees || 0) - (+b.fees || 0)) < 1e-9;
+  const syms = allSymbols();
+  const add = [], skip = [], unknown = [];
+  (pack.tx || []).forEach(t => {
+    t = { type:t.type === "V" ? "V" : "A", sym:t.sym, date:t.date, qty:+t.qty, price:+t.price, fees:+t.fees || 0 };
+    if (!syms.has(t.sym)) unknown.push(t); else if (cur.some(x => same(x, t)) || add.some(x => same(x, t))) skip.push(t); else add.push(t);
+  });
+  const line = t => (t.type === "A" ? "Achat" : "Vente") + " · " + new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" }) + " · " +
+    (syms.get(t.sym) || { name:t.sym }).name + " · " + fmt(t.qty, null).replace(/,00$/, "") + " × " + fmt(t.price, null) + (t.fees ? " + frais " + fmt(t.fees, null) : "");
+  const bad = checkTxList(cur.concat(add), "") || [...new Set(add.map(t => t.sym))].map(sy => checkTxList(cur.concat(add), sy)).find(x => x) || "";
+  $("confText").innerHTML = "";
+  $("confText").insertAdjacentHTML("beforeend", "<b>Importer dans le portefeuille " + own + " :</b>");
+  const ul = document.createElement("ul"); ul.className = "imp-list";
+  add.forEach(t => { const li = document.createElement("li"); li.textContent = line(t); ul.appendChild(li); });
+  skip.forEach(t => { const li = document.createElement("li"); li.className = "skip"; li.textContent = line(t) + " — déjà présent, ignoré"; ul.appendChild(li); });
+  unknown.forEach(t => { const li = document.createElement("li"); li.className = "skip"; li.textContent = t.sym + " — valeur absente des onglets, ignorée"; ul.appendChild(li); });
+  $("confText").appendChild(ul);
+  $("confErr").textContent = bad;
+  $("confYes").textContent = add.length ? "Importer " + add.length + " opération" + (add.length > 1 ? "s" : "") : "Fermer";
+  $("confYes").disabled = !!bad && add.length > 0;
+  $("confDlg").classList.add("show");
+  const close = () => { $("confDlg").classList.remove("show"); $("confYes").textContent = "Retirer"; $("confYes").disabled = false; };
+  $("confNo").onclick = close;
+  $("confYes").onclick = async () => {
+    if (!add.length) { close(); return; }
+    try {
+      const stamp = Date.now();
+      await pfSave(d => { d[own] = d[own] || { tx:[] };
+        add.forEach((t, k) => { if (!d[own].tx.some(x => same(x, t))) d[own].tx.push(Object.assign({ id:(stamp + k).toString(36) + Math.random().toString(36).slice(2, 6), t:stamp + k }, t)); }); },
+        "Portefeuille " + own + " : import de " + add.length + " opération(s)");
+      close(); prefs.pfOwner = own; savePrefs(); renderPf(); toast(add.length + " opération" + (add.length > 1 ? "s importées" : " importée") + ".");
+    } catch (err) { $("confErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide." : err.message; }
+  };
 }
 function delTx(own, t, name) {
   $("confText").textContent = "Supprimer " + (t.type === "A" ? "l'achat" : "la vente") + " de " + name + " du " + new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" }) + " (portefeuille " + own + ") ?";
