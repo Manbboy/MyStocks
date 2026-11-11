@@ -1,6 +1,46 @@
 {
   "portfolios": [
     {
+      "name": "Market",
+      "items": [
+        {
+          "yahoo": "^FCHI",
+          "tv": "EURONEXT:PX1",
+          "name": "CAC 40"
+        },
+        {
+          "yahoo": "^GDAXI",
+          "tv": "XETR:DAX",
+          "name": "DAX"
+        },
+        {
+          "yahoo": "^BFX",
+          "tv": "EURONEXT:BEL20",
+          "name": "BEL 20"
+        },
+        {
+          "yahoo": "^GSPC",
+          "tv": "SP:SPX",
+          "name": "S&P 500"
+        },
+        {
+          "yahoo": "^DJI",
+          "tv": "DJ:DJI",
+          "name": "Dow Jones"
+        },
+        {
+          "yahoo": "^IXIC",
+          "tv": "NASDAQ:IXIC",
+          "name": "Nasdaq"
+        },
+        {
+          "yahoo": "BTC-USD",
+          "tv": "BINANCE:BTCUSDT",
+          "name": "Bitcoin (BTC/USDT)"
+        }
+      ]
+    },
+    {
       "name": "Action FR",
       "items": [
         {
