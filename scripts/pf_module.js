@@ -373,6 +373,6 @@ function drawTxMarks() {
 // le portefeuille est lu au démarrage (s'il est déverrouillé) pour afficher les repères dans les autres onglets
 setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
   if ($("ov").classList.contains("show")) drawTxMarks();
-  const a = cfg.portfolios[prefs.active]; if (a && a.virtual && prefs.view !== "pf") render();      // onglet Hold : maintenant qu'on connaît les positions
+  const a = cfg.portfolios[prefs.active]; if (a && a.name === "Hold" && prefs.view !== "pf") render();      // onglet Hold : maintenant qu'on connaît les positions
 }); }, 1500);
 

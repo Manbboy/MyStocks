@@ -424,6 +424,101 @@
           "name": "XRP"
         }
       ]
+    },
+    {
+      "name": "Hold",
+      "items": [
+        {
+          "yahoo": "AVGO",
+          "tv": "NASDAQ:AVGO",
+          "name": "Broadcom"
+        },
+        {
+          "yahoo": "DSY.PA",
+          "tv": "EURONEXT:DSY",
+          "name": "Dassault Systèmes"
+        },
+        {
+          "yahoo": "EL.PA",
+          "tv": "EURONEXT:EL",
+          "name": "EssilorLuxottica"
+        },
+        {
+          "yahoo": "FDJU.PA",
+          "tv": "EURONEXT:FDJU",
+          "name": "FDJ United"
+        },
+        {
+          "yahoo": "FISV",
+          "tv": "NASDAQ:FISV",
+          "name": "Fiserv"
+        },
+        {
+          "yahoo": "MC.PA",
+          "tv": "EURONEXT:MC",
+          "name": "LVMH"
+        },
+        {
+          "yahoo": "NFLX",
+          "tv": "NASDAQ:NFLX",
+          "name": "Netflix"
+        },
+        {
+          "yahoo": "NKE",
+          "tv": "NYSE:NKE",
+          "name": "Nike"
+        },
+        {
+          "yahoo": "PYPL",
+          "tv": "NASDAQ:PYPL",
+          "name": "PayPal"
+        },
+        {
+          "yahoo": "RCO.PA",
+          "tv": "EURONEXT:RCO",
+          "name": "Rémy Cointreau"
+        },
+        {
+          "yahoo": "RNO.PA",
+          "tv": "EURONEXT:RNO",
+          "name": "Renault"
+        },
+        {
+          "yahoo": "SAN.PA",
+          "tv": "EURONEXT:SAN",
+          "name": "Sanofi"
+        },
+        {
+          "yahoo": "HO.PA",
+          "tv": "EURONEXT:HO",
+          "name": "Thales"
+        },
+        {
+          "yahoo": "VLTSA.PA",
+          "tv": "EURONEXT:VLTSA",
+          "name": "Voltalia"
+        },
+        {
+          "yahoo": "ZAL.DE",
+          "tv": "XETR:ZAL",
+          "name": "Zalando"
+        },
+        {
+          "yahoo": "IWDA.AS",
+          "tv": "EURONEXT:IWDA",
+          "name": "iShares MSCI World"
+        },
+        {
+          "yahoo": "BTC-USD",
+          "tv": "BINANCE:BTCUSDT",
+          "name": "Bitcoin"
+        },
+        {
+          "yahoo": "XRP-USD",
+          "tv": "COINBASE:XRPUSD",
+          "name": "XRP"
+        }
+      ]
     }
   ]
 }

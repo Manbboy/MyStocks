@@ -411,7 +411,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v40</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v41</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -779,7 +779,7 @@ function renderGrid() {
   if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">' + (pf.virtual
     ? (typeof pfState !== "undefined" && pfState.data ? "Aucune position ouverte dans les portefeuilles M et D." : "Déverrouillez l'onglet Portefeuille (mot de passe) pour voir ici les valeurs que vous détenez.")
     : "Aucune valeur. Touche « + Ajouter ».") + '</div>';
-  $("addBtn").hidden = $("editBtn").hidden = !!pf.virtual;     // Hold se remplit tout seul depuis le portefeuille
+  $("addBtn").hidden = $("editBtn").hidden = !!pf.virtual;
   const order = sortedOrder(cfg.portfolios.indexOf(pf));
   navOrder = { pi:cfg.portfolios.indexOf(pf), list:order };
   order.map(i => pf.items[i]).forEach(item => {
@@ -831,18 +831,21 @@ function renderGrid() {
   });
 }
 
-/* Onglet « Hold » : toutes les valeurs encore détenues (M ou D), construit à partir du portefeuille chiffré, jamais enregistré dans portfolios.json */
+/* Onglet « Hold » : liste enregistrée dans portfolios.json, complétée à l'affichage par les valeurs encore détenues (M ou D)
+   d'après le portefeuille chiffré (ces ajouts automatiques ne sont jamais enregistrés) */
 function ensureHold() {
   if (!cfg) return;
   cfg.portfolios = cfg.portfolios.filter(p => !p.virtual);
-  const items = [], seen = new Set(), by = new Map();
+  cfg.portfolios.forEach(p => { p.items = p.items.filter(it => !it.auto); });
+  let hold = cfg.portfolios.find(p => p.name === "Hold");
+  if (!hold) { hold = { name:"Hold", items:[], virtual:true }; cfg.portfolios.push(hold); }
+  if (typeof pfState === "undefined" || !pfState.data) return;
+  const by = new Map();
   cfg.portfolios.forEach(p => p.items.forEach(it => { if (!by.has(it.yahoo)) by.set(it.yahoo, it); }));
-  if (typeof pfState !== "undefined" && pfState.data) ["M", "D"].forEach(o => {
-    pfPositions((pfState.data[o] || {}).tx || []).forEach(ps => {
-      if (ps.qty > 0 && !seen.has(ps.sym) && by.has(ps.sym)) { seen.add(ps.sym); items.push(by.get(ps.sym)); }
-    });
-  });
-  cfg.portfolios.push({ name:"Hold", items, virtual:true });
+  const have = new Set(hold.items.map(i => i.yahoo));
+  ["M", "D"].forEach(o => pfPositions((pfState.data[o] || {}).tx || []).forEach(ps => {
+    if (ps.qty > 0 && !have.has(ps.sym) && by.has(ps.sym)) { have.add(ps.sym); hold.items.push(Object.assign({}, by.get(ps.sym), { auto:true })); }
+  }));
 }
 function render() {
   ensureHold();
@@ -3487,7 +3490,7 @@ function drawTxMarks() {
 // le portefeuille est lu au démarrage (s'il est déverrouillé) pour afficher les repères dans les autres onglets
 setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
   if ($("ov").classList.contains("show")) drawTxMarks();
-  const a = cfg.portfolios[prefs.active]; if (a && a.virtual && prefs.view !== "pf") render();      // onglet Hold : maintenant qu'on connaît les positions
+  const a = cfg.portfolios[prefs.active]; if (a && a.name === "Hold" && prefs.view !== "pf") render();      // onglet Hold : maintenant qu'on connaît les positions
 }); }, 1500);
 
 </script>
