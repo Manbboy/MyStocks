@@ -317,6 +317,7 @@
   .quick { display:flex; gap:5px; align-items:center; overflow-x:auto; scrollbar-width:none; padding:5px 2px 1px; min-height:0; }
   .quick::-webkit-scrollbar { display:none; }
   .quick:empty { display:none; }
+  .rt-up { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#fff; background:#4CAF50; border-radius:4px; padding:1px 4px; margin-right:5px; vertical-align:1px; line-height:1.3; }
   .q-chip { flex:0 0 auto; border:1px solid var(--c); color:var(--c); background:transparent; border-radius:999px; padding:3px 9px; font-size:12px; font-weight:600; cursor:pointer; line-height:1.3; }
   .q-chip.on { background:var(--c); color:#fff; }
   .q-cur { flex:0 0 auto; font-size:11px; color:var(--muted); padding:0 3px; white-space:nowrap; }
@@ -466,7 +467,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v57</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v58</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -874,6 +875,7 @@ function renderGrid() {
       card.querySelector(".px2").textContent = fmt(info.last, null);
       card.querySelector(".chg").textContent = fmtPct(pct);
       if (info.live) card.querySelector(".nm").insertAdjacentHTML("afterbegin", liveDot(info));
+      setRtBadge(card, info);
       const nr = nearestLevel(info);
       if (nr) {
         const el = card.querySelector(".near");
@@ -2940,6 +2942,26 @@ function updLiveBtn() {
   b.innerHTML = liveOn() ? '<span class="live-dot on"></span>Direct ' + liveSec() + 's <span class="btn-cd" id="liveCdBtn"></span>▾' : '<span class="live-dot off"></span>Clôtures ▾';
   b.classList.toggle("on", liveOn());
 }
+/* RSI Trends journalier d'aujourd'hui et d'hier (RSI 14 calculé par le script quotidien, recalculé avec le cours en séance) */
+function rtDaily(info, sym) {
+  const t = info && info.rt; if (!t || !t.a || t.n !== TREND.len) return null;
+  const n = t.n, rsiOf = (g, l, c, px) => { const d = px - c; g = (g * (n - 1) + Math.max(d, 0)) / n; l = (l * (n - 1) + Math.max(-d, 0)) / n; return l === 0 ? 100 : 100 - 100 / (1 + g / l); };
+  const base = summary.symbols[sym] || info;
+  let today = t.r[1], yest = t.r[0];
+  if (info.live) {
+    if (info.live.day > base.date) { today = rsiOf(...t.a[1], info.last); yest = t.r[1]; }   // nouvelle séance pas encore dans l'historique
+    else { const a = t.a[0]; today = rsiOf(a[0], a[1], a[2], info.last); }                                 // séance du jour recalculée au cours actuel
+  }
+  const st = v => v >= TREND.ob ? 1 : v <= TREND.os ? -1 : 0;
+  return { today:st(today), yest:st(yest), rsi:today };
+}
+function setRtBadge(card, info) {
+  const nm = card.querySelector(".nm"); if (!nm) return;
+  const old = nm.querySelector(".rt-up"); if (old) old.remove();
+  const r = rtDaily(info, card.dataset.sym);
+  if (r && r.today === 1 && r.yest !== 1)
+    nm.insertAdjacentHTML("afterbegin", '<span class="rt-up" title="RSI Trends journalier passé au vert aujourd\'hui (RSI ' + r.rsi.toFixed(1).replace(".", ",") + ')">RT</span>');
+}
 function withLive(sym, info) {
   const q = liveQuotes[sym];
   if (!liveOn() || !q || !info || info.pending || info.error) return info;
@@ -2986,6 +3008,7 @@ function refreshLiveCards() {
   document.querySelectorAll("#grid .card[data-sym]").forEach(card => {
     const sym = card.dataset.sym;
     const info = withLive(sym, summary.symbols[sym]); if (!info || !info.live) return;
+    setRtBadge(card, info);
     const pct = info.changePct;
     const pxEl = card.querySelector(".px"), before = card._lastPx;
     card._lastPx = info.last;

@@ -131,6 +131,27 @@ def support_resistance(df: pd.DataFrame, lookback: int, window: int, pct: float)
     return supports, resistances
 
 
+def rsi_trend_tail(closes, n: int = 14):
+    """RSI de Wilder (même calcul que la page) : RSI des 2 dernières séances et moyennes
+    gains/pertes + clôture des 2 dernières séances, pour recalculer le RSI du jour avec le cours en séance."""
+    if len(closes) <= n + 2:
+        return None
+    g = l = 0.0
+    for i in range(1, n + 1):
+        d = closes[i] - closes[i - 1]
+        g += max(d, 0); l += max(-d, 0)
+    g /= n; l /= n
+    hist = [(g, l)]
+    for i in range(n + 1, len(closes)):
+        d = closes[i] - closes[i - 1]
+        g = (g * (n - 1) + max(d, 0)) / n
+        l = (l * (n - 1) + max(-d, 0)) / n
+        hist.append((g, l))
+    r = lambda gl: 100.0 if gl[1] == 0 else 100 - 100 / (1 + gl[0] / gl[1])
+    return {"n": n, "r": [round(r(hist[-2]), 2), round(r(hist[-1]), 2)],
+            "a": [[hist[-2][0], hist[-2][1], closes[-2]], [hist[-1][0], hist[-1][1], closes[-1]]]}
+
+
 def all_levels(df: pd.DataFrame):
     out = {}
     for tf, p in TIMEFRAMES.items():
@@ -244,6 +265,7 @@ def main():
                 "supports": sup,
                 "resistances": res,
                 "levels": levels,
+                "rt": rsi_trend_tail([r[4] for r in rows]),
             }
             print(f"OK   {sym:10s} {last:>10.2f}  " + "  ".join(f"{tf}:{len(v['supports'])}S/{len(v['resistances'])}R" for tf, v in levels.items()))
         except Exception as e:
