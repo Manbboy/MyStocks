@@ -234,11 +234,11 @@ async function renderPf() {
   });
   fill(openL, openB); fill(closedL, closedB);
   const nOpen = openB.length, nClosed = closedB.length;
-  if (nOpen) { box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions ouvertes <span>' + nOpen + '</span></h3>'); box.appendChild(openL); }
+  if (nOpen) { box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions ouvertes <span>(#' + nOpen + ')</span></h3>'); box.appendChild(openL); }
   if (nClosed) {
     const rz = pos.filter(p => p.qty === 0).reduce((o, p) => { const r = o[p.cur] = o[p.cur] || { v:0, c:0 }; r.v += p.realized; r.c += p.soldCost; return o; }, {});
     const txt = Object.entries(rz).map(([cur, r]) => '<b class="' + (r.v >= 0 ? "up" : "down") + '">' + money(r.v, cur) + (r.c > 0 ? " · " + fmtPct(r.v / r.c * 100) : "") + "</b>").join(" · ");
-    box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions soldées <span>' + nClosed + '</span><em>' + txt + '</em></h3>'); box.appendChild(closedL);
+    box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions soldées <span>(#' + nClosed + ')</span><em>' + txt + '</em></h3>'); box.appendChild(closedL);
   }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
 }
