@@ -392,6 +392,11 @@
           "yahoo": "VETO.PA",
           "tv": "EURONEXT:VETO",
           "name": "Vetoquinol"
+        },
+        {
+          "yahoo": "ALCPB",
+          "tv": "ALCPB",
+          "name": "Capital B"
         }
       ]
     },
