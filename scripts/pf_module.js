@@ -228,7 +228,7 @@ async function renderPf() {
   });
   const fill = (L, B) => PF_CATS.forEach(([k, lab]) => {
     const g = B.filter(c => c._cat === k); if (!g.length) return;
-    L.insertAdjacentHTML("beforeend", '<div class="pf-sub">' + lab + ' <span>' + g.length + '</span></div>');
+    L.insertAdjacentHTML("beforeend", '<div class="pf-sub">' + lab + ' <span>(#' + g.length + ')</span></div>');
     g.forEach(c => L.appendChild(c));
     if (prefs.pfCompact && g.length % 2) L.insertAdjacentHTML("beforeend", '<div class="pf-fill"></div>');   // case vide pour finir la ligne en 2 colonnes
   });
