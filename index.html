@@ -318,9 +318,11 @@
   .ov-foot a { color:var(--accent); }
 
 .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; vertical-align:middle; }
-.live-dot.on { background:#16a34a; box-shadow:0 0 0 2px #16a34a33; animation:livepulse 2s infinite; }
+.live-dot { position:relative; }
+.live-dot.on { background:#16a34a; box-shadow:0 0 0 2px #16a34a33; }
+.live-dot.on::after { content:""; position:absolute; inset:-3px; border-radius:50%; background:#16a34a33; animation:livepulse 2s ease-in-out infinite; will-change:opacity; }
 .live-dot.off { background:#9ca3af; }
-@keyframes livepulse { 50% { box-shadow:0 0 0 4px #16a34a22; } }
+@keyframes livepulse { 0%, 100% { opacity:0; } 50% { opacity:1; } }
 .live-btn, .day-btn { white-space:nowrap; }
 @keyframes flashUp { 0% { background:#16a34a55; } 100% { background:transparent; } }
 @keyframes flashDown { 0% { background:#dc262655; } 100% { background:transparent; } }
@@ -339,7 +341,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v20</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v21</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2656,8 +2658,9 @@ function refreshLiveCards() {
     pxEl.textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
     card.querySelector(".px2").textContent = fmt(info.last, null);
     const ch = card.querySelector(".chg"); ch.textContent = fmtPct(pct); ch.className = "chg " + (pct >= 0 ? "up" : "down");
-    const nm = card.querySelector(".nm"); const old = nm.querySelector(".live-dot"); if (old) old.remove();
-    nm.insertAdjacentHTML("afterbegin", liveDot(info));
+    const nm = card.querySelector(".nm"), old = nm.querySelector(".live-dot");
+    const tmp = document.createElement("span"); tmp.innerHTML = liveDot(info); const dot = tmp.firstChild;
+    if (old && old.className === dot.className) old.title = dot.title; else { if (old) old.remove(); nm.insertAdjacentElement("afterbegin", dot); }
   });
 }
 function startLive() {
