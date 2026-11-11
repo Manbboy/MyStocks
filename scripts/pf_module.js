@@ -189,7 +189,7 @@ async function renderPf() {
     const open = p.qty > 0;
     c.innerHTML =
       '<div class="r1"><b class="nm"></b><span class="' + (open ? (p.latent >= 0 ? "up" : "down") : (p.realized >= 0 ? "up" : "down")) + '">' +
-        (open ? money(p.latent, p.cur) + (p.latentPct != null ? " · " + fmtPct(p.latentPct) : "") : "Soldée · " + money(p.realized, p.cur) + (p.realizedPct != null ? " · " + fmtPct(p.realizedPct) : "")) + '</span></div>' +
+        (open ? money(p.latent, p.cur) + (p.latentPct != null ? " · " + fmtPct(p.latentPct) : "") : money(p.realized, p.cur) + (p.realizedPct != null ? " · " + fmtPct(p.realizedPct) : "")) + '</span></div>' +
       '<div class="r2">' + (open
         ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " → cours " + fmt(p.price, p.cur) + (p.dayPct != null ? ' <span class="' + (p.dayPct >= 0 ? "up" : "down") + '">(' + fmtPct(p.dayPct) + " auj.)</span>" : "")
         : "Aucune action détenue") +
