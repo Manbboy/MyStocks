@@ -66,6 +66,37 @@
   .btn.on { background:var(--text); color:var(--bg); }
   .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:var(--text); color:var(--bg); padding:9px 14px; border-radius:10px; font-size:13px; z-index:60; display:none; max-width:92vw; }
   .toast.show { display:block; }
+  body.pf-mode .bar, body.pf-mode #grid { display:none !important; }
+  .pf-view { padding:10px 0 20px; }
+  .pf-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .pf-head .seg button { font-size:15px; font-weight:700; padding:6px 16px; }
+  .pf-lock { max-width:420px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
+  .pf-lock h3 { margin:0 0 8px; font-size:17px; }
+  .pf-lock label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted); margin:8px 0; }
+  .pf-lock input { font-size:16px; padding:9px 10px; border:1px solid var(--border); border-radius:9px; background:var(--bg); color:var(--text); }
+  .pf-lock .row { display:flex; justify-content:flex-end; margin-top:10px; }
+  .pf-lock .err { color:var(--down); font-size:12px; }
+  .hint { font-size:12px; color:var(--muted); line-height:1.45; }
+  .pf-sum { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; margin-bottom:12px; }
+  .pf-sum > div { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
+  .pf-sum span { font-size:12px; color:var(--muted); }
+  .pf-sum b { font-size:16px; }
+  .pf-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:8px; }
+  .pf-pos { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; cursor:pointer; }
+  .pf-pos.closed { opacity:.7; }
+  .pf-pos .r1 { display:flex; justify-content:space-between; gap:8px; font-size:15px; }
+  .pf-pos .r1 span { font-weight:700; white-space:nowrap; }
+  .pf-pos .r2 { font-size:12px; color:var(--muted); margin-top:3px; }
+  .pf-tx { margin-top:8px; border-top:1px solid var(--border); padding-top:6px; display:flex; flex-direction:column; gap:3px; }
+  .pf-tx > div { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .pf-tx .ty { font-weight:700; min-width:44px; } .pf-tx .ty.a { color:var(--up); } .pf-tx .ty.v { color:var(--down); }
+  .pf-tx .d { color:var(--muted); min-width:74px; } .pf-tx .q { flex:1; }
+  .pf-tx .x { border:0; background:none; color:var(--muted); cursor:pointer; font-size:12px; padding:2px 6px; }
+  .pf-note { margin-top:12px; }
+  .tx-type { display:flex; gap:16px; margin:4px 0 6px; }
+  .tx-type label { flex-direction:row !important; align-items:center; gap:6px !important; font-size:15px !important; color:var(--text) !important; margin:0 !important; }
+  .tx-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .tx-row input { width:100%; min-width:0; box-sizing:border-box; }
   .dlg-bg { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-start; justify-content:center; padding:24px 12px; overflow:auto; }
   .dlg-bg.show { display:flex; }
   .dlg { background:var(--card); border-radius:14px; padding:16px; width:100%; max-width:420px; }
@@ -346,7 +377,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v25</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v26</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -369,6 +400,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
+  <section class="pf-view" id="pfView" hidden></section>
   <div class="grid" id="grid"></div>
   <p class="credit">Graphiques : <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a> · Données : Yahoo Finance</p>
 </div>
@@ -479,6 +511,22 @@
     </div>
     <p class="err" id="fErr"></p>
     <div class="row"><button type="button" class="btn" id="fCancel">Annuler</button><button type="submit" class="btn primary" id="fOk">Ajouter</button></div>
+  </form>
+</div>
+<div class="dlg-bg" id="txDlg">
+  <form class="dlg" id="txForm" autocomplete="off">
+    <h3>Nouvelle opération · portefeuille <span id="txOwner"></span></h3>
+    <div class="tx-type"><label><input type="radio" name="txType" value="A" checked> Achat</label><label><input type="radio" name="txType" value="V"> Vente</label></div>
+    <label>Valeur<select id="txSym"></select></label>
+    <label>Date<input type="date" id="txDate" required></label>
+    <div class="tx-row">
+      <label>Quantité<input type="text" inputmode="decimal" id="txQty" required placeholder="10"></label>
+      <label>Prix unitaire<input type="text" inputmode="decimal" id="txPrice" required placeholder="40,25"></label>
+      <label>Frais<input type="text" inputmode="decimal" id="txFees" placeholder="0"></label>
+    </div>
+    <p class="hint">Prix unitaire hors frais, dans la devise de la valeur. Le PRU est calculé automatiquement (frais d'achat inclus).</p>
+    <p class="err" id="txErr"></p>
+    <div class="row"><button type="button" class="btn" id="txCancel">Annuler</button><button type="submit" class="btn primary" id="txOk">Enregistrer</button></div>
   </form>
 </div>
 <div class="dlg-bg" id="confDlg">
@@ -653,11 +701,16 @@ function renderTabs() {
   const t = $("tabs"); t.innerHTML = "";
   cfg.portfolios.forEach((p, i) => {
     const b = document.createElement("button");
-    b.className = "tab" + (i === prefs.active ? " active" : "");
+    b.className = "tab" + (i === prefs.active && prefs.view !== "pf" ? " active" : "");
     b.textContent = p.name;
-    b.onclick = () => { prefs.active = i; savePrefs(); render(); };
+    b.onclick = () => { prefs.active = i; prefs.view = ""; savePrefs(); render(); };
     t.appendChild(b);
   });
+  const pb = document.createElement("button");                 // onglet « Portefeuille » (achats / ventes de M et D)
+  pb.className = "tab pf-tab" + (prefs.view === "pf" ? " active" : "");
+  pb.textContent = "Portefeuille";
+  pb.onclick = () => { prefs.view = "pf"; savePrefs(); render(); };
+  t.appendChild(pb);
 }
 function renderSeg(id, opts, cur, pick) {
   const s = $(id); s.innerHTML = "";
@@ -726,6 +779,8 @@ function renderGrid() {
 
 function render() {
   renderTabs();
+  if (prefs.view === "pf" && typeof renderPf === "function") { renderPf(); return; }
+  document.body.classList.remove("pf-mode"); if ($("pfView")) $("pfView").hidden = true;
   renderSeg("colsSeg", COLS.map(c => [c, String(c)]), prefs.cols, v => { prefs.cols = v; savePrefs(); render(); });
   renderSeg("rangeSeg", RANGES, prefs.range, v => { prefs.range = v; savePrefs(); render(); if (typeof updDayBtn === "function") updDayBtn(); });
   renderGrid();
@@ -2374,6 +2429,7 @@ function drawDetail(keep) {
     const to = idx + (idx === rows.length - 1 ? keep.gap : 0);
     ovChart.timeScale().setVisibleLogicalRange({ from:to - keep.width, to });
   } else defaultView(rows, iv);
+  if (typeof drawTxMarks === "function") drawTxMarks();
   drawRsi();
   applyQuad();
 }
@@ -2615,7 +2671,7 @@ async function pollLive(force) {
   if (!force && Date.now() - liveLast < liveSec() * 1000 - 2000) return;
   liveLast = Date.now();
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
-  const syms = new Set(pf.items.map(i => i.yahoo));
+  const syms = new Set(prefs.view === "pf" && pfState.data ? ["M", "D"].flatMap(o => ((pfState.data[o] || {}).tx || []).map(t => t.sym)) : pf.items.map(i => i.yahoo));
   if ($("ov").classList.contains("show") && cfg.portfolios[ovPos.pi]) { const it = cfg.portfolios[ovPos.pi].items[ovPos.idx]; if (it) syms.add(it.yahoo); }
   const list = [...syms];
   try {
@@ -2631,6 +2687,7 @@ async function pollLive(force) {
     }
     setLiveStatus(true);
     refreshLiveCards();
+    if (prefs.view === "pf" && pfState.data && !$("txDlg").classList.contains("show") && !$("confDlg").classList.contains("show")) renderPf();
     if (prefs.range === "1J" && Date.now() - (window._dayRef || 0) > 58000) { window._dayRef = Date.now(); refreshDayCards(); }
     refreshDetailLive();
   } catch (e) { setLiveStatus(false); }
@@ -2875,6 +2932,297 @@ function openPick() {
 }
 $("ovTitle").addEventListener("click", e => { e.stopPropagation(); $("ovPick").hidden ? openPick() : closePick(); });
 document.addEventListener("click", e => { if (!e.target.closest("#ovPick")) closePick(); });
+
+
+/* ===== Onglet « Portefeuille » : achats / ventes de M et D, chiffrés dans positions.enc.json sur GitHub ===== */
+const PF_FILE = "positions.enc.json", PF_PASS = "mes-actions-pf-pass";
+const PF_OWNERS = { M:{ col:"#0ea5e9" }, D:{ col:"#db2777" } };
+let pfState = { loaded:false, exists:null, data:null, sha:null, err:"" };
+
+/* --- chiffrement AES-GCM, clé dérivée du mot de passe (PBKDF2, 250 000 tours) --- */
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64u = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function pfKey(pass, salt) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name:"PBKDF2", salt, iterations:250000, hash:"SHA-256" }, base, { name:"AES-GCM", length:256 }, false, ["encrypt", "decrypt"]);
+}
+async function pfEncrypt(obj, pass) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name:"AES-GCM", iv }, await pfKey(pass, salt), new TextEncoder().encode(JSON.stringify(obj)));
+  return { v:1, alg:"AES-GCM/PBKDF2-SHA256-250k", salt:b64u(salt), iv:b64u(iv), data:b64u(ct) };
+}
+async function pfDecrypt(env, pass) {
+  const pt = await crypto.subtle.decrypt({ name:"AES-GCM", iv:unb64u(env.iv) }, await pfKey(pass, unb64u(env.salt)), unb64u(env.data));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+const pfPass = () => { try { return localStorage.getItem(PF_PASS) || ""; } catch (e) { return ""; } };
+const setPfPass = v => { try { v ? localStorage.setItem(PF_PASS, v) : localStorage.removeItem(PF_PASS); } catch (e) {} };
+
+/* --- lecture / écriture sur GitHub --- */
+async function pfFetchEnv() {
+  const tok = getTok();
+  if (tok) {
+    const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + PF_FILE + "?ref=main&t=" + Date.now(),
+      { headers:{ Authorization:"Bearer " + tok, Accept:"application/vnd.github+json" }, cache:"no-store" });
+    if (r.status === 404) return { env:null, sha:null };
+    if (r.ok) { const j = await r.json(); return { env:JSON.parse(b64dec(j.content)), sha:j.sha }; }
+  }
+  const r = await fetch(PF_FILE + "?t=" + Date.now(), { cache:"no-store" });      // sans jeton : copie publiée du site
+  if (r.status === 404) return { env:null, sha:null };
+  if (!r.ok) throw new Error("lecture impossible (" + r.status + ")");
+  return { env:await r.json(), sha:null };
+}
+async function pfLoad() {
+  pfState.err = "";
+  try {
+    const { env, sha } = await pfFetchEnv();
+    pfState.exists = !!env; pfState.sha = sha; pfState.env = env;
+    if (env && pfPass()) {
+      try { pfState.data = await pfDecrypt(env, pfPass()); }
+      catch (e) { pfState.data = null; setPfPass(""); pfState.err = "Mot de passe incorrect."; }
+    }
+  } catch (e) { pfState.err = "Impossible de lire le portefeuille : " + e.message; }
+  pfState.loaded = true;
+}
+async function pfSave(mutate, message) {
+  const tok = getTok();
+  if (!tok) throw new Error("NOTOKEN");
+  const pass = pfPass(); if (!pass) throw new Error("Portefeuille verrouillé.");
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { env, sha } = await pfFetchEnv();                       // version la plus récente (l'autre personne a pu enregistrer entre-temps)
+    const cur = env ? await pfDecrypt(env, pass) : { M:{ tx:[] }, D:{ tx:[] } };
+    mutate(cur);
+    const body = { message, branch:"main", content:b64enc(JSON.stringify(await pfEncrypt(cur, pass)) + "\n") };
+    if (sha) body.sha = sha;
+    const put = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + PF_FILE, { method:"PUT",
+      headers:{ Authorization:"Bearer " + tok, Accept:"application/vnd.github+json" }, body:JSON.stringify(body) });
+    if (put.status === 409 || put.status === 422) continue;        // conflit : on relit et on recommence une fois
+    if (put.status === 401 || put.status === 403) throw new Error("BADTOKEN");
+    if (!put.ok) throw new Error("Enregistrement refusé par GitHub (" + put.status + ")");
+    const j = await put.json();
+    pfState.data = cur; pfState.exists = true; pfState.sha = j.content && j.content.sha;
+    return;
+  }
+  throw new Error("Conflit d'enregistrement, réessaie.");
+}
+
+/* --- calculs : PRU (coût moyen pondéré, frais inclus), plus-values latentes et réalisées --- */
+function allSymbols() {
+  const m = new Map();
+  cfg.portfolios.forEach(p => p.items.forEach(it => { if (!m.has(it.yahoo)) m.set(it.yahoo, it); }));
+  return m;
+}
+function pfPositions(tx) {
+  const by = new Map();
+  tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.t || 0) - (b.t || 0)).forEach(t => {
+    const p = by.get(t.sym) || { sym:t.sym, qty:0, cost:0, realized:0, bought:0, fees:0, first:t.date, tx:[] };
+    const fees = +t.fees || 0;
+    p.fees += fees; p.tx.push(t);
+    if (t.type === "A") { p.qty += +t.qty; p.cost += t.qty * t.price + fees; p.bought += t.qty * t.price + fees; }
+    else {
+      const avg = p.qty > 0 ? p.cost / p.qty : 0, q = Math.min(+t.qty, p.qty);
+      p.realized += q * t.price - fees - q * avg;
+      p.cost -= q * avg; p.qty -= q;
+      if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; }
+    }
+    by.set(t.sym, p);
+  });
+  const syms = allSymbols();
+  return [...by.values()].map(p => {
+    const info = withLive(p.sym, summary.symbols[p.sym] || {});
+    const it = syms.get(p.sym) || { name:p.sym };
+    const price = info.last, pru = p.qty > 0 ? p.cost / p.qty : null;
+    const value = p.qty > 0 && price != null ? p.qty * price : 0;
+    const latent = p.qty > 0 && price != null ? value - p.cost : 0;
+    return Object.assign(p, { name:it.name, item:it, cur:info.currency || "EUR", price, pru, value, latent,
+      latentPct: p.cost > 0 ? latent / p.cost * 100 : null, dayPct:info.changePct });
+  }).sort((a, b) => (b.qty > 0) - (a.qty > 0) || b.value - a.value || a.name.localeCompare(b.name));
+}
+
+/* --- affichage --- */
+const pfView = () => prefs.view === "pf";
+const pfOwner = () => prefs.pfOwner === "D" ? "D" : "M";
+const money = (v, cur) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : "") + fmt(v, cur);
+async function renderPf() {
+  document.body.classList.add("pf-mode");
+  const box = $("pfView"); box.hidden = false;
+  if (!pfState.loaded) { box.innerHTML = '<div class="msg">Chargement du portefeuille…</div>'; await pfLoad(); }
+  box.innerHTML = "";
+  const head = document.createElement("div"); head.className = "pf-head";
+  head.innerHTML = '<div class="seg" id="pfOwnerSeg"></div><span class="spacer"></span>';
+  box.appendChild(head);
+  renderSeg("pfOwnerSeg", [["M","M"],["D","D"]], pfOwner(), v => { prefs.pfOwner = v; savePrefs(); renderPf(); });
+
+  if (!pfState.data) {                          // verrouillé, ou pas encore créé
+    const f = document.createElement("form"); f.className = "pf-lock"; f.autocomplete = "off";
+    const first = pfState.exists === false;
+    f.innerHTML = (first
+      ? '<h3>Créer le portefeuille</h3><p class="hint">Choisissez un mot de passe : il chiffre vos achats et ventes avant leur envoi sur GitHub (dépôt public). Sans lui, personne ne peut les lire — <b>notez-le bien</b>, il ne peut pas être récupéré. Votre femme utilisera le même mot de passe sur ses appareils.</p>'
+      : '<h3>Portefeuille verrouillé</h3><p class="hint">Saisissez le mot de passe du portefeuille (une seule fois par appareil).</p>') +
+      '<label>Mot de passe<input type="password" id="pfP1" required minlength="6"></label>' +
+      (first ? '<label>Confirmer<input type="password" id="pfP2" required minlength="6"></label>' : '') +
+      '<p class="err" id="pfErr"></p><div class="row"><button class="btn primary" type="submit">' + (first ? "Créer" : "Déverrouiller") + '</button></div>';
+    box.appendChild(f);
+    if (pfState.err) $("pfErr").textContent = pfState.err;
+    f.onsubmit = async e => {
+      e.preventDefault();
+      const p1 = $("pfP1").value;
+      if (first && p1 !== $("pfP2").value) { $("pfErr").textContent = "Les deux mots de passe diffèrent."; return; }
+      if (first) {
+        if (!getTok()) { $("pfErr").textContent = "Il faut d'abord enregistrer votre jeton GitHub (bouton « + Ajouter » d'un autre onglet)."; return; }
+        setPfPass(p1);
+        try { await pfSave(() => {}, "Portefeuille : création (chiffré)"); toast("Portefeuille créé."); renderPf(); }
+        catch (err) { setPfPass(""); $("pfErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide." : err.message; }
+      } else {
+        try { pfState.data = await pfDecrypt(pfState.env, p1); setPfPass(p1); pfState.err = ""; renderPf(); }
+        catch (err) { $("pfErr").textContent = "Mot de passe incorrect."; }
+      }
+    };
+    return;
+  }
+
+  const lockB = document.createElement("button"); lockB.className = "btn"; lockB.textContent = "🔒";
+  lockB.title = "Verrouiller sur cet appareil (oublie le mot de passe)";
+  lockB.onclick = () => { setPfPass(""); pfState.data = null; renderPf(); };
+  const addB = document.createElement("button"); addB.className = "btn primary"; addB.textContent = "+ Opération";
+  addB.onclick = () => openTxDlg();
+  head.append(addB, lockB);
+
+  const own = pfOwner(), tx = (pfState.data[own] && pfState.data[own].tx) || [];
+  const pos = pfPositions(tx);
+  if (!tx.length) {
+    box.insertAdjacentHTML("beforeend", '<div class="msg">Aucune opération pour ' + own + '. Touchez « + Opération » pour saisir un achat ou une vente.</div>');
+    return;
+  }
+  /* totaux par devise */
+  const tot = {};
+  pos.forEach(p => { const t = tot[p.cur] = tot[p.cur] || { cost:0, value:0, latent:0, realized:0 };
+    t.cost += p.cost; t.value += p.value; t.latent += p.latent; t.realized += p.realized; });
+  const sum = document.createElement("div"); sum.className = "pf-sum";
+  Object.entries(tot).forEach(([cur, t]) => {
+    const pct = t.cost > 0 ? t.latent / t.cost * 100 : null;
+    sum.insertAdjacentHTML("beforeend",
+      '<div><span>Investi</span><b>' + fmt(t.cost, cur) + '</b></div>' +
+      '<div><span>Valeur</span><b>' + fmt(t.value, cur) + '</b></div>' +
+      '<div><span>Plus-value latente</span><b class="' + (t.latent >= 0 ? "up" : "down") + '">' + money(t.latent, cur) + (pct != null ? " (" + fmtPct(pct) + ")" : "") + '</b></div>' +
+      '<div><span>Réalisé (ventes)</span><b class="' + (t.realized >= 0 ? "up" : "down") + '">' + money(t.realized, cur) + '</b></div>');
+  });
+  box.appendChild(sum);
+
+  const list = document.createElement("div"); list.className = "pf-list";
+  pos.forEach(p => {
+    const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
+    const open = p.qty > 0;
+    c.innerHTML =
+      '<div class="r1"><b class="nm"></b><span class="' + (open ? (p.latent >= 0 ? "up" : "down") : (p.realized >= 0 ? "up" : "down")) + '">' +
+        (open ? money(p.latent, p.cur) + (p.latentPct != null ? " · " + fmtPct(p.latentPct) : "") : "Soldée · " + money(p.realized, p.cur)) + '</span></div>' +
+      '<div class="r2">' + (open
+        ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " → cours " + fmt(p.price, p.cur) + (p.dayPct != null ? ' <span class="' + (p.dayPct >= 0 ? "up" : "down") + '">(' + fmtPct(p.dayPct) + " auj.)</span>" : "")
+        : "Aucune action détenue") +
+      (open && Math.abs(p.realized) > 0.005 ? ' · réalisé <span class="' + (p.realized >= 0 ? "up" : "down") + '">' + money(p.realized, p.cur) + '</span>' : "") + '</div>';
+    c.querySelector(".nm").textContent = p.name;
+    const tl = document.createElement("div"); tl.className = "pf-tx";
+    p.tx.slice().reverse().forEach(t => {
+      const row = document.createElement("div");
+      row.innerHTML = '<span class="ty ' + (t.type === "A" ? "a" : "v") + '">' + (t.type === "A" ? "Achat" : "Vente") + '</span><span class="d"></span><span class="q"></span><button class="x" title="Supprimer cette opération">✕</button>';
+      row.querySelector(".d").textContent = new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" });
+      row.querySelector(".q").textContent = fmt(+t.qty, null).replace(/,00$/, "") + " × " + fmt(+t.price, p.cur) + (+t.fees ? " + frais " + fmt(+t.fees, p.cur) : "");
+      row.querySelector(".x").onclick = ev => { ev.stopPropagation(); delTx(own, t, p.name); };
+      tl.appendChild(row);
+    });
+    c.appendChild(tl);
+    c.onclick = () => {                         // ouvre le graphique de la valeur, avec les repères d'achat / vente
+      const pi = cfg.portfolios.findIndex(pf => pf.items.some(i => i.yahoo === p.sym));
+      if (pi < 0 || !summary.symbols[p.sym]) { toast("Ajoutez d'abord cette valeur à un onglet pour voir son graphique.", 2200); return; }
+      openDetail(p.item, summary.symbols[p.sym], { pi, idx:cfg.portfolios[pi].items.findIndex(i => i.yahoo === p.sym) });
+    };
+    list.appendChild(c);
+  });
+  box.appendChild(list);
+  box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
+}
+function delTx(own, t, name) {
+  $("confText").textContent = "Supprimer " + (t.type === "A" ? "l'achat" : "la vente") + " de " + name + " du " + new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" }) + " (portefeuille " + own + ") ?";
+  $("confErr").textContent = ""; $("confYes").textContent = "Supprimer";
+  $("confDlg").classList.add("show");
+  $("confNo").onclick = () => { $("confDlg").classList.remove("show"); $("confYes").textContent = "Retirer"; };
+  $("confYes").onclick = async () => {
+    try {
+      await pfSave(d => { d[own].tx = d[own].tx.filter(x => x.id !== t.id); }, "Portefeuille " + own + " : suppression d'une opération");
+      $("confDlg").classList.remove("show"); $("confYes").textContent = "Retirer"; renderPf(); toast("Opération supprimée.");
+    } catch (err) { $("confErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide." : err.message; }
+  };
+}
+function openTxDlg() {
+  const own = pfOwner(), sel = $("txSym"); sel.innerHTML = "";
+  [...allSymbols().values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
+    const o = document.createElement("option"); o.value = it.yahoo; o.textContent = it.name + " (" + it.yahoo + ")"; sel.appendChild(o);
+  });
+  if (ovItemName && $("ov").classList.contains("show")) { const cur = [...allSymbols().values()].find(i => i.name === ovItemName); if (cur) sel.value = cur.yahoo; }
+  $("txOwner").textContent = own;
+  $("txDate").value = new Date().toISOString().slice(0, 10);
+  $("txQty").value = ""; $("txPrice").value = ""; $("txFees").value = ""; $("txErr").textContent = "";
+  document.querySelector('input[name="txType"][value="A"]').checked = true;
+  $("txDlg").classList.add("show");
+}
+async function submitTx(e) {
+  e.preventDefault();
+  const own = pfOwner();
+  const t = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:Date.now(),
+    type:document.querySelector('input[name="txType"]:checked').value, sym:$("txSym").value, date:$("txDate").value,
+    qty:+String($("txQty").value).replace(",", "."), price:+String($("txPrice").value).replace(",", "."), fees:+String($("txFees").value || 0).replace(",", ".") };
+  if (!t.sym || !t.date || !(t.qty > 0) || !(t.price > 0) || !(t.fees >= 0)) { $("txErr").textContent = "Vérifiez la date, la quantité, le prix et les frais."; return; }
+  if (t.type === "V") {
+    const held = pfPositions(((pfState.data[own] || {}).tx || []).filter(x => x.date <= t.date)).find(p => p.sym === t.sym);
+    if (!held || held.qty + 1e-9 < t.qty) { $("txErr").textContent = "Vente supérieure à la quantité détenue à cette date (" + (held ? fmt(held.qty, null) : "0") + ")."; return; }
+  }
+  $("txOk").disabled = true;
+  try {
+    await pfSave(d => { d[own] = d[own] || { tx:[] }; d[own].tx.push(t); }, "Portefeuille " + own + " : " + (t.type === "A" ? "achat ajouté" : "vente ajoutée"));
+    $("txDlg").classList.remove("show"); toast(t.type === "A" ? "Achat enregistré." : "Vente enregistrée.");
+    if (pfView()) renderPf(); else if ($("ov").classList.contains("show")) drawTxMarks();
+  } catch (err) { $("txErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (bouton « + Ajouter » d'un autre onglet pour l'enregistrer)." : err.message; }
+  $("txOk").disabled = false;
+}
+$("txForm").addEventListener("submit", submitTx);
+$("txCancel").onclick = () => $("txDlg").classList.remove("show");
+
+/* --- repères d'achat / vente et PRU sur le graphique du détail --- */
+let txSeries = null, txSeries2 = null, txLines = [];
+function drawTxMarks() {
+  [txSeries, txSeries2].forEach(x => { if (x && ovChart) { try { ovChart.removeSeries(x); } catch (e) {} } });
+  txSeries = txSeries2 = null;
+  if (ovCandles) txLines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
+  txLines = [];
+  if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym) return;
+  const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
+  if (!rows.length || typeof rows[0][0] !== "string") return;          // pas de repères en 15 min
+  const byKey = new Map(rows.map(r => [keyOf(iv, r[0]), r[0]]));
+  const marks = [];
+  ["M", "D"].forEach(own => {
+    const tx = ((pfState.data[own] || {}).tx || []).filter(t => t.sym === ovSym);
+    tx.forEach(t => {
+      const time = byKey.get(keyOf(iv, t.date)) || (iv === "D" ? (rows.find(r => r[0] >= t.date) || [])[0] : null);
+      if (!time) return;
+      marks.push({ time, position:t.type === "A" ? "belowBar" : "aboveBar", shape:t.type === "A" ? "arrowUp" : "arrowDown",
+        color:PF_OWNERS[own].col, text:(t.type === "A" ? "A·" : "V·") + own });
+    });
+    const p = pfPositions(tx).find(x => x.sym === ovSym);
+    if (p && p.qty > 0) txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
+      lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"PRU " + own }));
+  });
+  if (!marks.length) return;
+  marks.sort((a, b) => a.time < b.time ? -1 : a.time > b.time ? 1 : 0);
+  // deux séries invisibles : les achats sous les plus bas, les ventes au-dessus des plus hauts
+  const hidden = () => ovChart.addLineSeries({ color:"rgba(0,0,0,0)", lineVisible:false, lineWidth:1, priceLineVisible:false, lastValueVisible:false,
+    crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+  txSeries = hidden(); txSeries.setData(rows.map(r => ({ time:r[0], value:r[3] })));
+  txSeries.setMarkers(marks.filter(m => m.position === "belowBar"));
+  txSeries2 = hidden(); txSeries2.setData(rows.map(r => ({ time:r[0], value:r[2] })));
+  txSeries2.setMarkers(marks.filter(m => m.position === "aboveBar"));
+}
+// le portefeuille est lu au démarrage (s'il est déverrouillé) pour afficher les repères dans les autres onglets
+setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => { if ($("ov").classList.contains("show")) drawTxMarks(); }); }, 1500);
 
 </script>
 </body>
