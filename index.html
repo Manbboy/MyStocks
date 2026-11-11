@@ -130,6 +130,7 @@
   .tokbox input { width:100%; font-size:14px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
   .card .rm { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:12px; border:0; background:var(--down); color:#fff; font-size:13px; cursor:pointer; display:none; z-index:3; }
   .editing .card .rm { display:block; }
+  .card-tap { position:absolute; inset:0; z-index:2; -webkit-tap-highlight-color:transparent; }
   .card { position:relative; }
   .grid { display:grid; gap:8px; padding:12px 0 40px; grid-template-columns:repeat(var(--cols,3), minmax(0,1fr)); }
   .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; }
@@ -396,7 +397,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v35</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v36</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -798,6 +799,9 @@ function renderGrid() {
       chartEl.dataset.sym = item.yahoo;
       io.observe(chartEl);
       card.onclick = () => openDetail(item, info);
+      // calque transparent au-dessus du graphique : un toucher n'importe où sur la carte ouvre le détail
+      // (sur téléphone, le graphique « avale » les touchers et le clic ne partait que depuis le titre)
+      const tap = document.createElement("div"); tap.className = "card-tap"; card.appendChild(tap);
     }
     g.appendChild(card);
   });
