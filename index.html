@@ -9,17 +9,17 @@
   :root { --bg:#f6f7f9; --card:#fff; --text:#16181d; --muted:#6b7280; --border:#e5e7eb; --accent:#2563eb; --chip:#eef0f3;
           --up:#16a34a; --down:#dc2626; --sup:#16a34a; --res:#dc2626; --grid:#f0f1f3;
           --s-D:#4ade80; --s-W:#0d9488; --s-M:#15803d; --s-Q:#14532d;
-          --r-D:#fb923c; --r-W:#e11d48; --r-M:#b91c1c; --r-Q:#7f1d1d; }
+          --r-D:#fb923c; --r-W:#e11d48; --r-M:#b91c1c; --r-Q:#7f1d1d; --buy:#2563eb; --sell:#7c3aed; }
   :root { color-scheme:light; }
   :root[data-theme="dark"] { color-scheme:dark; --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
             --s-D:#bbf7d0; --s-W:#2dd4bf; --s-M:#22c55e; --s-Q:#15803d;
-            --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; }
+            --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; --buy:#60a5fa; --sell:#a78bfa; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) { color-scheme:dark; --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
             --s-D:#bbf7d0; --s-W:#2dd4bf; --s-M:#22c55e; --s-Q:#15803d;
-            --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; }
+            --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; --buy:#60a5fa; --sell:#a78bfa; }
   }
   * { box-sizing:border-box; }
   body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
@@ -91,7 +91,9 @@
   .pf-pos .r2 { font-size:12px; color:var(--muted); margin-top:3px; }
   .pf-tx { margin-top:8px; border-top:1px solid var(--border); padding-top:6px; display:flex; flex-direction:column; gap:3px; }
   .pf-tx > div { display:flex; align-items:center; gap:8px; font-size:12px; }
-  .pf-tx .ty { font-weight:700; min-width:44px; } .pf-tx .ty.a { color:#6366f1; } .pf-tx .ty.v { color:#d97706; }   /* achat indigo, vente ambre : le vert/rouge reste réservé aux gains/pertes */
+  .pf-tx .ty { font-weight:700; min-width:44px; } .pf-tx .ty { font-size:11px; padding:1px 7px; border-radius:999px; text-align:center; }   /* achat bleu, vente violet : le vert/rouge reste réservé aux gains/pertes */
+  .pf-tx .ty.a { color:var(--buy); background:color-mix(in srgb, var(--buy) 16%, transparent); }
+  .pf-tx .ty.v { color:var(--sell); background:color-mix(in srgb, var(--sell) 16%, transparent); }
   .pf-tx > div { gap:6px; } .pf-tx .d { color:var(--muted); min-width:70px; } .pf-tx .q { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pf-tx .e { border:0; background:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 6px; }
   .pf-tx .x { border:0; background:none; color:var(--muted); cursor:pointer; font-size:12px; padding:2px 6px; }
@@ -411,7 +413,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v42</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v43</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
