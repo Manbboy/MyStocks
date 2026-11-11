@@ -42,7 +42,7 @@
     .bar-row::-webkit-scrollbar { display:none; }
     .group label .lg { display:none; }
     .group label .sm { display:inline; font-size:17px; line-height:1; }
-    .bar-row .seg button { padding:6px 6.5px; font-size:12.5px; }
+    .bar-row .seg button { padding:6px 5.5px; font-size:12.5px; }
     .bar .legend { width:100%; }
     .bar .spacer { display:none; }
   }
@@ -317,7 +317,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v9</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v10</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -470,7 +470,7 @@ const LW = window.LightweightCharts;
 const PREFS = "mes-actions-prefs-v1";
 const COLS = [1,2,3,4,5,6];
 const HEIGHTS = {1:240, 2:180, 3:140, 4:125, 5:115, 6:105};
-const RANGES = [["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
+const RANGES = [["1J","1J",1],["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A","1A",252],["2A","2A",504],["5A","5A",1260],["MAX","Max",99999]];
 
 let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2, theme:"auto", cross:"free", role:false, vol:true };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
@@ -572,6 +572,7 @@ function baseOptions(small) {
 }
 
 async function drawCard(el, info) {
+  if (prefs.range === "1J") return drawCardDay(el, info);
   const data = await getSeries(info);
   const n = RANGES.find(r => r[0] === prefs.range)[2];
   const rows = data.rows.slice(-n);
@@ -634,7 +635,7 @@ function renderSeg(id, opts, cur, pick) {
 
 function renderGrid() {
   io.disconnect();
-  charts.splice(0).forEach(c => c.remove());
+  charts.splice(0).forEach(c => c.remove()); if (typeof dayCards !== "undefined") dayCards.clear();
   const g = $("grid"); g.innerHTML = "";
   g.style.setProperty("--cols", prefs.cols);
   g.style.setProperty("--h", HEIGHTS[prefs.cols] + "px");
@@ -2161,7 +2162,7 @@ function defaultView(rows, iv) {
     ovChart.timeScale().setVisibleLogicalRange({ from:i0 - 0.5, to:rows.length - 0.5 + 2 });
     return;
   }
-  const show = { I: 9999, D: RANGES.find(r => r[0] === prefs.range)[2], W: 104, M: 60, Q: 9999 }[iv];
+  const show = { I: 9999, D: Math.max(21, RANGES.find(r => r[0] === prefs.range)[2]), W: 104, M: 60, Q: 9999 }[iv];
   if (rows.length > show) ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
   else ovChart.timeScale().fitContent();
 }
@@ -2506,6 +2507,7 @@ async function pollLive(force) {
     }
     setLiveStatus(true);
     refreshLiveCards();
+    if (prefs.range === "1J") refreshDayCards();
     refreshDetailLive();
   } catch (e) { setLiveStatus(false); }
 }
@@ -2597,6 +2599,67 @@ async function refreshDetailLive() {
   if (!rows.length || rows.length < oldLen) return;
   const cd = candleData(rows.slice(-Math.min(rows.length, 60)), false);
   try { ovCandles.update(cd[cd.length - 1]); } catch (e) {}
+}
+
+
+/* ----- Période « 1J » : la séance du jour en points de 5 minutes sur chaque carte ----- */
+const dayCache = {};            // sym -> { t, data }
+const dayCards = new Map();     // élément graphique -> { sym, series, chart }
+async function fetchDay(sym, force) {
+  const c = dayCache[sym];
+  if (c && !force && Date.now() - c.t < 55000) return c.data;
+  try {
+    const r = await fetch(LIVE_URL + "/chart?s=" + encodeURIComponent(sym) + "&range=5d&interval=5m");
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (!d.bars || !d.bars.length) throw new Error("vide");
+    const tz = d.tz || "Europe/Paris";
+    const dayOf = t => new Date(t * 1000).toLocaleDateString("sv-SE", { timeZone:tz });
+    const bars = d.bars.filter(b => b[4] != null);
+    const last = dayOf(bars[bars.length - 1][0]);
+    const today = bars.filter(b => dayOf(b[0]) === last), before = bars.filter(b => dayOf(b[0]) < last);
+    const prev = before.length ? before[before.length - 1][4] : d.prevClose;
+    const out = { day:last, prev, pts:today.map(b => ({ time:b[0] + tzShift(b[0], "Europe/Brussels"), value:b[4] })) };
+    if (d.price != null && out.pts.length) out.pts[out.pts.length - 1].value = d.price;
+    dayCache[sym] = { t:Date.now(), data:out };
+    return out;
+  } catch (e) { return c ? c.data : null; }
+}
+function dayStyle(d) {
+  const up = d.pts.length && d.pts[d.pts.length - 1].value >= d.prev;
+  const col = up ? css("--up") : css("--down");
+  return { lineColor:col, topColor:col + "33", bottomColor:col + "00" };
+}
+async function drawCardDay(el, info) {
+  const sym = el.dataset.sym;
+  if (!liveOn()) { el.innerHTML = '<div class="msg">1J : active « Direct »</div>'; return; }
+  const d = await fetchDay(sym);
+  if (!d || !d.pts.length) throw new Error("pas de séance");
+  const small = prefs.cols >= 3;
+  const chart = LW.createChart(el, Object.assign(baseOptions(small), {
+    handleScroll:false, handleScale:false,
+    rightPriceScale:{ borderVisible:false, visible: prefs.cols <= 2 },
+    timeScale:{ borderVisible:false, visible: prefs.cols <= 2, timeVisible:true, secondsVisible:false },
+    crosshair:{ horzLine:{ visible:false }, vertLine:{ visible:false } },
+  }));
+  const s = chart.addAreaSeries(Object.assign(dayStyle(d), {
+    lineWidth: small ? 1.5 : 2, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false,
+    autoscaleInfoProvider: o => { const r = o(); if (!r || d.prev == null) return r;
+      return { priceRange:{ minValue:Math.min(r.priceRange.minValue, d.prev), maxValue:Math.max(r.priceRange.maxValue, d.prev) } }; },
+  }));
+  s.setData(d.pts);
+  if (d.prev != null) s.createPriceLine({ price:d.prev, color:css("--muted"), lineWidth:1, lineStyle:LW.LineStyle.Dotted, axisLabelVisible:false, title:"" });
+  chart.timeScale().fitContent();
+  charts.push(chart);
+  dayCards.set(el, { sym, series:s, chart });
+}
+async function refreshDayCards() {
+  for (const [el, c] of dayCards) {
+    if (!el.isConnected) { dayCards.delete(el); continue; }
+    const d = await fetchDay(c.sym, true);
+    if (!d || !d.pts.length) continue;
+    try { c.series.applyOptions(dayStyle(d)); c.series.setData(d.pts); c.chart.timeScale().fitContent(); } catch (e) {}
+  }
 }
 
 </script>
