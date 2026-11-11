@@ -105,6 +105,17 @@
   /* Vue détaillée */
   .ov { position:fixed; top:0; left:0; right:0; height:100vh; height:100dvh; background:var(--bg); z-index:20; display:none; flex-direction:column; }
   .ov.show { display:flex; }
+  .ov-id { position:relative; }
+  #ovTitle { cursor:pointer; }
+  #ovTitle .caret { font-size:.75em; color:var(--muted); }
+  .pick { position:absolute; top:calc(100% + 6px); left:0; width:min(340px, 92vw); max-height:min(70vh, 520px); overflow:auto; background:var(--card);
+          border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.2); z-index:40; padding:4px; }
+  .pick button { display:flex; width:100%; align-items:center; gap:8px; border:0; background:none; color:var(--text); text-align:left; padding:8px 10px; border-radius:8px; font-size:14px; cursor:pointer; }
+  .pick button:hover, .pick button.cur { background:var(--chip); }
+  .pick button.cur { font-weight:700; }
+  .pick .nm { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pick .px { color:var(--muted); font-size:12px; white-space:nowrap; }
+  .pick .ch { font-size:12px; min-width:56px; text-align:right; white-space:nowrap; }
   .ov-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border-bottom:1px solid var(--border); }
   .ov-title { font-size:17px; font-weight:700; }
   .ov-sub { font-size:13px; color:var(--muted); }
@@ -323,7 +334,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v16</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v17</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -352,7 +363,8 @@
 <div class="ov" id="ov">
   <div class="ov-head">
     <div class="ov-id">
-      <div class="ov-title" id="ovTitle"></div><div class="ov-sub" id="ovSub"></div>
+      <div class="ov-title" id="ovTitle" role="button" tabindex="0" title="Aller à une autre valeur du portefeuille"></div><div class="ov-sub" id="ovSub"></div>
+      <div class="pick" id="ovPick" hidden></div>
     </div>
     <div class="ov-nav">
       <button class="navb" id="ovPrev" aria-label="Action précédente">‹</button>
@@ -1001,7 +1013,7 @@ $("ovPrev").onclick = $("ovPrev2").onclick = () => goTo(-1);
 $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 /* Glisser à gauche / à droite sur les zones sans contrôle (titre, fond, listes) */
 (() => {
-  const NO_SWIPE = ".chart-wrap, .rsi-chart, .cfg, .tb, .tbs, button, input, select, a, .seg";
+  const NO_SWIPE = ".chart-wrap, .rsi-chart, .cfg, .tb, .tbs, button, input, select, a, .seg, .pick, .ov-title";
   let st = null, swiped = false;
   $("ov").addEventListener("pointerdown", e => {
     st = (e.button === 0 && !e.target.closest(NO_SWIPE)) ? { x:e.clientX, y:e.clientY, t:Date.now() } : null;
@@ -1031,7 +1043,7 @@ async function openDetail(item, info, pos) {
   $("ov").classList.add("show");
   applyTbRows();
   document.body.style.overflow = "hidden";
-  $("ovTitle").textContent = item.name;
+  $("ovTitle").innerHTML = ""; $("ovTitle").append(item.name); $("ovTitle").insertAdjacentHTML("beforeend", ' <span class="caret">▾</span>'); closePick();
   ovItemName = item.name;
   const pct = info.changePct;
   $("ovSub").innerHTML = "";
@@ -2758,6 +2770,34 @@ async function refreshDayCards() {
     try { c.series.applyOptions(dayStyle(d)); c.series.setData(dayPts(d)); c.chart.timeScale().fitContent(); } catch (e) {}
   }
 }
+
+
+/* ----- Détail : liste déroulante des valeurs du portefeuille (toucher le nom de l'action) ----- */
+function closePick() { const p = $("ovPick"); if (p) p.hidden = true; }
+function openPick() {
+  const p = $("ovPick"), pf = cfg.portfolios[ovPos.pi]; if (!p || !pf) return;
+  p.innerHTML = "";
+  pf.items.forEach((it, idx) => {
+    const info = withLive(it.yahoo, summary.symbols[it.yahoo] || { pending:true });
+    const b = document.createElement("button");
+    if (idx === ovPos.idx) b.className = "cur";
+    const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = it.name;
+    const px = document.createElement("span"); px.className = "px"; px.textContent = info.last != null ? fmt(info.last, null) : "";
+    const ch = document.createElement("span"); ch.className = "ch " + (info.changePct >= 0 ? "up" : "down"); ch.textContent = info.changePct != null ? fmtPct(info.changePct) : "";
+    b.append(nm, px, ch);
+    b.onclick = e => {
+      e.stopPropagation(); closePick();
+      if (idx === ovPos.idx || info.pending || info.error) return;
+      navKeep = captureView();                       // même zoom, comme avec les flèches
+      openDetail(it, summary.symbols[it.yahoo], { pi:ovPos.pi, idx });
+    };
+    p.appendChild(b);
+  });
+  p.hidden = false;
+  const cur = p.querySelector(".cur"); if (cur) cur.scrollIntoView({ block:"nearest" });
+}
+$("ovTitle").addEventListener("click", e => { e.stopPropagation(); $("ovPick").hidden ? openPick() : closePick(); });
+document.addEventListener("click", e => { if (!e.target.closest("#ovPick")) closePick(); });
 
 </script>
 </body>
