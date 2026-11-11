@@ -171,8 +171,8 @@
     #ov .ov-side { flex:0 0 clamp(240px, 30vw, 340px); overflow:auto; padding-right:2px; }
     #ov .ov-side .levels { grid-template-columns:1fr; margin-top:6px; }
     #ov .ov-side .lgd { margin-top:0; }
-    #ov .ov-chart { height:calc(100vh - 150px); height:calc(100dvh - 150px); min-height:160px; }
-    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 246px); height:calc(100dvh - 246px); min-height:120px; }
+    #ov .ov-chart { height:calc(100vh - 150px - var(--tbx, 0px)); height:calc(100dvh - 150px - var(--tbx, 0px)); min-height:160px; }
+    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 246px - var(--tbx, 0px)); height:calc(100dvh - 246px - var(--tbx, 0px)); min-height:120px; }
     #ov .rsi-chart { height:90px; }
     #ov .navrow { margin-top:2px; }
     #ov .navsm { height:24px; font-size:22px; }
@@ -191,8 +191,8 @@
     #ov .tb .seg button { padding:3px 7px; font-size:12px; }
     #ov .cfg-btn { padding:4px 8px; }
     #ov .navrow { display:none; }
-    #ov .ov-chart { height:calc(100vh - 92px); height:calc(100dvh - 92px); min-height:140px; }
-    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 168px); height:calc(100dvh - 168px); min-height:110px; }
+    #ov .ov-chart { height:calc(100vh - 92px - var(--tbx, 0px)); height:calc(100dvh - 92px - var(--tbx, 0px)); min-height:140px; }
+    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 168px - var(--tbx, 0px)); height:calc(100dvh - 168px - var(--tbx, 0px)); min-height:110px; }
     #ov .rsi-chart { height:70px; margin-top:4px; }
     #ov .ohlc { font-size:10px; line-height:1.3; }
   }
@@ -255,8 +255,8 @@
   .rsi-chart.show { display:block; }
   .near { font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
   .near.s { color:var(--sup); } .near.r { color:var(--res); }
-  .ov-chart { height:max(245px, min(625px, calc(100vh - 165px))); height:max(245px, min(625px, calc(100dvh - 165px))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
-  .chart-wrap.with-rsi .ov-chart { height:max(205px, min(505px, calc(100vh - 305px))); height:max(205px, min(505px, calc(100dvh - 305px))); }
+  .ov-chart { height:max(245px, min(625px, calc(100vh - 165px - var(--tbx, 0px)))); height:max(245px, min(625px, calc(100dvh - 165px - var(--tbx, 0px)))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .chart-wrap.with-rsi .ov-chart { height:max(205px, min(505px, calc(100vh - 305px - var(--tbx, 0px)))); height:max(205px, min(505px, calc(100dvh - 305px - var(--tbx, 0px)))); }
   .ohlc { position:absolute; top:6px; left:8px; right:64px; font-size:11px; line-height:1.45; color:var(--muted); pointer-events:none; z-index:2; }
   .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ohlc span { margin-right:8px; }
@@ -323,7 +323,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v14</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v15</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1029,6 +1029,7 @@ async function openDetail(item, info, pos) {
   updateNav();
   if (pos) document.querySelector("#ov .ov-body").scrollTop = 0;
   $("ov").classList.add("show");
+  applyTbRows();
   document.body.style.overflow = "hidden";
   $("ovTitle").textContent = item.name;
   ovItemName = item.name;
@@ -1870,7 +1871,17 @@ function setInd(mode) {
   savePrefs(); renderToggles(); drawRsi(); setCandles(); refreshMulti();
 }
 /* Barre de raccourcis du détail : une ligne qui défile, ou deux lignes sans défilement */
-function applyTbRows() { const t = $("tbs"); if (t) t.classList.toggle("two", prefs.tbRows === 2); }
+function applyTbRows() {
+  const t = $("tbs"); if (!t) return;
+  t.classList.toggle("two", prefs.tbRows === 2);
+  // hauteur de la 2e ligne retirée du graphique, pour garder les flèches ‹ › visibles sous le graphique
+  requestAnimationFrame(() => {
+    const b = t.querySelector(".mmb");
+    const extra = prefs.tbRows === 2 && b && b.offsetHeight ? Math.max(0, t.offsetHeight - b.offsetHeight) : 0;
+    $("ov").style.setProperty("--tbx", extra + "px");
+  });
+}
+window.addEventListener("resize", () => { if (prefs.tbRows === 2) applyTbRows(); });
 applyTbRows();
 const trendOn = () => indMode() === "trend" && prefs.trendBars !== false;
 const paneOn = () => indMode() !== "none" && !(indMode() === "trend" && prefs.rtPane === false);   // graphique RSI sous les chandeliers
