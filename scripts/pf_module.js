@@ -163,6 +163,10 @@ async function renderPf() {
 
   const own = pfOwner(), tx = (pfState.data[own] && pfState.data[own].tx) || [];
   const pos = pfPositions(tx);
+  const dayN = d => Date.parse(d + "T00:00:00Z") / 864e5;
+  let nDup = 0;
+  tx.forEach(t => { t._dup = tx.some(u => u !== t && u.sym === t.sym && u.type === t.type && Math.abs(u.qty - t.qty) < 1e-9 && Math.abs(dayN(u.date) - dayN(t.date)) <= 3); if (t._dup) nDup++; });
+  if (nDup) box.insertAdjacentHTML("beforeend", '<div class="pf-warn">⚠ ' + nDup + ' opérations ressemblent à des doublons (même valeur, même quantité, à quelques jours d\'écart). Elles sont marquées « doublon ? » en vue Détaillée : supprimez celle qui est en trop avec ✕.</div>');
   if (!tx.length) {
     box.insertAdjacentHTML("beforeend", '<div class="msg">Aucune opération pour ' + own + '. Touchez « + Opération » pour saisir un achat ou une vente.</div>');
     return;
@@ -198,11 +202,16 @@ async function renderPf() {
         : "Aucune action détenue") +
       (open && Math.abs(p.realized) > 0.005 ? ' · réalisé <span class="' + (p.realized >= 0 ? "up" : "down") + '">' + money(p.realized, p.cur) + (p.realizedPct != null ? " (" + fmtPct(p.realizedPct) + ")" : "") + '</span>' : "") + '</div>';
     c.querySelector(".nm").textContent = p.name;
-    if (prefs.pfCompact) c.querySelector(".r1").insertAdjacentHTML("beforeend", '<em class="val">' + (open ? fmt(p.value, p.cur) : "–") + '</em>');
+    if (prefs.pfCompact) {
+      const v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct, cl = v >= 0 ? "up" : "down";
+      c.innerHTML = '<div class="cp"><b class="nm"></b><b class="pc ' + cl + '">' + (pc != null ? fmtPct(pc) : "") + '</b>' +
+        '<span class="vl">' + (open ? fmt(p.value, p.cur) : "soldée") + '</span><span class="eu ' + cl + '">' + money(v, p.cur) + '</span></div>';
+      c.querySelector(".nm").textContent = (p.tx.some(t => t._dup) ? "⚠ " : "") + p.name;
+    }
     const tl = document.createElement("div"); tl.className = "pf-tx";
     p.tx.slice().reverse().forEach(t => {
       const row = document.createElement("div");
-      row.innerHTML = '<span class="ty ' + (t.type === "A" ? "a" : "v") + '">' + (t.type === "A" ? "Achat" : "Vente") + '</span><span class="d"></span><span class="q"></span><button class="e" title="Modifier cette opération">✎</button><button class="x" title="Supprimer cette opération">✕</button>';
+      row.innerHTML = '<span class="ty ' + (t.type === "A" ? "a" : "v") + '">' + (t.type === "A" ? "Achat" : "Vente") + '</span><span class="d"></span><span class="q"></span>' + (t._dup ? '<span class="dup" title="Opération semblable à quelques jours d\'écart">doublon ?</span>' : '') + '<button class="e" title="Modifier cette opération">✎</button><button class="x" title="Supprimer cette opération">✕</button>';
       row.querySelector(".d").textContent = new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" });
       row.querySelector(".q").textContent = fmt(+t.qty, null).replace(/,00$/, "") + " × " + fmt(+t.price, p.cur) + (+t.fees ? " + frais " + fmt(+t.fees, p.cur).replace(" ", "\u00a0") : "");
       row.querySelector(".x").onclick = ev => { ev.stopPropagation(); delTx(own, t, p.name); };
