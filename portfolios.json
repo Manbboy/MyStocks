@@ -509,13 +509,13 @@
           "name": "iShares MSCI World"
         },
         {
-          "yahoo": "BTC-USD",
-          "tv": "BINANCE:BTCUSDT",
+          "yahoo": "BTC-EUR",
+          "tv": "COINBASE:BTCEUR",
           "name": "Bitcoin"
         },
         {
-          "yahoo": "XRP-USD",
-          "tv": "COINBASE:XRPUSD",
+          "yahoo": "XRP-EUR",
+          "tv": "BITSTAMP:XRPEUR",
           "name": "XRP"
         }
       ]
