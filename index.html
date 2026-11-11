@@ -236,8 +236,8 @@
     #ov .ov-side { flex:0 0 clamp(240px, 30vw, 340px); overflow:auto; padding-right:2px; }
     #ov .ov-side .levels { grid-template-columns:1fr; margin-top:6px; }
     #ov .ov-side .lgd { margin-top:0; }
-    #ov .ov-chart { height:calc(100vh - 150px - var(--tbx, 0px)); height:calc(100dvh - 150px - var(--tbx, 0px)); min-height:160px; }
-    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 246px - var(--tbx, 0px)); height:calc(100dvh - 246px - var(--tbx, 0px)); min-height:120px; }
+    #ov .ov-chart { height:calc(100vh - 150px - var(--tbx, 0px) - var(--qbx, 0px)); height:calc(100dvh - 150px - var(--tbx, 0px) - var(--qbx, 0px)); min-height:160px; }
+    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 246px - var(--tbx, 0px) - var(--qbx, 0px)); height:calc(100dvh - 246px - var(--tbx, 0px) - var(--qbx, 0px)); min-height:120px; }
     #ov .rsi-chart { height:90px; }
     #ov .navrow { margin-top:2px; }
     #ov .navsm { height:24px; font-size:22px; }
@@ -256,8 +256,8 @@
     #ov .tb .seg button { padding:3px 7px; font-size:12px; }
     #ov .cfg-btn { padding:4px 8px; }
     #ov .navrow { display:none; }
-    #ov .ov-chart { height:calc(100vh - 92px - var(--tbx, 0px)); height:calc(100dvh - 92px - var(--tbx, 0px)); min-height:140px; }
-    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 168px - var(--tbx, 0px)); height:calc(100dvh - 168px - var(--tbx, 0px)); min-height:110px; }
+    #ov .ov-chart { height:calc(100vh - 92px - var(--tbx, 0px) - var(--qbx, 0px)); height:calc(100dvh - 92px - var(--tbx, 0px) - var(--qbx, 0px)); min-height:140px; }
+    #ov .chart-wrap.with-rsi .ov-chart { height:calc(100vh - 168px - var(--tbx, 0px) - var(--qbx, 0px)); height:calc(100dvh - 168px - var(--tbx, 0px) - var(--qbx, 0px)); min-height:110px; }
     #ov .rsi-chart { height:70px; margin-top:4px; }
     #ov .ohlc { font-size:10px; line-height:1.3; }
   }
@@ -265,6 +265,12 @@
   .ring { position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 14%, transparent); }
   .ring.down { border-style:solid; }
   .ring b { position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:9px; font-weight:600; color:var(--c); }
+  .quick { display:flex; gap:5px; align-items:center; overflow-x:auto; scrollbar-width:none; padding:5px 2px 1px; min-height:0; }
+  .quick::-webkit-scrollbar { display:none; }
+  .quick:empty { display:none; }
+  .q-chip { flex:0 0 auto; border:1px solid var(--c); color:var(--c); background:transparent; border-radius:999px; padding:3px 9px; font-size:12px; font-weight:600; cursor:pointer; line-height:1.3; }
+  .q-chip.on { background:var(--c); color:#fff; }
+  .q-cur { flex:0 0 auto; font-size:11px; color:var(--muted); padding:0 3px; white-space:nowrap; }
   .tags { position:absolute; left:0; top:0; right:0; height:0; pointer-events:none; z-index:3; }
   .tag { position:absolute; font-size:9.5px; font-weight:400; line-height:1; white-space:nowrap; padding:1px 3px; border-radius:3px;
          background:color-mix(in srgb, var(--card) 80%, transparent); transform:translateY(-100%); letter-spacing:.01em; }
@@ -320,8 +326,8 @@
   .rsi-chart.show { display:block; }
   .near { font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
   .near.s { color:var(--sup); } .near.r { color:var(--res); }
-  .ov-chart { height:max(245px, min(625px, calc(100vh - 165px - var(--tbx, 0px)))); height:max(245px, min(625px, calc(100dvh - 165px - var(--tbx, 0px)))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
-  .chart-wrap.with-rsi .ov-chart { height:max(205px, min(505px, calc(100vh - 305px - var(--tbx, 0px)))); height:max(205px, min(505px, calc(100dvh - 305px - var(--tbx, 0px)))); }
+  .ov-chart { height:max(245px, min(625px, calc(100vh - 165px - var(--tbx, 0px) - var(--qbx, 0px)))); height:max(245px, min(625px, calc(100dvh - 165px - var(--tbx, 0px) - var(--qbx, 0px)))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .chart-wrap.with-rsi .ov-chart { height:max(205px, min(505px, calc(100vh - 305px - var(--tbx, 0px) - var(--qbx, 0px)))); height:max(205px, min(505px, calc(100dvh - 305px - var(--tbx, 0px) - var(--qbx, 0px)))); }
   .ohlc { position:absolute; top:6px; left:8px; right:64px; font-size:11px; line-height:1.45; color:var(--muted); pointer-events:none; z-index:2; }
   .ohlc div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ohlc span { margin-right:8px; }
@@ -404,7 +410,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v38</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v39</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -499,6 +505,7 @@
       <div class="rings" id="rings"></div>
       <div class="quad" id="quad"></div>
     </div>
+    <div class="quick" id="quick" role="toolbar" aria-label="Mettre en évidence un niveau ou une moyenne mobile"></div>
     <div class="navrow">
       <button class="navsm" id="ovPrev2" aria-label="Action précédente">‹</button>
       <button class="fitbtn" id="fitBtn" title="Dézoomer au maximum pour voir tout l'historique">⤢ Tout voir</button>
@@ -2195,7 +2202,58 @@ function addDetailLevels(series, info) {
 const fade = c => /^#[0-9a-f]{6}$/i.test(c) ? c + "40" : c;
 /* Met en évidence un niveau : trait épais, étiquette sur l'axe, flèches sur ses contacts ; les autres s'estompent */
 const dim = (c, a = "59") => /^#[0-9a-f]{6}$/i.test(c) ? c + a : c;   // ~35 % d'opacité
+/* ----- Sélection rapide sous le graphique : une pastille par niveau / moyenne mobile, du plus haut au plus bas prix ----- */
+function toggleLevelKey(tf, p, i) {
+  onLevelTap(ovItem, tf, p, i, document.createElement("div"));
+  renderLevelLists(ovItem);
+}
+function toggleMa(n) {
+  hiMa = hiMa === n ? null : n;
+  if (hiMa) { hiKey = null; hiGeo = null; hiFlip = null; }
+  drawMas(); renderLevelLists(ovItem); applyHighlight();
+}
+function renderQuick() {
+  const box = $("quick"); if (!box) return;
+  const items = [];
+  if (ovCandles && typeof splitN === "function" && splitN() === 1) {
+    lineMeta.forEach(m => items.push({ price:m.opts.price, c:m.opts.color, t:m.p + (m.i + 1) + "·" + LV[m.tf].short,
+      on:hiKey === m.key, act:() => toggleLevelKey(m.tf, m.p, m.i), tip:(m.p === "R" ? "Résistance " : "Support ") + fmt(m.opts.price) }));
+    ovMa.forEach(sr => { const d = sr.data ? sr.data() : null, v = d && d.length ? d[d.length - 1].value : null;
+      if (v != null) items.push({ price:v, c:MA_COL[sr._n], t:"MM" + sr._n, on:hiMa === sr._n, act:() => toggleMa(sr._n), tip:"Moyenne mobile " + sr._n + " · " + fmt(v) }); });
+  }
+  items.sort((a, b) => b.price - a.price);
+  const sig = items.map(x => x.t + (x.on ? "*" : "")).join("|");
+  if (box._sig !== sig) {
+    box._sig = sig; box.innerHTML = "";
+    const last = ovItem && ovItem.last;
+    let curDone = false;
+    items.forEach(x => {
+      if (!curDone && last != null && x.price < last) { curDone = true; box.insertAdjacentHTML("beforeend", '<span class="q-cur" title="Cours actuel">● ' + fmt(last) + "</span>"); }
+      const b = document.createElement("button"); b.className = "q-chip" + (x.on ? " on" : "");
+      b.style.setProperty("--c", x.c); b.textContent = x.t; b.title = x.tip;
+      b.onclick = e => { e.stopPropagation(); x.act(); };
+      box.appendChild(b);
+    });
+    if (!curDone && items.length && last != null) box.insertAdjacentHTML("beforeend", '<span class="q-cur">● ' + fmt(last) + "</span>");
+    const sel = box.querySelector(".on"); if (sel) sel.scrollIntoView({ block:"nearest", inline:"center" });
+  }
+  const h = items.length ? box.offsetHeight + 6 : 0;
+  $("ov").style.setProperty("--qbx", h + "px");
+}
+/* Toucher une ligne directement sur le graphique : met en évidence le niveau ou la moyenne mobile la plus proche (12 px) */
+function onChartLineTap(param) {
+  if (!param || !param.point || !ovCandles || splitN() > 1) return;
+  const y = param.point.y;
+  let best = null;
+  lineMeta.forEach(m => { const yy = ovCandles.priceToCoordinate(m.opts.price);
+    if (yy != null && Math.abs(yy - y) < (best ? best.d : 13)) best = { d:Math.abs(yy - y), act:() => toggleLevelKey(m.tf, m.p, m.i) }; });
+  if (param.time != null) ovMa.forEach(sr => { const pt = param.seriesData && param.seriesData.get(sr); if (!pt || pt.value == null) return;
+    const yy = sr.priceToCoordinate(pt.value);
+    if (yy != null && Math.abs(yy - y) < (best ? best.d : 13)) best = { d:Math.abs(yy - y), act:() => toggleMa(sr._n) }; });
+  if (best) best.act();
+}
 function applyHighlight() {
+  setTimeout(renderQuick, 0);
   if (!ovCandles) return;
   const sel = lineMeta.find(m => m.key === hiKey);
   const maSel = hiMa && ovMa.some(s => s._n === hiMa) ? hiMa : null;
@@ -2331,6 +2389,7 @@ function renderMaList(info) {
 }
 function renderLevelLists(info) {
   renderMaList(info);
+  setTimeout(renderQuick, 0);
   const sel = selectedLv();
   const selK = selectedKinds();
   $("boxRes").style.display = selK.includes("R") ? "" : "none";
@@ -2436,6 +2495,7 @@ function drawDetail(keep) {
   lastDrawnItem = ovItem;
   const rows = barsFor(ovData, iv);
   ovChart = LW.createChart($("ovChart"), Object.assign(baseOptions(false), { crosshair:crossOpt() }));
+  ovChart.subscribeClick(onChartLineTap);
   ovChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.14, bottom:0.08 }, minimumWidth:72 });
   let declTimer = null;
   ovChart.timeScale().subscribeVisibleLogicalRangeChange(() => {
