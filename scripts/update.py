@@ -147,6 +147,17 @@ def fetch_real(sym: str):
         raise RuntimeError("aucune donnée")
     df = df.reset_index()
     df["Date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
+    # l'historique complet de Yahoo publie souvent la dernière séance européenne avec un jour de retard :
+    # on redemande les 5 derniers jours séparément et on complète / remplace les dernières lignes
+    try:
+        rec = t.history(period="5d", interval="1d", auto_adjust=False)
+        if rec is not None and not rec.empty:
+            rec = rec.reset_index()
+            rec["Date"] = pd.to_datetime(rec["Date"]).dt.strftime("%Y-%m-%d")
+            rec = rec.dropna(subset=["Close"])
+            df = pd.concat([df[~df["Date"].isin(rec["Date"])], rec], ignore_index=True).sort_values("Date").reset_index(drop=True)
+    except Exception as e:
+        print(f"  {sym}: 5 derniers jours indisponibles ({e})")
     currency = None
     try:
         currency = t.fast_info.get("currency")
