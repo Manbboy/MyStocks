@@ -197,10 +197,11 @@ async function renderPf() {
     const tl = document.createElement("div"); tl.className = "pf-tx";
     p.tx.slice().reverse().forEach(t => {
       const row = document.createElement("div");
-      row.innerHTML = '<span class="ty ' + (t.type === "A" ? "a" : "v") + '">' + (t.type === "A" ? "Achat" : "Vente") + '</span><span class="d"></span><span class="q"></span><button class="x" title="Supprimer cette opération">✕</button>';
+      row.innerHTML = '<span class="ty ' + (t.type === "A" ? "a" : "v") + '">' + (t.type === "A" ? "Achat" : "Vente") + '</span><span class="d"></span><span class="q"></span><button class="e" title="Modifier cette opération">✎</button><button class="x" title="Supprimer cette opération">✕</button>';
       row.querySelector(".d").textContent = new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" });
-      row.querySelector(".q").textContent = fmt(+t.qty, null).replace(/,00$/, "") + " × " + fmt(+t.price, p.cur) + (+t.fees ? " + frais " + fmt(+t.fees, p.cur) : "");
+      row.querySelector(".q").textContent = fmt(+t.qty, null).replace(/,00$/, "") + " × " + fmt(+t.price, p.cur) + (+t.fees ? " + frais " + fmt(+t.fees, p.cur).replace(" ", "\u00a0") : "");
       row.querySelector(".x").onclick = ev => { ev.stopPropagation(); delTx(own, t, p.name); };
+      row.querySelector(".e").onclick = ev => { ev.stopPropagation(); openTxDlg(t); };
       tl.appendChild(row);
     });
     c.appendChild(tl);
@@ -226,6 +227,8 @@ function delTx(own, t, name) {
   $("confDlg").classList.add("show");
   $("confNo").onclick = () => { $("confDlg").classList.remove("show"); $("confYes").textContent = "Retirer"; };
   $("confYes").onclick = async () => {
+    const bad = checkTxList(((pfState.data[own] || {}).tx || []).filter(x => x.id !== t.id), t.sym);
+    if (bad) { $("confErr").textContent = "Impossible : " + bad.charAt(0).toLowerCase() + bad.slice(1) + " Supprimez ou modifiez d'abord cette vente."; return; }
     try {
       await pfSave(d => { d[own].tx = d[own].tx.filter(x => x.id !== t.id); }, "Portefeuille " + own + " : suppression d'une opération");
       $("confDlg").classList.remove("show"); $("confYes").textContent = "Retirer"; renderPf(); toast("Opération supprimée.");
@@ -239,39 +242,64 @@ function numIn(v) {
   else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, "");
   return +v;
 }
-function openTxDlg() {
+let txEdit = null;              // opération en cours de modification (null = nouvelle)
+/* Vérifie qu'aucune vente ne dépasse la quantité détenue à sa date ; renvoie un message d'erreur ou "" */
+function checkTxList(list, sym) {
+  let q = 0;
+  for (const t of list.filter(x => x.sym === sym).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "A" ? -1 : 1))) {
+    if (t.type === "A") q += +t.qty;
+    else { if (+t.qty > q + 1e-9) return "Vente du " + new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" }) + " supérieure à la quantité détenue à cette date (" + fmt(q, null).replace(/,00$/, "") + ")."; q -= +t.qty; }
+  }
+  return "";
+}
+function openTxDlg(edit) {
+  txEdit = edit || null;
   const own = pfOwner(), sel = $("txSym"); sel.innerHTML = "";
   [...allSymbols().values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
     const o = document.createElement("option"); o.value = it.yahoo; o.textContent = it.name + " (" + it.yahoo + ")"; sel.appendChild(o);
   });
   if (ovItemName && $("ov").classList.contains("show")) { const cur = [...allSymbols().values()].find(i => i.name === ovItemName); if (cur) sel.value = cur.yahoo; }
   $("txOwner").textContent = own;
-  $("txDate").value = new Date().toISOString().slice(0, 10);
-  $("txQty").value = ""; $("txPrice").value = ""; $("txFees").value = ""; $("txErr").textContent = "";
-  document.querySelector('input[name="txType"][value="A"]').checked = true;
+  $("txTitle").textContent = txEdit ? "Modifier l'opération" : "Nouvelle opération";
+  $("txOk").textContent = txEdit ? "Enregistrer les modifications" : "Enregistrer";
+  $("txErr").textContent = "";
+  const n2 = v => v == null || v === "" ? "" : (+v).toLocaleString(NUM_LOC, { maximumFractionDigits:6 });
+  if (txEdit) {
+    sel.value = txEdit.sym; $("txDate").value = txEdit.date;
+    $("txQty").value = n2(txEdit.qty); $("txPrice").value = n2(txEdit.price); $("txFees").value = +txEdit.fees ? n2(txEdit.fees) : "";
+    document.querySelector('input[name="txType"][value="' + txEdit.type + '"]').checked = true;
+  } else {
+    $("txDate").value = new Date().toISOString().slice(0, 10);
+    $("txQty").value = ""; $("txPrice").value = ""; $("txFees").value = "";
+    document.querySelector('input[name="txType"][value="A"]').checked = true;
+  }
   $("txDlg").classList.add("show");
 }
 async function submitTx(e) {
   e.preventDefault();
   const own = pfOwner();
-  const t = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:Date.now(),
+  const edit = txEdit;
+  const t = { id:edit ? edit.id : Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:edit ? edit.t : Date.now(),
     type:document.querySelector('input[name="txType"]:checked').value, sym:$("txSym").value, date:$("txDate").value,
     qty:numIn($("txQty").value), price:numIn($("txPrice").value), fees:numIn($("txFees").value || "0") };
   if (!t.sym || !t.date || !(t.qty > 0) || !(t.price > 0) || !(t.fees >= 0)) { $("txErr").textContent = "Vérifiez la date, la quantité, le prix et les frais."; return; }
-  if (t.type === "V") {
-    const held = pfPositions(((pfState.data[own] || {}).tx || []).filter(x => x.date <= t.date)).find(p => p.sym === t.sym);
-    if (!held || held.qty + 1e-9 < t.qty) { $("txErr").textContent = "Vente supérieure à la quantité détenue à cette date (" + (held ? fmt(held.qty, null) : "0") + ")."; return; }
-  }
+  const after = ((pfState.data[own] || {}).tx || []).filter(x => !edit || x.id !== edit.id).concat([t]);
+  const bad = checkTxList(after, t.sym) || (edit && edit.sym !== t.sym ? checkTxList(after, edit.sym) : "");
+  if (bad) { $("txErr").textContent = bad; return; }
   $("txOk").disabled = true;
   try {
-    await pfSave(d => { d[own] = d[own] || { tx:[] }; d[own].tx.push(t); }, "Portefeuille " + own + " : " + (t.type === "A" ? "achat ajouté" : "vente ajoutée"));
-    $("txDlg").classList.remove("show"); toast(t.type === "A" ? "Achat enregistré." : "Vente enregistrée.");
+    await pfSave(d => { d[own] = d[own] || { tx:[] };
+      if (edit) { const i = d[own].tx.findIndex(x => x.id === edit.id); if (i >= 0) d[own].tx[i] = t; else d[own].tx.push(t); }
+      else d[own].tx.push(t); },
+      "Portefeuille " + own + " : " + (edit ? "opération modifiée" : t.type === "A" ? "achat ajouté" : "vente ajoutée"));
+    $("txDlg").classList.remove("show"); toast(edit ? "Opération modifiée." : t.type === "A" ? "Achat enregistré." : "Vente enregistrée.");
+    txEdit = null;
     if (pfView()) renderPf(); else if ($("ov").classList.contains("show")) drawTxMarks();
   } catch (err) { $("txErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (bouton « + Ajouter » d'un autre onglet pour l'enregistrer)." : err.message; }
   $("txOk").disabled = false;
 }
 $("txForm").addEventListener("submit", submitTx);
-$("txCancel").onclick = () => $("txDlg").classList.remove("show");
+$("txCancel").onclick = () => { $("txDlg").classList.remove("show"); txEdit = null; };
 
 /* --- repères d'achat / vente et PRU sur le graphique du détail --- */
 let txSeries = null, txSeries2 = null, txLines = [];
