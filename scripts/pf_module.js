@@ -109,7 +109,8 @@ function pfPositions(tx) {
 /* --- affichage --- */
 const pfView = () => prefs.view === "pf";
 const pfOwner = () => prefs.pfOwner === "D" ? "D" : "M";
-const money = (v, cur) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : "") + fmt(v, cur);
+const money = (v, cur) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : "") +        // montants : toujours 2 décimales
+  v.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }) + (cur && CUR[cur] ? " " + CUR[cur] : "");
 async function renderPf() {
   document.body.classList.add("pf-mode");
   const box = $("pfView"); box.hidden = false;

@@ -91,7 +91,7 @@
   .pf-pos .r2 { font-size:12px; color:var(--muted); margin-top:3px; }
   .pf-tx { margin-top:8px; border-top:1px solid var(--border); padding-top:6px; display:flex; flex-direction:column; gap:3px; }
   .pf-tx > div { display:flex; align-items:center; gap:8px; font-size:12px; }
-  .pf-tx .ty { font-weight:700; min-width:44px; } .pf-tx .ty.a { color:var(--up); } .pf-tx .ty.v { color:var(--down); }
+  .pf-tx .ty { font-weight:700; min-width:44px; } .pf-tx .ty.a { color:#6366f1; } .pf-tx .ty.v { color:#d97706; }   /* achat indigo, vente ambre : le vert/rouge reste réservé aux gains/pertes */
   .pf-tx > div { gap:6px; } .pf-tx .d { color:var(--muted); min-width:70px; } .pf-tx .q { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pf-tx .e { border:0; background:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 6px; }
   .pf-tx .x { border:0; background:none; color:var(--muted); cursor:pointer; font-size:12px; padding:2px 6px; }
@@ -411,7 +411,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v41</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v42</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3226,7 +3226,8 @@ function pfPositions(tx) {
 /* --- affichage --- */
 const pfView = () => prefs.view === "pf";
 const pfOwner = () => prefs.pfOwner === "D" ? "D" : "M";
-const money = (v, cur) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : "") + fmt(v, cur);
+const money = (v, cur) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : "") +        // montants : toujours 2 décimales
+  v.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }) + (cur && CUR[cur] ? " " + CUR[cur] : "");
 async function renderPf() {
   document.body.classList.add("pf-mode");
   const box = $("pfView"); box.hidden = false;
