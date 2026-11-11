@@ -318,13 +318,12 @@
   .quick { display:flex; gap:5px; align-items:center; overflow-x:auto; scrollbar-width:none; padding:5px 2px 1px; min-height:0; }
   .quick::-webkit-scrollbar { display:none; }
   .quick:empty { display:none; }
-  .rt-up { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#fff; background:#4CAF50; border-radius:4px; padding:1px 4px; margin-right:5px; vertical-align:1px; line-height:1.3; }
+  .rt-up { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#fff; background:#00c853; border-radius:4px; padding:1px 4px; margin-right:5px; vertical-align:1px; line-height:1.3; }
   .rt-up.n { background:#787B86; } .rt-up.r { background:#FF5252; }
   .rtc { display:none; }
   .grid.compact .tbl:not(.multi) .rtc { display:block; grid-column:5; grid-row:1; text-align:center; font-size:13px; font-weight:800; }
   .grid.compact .tbl:not(.multi) .nm .rt-up { display:none; }
-  .rtc.g { color:#4CAF50; } .rtc.n { color:#787B86; } .rtc.r { color:#FF5252; }
-  .rtc.same::before { content:""; display:inline-block; width:10px; height:10px; border-radius:50%; background:currentColor; opacity:.4; vertical-align:middle; }
+  .rtc.g { color:#00c853; } .rtc.n { color:#787B86; } .rtc.r { color:#FF5252; }
   .q-chip { flex:0 0 auto; border:1px solid var(--c); color:var(--c); background:transparent; border-radius:999px; padding:3px 9px; font-size:12px; font-weight:600; cursor:pointer; line-height:1.3; }
   .q-chip.on { background:var(--c); color:#fff; }
   .q-cur { flex:0 0 auto; font-size:11px; color:var(--muted); padding:0 3px; white-space:nowrap; }
@@ -474,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v60</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v61</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2970,8 +2969,7 @@ function setRtBadge(card, info) {
   const cell = card.querySelector(".rtc"); if (cell) { cell.textContent = ""; cell.className = "rtc"; cell.title = ""; }
   const r = rtDaily(info, card.dataset.sym); if (!r) return;
   const rsi = "RSI " + r.rsi.toFixed(1).replace(".", ",");
-  if (r.today === r.yest) {      // pas de changement : petit point discret de l'état actuel
-    if (cell) { cell.textContent = ""; cell.className = "rtc same " + RT_CLS[r.today]; cell.title = "RSI Trends journalier toujours " + RT_NAME[r.today] + " (" + rsi + ")"; }
+  if (r.today === r.yest) {      // pas de changement : rien
     return;
   }
   const arrow = r.today > r.yest ? "▲" : "▼";
