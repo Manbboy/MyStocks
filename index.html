@@ -322,6 +322,7 @@
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 50% { box-shadow:0 0 0 4px #16a34a22; } }
 .live-btn, .day-btn { white-space:nowrap; }
+.live-menu { position:fixed; width:auto; min-width:220px; }
 .day-btn[hidden] { display:none; }
 #rtBtn.on.nopane { border-style:dashed; }
 .live-btn.on { border-color:#16a34a; color:#16a34a; background:var(--card); }
@@ -334,7 +335,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v17</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v18</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -352,6 +353,7 @@
     <button class="btn live-btn" id="liveBtn" title="Cours en séance (≈ 15 min de retard) : toucher pour activer / désactiver"></button>
     <button class="btn day-btn" id="dayBtn" title="1J : courbe étirée sur toute la largeur, ou placée sur la journée entière (se remplit jusqu'au bord droit à la clôture)"></button>
     <button class="btn" id="addBtn">+ Ajouter</button>
+    <div class="pick live-menu" id="liveMenu" hidden></div>
     <button class="btn" id="editBtn">Modifier</button>
   </div>
   <div class="toast" id="toast"></div>
@@ -2529,7 +2531,30 @@ $("lvClose").onclick = closeLevel;
     if (!liveOn()) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
     toast(liveOn() ? "Cours en séance activés" : "Cours en séance désactivés : clôtures uniquement", 1800);
   };
-  $("liveStatus").onclick = toggleLive; $("liveBtn").onclick = toggleLive; updLiveBtn();
+  const setLive = (on, sec) => {
+    prefs.live = on; if (sec) prefs.liveSec = sec; savePrefs(); updLiveBtn(); render(); startLive();
+    if (!on) { $("liveStatus").textContent = "○ En séance : désactivé"; $("liveStatus").className = "live-status ko"; }
+    toast(on ? "Direct : mise à jour toutes les " + liveSec() + " s" : "Cours en séance désactivés : clôtures uniquement", 1800);
+  };
+  $("liveStatus").onclick = toggleLive; updLiveBtn();
+  $("liveBtn").onclick = e => {
+    e.stopPropagation();
+    const m = $("liveMenu");
+    if (!m.hidden) { m.hidden = true; return; }
+    m.innerHTML = "";
+    [[0, "Clôtures seulement"], [5, "Direct · toutes les 5 s"], [15, "Direct · toutes les 15 s"], [30, "Direct · toutes les 30 s"], [60, "Direct · toutes les 60 s"]].forEach(([sec, lab]) => {
+      const b = document.createElement("button");
+      if ((sec === 0 && !liveOn()) || (sec && liveOn() && liveSec() === sec)) b.className = "cur";
+      b.innerHTML = '<span class="live-dot ' + (sec ? "on" : "off") + '"></span><span class="nm"></span>';
+      b.querySelector(".nm").textContent = lab;
+      b.onclick = ev => { ev.stopPropagation(); m.hidden = true; setLive(!!sec, sec || null); };
+      m.appendChild(b);
+    });
+    const r = $("liveBtn").getBoundingClientRect();
+    m.style.left = Math.max(8, r.left) + "px"; m.style.top = (r.bottom + 4) + "px";
+    m.hidden = false;
+  };
+  document.addEventListener("click", e => { if (!e.target.closest("#liveMenu")) $("liveMenu").hidden = true; });
   $("dayBtn").onclick = () => {
     prefs.dayFull = !prefs.dayFull; savePrefs(); updDayBtn();
     toast(prefs.dayFull ? "1J : graphique sur toute la journée de cotation" : "1J : courbe étirée sur toute la largeur", 1600);
@@ -2545,6 +2570,7 @@ const LIVE_URL = "https://cours-live.manbboy.workers.dev";
 const liveQuotes = {};      // sym -> { price, prevClose, time, day, state }
 let liveTimer = null, liveLast = 0, liveDiag = "";
 function liveOn() { return prefs.live !== false; }
+function liveSec() { return [5, 15, 30, 60].includes(+prefs.liveSec) ? +prefs.liveSec : 60; }   // fréquence du mode Direct
 function updDayBtn() {
   const b = $("dayBtn"); if (!b) return;
   b.hidden = !(liveOn() && prefs.range === "1J");
@@ -2553,7 +2579,7 @@ function updDayBtn() {
 function updLiveBtn() {
   updDayBtn();
   const b = $("liveBtn"); if (!b) return;
-  b.innerHTML = liveOn() ? '<span class="live-dot on"></span>Direct' : '<span class="live-dot off"></span>Clôtures';
+  b.innerHTML = liveOn() ? '<span class="live-dot on"></span>Direct ' + liveSec() + 's ▾' : '<span class="live-dot off"></span>Clôtures ▾';
   b.classList.toggle("on", liveOn());
 }
 function withLive(sym, info) {
@@ -2569,7 +2595,7 @@ function liveDot(info) {
 }
 async function pollLive(force) {
   if (!liveOn() || document.hidden) return;
-  if (!force && Date.now() - liveLast < 55000) return;
+  if (!force && Date.now() - liveLast < liveSec() * 1000 - 2000) return;
   liveLast = Date.now();
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
   const syms = new Set(pf.items.map(i => i.yahoo));
@@ -2577,7 +2603,7 @@ async function pollLive(force) {
   const list = [...syms];
   try {
     for (let k = 0; k < list.length; k += 40) {
-      const r = await fetch(LIVE_URL + "/quote?s=" + encodeURIComponent(list.slice(k, k + 40).join(",")));
+      const r = await fetch(LIVE_URL + "/quote?s=" + encodeURIComponent(list.slice(k, k + 40).join(",")) + "&r=" + Math.floor(Date.now() / (liveSec() * 1000)));
       if (!r.ok) throw new Error(r.status);
       const d = await r.json();
       (d.quotes || []).forEach(q => {
@@ -2588,13 +2614,13 @@ async function pollLive(force) {
     }
     setLiveStatus(true);
     refreshLiveCards();
-    if (prefs.range === "1J") refreshDayCards();
+    if (prefs.range === "1J" && Date.now() - (window._dayRef || 0) > 58000) { window._dayRef = Date.now(); refreshDayCards(); }
     refreshDetailLive();
   } catch (e) { setLiveStatus(false); }
 }
 function setLiveStatus(ok) {
   const el = $("liveStatus"); if (!el) return;
-  el.textContent = ok ? "● En séance · maj " + new Date().toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }) : "○ Cours en séance indisponibles";
+  el.textContent = ok ? "● En séance · maj " + new Date().toLocaleTimeString("fr-FR", liveSec() < 60 ? { hour:"2-digit", minute:"2-digit", second:"2-digit" } : { hour:"2-digit", minute:"2-digit" }) : "○ Cours en séance indisponibles";
   el.className = "live-status " + (ok ? "ok" : "ko");
 }
 function refreshLiveCards() {
@@ -2613,7 +2639,7 @@ function startLive() {
   clearInterval(liveTimer);
   if (!liveOn()) return;
   pollLive(true);
-  liveTimer = setInterval(() => pollLive(false), 60000);
+  liveTimer = setInterval(() => pollLive(false), liveSec() * 1000);
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden) pollLive(false); });
 
@@ -2629,7 +2655,7 @@ function tzShift(t, tz) {             // décalage (s) entre UTC et le fuseau, �
 async function fetchIntraday(sym) {
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 8000);
   try {
-    const r = await fetch(LIVE_URL + "/chart?s=" + encodeURIComponent(sym) + "&range=5d&interval=15m", { signal:ctl.signal });
+    const r = await fetch(LIVE_URL + "/chart?s=" + encodeURIComponent(sym) + "&range=5d&interval=15m&r=" + Math.floor(Date.now() / (Math.max(15, liveSec()) * 1000)), { signal:ctl.signal });
     if (!r.ok) { console.warn("relais /chart", r.status); return null; }
     const d = await r.json();
     if (!(d && d.bars && d.bars.length)) console.warn("relais /chart sans chandeliers", d && d.error);
