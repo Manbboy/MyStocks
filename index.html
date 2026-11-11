@@ -59,6 +59,7 @@
   .spacer { flex:1; }
   header { position:relative; }
   .theme-btn { position:absolute; right:0; top:12px; padding:5px 10px; font-size:12px; }
+  header { padding-right:96px; }          /* la ligne « Clôtures… En séance » ne passe plus sous le bouton de thème */
   .btn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:9px; padding:6px 11px; font-size:13px; font-weight:600; cursor:pointer; }
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
   .btn.danger { background:var(--down); border-color:var(--down); color:#fff; }
@@ -324,6 +325,8 @@
 .live-dot.off { background:#9ca3af; }
 @keyframes livepulse { 0%, 100% { opacity:0; } 50% { opacity:1; } }
 .live-btn, .day-btn { white-space:nowrap; }
+.btn-cd { display:inline-block; min-width:1.6em; margin:0 3px 0 2px; padding:0 4px; border-radius:6px; background:var(--chip); color:var(--muted); font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; text-align:center; }
+.btn-cd:empty { display:none; }
 .live-cd { font-size:12px; color:var(--muted); margin-left:6px; font-variant-numeric:tabular-nums; white-space:nowrap; }
 @keyframes flashUp { 0%, 35% { background:#16a34a; color:#fff; } 100% { background:transparent; } }
 @keyframes flashDown { 0%, 35% { background:#dc2626; color:#fff; } 100% { background:transparent; } }
@@ -343,7 +346,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v23</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v24</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2593,7 +2596,7 @@ function updDayBtn() {
 function updLiveBtn() {
   updDayBtn();
   const b = $("liveBtn"); if (!b) return;
-  b.innerHTML = liveOn() ? '<span class="live-dot on"></span>Direct ' + liveSec() + 's ▾' : '<span class="live-dot off"></span>Clôtures ▾';
+  b.innerHTML = liveOn() ? '<span class="live-dot on"></span>Direct ' + liveSec() + 's <span class="btn-cd" id="liveCdBtn"></span>▾' : '<span class="live-dot off"></span>Clôtures ▾';
   b.classList.toggle("on", liveOn());
 }
 function withLive(sym, info) {
@@ -2669,17 +2672,18 @@ function refreshLiveCards() {
 /* Une horloge à la seconde : compte à rebours affiché, et mise à jour de toutes les cartes quand il arrive à 0 */
 let liveNext = 0, liveBusy = false;
 function liveTick() {
-  const cd = $("liveCd");
-  if (!liveOn()) { if (cd) cd.textContent = ""; return; }
+  const cd0 = $("liveCd"), cd1 = $("liveCdBtn");
+  const cd = { set textContent(v) { if (cd0) cd0.textContent = v; if (cd1) cd1.textContent = v.replace("↻ ", "").replace(" s", ""); } };
+  if (!liveOn()) { cd.textContent = ""; return; }
   if (document.hidden) return;
   const left = Math.ceil((liveNext - Date.now()) / 1000);
   if (left <= 0 && !liveBusy) {
-    liveBusy = true; if (cd) cd.textContent = "↻ …";
+    liveBusy = true; cd.textContent = "↻ …";
     liveNext = Date.now() + liveSec() * 1000;
     pollLive(true).finally(() => { liveBusy = false; liveTick(); });
     return;
   }
-  if (cd && !liveBusy) cd.textContent = "↻ " + Math.max(1, left) + " s";
+  if (!liveBusy) cd.textContent = "↻ " + Math.max(1, left) + " s";
 }
 function startLive() {
   clearInterval(liveTimer);
