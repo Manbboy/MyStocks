@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v70</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v71</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1472,9 +1472,14 @@ function trendLines(rows, iv, pct) {
       if (touches.length < 3) continue;
       if (touches[touches.length - 1] < a + 0.6 * (end - a)) continue;            // la ligne doit encore être testée récemment
       // encore pertinente aujourd'hui : le cours n'en est pas trop loin, ou elle a été touchée récemment
-      if (!broken && Math.abs(rows[len - 1][4] - line(len - 1)) > rows[len - 1][4] * 0.3 && len - 1 - touches[touches.length - 1] > 4 * P.w) continue;
+      if (!broken && Math.abs(rows[len - 1][4] - line(len - 1)) > rows[len - 1][4] * 0.45 && len - 1 - touches[touches.length - 1] > 4 * P.w) continue;
       const span = end - a;
-      out.push({ kind, a, b, m, base:val(a), end, broken, touches, score: touches.length * 10 + span / P.lb * 8 + (broken ? 0 : 6) });
+      /* qualité : un contact net (creux posé sur la ligne) vaut plus qu'un contact en mèche ; chaque chandelier qui traverse la ligne en mèche pénalise */
+      const exact = touches.filter(p => Math.abs(val(p) - line(p)) <= line(p) * tol).length;
+      let cuts = 0;
+      for (let k = a; k <= end; k++) { const L = line(k); if (sup ? rows[k][3] < L * (1 - tol) : rows[k][2] > L * (1 + tol)) cuts++; }
+      out.push({ kind, a, b, m, base:val(a), end, broken, touches,
+        score: exact * 10 + (touches.length - exact) * 5 - cuts * 2 + span / P.lb * 8 + (broken ? 0 : 6) });
     }
   });
   // une seule ligne par « faisceau » de droites presque identiques
