@@ -12,6 +12,8 @@ Situations retenues après mesure sur l'historique (voir backtest_signals.py) :
             à condition que ce soit un support hebdo, ou que le RSI Trends journalier soit vert
   reprise : la MM20 repasse au-dessus de la MM50 alors que la MM50 est au-dessus de la MM200
             (reprise après un repli dans une tendance de fond haussière)
+  vert    : le RSI Trends journalier passe au vert, cours au-dessus de la MM200 ; mesuré comme un trade
+            gardé jusqu'au premier jour rouge (sortir au premier gris détruit le résultat)
   (écartées car sans avantage mesurable : retest d'une cassure, RSI Trends vert seul, rebond sur la MM50)
 Alertes (pour une position ouverte ; elles ne prédisent pas de baisse sur l'historique, ce sont des repères) :
   sup_casse : clôture nettement sous un support (au moins 2 contacts)
@@ -26,9 +28,9 @@ BREAK = 0.01         # cassure nette : 1 % au-delà du niveau
 VOL_K = 1.5
 LV = {"D": (250, 5), "W": (156, 3)}   # (lookback, fenêtre) comme le script quotidien
 
-BULL = {"rebond", "cassure", "reprise"}
+BULL = {"rebond", "cassure", "reprise", "vert"}
 LABEL = {
-    "cassure": "Cassure avec volume", "rebond": "Rebond sur support", "reprise": "Reprise de tendance",
+    "cassure": "Cassure avec volume", "rebond": "Rebond sur support", "reprise": "Reprise de tendance", "vert": "RSI Trends passe au vert",
     "sup_casse": "Support cassé", "sous_mm200": "Passage sous la MM200", "rt_rouge": "RSI Trends au rouge",
 }
 
@@ -164,6 +166,9 @@ class Series:
         m20 = self.ma20
         if m20[t] > ma50 and m20[t - 1] <= self.ma50[t - 1] and ma50 > ma200:
             out.append(dict(ctx, k="reprise", lv=round(float(ma50), 4)))
+        # RSI Trends journalier passe au vert, cours au-dessus de la MM200 (à garder jusqu'au premier rouge)
+        if self.rt[t] == 1 and self.rt[t - 1] != 1 and c > ma200:
+            out.append(dict(ctx, k="vert"))
         # alertes (pour une position ouverte)
         bs = [x for x in psup if c < x[0] * (1 - BREAK) and self.c[t - 1] >= x[0]]
         if bs:

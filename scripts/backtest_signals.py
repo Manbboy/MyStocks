@@ -26,7 +26,7 @@ def one(path):
         return None
     s = S.Series(rows)
     n = len(rows)
-    ev, base, base_up = [], [], []
+    ev, base, base_up, trades = [], [], [], []
     for t in range(210, n - H2 - 1):
         sig = s.at(t)
         e = s.o[t + 1]                       # achat à l'ouverture du lendemain
@@ -38,9 +38,14 @@ def one(path):
             base_up.append((r1, r2))
         for g in sig:
             ev.append((g["k"] + ("_fort" if g.get("fort") else ""), r1, r2, t))
-        if any(g["k"] in S.BULL for g in sig):
+            if g["k"] == "vert":                 # trade gardé jusqu'au premier jour rouge (sortie à l'ouverture suivante)
+                k = t + 1
+                while k < n - 1 and s.rt[k] != -1:
+                    k += 1
+                trades.append((s.o[k + 1] / e - 1 if k + 1 < n else s.c[-1] / e - 1, k + 1 - (t + 1)))
+        if any(g["k"] in S.BULL and g["k"] != "vert" for g in sig):      # « vert » se mesure comme un trade, à part
             ev.append(("toutes", r1, r2, t))
-    return ev, base, base_up
+    return ev, base, base_up, trades
 
 
 def stats(r):
@@ -61,6 +66,12 @@ def main():
     out = {"valeurs": len(res), "seances": len(base),
            "ref": {"j10": stats([b[0] for b in base]), "j20": stats([b[1] for b in base])},
            "ref_hausse": {"j10": stats([b[0] for b in up]), "j20": stats([b[1] for b in up])}, "sit": {}}
+    tr = np.array([t for r in res for t in r[3]])
+    if len(tr):
+        r_, d_ = tr[:, 0], tr[:, 1]
+        out["vert_trade"] = {"n": int(len(r_)), "pos": round(float((r_ > 0).mean()) * 100, 1), "moy": round(float(r_.mean()) * 100, 2),
+                             "gain": round(float(r_[r_ > 0].mean()) * 100, 1), "perte": round(float(r_[r_ <= 0].mean()) * 100, 1),
+                             "duree": int(np.median(d_))}
     for k in sorted({x[0] for x in ev}):
         e = [x for x in ev if x[0] == k]
         out["sit"][k] = {"j10": stats([x[1] for x in e]), "j20": stats([x[2] for x in e])}
