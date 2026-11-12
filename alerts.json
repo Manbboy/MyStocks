@@ -9,6 +9,16 @@
       "label": "",
       "note": "",
       "created": 1794524947277
+    },
+    {
+      "id": "mwe5wnls03ge",
+      "sym": "SAN.PA",
+      "name": "Sanofi",
+      "op": "below",
+      "price": 86.81,
+      "label": "S→R",
+      "note": "",
+      "created": 1794525092992
     }
   ]
 }
