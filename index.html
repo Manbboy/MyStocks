@@ -170,10 +170,10 @@
   /* mode compact des onglets : tableau (une ligne par valeur, colonnes alignées) */
   .grid.compact { display:block; padding-top:8px; }
   .grid.compact .tbl { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  .grid.compact .tr-h, .grid.compact .card-head { display:grid; grid-template-columns:minmax(0, 1fr) 76px 66px minmax(0, 104px) 24px; column-gap:10px; align-items:baseline; padding:8px 12px; }
+  .grid.compact .tr-h, .grid.compact .card-head { display:grid; grid-template-columns:minmax(0, 1fr) 76px 66px minmax(0, 104px) 24px 52px; column-gap:10px; align-items:baseline; padding:8px 12px; }
   .grid.compact .tr-h { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; border-bottom:1px solid var(--border); background:var(--chip); padding:6px 12px; }
   .grid.compact .tr-h span:nth-child(n+2) { text-align:right; }
-  .grid.compact .tr-h span:nth-child(5) { text-align:center; }
+  .grid.compact .tr-h span:nth-child(5), .grid.compact .tr-h span:nth-child(6) { text-align:center; }
   .grid.compact .card { border:0; border-bottom:1px solid var(--border); border-radius:0; background:transparent; }
   .grid.compact .card:last-child { border-bottom:0; }
   .grid.compact .card:nth-child(even) { background:rgba(127,127,127,.05); }
@@ -183,7 +183,7 @@
   .grid.compact .px2 { grid-column:2; grid-row:1; text-align:right; font-size:13.5px; color:var(--text); font-variant-numeric:tabular-nums; }
   .grid.compact .chg { grid-column:3; grid-row:1; text-align:right; font-size:13.5px; font-weight:600; font-variant-numeric:tabular-nums; }
   .grid.compact .near { grid-column:4; grid-row:1; margin:0; text-align:right; font-size:11px; }
-  @media (max-width:420px) { .grid.compact .tr-h, .grid.compact .card-head { grid-template-columns:minmax(0, 1fr) 62px 58px 74px 16px; column-gap:5px; padding-left:10px; padding-right:10px; } }
+  @media (max-width:420px) { .grid.compact .tr-h, .grid.compact .card-head { grid-template-columns:minmax(0, 1fr) 58px 54px 64px 14px 38px; column-gap:4px; padding-left:10px; padding-right:10px; } }
   /* onglet Hold en compact : tableau sur 2 colonnes (3 sur tablette), lecture de haut en bas */
   .grid.compact .tbl.multi { columns:2; column-gap:0; column-rule:1px solid var(--border); }
   .grid.compact .tbl.multi .tr-h { display:none; }
@@ -340,6 +340,11 @@
   .rt-up { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#fff; background:#00c853; border-radius:4px; padding:1px 4px; margin-right:5px; vertical-align:1px; line-height:1.3; }
   .rt-up.n { background:#787B86; } .rt-up.r { background:#FF5252; }
   .rtc { display:none; }
+  .boc { display:none; }
+  .grid.compact .tbl:not(.multi) .boc { display:block; grid-column:6; grid-row:1; text-align:center; font-size:10.5px; font-weight:800; white-space:nowrap; }
+  .boc.up { color:#00c853; } .boc.dn { color:#FF5252; }
+  .boc:not(.now) { opacity:.75; }
+  .grid.compact .tbl.multi .boc { display:block; grid-column:1; grid-row:2; justify-self:end; align-self:center; font-size:10px; font-weight:800; white-space:nowrap; }
   .grid.compact .tbl:not(.multi) .rtc { display:block; grid-column:5; grid-row:1; text-align:center; font-size:13px; font-weight:800; }
   .grid.compact .tbl:not(.multi) .nm .rt-up { display:none; }
   .rtc.g { color:#00c853; } .rtc.n { color:#787B86; } .rtc.r { color:#FF5252; }
@@ -492,7 +497,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v72</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v73</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -873,7 +878,7 @@ function renderGrid() {
   let host = g;
   if (prefs.gridCompact && pf.items.length) {
     host = document.createElement("div"); host.className = "tbl" + (pf.name === "Hold" ? " multi" : "");
-    host.innerHTML = '<div class="tr-h"><span>Valeur</span><span>Cours</span><span>Jour</span><span>Niveau</span><span title="Changement RSI Trends journalier du jour">RT</span></div>';
+    host.innerHTML = '<div class="tr-h"><span>Valeur</span><span>Cours</span><span>Jour</span><span>Niveau</span><span title="Changement RSI Trends journalier du jour">RT</span><span title="Sortie de canal, d\'oblique, de résistance ou de support ces 5 dernières séances (journalier)">Cass.</span></div>';
     g.appendChild(host);
   }
   $("cmpBtn").textContent = prefs.gridCompact ? "▦" : "≡"; $("cmpBtn").classList.toggle("on", !!prefs.gridCompact);
@@ -887,7 +892,7 @@ function renderGrid() {
     const cls = pct == null ? "" : pct >= 0 ? "up" : "down";
     card.innerHTML =
       '<div class="card-head"><div class="row1"><span class="nm"></span><span class="px"></span></div>' +
-      '<div class="row2"><span class="sym"></span><span class="px2"></span><span class="chg ' + cls + '"></span></div><div class="near"></div><span class="rtc"></span></div>' +
+      '<div class="row2"><span class="sym"></span><span class="px2"></span><span class="chg ' + cls + '"></span></div><div class="near"></div><span class="rtc"></span><span class="boc"></span></div>' +
       '<div class="chart"></div>';
     card.querySelector(".nm").textContent = item.name;
     card.querySelector(".sym").textContent = item.yahoo;
@@ -913,7 +918,9 @@ function renderGrid() {
         const el = card.querySelector(".near");
         el.className = "near " + (nr.kind === "S" ? "s" : "r");
         const pctTxt = nr.dist < 0.05 ? "< 0,1 %" : nr.dist.toLocaleString(NUM_LOC, { minimumFractionDigits:1, maximumFractionDigits:1 }) + " %";
-        el.textContent = prefs.cols >= 3 || prefs.gridCompact
+        el.textContent = prefs.gridCompact && innerWidth <= 420      // tableau sur téléphone : forme courte
+          ? (nr.kind === "S" ? "▲S·" : "▼R·") + LV[nr.tf].short + " " + pctTxt.replace(" %", "%")
+          : prefs.cols >= 3 || prefs.gridCompact
           ? (nr.kind === "S" ? "▲ S·" : "▼ R·") + LV[nr.tf].short + " à " + pctTxt
           : (nr.kind === "S" ? "▲ Proche support " + { D:"journalier", W:"hebdomadaire", M:"mensuel", Q:"trimestriel" }[nr.tf]
                              : "▼ Proche résistance " + { D:"journalière", W:"hebdomadaire", M:"mensuelle", Q:"trimestrielle" }[nr.tf]) + " à " + pctTxt;
@@ -928,6 +935,7 @@ function renderGrid() {
     }
     host.appendChild(card);
   });
+  if (prefs.gridCompact && host !== g && typeof boFill === "function") boFill(host);
 }
 
 /* Onglet « Hold » : liste enregistrée dans portfolios.json, complétée à l'affichage par les valeurs encore détenues (M ou D)
@@ -3994,6 +4002,96 @@ async function renderSig() {
   if (!al.length) box.insertAdjacentHTML("beforeend", '<div class="sig-none">Rien à signaler sur les valeurs de l\'onglet Hold.</div>');
   al.forEach(e => box.appendChild(sigRow(e, AL)));
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calcul du ' + new Date(sigData.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + "</div>");
+}
+
+/* ===== Colonne « Cassure » du mode compact : sorties récentes (5 dernières séances, en journalier)
+   d'un canal, d'une oblique, d'une résistance ou d'un support — mêmes calculs que les graphiques ===== */
+const BO_KEY = "mes-actions-bo-v2", BO_DAYS = 5;
+let boStore = (() => { try { return JSON.parse(localStorage.getItem(BO_KEY)) || {}; } catch (e) { return {}; } })();
+const boSig = () => summary.updated + "|" + tolPct() + "|" + (prefs.role ? 1 : 0);
+function boCompute(data) {
+  const rows = barsFor(data, "D"), n = rows.length, ev = [];
+  if (n < 60) return ev;
+  const C = rows[n - 1][4], tol = tolPct() / 100, idx = t => rows.findIndex(r => r[0] === t);
+  // canaux : cassés récemment, ou dernière clôture déjà nettement dehors
+  channels(rows, "D", tolPct()).forEach(c => {
+    if (c.broken) { const a = n - 1 - idx(c.to); if (a >= 0 && a < BO_DAYS) ev.push({ t:"Canal", d:c.broken === "up" ? 1 : -1, a, lv:c.broken === "up" ? c.up1 : c.lo1, dir:c.dir }); }
+    // canal intact mais dernière clôture déjà au-delà du bord : sortie en cours, à confirmer
+    else if (C > c.up1 * 1.002) ev.push({ t:"Canal", d:1, a:0, lv:c.up1, dir:c.dir, p:1 });
+    else if (C < c.lo1 * 0.998) ev.push({ t:"Canal", d:-1, a:0, lv:c.lo1, dir:c.dir, p:1 });
+  });
+  // obliques : résistance franchie (hausse) ou support enfoncé (baisse)
+  trendLines(rows, "D", tolPct()).forEach(t => {
+    if (!t.broken) {      // oblique intacte, dernière clôture déjà de l'autre côté : sortie en cours, à confirmer
+      if (t.kind === "res" && C > t.now * 1.002) ev.push({ t:"Obl.", d:1, a:0, lv:t.now, p:1 });
+      if (t.kind === "sup" && C < t.now * 0.998) ev.push({ t:"Obl.", d:-1, a:0, lv:t.now, p:1 });
+      return;
+    }
+    const a = n - 1 - t.end;
+    if (a >= 0 && a < BO_DAYS) ev.push({ t:"Obl.", d:t.kind === "res" ? 1 : -1, a, lv:t.v1 });
+  });
+  // supports / résistances horizontaux (journaliers et hebdo) connus avant la fenêtre, franchis depuis
+  const m = n - 1 - BO_DAYS;
+  if (m > 30) {
+    const ci = data.rows.findIndex(r => r[0] > rows[m][0]);
+    const cut = { symbol:data.symbol + "#bo", rows:data.rows.slice(0, ci < 0 ? data.rows.length : ci), long:data.long };
+    const lv = computeLevels(cut, rows[m][4], tolPct(), !!prefs.role);
+    Object.keys(barsCache).forEach(k => { if (k.startsWith(cut.symbol)) delete barsCache[k]; });
+    ["D", "W"].forEach(tf => {
+      const L = lv[tf]; if (!L) return;
+      L.resistances.filter(r => r.touches >= 2).forEach(r => {
+        if (C <= r.price * 1.01) return;
+        let k = m + 1; while (k < n && rows[k][4] <= r.price * 1.01) k++;
+        ev.push({ t:"Rés.", d:1, a:n - 1 - k, lv:r.price, tf });
+      });
+      L.supports.filter(s => s.touches >= 2).forEach(s => {
+        if (C >= s.price * 0.99) return;
+        let k = m + 1; while (k < n && rows[k][4] >= s.price * 0.99) k++;
+        ev.push({ t:"Sup.", d:-1, a:n - 1 - k, lv:s.price, tf });
+      });
+    });
+  }
+  const pri = { "Canal":0, "Obl.":1, "Rés.":2, "Sup.":2 };
+  // une oblique confondue avec le bord d'un canal (même sens, même prix) n'est comptée qu'une fois
+  for (let i = ev.length - 1; i >= 0; i--) {
+    const e = ev[i];
+    if (e.t === "Obl." && ev.some(x => x.t === "Canal" && x.d === e.d && Math.abs(x.lv / e.lv - 1) < 0.005)) ev.splice(i, 1);
+  }
+  return ev.sort((x, y) => x.a - y.a || pri[x.t] - pri[y.t]).map(e => Object.assign(e, { lv:Math.round(e.lv * 1e4) / 1e4, date:rows[n - 1 - e.a][0] }));
+}
+function boPaint(card, ev) {
+  const cell = card.querySelector(".boc"), nm = card.querySelector(".nm");
+  const old = nm && nm.querySelector(".bo-b"); if (old) old.remove();
+  if (cell) { cell.textContent = ""; cell.className = "boc"; cell.title = ""; }
+  if (!ev || !ev.length) return;
+  const e = ev[0], same = ev.filter(x => x.d === e.d).length;
+  const txt = (e.d > 0 ? "↗" : "↘") + { "Canal":"Can", "Obl.":"Obl", "Rés.":"Rés", "Sup.":"Sup" }[e.t] + (e.p ? "?" : "");
+  const tip = ev.map(x => (x.d > 0 ? "Sortie par le haut : " : "Sortie par le bas : ") +
+    { "Canal":"canal " + (x.dir === "up" ? "haussier" : "baissier"), "Obl.":x.d > 0 ? "oblique de résistance" : "oblique de support",
+      "Rés.":"résistance " + (x.tf === "W" ? "hebdo" : "journalière"), "Sup.":"support " + (x.tf === "W" ? "hebdo" : "journalier") }[x.t] +
+    " (" + fmt(x.lv) + "), " + (x.a === 0 ? "dernière séance" : "il y a " + x.a + " séance" + (x.a > 1 ? "s" : "")) + (x.p ? " — première clôture au-delà, à confirmer" : "")).join("\n");
+  if (cell) { cell.textContent = txt + (same > 1 && !e.p ? "+" : ""); cell.className = "boc " + (e.d > 0 ? "up" : "dn") + (e.a === 0 ? " now" : ""); cell.title = tip; }
+}
+let boRun = 0;
+async function boFill(host) {
+  const run = ++boRun, sig = boSig();
+  const cards = [...host.querySelectorAll(".card[data-sym]")];
+  // d'abord ce qui est déjà calculé, puis le reste une valeur à la fois (sans bloquer l'écran)
+  cards.forEach(c => { const s = boStore[c.dataset.sym]; if (s && s.u === sig) boPaint(c, s.ev); });
+  for (const c of cards) {
+    if (run !== boRun) return;
+    const sym = c.dataset.sym, s = boStore[sym];
+    if (s && s.u === sig) continue;
+    const info = summary.symbols[sym]; if (!info || !info.file) continue;
+    try {
+      const data = await getSeries(info);
+      await new Promise(r => setTimeout(r, 0));
+      const ev = boCompute(data);
+      boStore[sym] = { u:sig, ev };
+      try { localStorage.setItem(BO_KEY, JSON.stringify(boStore)); } catch (e) {}
+      if (run === boRun) boPaint(c, ev);
+    } catch (e) {}
+  }
 }
 </script>
 </body>
