@@ -10,6 +10,8 @@ Situations retenues après mesure sur l'historique (voir backtest_signals.py) :
             d'une résistance (au moins 2 contacts) avec un volume d'au moins 1,5 fois la moyenne de 20 séances
   rebond  : tendance haussière, le cours revient sur un support (à moins de 2 %, ou mèche dessus),
             à condition que ce soit un support hebdo, ou que le RSI Trends journalier soit vert
+  reprise : la MM20 repasse au-dessus de la MM50 alors que la MM50 est au-dessus de la MM200
+            (reprise après un repli dans une tendance de fond haussière)
   (écartées car sans avantage mesurable : retest d'une cassure, RSI Trends vert seul, rebond sur la MM50)
 Alertes (pour une position ouverte ; elles ne prédisent pas de baisse sur l'historique, ce sont des repères) :
   sup_casse : clôture nettement sous un support (au moins 2 contacts)
@@ -24,9 +26,9 @@ BREAK = 0.01         # cassure nette : 1 % au-delà du niveau
 VOL_K = 1.5
 LV = {"D": (250, 5), "W": (156, 3)}   # (lookback, fenêtre) comme le script quotidien
 
-BULL = {"rebond", "cassure"}
+BULL = {"rebond", "cassure", "reprise"}
 LABEL = {
-    "cassure": "Cassure avec volume", "rebond": "Rebond sur support",
+    "cassure": "Cassure avec volume", "rebond": "Rebond sur support", "reprise": "Reprise de tendance",
     "sup_casse": "Support cassé", "sous_mm200": "Passage sous la MM200", "rt_rouge": "RSI Trends au rouge",
 }
 
@@ -158,6 +160,10 @@ class Series:
             if s_ and (s_[2] == "S" or self.rt[t] == 1):
                 out.append(dict(ctx, k="rebond", lv=round(s_[0], 4), tf=s_[2], n=s_[1], rt=bool(self.rt[t] == 1),
                                 fort=bool(s_[2] == "S" and self.rt[t] == 1)))
+        # reprise de tendance : la MM20 repasse au-dessus de la MM50 alors que la MM50 est au-dessus de la MM200
+        m20 = self.ma20
+        if m20[t] > ma50 and m20[t - 1] <= self.ma50[t - 1] and ma50 > ma200:
+            out.append(dict(ctx, k="reprise", lv=round(float(ma50), 4)))
         # alertes (pour une position ouverte)
         bs = [x for x in psup if c < x[0] * (1 - BREAK) and self.c[t - 1] >= x[0]]
         if bs:
