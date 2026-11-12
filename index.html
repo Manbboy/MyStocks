@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v67</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v68</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1617,7 +1617,7 @@ function drawGeoOn(chart, items, sel) {
 }
 function geoMarks(items, sel) {
   const marks = [];
-  if (prefs.dots === false && sel == null) return marks;      // points de contact masqués (sauf élément mis en évidence)
+  if (prefs.dots === false) return marks;      // points de contact masqués, même pour l'élément mis en évidence
   items.forEach((it, n) => {
     if (sel != null && sel !== n) return;
     if (it.g === "chan") {
@@ -1691,7 +1691,7 @@ function flipMarkers(only) {
   ovFlips.forEach((f, n) => {
     if (only != null && n !== only) return;
     const col = FLIP_COL[f.type], up = f.type === "RS";
-    if (prefs.dots !== false || only != null) marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:col });
+    if (prefs.dots !== false) marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:col });
     f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:col }));
   });
   return marks.sort((a, b) => a.time < b.time ? -1 : 1);
