@@ -363,6 +363,15 @@
   .rtbt[hidden] { display:none; }
   .rtbt b { font-weight:700; } .rtbt .up { color:var(--up); } .rtbt .down { color:var(--down); }
   .rtbt .hold { opacity:.8; }
+  .al-n { display:inline-block; min-width:16px; padding:0 5px; border-radius:9px; background:var(--accent); color:#fff; font-size:11px; font-weight:800; line-height:16px; margin-left:3px; }
+  .al-big { align-items:flex-start; cursor:pointer; padding:9px 11px; }
+  .al-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .al-top { display:flex; align-items:center; gap:8px; font-size:15px; }
+  .al-badge { font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; color:#fff; }
+  .al-badge.wait { background:#787B86; } .al-badge.ok { background:#00a844; }
+  .al-row.al-big.done { opacity:1; } .al-dist { font-weight:700; }
+  .al-act { display:flex; gap:6px; }
+  .al-tg { margin:4px 2px 8px; }
   .al-lv { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 2px; }
   .al-list { display:flex; flex-direction:column; gap:6px; }
   .al-row { display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:7px 9px; font-size:13px; background:var(--card); }
@@ -509,7 +518,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v80</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v81</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -862,6 +871,13 @@ function renderTabs() {
   sb.innerHTML = "À regarder" + (nNew ? ' <span class="sig-n">' + nNew + "</span>" : "");
   sb.onclick = () => { prefs.view = "sig"; savePrefs(); render(); };
   t.appendChild(sb);
+  const ab = document.createElement("button");                 // onglet « Alertes » (suivi des alertes Telegram)
+  ab.className = "tab" + (prefs.view === "alerts" ? " active" : "");
+  let nWait = 0;
+  try { nWait = alertsData ? (alertsData.alerts || []).filter(a => !alertsSent[a.id]).length : 0; } catch (e) {}
+  ab.innerHTML = "Alertes" + (nWait ? ' <span class="al-n">' + nWait + "</span>" : "");
+  ab.onclick = () => { prefs.view = "alerts"; savePrefs(); render(); };
+  t.appendChild(ab);
   const pb = document.createElement("button");                 // onglet « Portefeuille » (achats / ventes de M et D)
   pb.className = "tab pf-tab" + (prefs.view === "pf" ? " active" : "");
   pb.textContent = "Portefeuille";
@@ -975,6 +991,7 @@ function render() {
   renderTabs();
   if (prefs.view === "pf" && typeof renderPf === "function") { renderPf(); return; }
   if (prefs.view === "sig" && typeof renderSig === "function") { renderSig(); return; }
+  if (prefs.view === "alerts" && typeof renderAlertsView === "function") { renderAlertsView(); return; }
   document.body.classList.remove("pf-mode"); if ($("pfView")) $("pfView").hidden = true;
   renderSeg("colsSeg", COLS.map(c => [c, String(c)]), prefs.cols, v => { prefs.cols = v; savePrefs(); render(); });
   renderSeg("rangeSeg", RANGES, prefs.range, v => { prefs.range = v; savePrefs(); render(); if (typeof updDayBtn === "function") updDayBtn(); });
@@ -2924,6 +2941,7 @@ $("lvClose").onclick = closeLevel;
   ensureHold();
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
   sigLoad().then(() => { if (sigData) renderTabs(); });
+  setTimeout(() => { if (typeof alertsLoad === "function") alertsLoad().then(() => renderTabs()); }, 0);
   setTimeout(() => { if (typeof openFromHash === "function") openFromHash(); }, 0);   // lien #sym=… (messages Telegram)      // pastille du nombre de situations sur l'onglet « À regarder »
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
   $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
@@ -4010,7 +4028,6 @@ async function renderSig() {
   const h2 = document.createElement("div"); h2.className = "pf-sub"; h2.textContent = "Alertes sur mes positions (#" + al.length + ")"; box.appendChild(h2);
   if (!al.length) box.insertAdjacentHTML("beforeend", '<div class="sig-none">Rien à signaler sur les valeurs de l\'onglet Hold.</div>');
   al.forEach(e => box.appendChild(sigRow(e, AL)));
-  if (typeof renderAlertsSection === "function") renderAlertsSection(box);
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calcul du ' + new Date(sigData.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + "</div>");
 }
 
@@ -4299,6 +4316,59 @@ function openFromHash() {
   for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === sym); if (it) { history.replaceState(null, "", location.pathname); openDetail(it, withLive(sym, summary.symbols[sym])); return; } }
 }
 window.addEventListener("hashchange", openFromHash);
+
+/* ===== Onglet « Alertes » : suivi des alertes Telegram (en attente / déclenchées) ===== */
+async function renderAlertsView() {
+  document.body.classList.add("pf-mode");
+  const box = $("pfView"); box.hidden = false;
+  if (!alertsData) box.innerHTML = '<div class="msg">Chargement…</div>';
+  await alertsLoad(true);
+  if (prefs.view !== "alerts") return;
+  box.innerHTML = "";
+  const all = (alertsData.alerts || []).slice();
+  const intro = document.createElement("div"); intro.className = "sig-intro";
+  intro.innerHTML = "<b>Mes alertes de prix</b> : vérifiées toutes les 5 minutes en semaine par le relais, message Telegram au franchissement (une seule fois). " +
+    "Créez-en depuis le graphique d'une valeur avec le bouton 🔔.";
+  box.appendChild(intro);
+  const tgb = document.createElement("p"); tgb.className = "hint al-tg"; box.appendChild(tgb); renderTgStatus(tgb);
+  const lastOf = sym => { const i = withLive(sym, summary.symbols[sym] || {}); return i && i.last; };
+  const row = a => {
+    const last = lastOf(a.sym), done = alertsSent[a.id];
+    const dist = last && !done ? (a.price / last - 1) * 100 : null;
+    const el = document.createElement("div"); el.className = "al-row al-big" + (done ? " done" : ""); el.dataset.id = a.id;
+    el.innerHTML = '<div class="al-main"><div class="al-top"><b>' + (a.name || a.sym).replace(/</g, "&lt;") + "</b>" +
+      '<span class="al-badge ' + (done ? "ok" : "wait") + '">' + (done ? "Déclenchée" : "En attente") + "</span></div>" +
+      "<div>" + (a.op === "above" ? "▲ au-dessus de " : "▼ sous ") + "<b>" + fmt(a.price) + "</b>" + (a.label ? ' <span class="al-lab">' + a.label + "</span>" : "") +
+      (last ? ' · cours ' + fmt(last) : "") + (dist != null ? ' · <span class="al-dist">encore ' + (dist >= 0 ? "+" : "") + dist.toFixed(1).replace(".", ",") + " %</span>" : "") + "</div>" +
+      (a.note ? '<div class="al-note">📝 ' + a.note.replace(/</g, "&lt;") + "</div>" : "") +
+      '<div class="al-st">' + (done ? "Envoyée le " + new Date(done).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) : "") +
+      (a.created ? (done ? " · " : "") + "créée le " + new Date(a.created).toLocaleDateString("fr-FR") : "") + "</div></div>" +
+      '<div class="al-act">' + (done ? '<button class="btn al-re" title="Recréer la même alerte">↻</button>' : "") + '<button class="btn al-del" title="Supprimer">✕</button></div>';
+    el.onclick = e => {
+      if (e.target.closest("button")) return;
+      for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === a.sym); if (it) { openDetail(it, withLive(a.sym, summary.symbols[a.sym])); return; } }
+    };
+    return el;
+  };
+  const wait = all.filter(a => !alertsSent[a.id]).sort((x, y) => {
+    const dx = Math.abs(x.price / (lastOf(x.sym) || x.price) - 1), dy = Math.abs(y.price / (lastOf(y.sym) || y.price) - 1); return dx - dy; });
+  const done = all.filter(a => alertsSent[a.id]).sort((x, y) => alertsSent[y.id] - alertsSent[x.id]);
+  [["En attente", wait, "Aucune alerte en attente."], ["Déclenchées", done, "Aucune alerte déclenchée pour l'instant."]].forEach(([t, list, none]) => {
+    const h = document.createElement("div"); h.className = "pf-sub"; h.textContent = t + " (#" + list.length + ")"; box.appendChild(h);
+    const body = document.createElement("div"); body.className = "al-list"; box.appendChild(body);
+    if (!list.length) body.innerHTML = '<span class="sig-none">' + none + "</span>";
+    list.forEach(a => body.appendChild(row(a)));
+    bindAlertDeletes(body, renderAlertsView);
+    body.querySelectorAll(".al-re").forEach(b => b.onclick = async e => {
+      e.stopPropagation(); b.disabled = true;
+      const a = all.find(x => x.id === b.closest(".al-row").dataset.id), last = lastOf(a.sym);
+      const n = Object.assign({}, a, { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), created:Date.now(), op:last && a.price > last ? "above" : last ? "below" : a.op });
+      try { await alertsSave(d => { d.alerts = (d.alerts || []).filter(x => x.id !== a.id); d.alerts.push(n); }, "Alerte recréée sur " + a.sym); toast("Alerte recréée.", 1500); renderAlertsView(); }
+      catch (err) { b.disabled = false; toast(alertErr(err), 4000); }
+    });
+  });
+  box.insertAdjacentHTML("beforeend", '<div class="sig-foot">« encore x % » : écart entre le cours et le niveau de l\'alerte.</div>');
+}
 </script>
 </body>
 </html>
