@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v66</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v67</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3825,9 +3825,9 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
 })();
 
 
-/* ===== Double toucher sur le graphique du détail : 80, puis 120, puis 160 périodes (puis on recommence) ===== */
+/* ===== Double toucher sur le graphique du détail : 80, 120, 160, 200 puis 240 périodes (puis on recommence) ===== */
 (function () {
-  const STEPS = [80, 120, 160];
+  const STEPS = [80, 120, 160, 200, 240];
   let step = -1, lastAt = 0, lastX = 0, lastY = 0, resetT = null;
   function zoomBars() {
     if (!ovChart || !ovCandles) return;
