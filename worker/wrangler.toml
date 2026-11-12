@@ -3,3 +3,7 @@ name = "cours-live"
 main = "cours-live.js"
 compatibility_date = "2026-11-01"
 workers_dev = true
+
+# Vérification des alertes de prix toutes les 5 minutes, du lundi au vendredi, de 7 h à 21 h 59 (heure UTC)
+[triggers]
+crons = ["*/5 7-21 * * 1-5"]

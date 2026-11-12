@@ -363,6 +363,12 @@
   .rtbt[hidden] { display:none; }
   .rtbt b { font-weight:700; } .rtbt .up { color:var(--up); } .rtbt .down { color:var(--down); }
   .rtbt .hold { opacity:.8; }
+  .al-lv { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 2px; }
+  .al-list { display:flex; flex-direction:column; gap:6px; }
+  .al-row { display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:7px 9px; font-size:13px; background:var(--card); }
+  .al-row.done { opacity:.6; }
+  .al-lab { font-size:11px; color:var(--muted); } .al-note { font-size:12px; color:var(--muted); } .al-st { font-size:11px; color:var(--muted); margin-top:2px; }
+  .al-del { padding:3px 9px; }
   .fitbtn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:14px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; }
   .fitbtn.on { background:var(--text); color:var(--bg); border-color:var(--text); }
   .navsm { border:0; background:none; color:var(--muted); font-size:26px; line-height:1; width:44px; height:30px; border-radius:8px; cursor:pointer; opacity:.7; }
@@ -503,7 +509,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v79</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v80</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -606,6 +612,7 @@
     <div class="navrow">
       <button class="navsm" id="ovPrev2" aria-label="Action précédente">‹</button>
       <button class="fitbtn" id="fitBtn" title="Dézoomer au maximum pour voir tout l'historique">⤢ Tout voir</button>
+      <button class="fitbtn" id="alertBtn" title="Créer une alerte de prix (Telegram)">🔔</button>
       <button class="fitbtn" id="sideBtn" title="Afficher ou cacher les informations détaillées (listes des niveaux, canaux, moyennes…)"></button>
       <button class="navsm" id="ovNext2" aria-label="Action suivante">›</button>
     </div>
@@ -1322,7 +1329,9 @@ $("ovNext").onclick = $("ovNext2").onclick = () => goTo(1);
 })();
 
 let navKeep = null;
+let ovCurItem = null;        // valeur affichée dans le détail (nom, symbole)
 async function openDetail(item, info, pos) {
+  ovCurItem = item;
   const keepView = pos ? navKeep : null; navKeep = null;
   info = withLive(item.yahoo, info);
   if (pos) ovPos = pos;
@@ -2399,6 +2408,7 @@ function renderQuick() {
   }
   // même ordre que les boutons (MM, S/R, Canal, Obl., R⇄S), puis du prix le plus haut au plus bas
   items.sort((a, b) => a.grp - b.grp || b.price - a.price);
+  window._qItems = items;
   // numérotation dans l'ordre affiché quand plusieurs éléments portent le même nom
   const cntAll = {}, seenAll = {};
   items.forEach(x => { if (x.nb) cntAll[x.t] = (cntAll[x.t] || 0) + 1; });
@@ -2913,7 +2923,8 @@ $("lvClose").onclick = closeLevel;
   }
   ensureHold();
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
-  sigLoad().then(() => { if (sigData) renderTabs(); });      // pastille du nombre de situations sur l'onglet « À regarder »
+  sigLoad().then(() => { if (sigData) renderTabs(); });
+  setTimeout(() => { if (typeof openFromHash === "function") openFromHash(); }, 0);   // lien #sym=… (messages Telegram)      // pastille du nombre de situations sur l'onglet « À regarder »
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
   $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   const toggleLive = () => {
@@ -3999,6 +4010,7 @@ async function renderSig() {
   const h2 = document.createElement("div"); h2.className = "pf-sub"; h2.textContent = "Alertes sur mes positions (#" + al.length + ")"; box.appendChild(h2);
   if (!al.length) box.insertAdjacentHTML("beforeend", '<div class="sig-none">Rien à signaler sur les valeurs de l\'onglet Hold.</div>');
   al.forEach(e => box.appendChild(sigRow(e, AL)));
+  if (typeof renderAlertsSection === "function") renderAlertsSection(box);
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calcul du ' + new Date(sigData.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + "</div>");
 }
 
@@ -4149,6 +4161,144 @@ function renderRtBt() {
     "« Garder » : achat au premier trade et conservation jusqu'à aujourd'hui. Statistiques passées, sans garantie.";
 }
 $("rtBt").onclick = e => { e.stopPropagation(); toast($("rtBt").title, 9000); };
+
+/* ===== Alertes de prix envoyées sur Telegram par le relais Cloudflare (alerts.json dans le dépôt) ===== */
+let alertsData = null, alertsSent = {};
+async function ghFile(path, mutate, message, init) {
+  const tok = getTok();
+  if (!tok) throw new Error("NOTOKEN");
+  const url = "https://api.github.com/repos/" + REPO + "/contents/" + path;
+  const headers = { Authorization:"Bearer " + tok, Accept:"application/vnd.github+json" };
+  for (let k = 0; k < 3; k++) {
+    const r = await fetch(url + "?ref=main&t=" + Date.now(), { headers, cache:"no-store" });
+    if (r.status === 401 || r.status === 403) throw new Error("BADTOKEN");
+    let cur, sha;
+    if (r.status === 404) cur = JSON.parse(JSON.stringify(init));
+    else if (!r.ok) throw new Error("GitHub a répondu " + r.status);
+    else { const j = await r.json(); cur = JSON.parse(b64dec(j.content)); sha = j.sha; }
+    mutate(cur);
+    const put = await fetch(url, { method:"PUT", headers, body:JSON.stringify(Object.assign({ message, branch:"main",
+      content:b64enc(JSON.stringify(cur, null, 2) + "\n") }, sha ? { sha } : {})) });
+    if (put.status === 401 || put.status === 403) throw new Error("BADTOKEN");
+    if (put.status === 409 || put.status === 422) continue;          // modifié entre-temps : on relit et on recommence
+    if (!put.ok) throw new Error("Enregistrement refusé par GitHub (" + put.status + ")");
+    return cur;
+  }
+  throw new Error("conflit d'écriture, réessayez");
+}
+async function alertsLoad(force) {
+  if (alertsData && !force) return alertsData;
+  try {
+    const r = await fetch("https://raw.githubusercontent.com/" + REPO + "/main/alerts.json?t=" + Date.now(), { cache:"no-store" });
+    alertsData = r.ok ? await r.json() : { alerts:[] };
+  } catch (e) { alertsData = alertsData || { alerts:[] }; }
+  try { alertsSent = (await (await fetch(LIVE_URL + "/alerts/sent")).json()).sent || {}; } catch (e) {}
+  return alertsData;
+}
+async function alertsSave(mutate, msg) {
+  alertsData = await ghFile("alerts.json", mutate, msg, { alerts:[] });
+  return alertsData;
+}
+const alertErr = e => e.message === "NOTOKEN" || e.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (bouton + de la page d'accueil)." : e.message;
+function alertLine(a, withName) {
+  const done = alertsSent[a.id];
+  return '<div class="al-row' + (done ? " done" : "") + '" data-id="' + a.id + '"><div>' +
+    (withName ? "<b>" + (a.name || a.sym).replace(/</g, "&lt;") + "</b> " : "") +
+    (a.op === "above" ? "▲ au-dessus de " : "▼ sous ") + "<b>" + fmt(a.price) + "</b>" + (a.label ? ' <span class="al-lab">' + a.label + "</span>" : "") +
+    (a.note ? '<div class="al-note">' + a.note.replace(/</g, "&lt;") + "</div>" : "") +
+    '<div class="al-st">' + (done ? "✓ envoyée le " + new Date(done).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) : "en attente") + "</div></div>" +
+    '<button class="btn al-del" title="Supprimer">✕</button></div>';
+}
+function bindAlertDeletes(box, after) {
+  box.querySelectorAll(".al-del").forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    const id = b.closest(".al-row").dataset.id; b.disabled = true;
+    try { await alertsSave(d => { d.alerts = (d.alerts || []).filter(a => a.id !== id); }, "Alerte supprimée"); toast("Alerte supprimée.", 1500); after(); }
+    catch (err) { b.disabled = false; toast(alertErr(err), 4000); }
+  });
+}
+async function tgCall(path) {
+  try { return await (await fetch(LIVE_URL + path, { cache:"no-store" })).json(); } catch (e) { return { error:"Relais injoignable." }; }
+}
+async function renderTgStatus(box) {
+  box.innerHTML = "Telegram : vérification…";
+  const s = await tgCall("/tg/status");
+  if (s.error || s.token === undefined) { box.innerHTML = "Telegram : relais pas encore à jour, réessayez dans quelques minutes."; return; }
+  if (!s.token || !s.kv) { box.innerHTML = "Telegram : configuration Cloudflare incomplète (" + [!s.token && "secret TG_TOKEN", !s.kv && "stockage ALERTS"].filter(Boolean).join(", ") + ")."; return; }
+  box.innerHTML = "Telegram : " + (s.chat ? "<b class='up'>relié ✓</b>" : "pas encore relié") +
+    ' <button class="btn" id="tgLink">' + (s.chat ? "Relier à nouveau" : "Relier") + '</button>' + (s.chat ? ' <button class="btn" id="tgTest">Tester</button>' : "");
+  $("tgLink").onclick = async () => { const r = await tgCall("/tg/link"); toast(r.ok ? "Relié à la conversation de " + r.name + "." : r.error, 5000); renderTgStatus(box); };
+  if ($("tgTest")) $("tgTest").onclick = async () => { const r = await tgCall("/tg/test"); toast(r.ok ? "Message d'essai envoyé." : r.error, 4000); };
+}
+async function openAlertDlg() {
+  if (!ovItem || !ovData || !ovCurItem) return;
+  const item = ovCurItem, sym = item.yahoo, info = summary.symbols[sym] || {}, last = (withLive(sym, info) || info).last || info.last;
+  let bg = $("alertDlg");
+  if (!bg) { bg = document.createElement("div"); bg.className = "dlg-bg"; bg.id = "alertDlg"; document.body.appendChild(bg); bg.onclick = e => { if (e.target === bg) bg.classList.remove("show"); }; }
+  // niveaux proposés : ceux affichés sous le graphique, complétés des supports / résistances et moyennes mobiles de l'unité affichée
+  const lv = (window._qItems || []).filter(x => x.price > 0).map(x => ({ t:x.t, price:x.price, c:x.c }));
+  const has = t => lv.some(x => x.t === t), tf = selectedLv()[0], L = levelsOf(ovItem, tf) || { supports:[], resistances:[] };
+  L.resistances.forEach((l, k) => { const t = "R" + (k + 1) + "·" + LV[tf].short; if (!has(t)) lv.push({ t, price:l.price, c:"var(--res)" }); });
+  L.supports.forEach((l, k) => { const t = "S" + (k + 1) + "·" + LV[tf].short; if (!has(t)) lv.push({ t, price:l.price, c:"var(--sup)" }); });
+  [20, 50, 200].forEach(n => { const pts = maSeries(ovData, prefs.iv || "D", n, prefs.iv || "D"), v = pts.length && pts[pts.length - 1].value;
+    if (v && !has("MM" + n)) lv.push({ t:"MM" + n, price:v, c:MA_COL[n] }); });
+  lv.sort((x, y) => y.price - x.price);
+  bg.innerHTML = '<div class="dlg"><h3>🔔 Alerte · ' + (item.name || sym).replace(/</g, "&lt;") + '</h3>' +
+    '<p class="hint">Cours actuel ' + fmt(last) + '. Touchez un niveau du graphique ou saisissez un prix : un message Telegram vous est envoyé quand il est franchi (vérification toutes les 5 minutes en semaine, une seule fois par alerte).</p>' +
+    (lv.length ? '<div class="al-lv">' + lv.map((x, k) => '<button class="q-chip" data-k="' + k + '" style="--c:' + x.c + '">' + x.t + " " + fmt(x.price) + "</button>").join("") + "</div>" : "") +
+    '<label>Prix<input id="alPrice" inputmode="decimal" placeholder="ex. ' + fmt(last) + '"></label>' +
+    '<label>Note (facultatif)<input id="alNote" maxlength="80" placeholder="ex. vendre la moitié"></label>' +
+    '<p class="hint" id="alDir"></p><p class="err" id="alErr"></p>' +
+    '<div class="row"><button class="btn" id="alClose">Fermer</button><button class="btn primary" id="alOk">Créer l\'alerte</button></div>' +
+    '<h3 style="margin-top:14px;font-size:15px">Alertes sur cette valeur</h3><div id="alList" class="al-list">…</div>' +
+    '<p class="hint" id="tgBox"></p></div>';
+  bg.classList.add("show");
+  let label = "";
+  const price = () => parseFloat(String($("alPrice").value).replace(/\./g, "").replace(",", ".")) || parseFloat($("alPrice").value);
+  const dir = () => { const p = price(); $("alDir").textContent = p > 0 ? (p > last ? "▲ Alerte quand le cours monte au-dessus de " : "▼ Alerte quand le cours descend sous ") + fmt(p) : ""; };
+  $("alPrice").oninput = () => { label = ""; dir(); };
+  bg.querySelectorAll(".al-lv .q-chip").forEach(b => b.onclick = () => { const x = lv[+b.dataset.k]; $("alPrice").value = fmt(x.price); label = x.t; dir(); });
+  $("alClose").onclick = () => bg.classList.remove("show");
+  const list = async () => {
+    await alertsLoad(true);
+    const mine = (alertsData.alerts || []).filter(a => a.sym === sym);
+    $("alList").innerHTML = mine.length ? mine.map(a => alertLine(a, false)).join("") : '<span class="hint">Aucune.</span>';
+    bindAlertDeletes($("alList"), list);
+  };
+  $("alOk").onclick = async () => {
+    const p = price();
+    if (!(p > 0)) { $("alErr").textContent = "Indiquez un prix."; return; }
+    $("alOk").disabled = true; $("alErr").textContent = "";
+    const a = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), sym, name:item.name || sym, op:p > last ? "above" : "below",
+                price:Math.round(p * 1e4) / 1e4, label, note:$("alNote").value.trim(), created:Date.now() };
+    try { await alertsSave(d => { (d.alerts = d.alerts || []).push(a); }, "Alerte " + (a.op === "above" ? "au-dessus de " : "sous ") + a.price + " sur " + sym); toast("Alerte créée.", 1500); $("alPrice").value = ""; $("alNote").value = ""; dir(); list(); }
+    catch (err) { $("alErr").textContent = alertErr(err); }
+    $("alOk").disabled = false;
+  };
+  list();
+  renderTgStatus($("tgBox"));
+}
+$("alertBtn").onclick = openAlertDlg;
+/* section « Mes alertes » de l'onglet À regarder */
+async function renderAlertsSection(box) {
+  const h = document.createElement("div"); h.className = "pf-sub"; h.textContent = "Mes alertes Telegram"; box.appendChild(h);
+  const body = document.createElement("div"); body.className = "al-list"; body.innerHTML = '<span class="hint">Chargement…</span>'; box.appendChild(body);
+  const tgb = document.createElement("p"); tgb.className = "hint"; box.appendChild(tgb);
+  const fill = async () => {
+    await alertsLoad(true);
+    const all = alertsData.alerts || [];
+    body.innerHTML = all.length ? all.map(a => alertLine(a, true)).join("") : '<span class="sig-none">Aucune alerte. Créez-en une depuis le graphique d\'une valeur (bouton 🔔).</span>';
+    bindAlertDeletes(body, fill);
+  };
+  fill(); renderTgStatus(tgb);
+}
+/* lien direct vers une valeur (#sym=SAN.PA), utilisé dans les messages Telegram */
+function openFromHash() {
+  const m = /^#sym=([^&]+)/.exec(location.hash); if (!m || !cfg || !summary) return;
+  const sym = decodeURIComponent(m[1]);
+  for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === sym); if (it) { history.replaceState(null, "", location.pathname); openDetail(it, withLive(sym, summary.symbols[sym])); return; } }
+}
+window.addEventListener("hashchange", openFromHash);
 </script>
 </body>
 </html>
