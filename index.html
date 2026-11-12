@@ -66,7 +66,7 @@
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
   .btn.danger { background:var(--down); border-color:var(--down); color:#fff; }
   .btn.on { background:var(--text); color:var(--bg); }
-  .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:var(--text); color:var(--bg); padding:9px 14px; border-radius:10px; font-size:13px; z-index:60; display:none; max-width:92vw; }
+  .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:var(--text); color:var(--bg); padding:9px 14px; border-radius:10px; font-size:13px; z-index:60; display:none; max-width:92vw; white-space:pre-line; }
   .toast.show { display:block; }
   body.pf-mode .bar, body.pf-mode #grid { display:none !important; }
   .pf-view { padding:10px 0 20px; }
@@ -497,7 +497,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v73</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v74</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -4093,6 +4093,14 @@ async function boFill(host) {
     } catch (e) {}
   }
 }
+
+/* Toucher les cellules RT / Cass. (ou l'étiquette RT) du tableau : affiche leur explication au lieu d'ouvrir le graphique */
+document.addEventListener("click", e => {
+  const c = e.target.closest && e.target.closest("#grid .boc, #grid .rtc, #grid .rt-up");
+  if (!c || !c.title) return;
+  e.stopPropagation(); e.preventDefault();
+  toast(c.title, 6000);
+}, true);
 </script>
 </body>
 </html>
