@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v64</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v65</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -558,6 +558,7 @@
         <div class="cfg-row"><span>Raccourcis</span><div class="seg" id="tbRowsSeg"></div></div>
         <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
         <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
+        <div class="cfg-row"><span>Points de contact ●</span><div class="seg" id="dotsSeg"></div></div>
       </div>
     </div>
     </div>
@@ -1616,6 +1617,7 @@ function drawGeoOn(chart, items, sel) {
 }
 function geoMarks(items, sel) {
   const marks = [];
+  if (prefs.dots === false && sel == null) return marks;      // points de contact masqués (sauf élément mis en évidence)
   items.forEach((it, n) => {
     if (sel != null && sel !== n) return;
     if (it.g === "chan") {
@@ -1987,6 +1989,9 @@ function renderToggles() {
   $("rsiBtn").classList.toggle("on", indMode() === "rsi"); $("rsiBtn").setAttribute("aria-pressed", indMode() === "rsi" ? "true" : "false");
   $("rtBtn").classList.toggle("on", indMode() === "trend"); $("rtBtn").classList.toggle("nopane", indMode() === "trend" && prefs.rtPane === false); $("rtBtn").setAttribute("aria-pressed", indMode() === "trend" ? "true" : "false");
   renderSeg("volSeg", [[true,"Afficher"],[false,"Masquer"]], volOn, v => setVol(v));
+  renderSeg("dotsSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.dots !== false, v => {
+    prefs.dots = v; savePrefs(); refreshLevels(); applyHighlight();
+  });
   const mmOn = selMaP().length > 0;
   $("mmBtn").classList.toggle("on", mmOn); $("mmBtn").setAttribute("aria-pressed", mmOn ? "true" : "false");
   $("tolRange").value = tolPct();
@@ -2262,7 +2267,7 @@ function levelSegment(l, opts) {
   const s = ovChart.addLineSeries({ color:opts.color, lineWidth:opts.lineWidth, lineStyle:opts.lineStyle, priceLineVisible:false,
     lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
   s.setData([{ time:t0, value:opts.price }, { time:t1, value:opts.price }]);
-  s.setMarkers([{ time:t0, position:"inBar", shape:"circle", color:opts.color, size:0.6 }]);
+  if (prefs.dots !== false) s.setMarkers([{ time:t0, position:"inBar", shape:"circle", color:opts.color, size:0.6 }]);
   ovLvSegs.push(s);
   return s;
 }
