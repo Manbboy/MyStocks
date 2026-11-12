@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v61</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v62</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2307,20 +2307,26 @@ function toggleMa(n) {
   if (hiMa) { hiKey = null; hiGeo = null; hiFlip = null; }
   if (g && hiGeo == null) drawGeo();
   drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight();
+  showSel(null, []);
 }
 function toggleGeo(n) {
   hiGeo = hiGeo === n ? null : n;
   if (hiGeo != null) { hiKey = null; hiMa = null; hiFlip = null; }
   drawGeo(); drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight();
-  if (hiGeo != null) showSel(ovGeo[hiGeo].from, geoSeries.filter(x => x._geo === hiGeo));
+  showSel(hiGeo != null ? ovGeo[hiGeo].from : null, hiGeo != null ? geoSeries.filter(x => x._geo === hiGeo) : []);
 }
 /* Fait apparaître l'élément choisi : recule le début de la vue jusqu'à son départ et l'inclut dans l'échelle des prix */
+let selScaled = [], selTemp = null, selFitted = false;
 function showSel(t0, series) {
+  selScaled.forEach(x => { try { x.applyOptions({ autoscaleInfoProvider:() => null }); } catch (e) {} });
+  if (selTemp) { try { ovChart.removeSeries(selTemp); } catch (e) {} selTemp = null; }
+  selScaled = series || [];
   if (!ovChart) return;
-  series.forEach(x => x.applyOptions({ autoscaleInfoProvider:o => o() }));
-  const rows = barsFor(ovData, prefs.iv || "D"), i0 = rows.findIndex(r => r[0] >= t0);
-  const lr = ovChart.timeScale().getVisibleLogicalRange();
-  if (lr && i0 >= 0 && i0 < lr.from) ovChart.timeScale().setVisibleLogicalRange({ from:Math.max(0, i0 - 3), to:lr.to });
+  selScaled.forEach(x => x.applyOptions({ autoscaleInfoProvider:o => o() }));
+  if (t0 == null) return;
+  const ts = ovChart.timeScale(), x0 = ts.timeToCoordinate(t0), i0 = x0 == null ? -1 : ts.coordinateToLogical(x0);
+  const lr = ts.getVisibleLogicalRange();
+  if (lr && i0 != null && i0 >= 0 && i0 < lr.from + 1) ts.applyOptions({ minBarSpacing:0.05 }), ts.setVisibleLogicalRange({ from:Math.max(-3, i0 - 3), to:lr.to });
 }
 function toggleFlip(n) {
   hiFlip = hiFlip === n ? null : n;
@@ -2328,8 +2334,7 @@ function toggleFlip(n) {
   if (hiFlip != null) { hiKey = null; hiMa = null; hiGeo = null; }
   if (g && hiGeo == null) drawGeo();
   drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight();
-  flipSeries.forEach(x => x.applyOptions({ autoscaleInfoProvider:x._flip === hiFlip ? (o => o()) : () => null }));
-  if (hiFlip != null) showSel(ovFlips[hiFlip].pivotTime, []);
+  showSel(hiFlip != null ? ovFlips[hiFlip].pivotTime : null, flipSeries.filter(x => x._flip === hiFlip));
 }
 function renderQuick() {
   const box = $("quick"); if (!box) return;
@@ -2439,7 +2444,7 @@ function applyHighlight() {
   ovCandles.setMarkers(marks);
   /* prévient si les contacts sont hors de la zone affichée (le graphique ne bouge pas) */
   const vr = ovChart.timeScale().getVisibleRange();
-  if (vr && marks.length && !marks.some(m => m.time >= vr.from && m.time <= vr.to)) toast("Contacts hors de la zone affichée : dézoome ou fais glisser le graphique pour les voir.", 3500);
+  if (!selFitted && vr && marks.length && !marks.some(m => m.time >= vr.from && m.time <= vr.to)) toast("Contacts hors de la zone affichée : dézoome ou fais glisser le graphique pour les voir.", 3500);
 }
 /* Étiquettes fines (nom + prix) à droite des lignes, si « Valeurs sur l'axe » est sur Afficher */
 function updateTags() {
@@ -2474,10 +2479,17 @@ function updateTags() {
 function onLevelTap(info, tf, p, i, el) {
   const key = tf + "|" + p + "|" + i;
   document.querySelectorAll("#ovRes .it.sel, #ovSup .it.sel").forEach(x => x.classList.remove("sel"));
-  if (hiKey === key) { hiKey = null; applyHighlight(); return; }   // 2e toucher : on désactive
+  if (hiKey === key) { hiKey = null; applyHighlight(); showSel(null, []); return; }   // 2e toucher : on désactive
   if (hiMa) { hiMa = null; drawMas(); renderMaList(info); }
   hiKey = key; hiGeo = null; hiFlip = null; drawGeo(); renderFlipList();
-  applyHighlight();
+  { const m = lineMeta.find(x => x.key === key), d = m && m.seg && m.seg.data();   // tout le trait visible : depuis son 1er contact, prix inclus dans l'échelle
+    if (m && !m.seg && ovChart) {        // trait sur toute la largeur : série invisible au prix du niveau, pour l'inclure dans l'échelle
+      const rows = barsFor(ovData, prefs.iv || "D");
+      showSel(null, []);
+      selTemp = ovChart.addLineSeries({ color:"rgba(0,0,0,0)", lineWidth:1, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+      selTemp.setData([{ time:rows[0][0], value:m.opts.price }, { time:rows[rows.length - 1][0], value:m.opts.price }]);
+    } else showSel(d && d.length ? d[0].time : null, m && m.seg ? [m.seg] : []); }
+  selFitted = true; applyHighlight(); selFitted = false;
   el.classList.add("sel");
   const ch = $("ovChart").getBoundingClientRect();
   if (ch.bottom < 60) $("ovChart").scrollIntoView({ behavior:"smooth", block:"start" });
@@ -2619,7 +2631,7 @@ function drawDetail(keep) {
   const ivInfo = INTERVALS.find(x => x[0] === iv);
 
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
-  if (ovChart) { ovChart.remove(); ovChart = null; }
+  if (ovChart) { ovChart.remove(); ovChart = null; } selScaled = []; selTemp = null;
   ovCandles = null; ovLines = []; ovMa = []; ovLvSegs = [];
   if (ovItem !== lastDrawnItem) { hiKey = null; hiMa = null; hiFlip = null; hiGeo = null; }
   lastDrawnItem = ovItem;
@@ -2706,7 +2718,7 @@ function closeDetail() {
   document.body.style.overflow = "";
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
   clearQuad();
-  if (ovChart) { ovChart.remove(); ovChart = null; }
+  if (ovChart) { ovChart.remove(); ovChart = null; } selScaled = []; selTemp = null;
   ovCandles = null; ovLines = []; ovMa = []; ovLevels = null;
 }
 $("ovClose").onclick = closeDetail;
