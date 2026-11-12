@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v63</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v64</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3820,9 +3820,9 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
 })();
 
 
-/* ===== Double toucher sur le graphique du détail : 40, puis 60, puis 80 périodes (puis on recommence) ===== */
+/* ===== Double toucher sur le graphique du détail : 80, puis 120, puis 160 périodes (puis on recommence) ===== */
 (function () {
-  const STEPS = [40, 60, 80];
+  const STEPS = [80, 120, 160];
   let step = -1, lastAt = 0, lastX = 0, lastY = 0, resetT = null;
   function zoomBars() {
     if (!ovChart || !ovCandles) return;
@@ -3831,7 +3831,7 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
     const k = Math.min(STEPS[step], n);
     ovChart.timeScale().setVisibleLogicalRange({ from:n - k - 0.5, to:n - 0.5 + 2 });
     toast(k + " périodes", 900);
-    clearTimeout(resetT); resetT = setTimeout(() => { step = -1; }, 8000);   // après une pause, on repart de 40
+    clearTimeout(resetT); resetT = setTimeout(() => { step = -1; }, 8000);   // après une pause, on repart de 80
   }
   /* les deux touchers ne doivent pas changer la mise en évidence : on remet l'état d'avant le 1er toucher */
   let saved = null;
