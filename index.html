@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v69</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v70</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1462,10 +1462,17 @@ function trendLines(rows, iv, pct) {
         if (bad) { if (k <= b) { ok = false; break; } end = k; broken = true; break; }
       }
       if (!ok) continue;
-      const touches = piv.filter(p => p >= a && p <= end && Math.abs(val(p) - line(p)) <= line(p) * tol);
+      /* contact : le creux (ou le sommet) arrive sur la ligne, ou la perce en mèche mais le chandelier clôture du bon côté */
+      const touches = piv.filter(p => {
+        if (p < a || p > end) return false;
+        const L = line(p), c = rows[p][4];
+        if (Math.abs(val(p) - L) <= L * tol) return true;
+        return sup ? val(p) < L && c >= L * (1 - tol) : val(p) > L && c <= L * (1 + tol);
+      });
       if (touches.length < 3) continue;
       if (touches[touches.length - 1] < a + 0.6 * (end - a)) continue;            // la ligne doit encore être testée récemment
-      if (!broken && Math.abs(rows[len - 1][4] - line(len - 1)) > rows[len - 1][4] * 0.3) continue;   // encore pertinente aujourd'hui
+      // encore pertinente aujourd'hui : le cours n'en est pas trop loin, ou elle a été touchée récemment
+      if (!broken && Math.abs(rows[len - 1][4] - line(len - 1)) > rows[len - 1][4] * 0.3 && len - 1 - touches[touches.length - 1] > 4 * P.w) continue;
       const span = end - a;
       out.push({ kind, a, b, m, base:val(a), end, broken, touches, score: touches.length * 10 + span / P.lb * 8 + (broken ? 0 : 6) });
     }
@@ -3833,6 +3840,7 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
     step = (step + 1) % STEPS.length;
     const k = Math.min(STEPS[step], n);
     ovChart.timeScale().setVisibleLogicalRange({ from:n - k - 0.5, to:n - 0.5 + 2 });
+    ovChart.priceScale("right").applyOptions({ autoScale:true });   // annule un étirement manuel de l'échelle des prix
     toast(k + " périodes", 900);
     clearTimeout(resetT); resetT = setTimeout(() => { step = -1; }, 8000);   // après une pause, on repart de 80
   }
