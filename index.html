@@ -358,6 +358,7 @@
   .ov-id { min-width:0; flex:1; }
   .tip { font-size:11px; color:var(--muted); margin:8px 2px 0; }
   .navrow { display:flex; justify-content:space-between; align-items:center; margin:6px 2px 0; }
+  body.noside #ov .ov-side { display:none; }
   .fitbtn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:14px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; }
   .fitbtn.on { background:var(--text); color:var(--bg); border-color:var(--text); }
   .navsm { border:0; background:none; color:var(--muted); font-size:26px; line-height:1; width:44px; height:30px; border-radius:8px; cursor:pointer; opacity:.7; }
@@ -498,7 +499,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v75</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v76</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -583,6 +584,7 @@
         <div class="cfg-row"><span>Raccourcis</span><div class="seg" id="tbRowsSeg"></div></div>
         <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
         <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
+        <div class="cfg-row"><span>Informations détaillées</span><div class="seg" id="sideSeg"></div></div>
         <div class="cfg-row"><span>Points ● (S/R, R⇄S, canaux, obliques)</span><div class="seg" id="dotsSeg"></div></div>
       </div>
     </div>
@@ -599,6 +601,7 @@
     <div class="navrow">
       <button class="navsm" id="ovPrev2" aria-label="Action précédente">‹</button>
       <button class="fitbtn" id="fitBtn" title="Dézoomer au maximum pour voir tout l'historique">⤢ Tout voir</button>
+      <button class="fitbtn" id="sideBtn" title="Afficher ou cacher les informations détaillées (listes des niveaux, canaux, moyennes…)"></button>
       <button class="navsm" id="ovNext2" aria-label="Action suivante">›</button>
     </div>
     </div>
@@ -2036,6 +2039,7 @@ function renderToggles() {
   $("rsiBtn").classList.toggle("on", indMode() === "rsi"); $("rsiBtn").setAttribute("aria-pressed", indMode() === "rsi" ? "true" : "false");
   $("rtBtn").classList.toggle("on", indMode() === "trend"); $("rtBtn").classList.toggle("nopane", indMode() === "trend" && prefs.rtPane === false); $("rtBtn").setAttribute("aria-pressed", indMode() === "trend" ? "true" : "false");
   renderSeg("volSeg", [[true,"Afficher"],[false,"Masquer"]], volOn, v => setVol(v));
+  renderSeg("sideSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.side !== false, v => setSide(v));
   renderSeg("dotsSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.dots !== false, v => {
     prefs.dots = v; savePrefs(); refreshLevels(); applyHighlight();
   });
@@ -4082,6 +4086,17 @@ document.addEventListener("click", e => {
   e.stopPropagation(); e.preventDefault();
   toast(c.title, 6000);
 }, true);
+
+/* Informations détaillées du détail (listes à droite ou sous le graphique) : bouton « Infos » et réglage */
+function setSide(v) {
+  prefs.side = v; savePrefs();
+  document.body.classList.toggle("noside", v === false);
+  $("sideBtn").textContent = v === false ? "☰ Infos" : "✕ Infos";
+  if (typeof renderSeg === "function" && $("sideSeg")) renderSeg("sideSeg", [[true,"Afficher"],[false,"Masquer"]], v !== false, setSide);
+  setTimeout(() => { window.dispatchEvent(new Event("resize")); }, 30);
+}
+$("sideBtn").onclick = () => setSide(prefs.side === false);
+setSide(prefs.side !== false);
 </script>
 </body>
 </html>
