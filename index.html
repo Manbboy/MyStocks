@@ -70,6 +70,25 @@
   .toast.show { display:block; }
   body.pf-mode .bar, body.pf-mode #grid { display:none !important; }
   .pf-view { padding:10px 0 20px; }
+  /* onglet « À regarder » */
+  .sig-n { display:inline-block; min-width:16px; padding:0 5px; border-radius:9px; background:#00c853; color:#fff; font-size:11px; font-weight:800; line-height:16px; margin-left:3px; }
+  .sig-intro { font-size:13px; color:var(--muted); line-height:1.45; margin:2px 2px 6px; }
+  .sig-intro b { color:var(--text); }
+  .sig-intro details { margin-top:6px; } .sig-intro summary { cursor:pointer; color:var(--accent); font-weight:600; }
+  .sig-intro ul { margin:4px 0; padding-left:18px; } .sig-intro p { margin:6px 0; }
+  .sig-row { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:9px 11px; margin:6px 0; cursor:pointer; }
+  .sig-row:active { opacity:.7; }
+  .sig-top { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .sig-nm { font-size:15px; margin-right:2px; }
+  .sig-chip { font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; color:#fff; background:#787B86; }
+  .sig-chip.cassure { background:#2563eb; } .sig-chip.rebond { background:#00a844; }
+  .sig-chip.sup_casse, .sig-chip.rt_rouge { background:#FF5252; } .sig-chip.sous_mm200 { background:#d97706; }
+  .sig-age { margin-left:auto; font-size:11px; color:var(--muted); }
+  .sig-txt { font-size:13px; margin-top:4px; }
+  .sig-meta { font-size:12px; color:var(--muted); margin-top:3px; }
+  .sig-meta .up { color:var(--up); } .sig-meta .down { color:var(--down); }
+  .sig-none { font-size:13px; color:var(--muted); padding:6px 2px; }
+  .sig-foot { font-size:11px; color:var(--muted); text-align:center; margin:12px 0 30px; }
   .pf-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
   .pf-head .seg button { font-size:15px; font-weight:700; padding:6px 16px; }
   .pf-lock { max-width:420px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
@@ -473,7 +492,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v71</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v72</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -811,11 +830,17 @@ function renderTabs() {
   const t = $("tabs"); t.innerHTML = "";
   cfg.portfolios.forEach((p, i) => {
     const b = document.createElement("button");
-    b.className = "tab" + (i === prefs.active && prefs.view !== "pf" ? " active" : "");
+    b.className = "tab" + (i === prefs.active && !prefs.view ? " active" : "");
     b.textContent = p.name;
     b.onclick = () => { prefs.active = i; prefs.view = ""; savePrefs(); render(); };
     t.appendChild(b);
   });
+  const sb = document.createElement("button");                 // onglet « À regarder » (situations du soir)
+  sb.className = "tab sig-tab" + (prefs.view === "sig" ? " active" : "");
+  const nNew = sigData ? new Set((sigData.items || []).filter(e => e.age === 0 && e.sig.some(g => g.k === "cassure" || g.k === "rebond")).map(e => e.sym)).size : 0;
+  sb.innerHTML = "À regarder" + (nNew ? ' <span class="sig-n">' + nNew + "</span>" : "");
+  sb.onclick = () => { prefs.view = "sig"; savePrefs(); render(); };
+  t.appendChild(sb);
   const pb = document.createElement("button");                 // onglet « Portefeuille » (achats / ventes de M et D)
   pb.className = "tab pf-tab" + (prefs.view === "pf" ? " active" : "");
   pb.textContent = "Portefeuille";
@@ -925,6 +950,7 @@ function render() {
   ensureHold();
   renderTabs();
   if (prefs.view === "pf" && typeof renderPf === "function") { renderPf(); return; }
+  if (prefs.view === "sig" && typeof renderSig === "function") { renderSig(); return; }
   document.body.classList.remove("pf-mode"); if ($("pfView")) $("pfView").hidden = true;
   renderSeg("colsSeg", COLS.map(c => [c, String(c)]), prefs.cols, v => { prefs.cols = v; savePrefs(); render(); });
   renderSeg("rangeSeg", RANGES, prefs.range, v => { prefs.range = v; savePrefs(); render(); if (typeof updDayBtn === "function") updDayBtn(); });
@@ -2888,6 +2914,7 @@ $("lvClose").onclick = closeLevel;
   }
   ensureHold();
   if (prefs.active >= cfg.portfolios.length) prefs.active = 0;
+  sigLoad().then(() => { if (sigData) renderTabs(); });      // pastille du nombre de situations sur l'onglet « À regarder »
   $("updated").textContent = "Clôtures du " + new Date(summary.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + " (Yahoo Finance)";
   $("updated").insertAdjacentHTML("beforeend", ' <span id="liveStatus" class="live-status" title="Toucher pour activer / désactiver les cours en séance"></span>');
   const toggleLive = () => {
@@ -3870,6 +3897,104 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
   el.addEventListener("mousedown", () => { if (Date.now() - touchAt > 800 && Date.now() - mAt > 400) saved = snap(); mAt = Date.now(); });
   el.addEventListener("dblclick", () => { if (Date.now() - touchAt > 800) { const sv = saved; setTimeout(() => { restore(sv); zoomBars(); }, 60); } });   // souris
 })();
+
+/* ===== Onglet « À regarder » : situations détectées chaque soir (data/signals.json, calculé par scripts/signals.py) ===== */
+let sigData = null;
+async function sigLoad(force) {
+  if (sigData && !force) return sigData;
+  try { sigData = await fetch("data/signals.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null); }
+  catch (e) { sigData = null; }
+  return sigData;
+}
+const SIG_BULL = new Set(["cassure", "rebond"]);
+const SIG_TF = { J:"journalier", S:"hebdo" };
+function sigItem(sym) {
+  for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === sym); if (it) return it; }
+  return { yahoo:sym, name:sym };
+}
+function sigAge(a, date) {
+  if (a === 0) return "dernière séance";
+  if (a === 1) return "séance précédente";
+  return "il y a " + a + " séances · " + new Date(date + "T12:00:00").toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" });
+}
+function sigText(g) {
+  const lv = g.lv != null ? fmt(g.lv) : "";
+  switch (g.k) {
+    case "cassure": return "Clôture au-dessus de la résistance " + (SIG_TF[g.tf] || "") + " " + lv + " (" + g.n + " contacts), volume ×" + String(g.vol).replace(".", ",");
+    case "rebond":  return "Sur le support " + (SIG_TF[g.tf] || "") + " " + lv + " (" + g.n + " contacts)" + (g.rt ? ", RSI Trends vert" : "");
+    case "sup_casse":  return "Clôture sous le support " + (SIG_TF[g.tf] || "") + " " + lv + " (" + g.n + " contacts)";
+    case "sous_mm200": return "Le cours repasse sous la MM200 (" + lv + ")";
+    case "rt_rouge":   return "Le RSI Trends journalier passe au rouge";
+  }
+  return g.k;
+}
+const SIG_CHIP = { cassure:"Cassure", rebond:"Rebond", sup_casse:"Support cassé", sous_mm200:"Sous MM200", rt_rouge:"RT rouge" };
+function sigRow(e, kinds) {
+  const it = sigItem(e.sym), info = summary.symbols[e.sym] || {};
+  const sig = e.sig.filter(g => kinds.has(g.k));
+  const row = document.createElement("div");
+  row.className = "sig-row";
+  const since = e.age > 0 && e.close ? (e.last / e.close - 1) * 100 : null;
+  const res = sig.map(g => g.res).find(x => x);
+  row.innerHTML =
+    '<div class="sig-top"><b class="sig-nm">' + String(it.name || e.sym).replace(/[&<>]/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" })[ch]) + '</b>' +
+    sig.map(g => '<span class="sig-chip ' + g.k + (g.fort ? " fort" : "") + '">' + SIG_CHIP[g.k] + (g.fort ? " ★" : "") + "</span>").join("") +
+    '<span class="sig-age">' + sigAge(e.age, e.date) + "</span></div>" +
+    sig.map(g => '<div class="sig-txt">' + sigText(g) + "</div>").join("") +
+    '<div class="sig-meta">Cours ' + fmt(e.last) + (info.currency === "USD" ? " $" : "") +
+    (since != null ? ' · <span class="' + (since >= 0 ? "up" : "down") + '">' + (since >= 0 ? "+" : "") + since.toFixed(1).replace(".", ",") + " % depuis</span>" : "") +
+    (res && SIG_BULL.has(sig[0].k) ? " · prochaine résistance " + fmt(res) + " (+" + ((res / e.last - 1) * 100).toFixed(1).replace(".", ",") + " %)" : "") + "</div>";
+  row.onclick = async () => {
+    const lvl = (sig.find(g => g.lv != null) || {}).lv;
+    await openDetail(it, withLive(e.sym, summary.symbols[e.sym]));
+    // met en évidence le niveau concerné s'il est affiché dans le détail
+    setTimeout(() => {
+      if (lvl == null || typeof lineMeta === "undefined") return;
+      const m = lineMeta.filter(x => Math.abs(x.opts.price / lvl - 1) <= 0.015).sort((a, b) => Math.abs(a.opts.price - lvl) - Math.abs(b.opts.price - lvl))[0];
+      if (m && hiKey !== m.key) onLevelTap(m.key);
+    }, 500);
+  };
+  return row;
+}
+async function renderSig() {
+  document.body.classList.add("pf-mode");
+  const box = $("pfView"); box.hidden = false;
+  if (!sigData) { box.innerHTML = '<div class="msg">Chargement…</div>'; await sigLoad(); }
+  box.innerHTML = "";
+  if (!sigData) { box.innerHTML = '<div class="msg">Pas encore de situations calculées : elles le seront à la prochaine mise à jour des cours.</div>'; return; }
+  const st = sigData.stats, pct = v => (v >= 0 ? "+" : "") + String(v).replace(".", ",") + " %";
+  const intro = document.createElement("div"); intro.className = "sig-intro";
+  intro.innerHTML = "<b>Actions à ouvrir</b> : situations techniques repérées après la clôture, sur les 5 dernières séances. " +
+    "À vérifier vous-même sur le graphique — ce ne sont pas des conseils d'investissement." +
+    (st && st.sit && st.sit.toutes ? '<details><summary>Ce que ça a donné sur l\'historique</summary><p>Sur ' + st.valeurs + " valeurs et 10 ans, en achetant à l'ouverture du lendemain, 20 séances plus tard :</p><ul>" +
+      "<li>toutes situations : " + pct(st.sit.toutes.j20.moy) + " en moyenne (médiane " + pct(st.sit.toutes.j20.med) + "), positif " + String(st.sit.toutes.j20.pos).replace(".", ",") + " % des fois</li>" +
+      (st.sit.cassure_fort ? "<li>cassure ★ : " + pct(st.sit.cassure_fort.j20.moy) + " (médiane " + pct(st.sit.cassure_fort.j20.med) + "), positif " + String(st.sit.cassure_fort.j20.pos).replace(".", ",") + " %</li>" : "") +
+      (st.sit.rebond ? "<li>rebond : " + pct(st.sit.rebond.j20.moy) + " (médiane " + pct(st.sit.rebond.j20.med) + "), positif " + String(st.sit.rebond.j20.pos).replace(".", ",") + " %</li>" : "") +
+      "<li>référence, une séance quelconque en tendance haussière : " + pct(st.ref_hausse.j20.moy) + " (médiane " + pct(st.ref_hausse.j20.med) + "), positif " + String(st.ref_hausse.j20.pos).replace(".", ",") + " %</li></ul>" +
+      "<p><b>Cassure</b> : en tendance haussière (cours au-dessus de la MM200, MM50 au-dessus de la MM200), clôture nettement au-dessus d'une résistance avec un volume d'au moins 1,5 fois la moyenne. ★ : résistance hebdo ou volume ×2.<br>" +
+      "<b>Rebond</b> : en tendance haussière, le cours revient sur un support hebdo, ou sur un support journalier avec le RSI Trends vert. ★ : support hebdo et RSI Trends vert.<br>" +
+      "<b>Alertes</b> (vos positions) : repères de prudence ; sur l'historique, elles n'annoncent pas de baisse à elles seules.</p>" +
+      "<p>Le passé ne garantit pas l'avenir : la moyenne est tirée par quelques fortes hausses, et environ deux situations sur cinq finissent en perte après 20 séances.</p></details>" : "");
+  box.appendChild(intro);
+  const items = sigData.items || [];
+  // une ligne par valeur : la situation la plus récente
+  const pick = (kinds, filter) => {
+    const by = new Map();
+    items.forEach(e => { if (!e.sig.some(g => kinds.has(g.k)) || (filter && !filter(e.sym))) return; const b = by.get(e.sym); if (!b || e.age < b.age) by.set(e.sym, e); });
+    return [...by.values()].sort((a, b) => a.age - b.age || b.score - a.score);
+  };
+  const opp = pick(SIG_BULL);
+  const h1 = document.createElement("div"); h1.className = "pf-sub"; h1.textContent = "Opportunités (#" + opp.length + ")"; box.appendChild(h1);
+  if (!opp.length) box.insertAdjacentHTML("beforeend", '<div class="sig-none">Aucune situation ces 5 dernières séances.</div>');
+  opp.forEach(e => box.appendChild(sigRow(e, SIG_BULL)));
+  const hold = new Set(((cfg.portfolios.find(p => p.name === "Hold") || {}).items || []).map(i => i.yahoo));
+  const AL = new Set(["sup_casse", "sous_mm200", "rt_rouge"]);
+  const al = pick(AL, s => hold.has(s));
+  const h2 = document.createElement("div"); h2.className = "pf-sub"; h2.textContent = "Alertes sur mes positions (#" + al.length + ")"; box.appendChild(h2);
+  if (!al.length) box.insertAdjacentHTML("beforeend", '<div class="sig-none">Rien à signaler sur les valeurs de l\'onglet Hold.</div>');
+  al.forEach(e => box.appendChild(sigRow(e, AL)));
+  box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calcul du ' + new Date(sigData.updated).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) + "</div>");
+}
 </script>
 </body>
 </html>

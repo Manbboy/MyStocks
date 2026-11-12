@@ -236,6 +236,7 @@ def main():
     SERIES.mkdir(parents=True, exist_ok=True)
     summary = {"timeframes": {k: v["label"] for k, v in TIMEFRAMES.items()}, "updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "demo": demo, "symbols": {}}
     errors = []
+    allrows = {}
 
     for sym in symbols:
         try:
@@ -250,6 +251,7 @@ def main():
             sup, res = levels["D"]["supports"], levels["D"]["resistances"]
             rows = [[r.Date, round(r.Open, 4), round(r.High, 4), round(r.Low, 4), round(r.Close, 4), int(r.Volume or 0)]
                     for r in df.itertuples()]
+            allrows[sym] = rows
             fname = safe_name(sym) + ".json"
             long_rows = [[r.Date, round(r.Open, 4), round(r.High, 4), round(r.Low, 4), round(r.Close, 4), int(r.Volume or 0)]
                          for r in monthly.itertuples()]
@@ -274,6 +276,17 @@ def main():
             print(f"ERR  {sym:10s} {e}")
 
     (DATA / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    # situations « À regarder » des 5 dernières séances (+ résultats mesurés sur l'historique, s'ils existent)
+    try:
+        import signals
+        stats_f = DATA / "signals_stats.json"
+        stats = json.loads(stats_f.read_text(encoding="utf-8")) if stats_f.exists() else None
+        sig = {"updated": summary["updated"], "items": signals.build(allrows), "stats": stats}
+        (DATA / "signals.json").write_text(json.dumps(sig, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        print(f"Situations : {len(sig['items'])}")
+    except Exception as e:
+        print("ERR  situations :", e)
     print(f"\n{len(symbols) - len(errors)}/{len(symbols)} actions mises à jour.")
     if errors:
         print("En erreur :", ", ".join(errors))
