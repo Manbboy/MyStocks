@@ -435,7 +435,8 @@
   .cfg-row .pair.tight .seg button { padding:5px 6px; font-size:12px; white-space:nowrap; }
   .cfg-head { gap:6px; }
   .cfg-head .seg button { padding:3px 7px; font-size:11px; }
-  #kindSeg button, #lvSeg button { min-width:26px; }
+  #kindSeg button { min-width:26px; }
+  .lv-auto { font-size:12.5px; color:var(--muted); }
   .cfg-row small { font-size:11px; }
   .cfg-row .seg { align-self:flex-start; flex-wrap:wrap; }
   .seg button.all { font-size:11px !important; border-left:1px solid var(--border); border-radius:0 6px 6px 0; }
@@ -497,7 +498,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v74</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v75</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -564,7 +565,7 @@
       <div class="cfg-grid">
         <div class="cfg-row wide"><div class="pair">
           <div><span>Supports / Résistances</span><div class="seg" id="kindSeg"></div></div>
-          <div><span>Échelles (Jour · Sem. · Mois · Trim.)</span><div class="seg" id="lvSeg"></div></div>
+          <div><span>Échelle des niveaux</span><div id="lvSeg"></div></div>
         </div></div>
         <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
           <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
@@ -1129,7 +1130,7 @@ $("flipBtn").onclick = () => { prefs.flip = !prefs.flip; hiFlip = null; savePref
 $("srBtn").onclick = () => {
   const on = selectedKinds().length > 0 && selectedLv().length > 0;
   if (on) prefs.kinds = [];
-  else { prefs.kinds = ["S","R"]; if (!selectedLv().length) prefs.lvs = LV_ORDER.slice(); }
+  else prefs.kinds = ["S","R"];
   hiKey = null;
   savePrefs(); refreshLevels();
 };
@@ -1963,9 +1964,9 @@ function levelsOf(info, tf) {
   if (info.levels && info.levels[tf]) return info.levels[tf];
   return tf === "D" ? { supports:info.supports || [], resistances:info.resistances || [] } : { supports:[], resistances:[] };
 }
+/* Niveaux affichés : une seule échelle, celle de l'unité du graphique (J → journaliers, S → hebdo, M → mensuels, T → trimestriels ; 15' → journaliers) */
 function selectedLv() {
-  const s = Array.isArray(prefs.lvs) ? prefs.lvs.filter(t => LV[t]) : ["D"];
-  return LV_ORDER.filter(t => s.includes(t));
+  return [LV[prefs.iv] ? prefs.iv : "D"];
 }
 function paint(b, color) {
   if (!color) return;
@@ -2095,29 +2096,9 @@ function renderToggles() {
       "MM" + n + (enough ? "" : " (historique insuffisant)");
     lg.appendChild(s);
   }));
-  const s = $("lvSeg"); s.innerHTML = "";
-  const sel = selectedLv();
-  LV_ORDER.forEach(tf => {
-    const b = document.createElement("button");
-    const kinds = selectedKinds().length ? selectedKinds() : ["S","R"];
-    b.innerHTML = '<span class="sw">' + kinds.map(k => sample(k.toLowerCase(), tf)).join("") + "</span>" +
-      { D:"J", W:"S", M:"M", Q:"T" }[tf];
-    b.title = { D:"Journaliers", W:"Hebdomadaires", M:"Mensuels", Q:"Trimestriels" }[tf];
-    b.className = "tfb" + (sel.includes(tf) ? " on" : "");
-    b.onclick = () => {
-      const cur = selectedLv();
-      prefs.lvs = cur.includes(tf) ? cur.filter(t => t !== tf) : cur.concat(tf);
-      savePrefs(); refreshLevels();
-    };
-    s.appendChild(b);
-  });
-  {
-    const every = sel.length === LV_ORDER.length, b = document.createElement("button");
-    b.className = "all" + (every ? " on" : "");
-    b.textContent = "Tout/rien"; b.title = every ? "Tout désactiver" : "Tout sélectionner";
-    b.onclick = () => { prefs.lvs = every ? [] : LV_ORDER.slice(); savePrefs(); refreshLevels(); };
-    s.appendChild(b);
-  }
+  const s = $("lvSeg"), tf = selectedLv()[0];
+  s.innerHTML = '<span class="lv-auto">' + { D:"Journaliers", W:"Hebdomadaires", M:"Mensuels", Q:"Trimestriels" }[tf] +
+    " — suivent l'unité du graphique</span>";
 }
 function autoscaleDetail(info) {
   const extra = [];
