@@ -1,3 +1,14 @@
 {
-  "alerts": []
+  "alerts": [
+    {
+      "id": "mwe5tj65p08s",
+      "sym": "AVGO",
+      "name": "Broadcom",
+      "op": "above",
+      "price": 370,
+      "label": "",
+      "note": "",
+      "created": 1794524947277
+    }
+  ]
 }
