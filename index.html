@@ -473,7 +473,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v62</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v63</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3819,6 +3819,41 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
   document.addEventListener("click", e => { const c = e.target.closest && e.target.closest("#grid .card"); if (c && c._justDragged) { e.stopPropagation(); e.preventDefault(); } }, true);
 })();
 
+
+/* ===== Double toucher sur le graphique du détail : 40, puis 60, puis 80 périodes (puis on recommence) ===== */
+(function () {
+  const STEPS = [40, 60, 80];
+  let step = -1, lastAt = 0, lastX = 0, lastY = 0, resetT = null;
+  function zoomBars() {
+    if (!ovChart || !ovCandles) return;
+    const n = ovCandles.data().length; if (!n) return;
+    step = (step + 1) % STEPS.length;
+    const k = Math.min(STEPS[step], n);
+    ovChart.timeScale().setVisibleLogicalRange({ from:n - k - 0.5, to:n - 0.5 + 2 });
+    toast(k + " périodes", 900);
+    clearTimeout(resetT); resetT = setTimeout(() => { step = -1; }, 8000);   // après une pause, on repart de 40
+  }
+  /* les deux touchers ne doivent pas changer la mise en évidence : on remet l'état d'avant le 1er toucher */
+  let saved = null;
+  const snap = () => ({ k:hiKey, m:hiMa, g:hiGeo, f:hiFlip });
+  function restore(sv) {
+    if (!sv || (sv.k === hiKey && sv.m === hiMa && sv.g === hiGeo && sv.f === hiFlip)) return;
+    hiKey = sv.k; hiMa = sv.m; hiGeo = sv.g; hiFlip = sv.f;
+    showSel(null, []); drawGeo(); drawMas(); renderLevelLists(ovItem); renderFlipList(); applyHighlight();
+  }
+  function tap(x, y) {
+    const now = Date.now();
+    if (now - lastAt < 320 && Math.hypot(x - lastX, y - lastY) < 30) { lastAt = 0; const sv = saved; setTimeout(() => { restore(sv); zoomBars(); }, 60); return true; }
+    lastAt = now; lastX = x; lastY = y; return false;
+  }
+  const el = $("ovChart");
+  let sx = 0, sy = 0, moved = false, touchAt = 0, mAt = 0;
+  el.addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; moved = e.touches.length > 1; if (Date.now() - lastAt >= 320) saved = snap(); }, { passive:true });
+  el.addEventListener("touchmove", e => { const t = e.touches[0]; if (e.touches.length > 1 || Math.hypot(t.clientX - sx, t.clientY - sy) > 10) moved = true; }, { passive:true });
+  el.addEventListener("touchend", e => { touchAt = Date.now(); if (moved || e.touches.length) { lastAt = 0; return; } if (tap(sx, sy)) e.preventDefault(); });
+  el.addEventListener("mousedown", () => { if (Date.now() - touchAt > 800 && Date.now() - mAt > 400) saved = snap(); mAt = Date.now(); });
+  el.addEventListener("dblclick", () => { if (Date.now() - touchAt > 800) { const sv = saved; setTimeout(() => { restore(sv); zoomBars(); }, 60); } });   // souris
+})();
 </script>
 </body>
 </html>
