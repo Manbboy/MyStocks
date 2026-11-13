@@ -345,14 +345,15 @@
   .quick:empty { display:none; }
   .rt-up { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#fff; background:#00c853; border-radius:4px; padding:1px 4px; margin-right:5px; vertical-align:1px; line-height:1.3; }
   .rt-up.n { background:#787B86; } .rt-up.r { background:#FF5252; }
-  .grid.compact .tr-g { --g:#64748b; padding:11px 12px 9px; font-size:12px; color:var(--muted); border-top:2px solid var(--border); border-left:5px solid var(--g);
+  .grid .tr-g { --g:#64748b; padding:11px 12px 9px; font-size:12px; color:var(--muted); border-top:2px solid var(--border); border-left:5px solid var(--g);
     background:color-mix(in srgb, var(--g) 16%, var(--card)); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
-  .grid.compact .tr-g:first-of-type { border-top:none; }
-  .grid.compact .tr-g b { color:var(--text); font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+  .grid .tr-g:first-of-type { border-top:none; }
+  .grid .tr-g.band { grid-column:1 / -1; border-radius:10px; border-top:none; margin-top:6px; }
+  .grid .tr-g b { color:var(--text); font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
 
   .mk-on { color:var(--up); font-weight:600; }
-  :root[data-theme="dark"] .grid.compact .tr-g { --g:#94a3b8; background:color-mix(in srgb, #94a3b8 24%, var(--card)); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grid.compact .tr-g { --g:#94a3b8; background:color-mix(in srgb, #94a3b8 24%, var(--card)); } }
+  :root[data-theme="dark"] .grid .tr-g { --g:#94a3b8; background:color-mix(in srgb, #94a3b8 24%, var(--card)); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grid .tr-g { --g:#94a3b8; background:color-mix(in srgb, #94a3b8 24%, var(--card)); } }
   .rtc { display:none; }
   .boc { display:none; }
   .grid.compact .tbl:not(.multi) .boc { display:block; grid-column:6; grid-row:1; text-align:center; font-size:10.5px; font-weight:800; white-space:nowrap; }
@@ -532,7 +533,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v96</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v97</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -984,7 +985,7 @@ function renderGrid() {
     }
     host.appendChild(card);
   });
-  if (prefs.gridCompact && host !== g && pf.name === "Market" && typeof groupMarket === "function") groupMarket(host);
+  if (pf.name === "Market" && typeof groupMarket === "function") groupMarket(host);     // tableau ou graphiques : bandeaux Europe / États-Unis / Futures / Cryptos
   if (editing && !pf.virtual) {                // mode Modifier : ✕ sur chaque valeur, et une tuile pour en ajouter une
     const add = document.createElement("button");
     add.className = "add-tile" + (host !== g ? " row" : ""); add.type = "button";
@@ -4560,7 +4561,7 @@ function groupMarket(host) {
   MK_GROUPS.forEach(([k, label]) => {
     const list = cards.filter(c => mkGroup(c.dataset.sym) === k);
     if (!list.length) return;
-    const h = document.createElement("div"); h.className = "tr-g"; h.dataset.g = k;
+    const h = document.createElement("div"); h.className = "tr-g" + (host.id === "grid" ? " band" : ""); h.dataset.g = k;   // vue graphiques : bandeau sur toute la largeur
     h.innerHTML = "<b>" + label + "</b> <span>" + mkState(list.map(c => c.dataset.sym)) + "</span>";
     host.appendChild(h); list.forEach(c => host.appendChild(c));
   });
