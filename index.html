@@ -639,7 +639,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v132</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v133</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5101,15 +5101,22 @@ function periodPct(el, last) {
   b.hidden = false;
   const show = () => { b.textContent = prefs.rotLock ? "🔒" : "🔄"; b.classList.toggle("on", !!prefs.rotLock);
     b.title = prefs.rotLock ? "Écran figé (" + (prefs.rotLock.startsWith("portrait") ? "portrait" : "paysage") + ") : toucher pour laisser tourner" : "L'écran tourne : toucher pour le figer dans le sens actuel"; };
+  // le navigateur n'accepte de figer l'écran qu'en plein écran : on y passe (barre d'état masquée) puis on fige
   const apply = async quiet => {
+    if (!prefs.rotLock) { try { so.unlock(); } catch (e) {} try { if (document.fullscreenElement) await document.exitFullscreen(); } catch (e) {} return true; }
+    try { await so.lock(prefs.rotLock); return true; } catch (e) {}
     try {
-      if (prefs.rotLock) await so.lock(prefs.rotLock); else so.unlock();
-      return true;
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen({ navigationUI:"hide" });
+      await so.lock(prefs.rotLock); return true;
     } catch (e) {
       if (!quiet) toast("Ce navigateur refuse de figer l'écran (" + (e.name || "erreur") + ").", 3500);
       return false;
     }
   };
+  // à l'ouverture, le plein écran demande un premier toucher : on refige l'écran au premier toucher
+  const reLock = () => { if (prefs.rotLock && !document.fullscreenElement) apply(true); };
+  document.addEventListener("pointerup", reLock, { capture:true });
+  document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && prefs.rotLock) { /* sortie du plein écran (geste retour) : l'écran pourra de nouveau tourner jusqu'au prochain toucher */ } });
   b.onclick = async () => {
     prefs.rotLock = prefs.rotLock ? "" : (so.type || "portrait-primary");
     if (!(await apply(false))) prefs.rotLock = "";
