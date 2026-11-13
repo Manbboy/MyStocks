@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mes actions">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <title>Mes actions</title>
 <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
@@ -609,7 +616,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v121</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v122</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -874,6 +881,7 @@ function applyTheme() {
     prefs.theme = dark ? "dark" : "light"; savePrefs();
   }
   document.documentElement.dataset.theme = prefs.theme;
+  try { document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#0f172a"; } catch (e) {}   // barre d'état du téléphone assortie
   const b = $("themeBtn");
   if (b) { b.textContent = prefs.theme === "dark" ? "☾" : "☀"; b.title = prefs.theme === "dark" ? "Thème sombre (toucher pour passer en clair)" : "Thème clair (toucher pour passer en sombre)"; }
 }
@@ -4982,6 +4990,9 @@ function renderColsCompact() {
 }
 let ccT = 0;
 addEventListener("resize", () => { clearTimeout(ccT); ccT = setTimeout(() => { if (prefs.gridCompact && !prefs.view && $("colsSeg")) renderColsCompact(); }, 150); });
+
+/* Appli installable sur l'écran d'accueil (ouverture en plein écran, sans barre d'adresse) */
+try { if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}
 </script>
 </body>
 </html>
