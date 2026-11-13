@@ -558,7 +558,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v103</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v104</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3341,7 +3341,15 @@ async function fetchDay(sym, force) {
     const bars = d.bars.filter(b => b[4] != null);
     const last = dayOf(bars[bars.length - 1][0]);
     const today = bars.filter(b => dayOf(b[0]) === last), before = bars.filter(b => dayOf(b[0]) < last);
-    const prev = before.length ? before[before.length - 1][4] : d.prevClose;
+    // ligne de référence = clôture officielle de la veille (celle qui sert à la variation affichée sur la carte),
+    // et non la dernière bougie de 5 min de la veille : en Europe le fixing de clôture peut s'en écarter nettement
+    let prev = before.length ? before[before.length - 1][4] : d.prevClose;
+    const lq = liveQuotes[sym], sm = summary.symbols[sym];
+    if (lq && lq.day === last && lq.prevClose) prev = lq.prevClose;
+    else if (sm && sm.last != null && sm.date) {
+      if (sm.date === last && sm.change != null) prev = sm.last - sm.change;
+      else if (sm.date < last) prev = sm.last;
+    }
     const out = { day:last, prev, tz, sym, pts:today.map(b => ({ time:b[0] + tzShift(b[0], "Europe/Brussels"), value:b[4] })) };
     if (d.price != null && out.pts.length) out.pts[out.pts.length - 1].value = d.price;
     dayCache[sym] = { t:Date.now(), data:out };
