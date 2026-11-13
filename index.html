@@ -458,6 +458,8 @@
   .rsi-chart.show { display:block; }
   .near { font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
   .near.s { color:var(--sup); } .near.r { color:var(--res); }
+  /* vue graphiques : la ligne « S/R proche » garde sa place même vide, pour que tous les graphiques d'une rangée commencent et finissent à la même hauteur */
+  .grid:not(.compact) .card-head .near { line-height:1.35; min-height:1.35em; }
   .ov-chart { height:max(245px, min(625px, calc(100vh - 165px - var(--tbx, 0px) - var(--qbx, 0px)))); height:max(245px, min(625px, calc(100dvh - 165px - var(--tbx, 0px) - var(--qbx, 0px)))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
   .chart-wrap.with-rsi .ov-chart { height:max(205px, min(505px, calc(100vh - 305px - var(--tbx, 0px) - var(--qbx, 0px)))); height:max(205px, min(505px, calc(100dvh - 305px - var(--tbx, 0px) - var(--qbx, 0px)))); }
   .ohlc { position:absolute; top:6px; left:8px; right:64px; font-size:11px; line-height:1.45; color:var(--muted); pointer-events:none; z-index:2; }
@@ -566,7 +568,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v105</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v106</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
