@@ -409,11 +409,6 @@
           "name": "Capital B"
         },
         {
-          "yahoo": "IPS",
-          "tv": "IPS",
-          "name": "Ips"
-        },
-        {
           "yahoo": "BPOST.BR",
           "tv": "EURONEXT:BPOST",
           "name": "bpost"
