@@ -603,7 +603,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v118</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v119</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -953,9 +953,9 @@ const io = new IntersectionObserver(entries => {
 
 function renderTabs() {
   const t = $("tabs"); t.innerHTML = "";
-  const pb = document.createElement("button");                 // onglet « Portefeuille » (achats / ventes de M et D), juste après Hold
+  const pb = document.createElement("button");                 // onglet « Portfolio » (achats / ventes de M et D), juste après Hold
   pb.className = "tab pf-tab" + (prefs.view === "pf" ? " active" : "");
-  pb.textContent = "Portefeuille";
+  pb.textContent = "Portfolio";
   pb.onclick = () => { prefs.view = "pf"; savePrefs(); render(); };
   cfg.portfolios.forEach((p, i) => {
     const b = document.createElement("button");
@@ -999,7 +999,7 @@ function renderGrid() {
   g.classList.toggle("editing", editing);
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
   if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">' + (pf.virtual
-    ? (typeof pfState !== "undefined" && pfState.data ? "Aucune position ouverte dans les portefeuilles M et D." : "Déverrouillez l'onglet Portefeuille (mot de passe) pour voir ici les valeurs que vous détenez.")
+    ? (typeof pfState !== "undefined" && pfState.data ? "Aucune position ouverte dans les portefeuilles M et D." : "Déverrouillez l'onglet Portfolio (mot de passe) pour voir ici les valeurs que vous détenez.")
     : "Aucune valeur. Touche « ✎ Modifier » puis « + Ajouter une valeur ».") + '</div>';
   $("editBtn").hidden = !!pf.virtual;   // l'ajout se fait depuis le mode Modifier (tuile « + Ajouter une valeur »)
   g.classList.toggle("compact", !!prefs.gridCompact);
@@ -3563,7 +3563,7 @@ async function pfLoad() {
 async function pfSave(mutate, message) {
   const tok = getTok();
   if (!tok) throw new Error("NOTOKEN");
-  const pass = pfPass(); if (!pass) throw new Error("Portefeuille verrouillé.");
+  const pass = pfPass(); if (!pass) throw new Error("Portfolio verrouillé.");
   for (let attempt = 0; attempt < 2; attempt++) {
     const { env, sha } = await pfFetchEnv();                       // version la plus récente (l'autre personne a pu enregistrer entre-temps)
     const cur = env ? await pfDecrypt(env, pass) : { M:{ tx:[] }, D:{ tx:[] } };
@@ -3637,7 +3637,7 @@ async function renderPf() {
     const first = pfState.exists === false;
     f.innerHTML = (first
       ? '<h3>Créer le portefeuille</h3><p class="hint">Choisissez un mot de passe : il chiffre vos achats et ventes avant leur envoi sur GitHub (dépôt public). Sans lui, personne ne peut les lire — <b>notez-le bien</b>, il ne peut pas être récupéré. Votre femme utilisera le même mot de passe sur ses appareils.</p>'
-      : '<h3>Portefeuille verrouillé</h3><p class="hint">Saisissez le mot de passe du portefeuille (une seule fois par appareil).</p>') +
+      : '<h3>Portfolio verrouillé</h3><p class="hint">Saisissez le mot de passe du Portfolio (une seule fois par appareil).</p>') +
       '<label>Mot de passe<input type="password" id="pfP1" required minlength="6"></label>' +
       (first ? '<label>Confirmer<input type="password" id="pfP2" required minlength="6"></label>' : '') +
       '<p class="err" id="pfErr"></p><div class="row"><button class="btn primary" type="submit">' + (first ? "Créer" : "Déverrouiller") + '</button></div>';
@@ -3650,7 +3650,7 @@ async function renderPf() {
       if (first) {
         if (!getTok()) { $("pfErr").textContent = "Il faut d'abord enregistrer votre jeton GitHub (bouton « + Ajouter » d'un autre onglet)."; return; }
         setPfPass(p1);
-        try { await pfSave(() => {}, "Portefeuille : création (chiffré)"); toast("Portefeuille créé."); renderPf(); }
+        try { await pfSave(() => {}, "Portefeuille : création (chiffré)"); toast("Portfolio créé."); renderPf(); }
         catch (err) { setPfPass(""); $("pfErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide." : err.message; }
       } else {
         try { pfState.data = await pfDecrypt(pfState.env, p1); setPfPass(p1); pfState.err = ""; renderPf(); }
