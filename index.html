@@ -518,7 +518,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v85</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v86</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1322,8 +1322,7 @@ function drawQuad() {
       ch.priceScale("right").applyOptions({ minimumWidth:56 }); rc.priceScale("right").applyOptions({ minimumWidth:56 });
       quadCharts.push(rc);
     }
-    if (width && rows.length > width) ch.timeScale().setVisibleLogicalRange({ from:rows.length - 1 - width, to:rows.length - 1 });
-    else ch.timeScale().fitContent();
+    padRange(ch, rows.length, width && rows.length > width ? width : rows.length + 0.5);
     quadCharts.push(ch);
     qsyncBind(q);
   });
@@ -2648,17 +2647,23 @@ function captureView() {
   const last = rows.length - 1, toIdx = Math.min(last, Math.max(0, Math.round(lr.to)));
   return { width:lr.to - lr.from, gap:Math.max(0, lr.to - last), toTime:rows[toIdx][0], atEnd: toIdx === last, iv: prefs.iv || "D" };
 }
+/* Marge à droite de la dernière bougie (≈ 6 % de la largeur) pour ne pas coller le dernier cours à l'axe des prix */
+const rightPad = w => Math.max(2, w * 0.06);
+function padRange(chart, n, w) {             // w bougies visibles, la dernière décalée de la marge
+  const pad = rightPad(w);
+  chart.timeScale().setVisibleLogicalRange({ from:n - 1 + pad - w - pad, to:n - 1 + pad });
+}
 /* Cadrage par défaut d'une action (celui de l'ouverture) */
 function defaultView(rows, iv) {
   if (iv === "I" && rows.length) {      // 15 min : la dernière séance (aujourd'hui, ou la veille avant l'ouverture)
     const lastDay = Math.floor(rows[rows.length - 1][0] / 86400);
     let i0 = rows.length - 1; while (i0 > 0 && Math.floor(rows[i0 - 1][0] / 86400) === lastDay) i0--;
-    ovChart.timeScale().setVisibleLogicalRange({ from:i0 - 0.5, to:rows.length - 0.5 + 2 });
+    const w = rows.length - i0;
+    ovChart.timeScale().setVisibleLogicalRange({ from:i0 - 0.5, to:rows.length - 1 + rightPad(w) });
     return;
   }
   const show = { I: 9999, D: Math.max(21, RANGES.find(r => r[0] === prefs.range)[2]), W: 104, M: 60, Q: 9999 }[iv];
-  if (rows.length > show) ovChart.timeScale().setVisibleRange({ from: rows[rows.length - show][0], to: rows[rows.length - 1][0] });
-  else ovChart.timeScale().fitContent();
+  padRange(ovChart, rows.length, Math.min(show, rows.length + 0.5));
 }
 /* « Tout voir » : tout l'historique de l'unité affichée, hauteur ajustée ; un second toucher revient à la vue d'avant */
 let fitPrev = null;
@@ -2666,7 +2671,7 @@ function setFitLabel() { $("fitBtn").textContent = fitPrev ? "↩ Revenir" : "�
 function fitAll() {
   if (!ovChart || !ovData) return;
   if (splitN() > 1) {                  // vue 2 ou 4 graphiques : chacun montre tout son historique
-    quadCharts.forEach(c => { c.priceScale("right").applyOptions({ autoScale:true }); c.timeScale().fitContent(); });
+    quadMain.forEach(q => { q.ch.priceScale("right").applyOptions({ autoScale:true }); padRange(q.ch, q.n, q.n + 0.5); });
     toast("Tout l'historique sur les " + splitN() + " graphiques", 1600);
     return;
   }
@@ -2676,7 +2681,7 @@ function fitAll() {
   }
   fitPrev = ovChart.timeScale().getVisibleLogicalRange();
   [ovChart, rsiChart].forEach(c => { if (c) { c.timeScale().applyOptions({ minBarSpacing:0.02 }); c.priceScale("right").applyOptions({ autoScale:true }); } });
-  ovChart.timeScale().fitContent();
+  { const n = barsFor(ovData, prefs.iv || "D").length; padRange(ovChart, n, n + 0.5); }
   document.querySelector("#ov .ov-body").scrollTo({ top:0, behavior:"smooth" });
   setFitLabel();
   const rows = barsFor(ovData, prefs.iv || "D");
@@ -3909,7 +3914,7 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
     const n = ovCandles.data().length; if (!n) return;
     step = (step + 1) % STEPS.length;
     const k = Math.min(STEPS[step], n);
-    ovChart.timeScale().setVisibleLogicalRange({ from:n - k - 0.5, to:n - 0.5 + 2 });
+    padRange(ovChart, n, k + 0.5);
     ovChart.priceScale("right").applyOptions({ autoScale:true });   // annule un étirement manuel de l'échelle des prix
     toast(k + " périodes", 900);
     clearTimeout(resetT); resetT = setTimeout(() => { step = -1; }, 8000);   // après une pause, on repart de 80
