@@ -152,7 +152,8 @@
   /* compact : 2 colonnes séparées par des filets (fond = couleur de bordure, cases = couleur de carte) */
   .pf-list.compact { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
   .pf-list.compact .pf-pos, .pf-list.compact .pf-fill { background:var(--card); border:0; border-radius:0; padding:7px 12px; }
-  @media (min-width:1300px) { .pf-list.compact { grid-template-columns:repeat(3, minmax(0, 1fr)); } .pf-list.compact .pf-fill { display:none; } }
+  @media (min-width:1300px) { .pf-list.compact { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+  .pf-list:not(.compact) .pf-fill2 { visibility:hidden; }
   .pf-sub { grid-column:1 / -1; font-size:12px; font-weight:700; color:var(--muted); padding:8px 2px 2px; text-transform:uppercase; letter-spacing:.04em; }
   .pf-sub span { font-weight:500; font-size:9.5px; opacity:.75; letter-spacing:0; }   /* nombre de valeurs : discret */
   .pf-list.compact .pf-sub { background:var(--chip); padding:5px 12px; }
@@ -667,7 +668,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v142</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v143</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3781,7 +3782,12 @@ async function renderPf() {
   const prvB = document.createElement("button"); prvB.className = "btn" + (prefs.pfPrivate ? " on" : ""); prvB.textContent = prefs.pfPrivate ? "🙈" : "👁";
   prvB.title = prefs.pfPrivate ? "Montants masqués (démonstration) : toucher pour les afficher" : "Masquer les montants (démonstration) : seuls les pourcentages restent visibles";
   prvB.onclick = () => { prefs.pfPrivate = !prefs.pfPrivate; savePrefs(); renderPf(); toast(prefs.pfPrivate ? "Montants masqués" : "Montants affichés", 1300); };
-  head.append(cmpB, pntB, prvB, addB, lockB);
+  const srtB = document.createElement("button"); srtB.className = "btn";
+  srtB.textContent = prefs.pfSort === "eur" ? "⇅ €" : "⇅ %";
+  srtB.title = prefs.pfSort === "eur" ? "Tri par gain en euros (toucher : tri par %)" : "Tri par performance en % (toucher : tri par gain en euros)";
+  srtB.onclick = () => { prefs.pfSort = prefs.pfSort === "eur" ? "pct" : "eur"; savePrefs(); renderPf();
+    toast(prefs.pfSort === "eur" ? "Tri par gain en euros" : "Tri par performance en %", 1300); };
+  head.append(srtB, cmpB, pntB, prvB, addB, lockB);
   box.classList.toggle("pf-private", !!prefs.pfPrivate);
 
   const own = pfOwner(), tx = (pfState.data[own] && pfState.data[own].tx) || [];
@@ -3827,6 +3833,7 @@ async function renderPf() {
   // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
   const openL = document.createElement("div"), closedL = document.createElement("div");
   openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "") + (prefs.paintP ? " paint paint-" + prefs.paintP : "");
+  if (!prefs.pfCompact) openL.style.gridTemplateColumns = closedL.style.gridTemplateColumns = "repeat(" + pfCols() + ", minmax(0, 1fr))";
   const openB = [], closedB = [];                // cartes à répartir ensuite par groupe (Europe, USA, trackers, cryptos)
   pos.forEach(p => {
     const list = p.qty > 0 ? openB : closedB;
@@ -3867,14 +3874,20 @@ async function renderPf() {
     };
     { const pc = open ? p.latentPct : p.realizedPct, v = open ? p.latent : p.realized;      // teinte (🎨) : gain ou perte affiché
       c.classList.add(v >= 0 ? "pos" : "neg"); c.style.setProperty("--m", pc == null ? 0.3 : Math.min(1, Math.abs(pc) / 20).toFixed(3)); }   // 20 % ou plus = teinte maximale
-    c._perf = open ? p.latentPct : p.realizedPct;          // tri par performance dans chaque rubrique
+    c._perf = open ? p.latentPct : p.realizedPct;          // tri par performance dans chaque rubrique (en %)
+    c._gain = open ? (p.noE ? p.latent : p.latentE) : (p.noE ? p.realized : p.realizedE);   // … ou en gain (en euros)
     c._cat = pfCat(p); list.push(c);
   });
   const fill = (L, B) => PF_CATS.forEach(([k, lab]) => {
-    const g = B.filter(c => c._cat === k).sort((a, b) => (b._perf ?? -Infinity) - (a._perf ?? -Infinity)); if (!g.length) return;   // meilleure performance d'abord
+    const key = prefs.pfSort === "eur" ? "_gain" : "_perf";
+    const g = B.filter(c => c._cat === k).sort((a, b) => (b[key] ?? -Infinity) - (a[key] ?? -Infinity)); if (!g.length) return;   // meilleur d'abord
     L.insertAdjacentHTML("beforeend", '<div class="pf-sub">' + lab + ' <span>(#' + g.length + ')</span></div>');
-    g.forEach(c => L.appendChild(c));
-    if (prefs.pfCompact && g.length % 2) L.insertAdjacentHTML("beforeend", '<div class="pf-fill"></div>');   // case vide pour finir la ligne en 2 colonnes
+    // lecture de haut en bas, colonne par colonne (comme les autres onglets)
+    const cols = pfCols(), rows = Math.ceil(g.length / cols);
+    for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++) {
+      const c = g[q * rows + r];
+      if (c) L.appendChild(c); else if (cols > 1) L.insertAdjacentHTML("beforeend", '<div class="pf-fill pf-fill2"></div>');
+    }
   });
   fill(openL, openB); fill(closedL, closedB);
   const nOpen = openB.length, nClosed = closedB.length;
@@ -3885,6 +3898,12 @@ async function renderPf() {
     box.insertAdjacentHTML("beforeend", '<h3 class="pf-grp">Positions soldées <span>(#' + nClosed + ')</span><em>' + txt + '</em></h3>'); box.appendChild(closedL);
   }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
+}
+/* nombre de colonnes de la liste des positions (compacte : 2, ou 3 sur grand écran ; détaillée : cartes de 300 px) */
+function pfCols() {
+  if (prefs.pfCompact) return innerWidth >= 1300 ? 3 : 2;
+  const w = ($("pfView").clientWidth || innerWidth) - 24;
+  return Math.max(1, Math.floor((w + 8) / 308));
 }
 /* Groupes de positions : Europe, USA (autre fuseau horaire), trackers, cryptos */
 const PF_CATS = [["eu", "Europe"], ["us", "USA"], ["etf", "Trackers (ETF)"], ["crypto", "Cryptos"], ["other", "Autres"]];
