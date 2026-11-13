@@ -339,6 +339,9 @@
   .quick:empty { display:none; }
   .rt-up { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#fff; background:#00c853; border-radius:4px; padding:1px 4px; margin-right:5px; vertical-align:1px; line-height:1.3; }
   .rt-up.n { background:#787B86; } .rt-up.r { background:#FF5252; }
+  .grid.compact .tr-g { padding:9px 10px 5px; font-size:12px; color:var(--muted); border-bottom:1px solid var(--border); background:color-mix(in srgb, var(--muted) 8%, transparent); }
+  .grid.compact .tr-g b { color:var(--text); font-size:13px; margin-right:4px; }
+  .mk-on { color:var(--up); font-weight:600; }
   .rtc { display:none; }
   .boc { display:none; }
   .grid.compact .tbl:not(.multi) .boc { display:block; grid-column:6; grid-row:1; text-align:center; font-size:10.5px; font-weight:800; white-space:nowrap; }
@@ -518,7 +521,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v86</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v87</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -968,6 +971,7 @@ function renderGrid() {
     }
     host.appendChild(card);
   });
+  if (prefs.gridCompact && host !== g && pf.name === "Market" && typeof groupMarket === "function") groupMarket(host);
   if (prefs.gridCompact && host !== g && typeof boFill === "function") boFill(host);
 }
 
@@ -3117,6 +3121,7 @@ function setLiveStatus(ok) {
   el.className = "live-status " + (ok ? "ok" : "ko");
 }
 function refreshLiveCards() {
+  if (typeof updMarketHeads === "function") updMarketHeads();
   document.querySelectorAll("#grid .card[data-sym]").forEach(card => {
     const sym = card.dataset.sym;
     const info = withLive(sym, summary.symbols[sym]); if (!info || !info.live) return;
@@ -4477,6 +4482,47 @@ function renderQuadQuick(box) {
     box.appendChild(b);
   });
   quadApplyHi();
+}
+
+/* Onglet Market en mode compact : regroupement Europe / États-Unis / Futures / Cryptos, avec l'état de chaque marché */
+const MK_GROUPS = [["eu", "Europe"], ["us", "États-Unis"], ["fut", "Futures"], ["cry", "Cryptos"]];
+const EU_IDX = new Set(["^FCHI", "^GDAXI", "^BFX", "^STOXX50E", "^AEX", "^FTSE", "^IBEX", "^FTSEMIB", "^SSMI", "^N100"]);
+function mkGroup(sym) {
+  if (/-(USD|EUR|USDT|USDC)$/.test(sym)) return "cry";
+  if (/=F$/.test(sym)) return "fut";
+  if (EU_IDX.has(sym) || /\.(PA|DE|BR|AS|MI|MC|L|SW|LS|VI|HE|CO|ST|OL|IR|F)$/.test(sym)) return "eu";
+  return "us";
+}
+function mkState(syms) {
+  for (const sym of syms) {
+    const base = summary.symbols[sym]; if (!base) continue;
+    const i = withLive(sym, base);
+    if (i.live) {
+      const t = new Date(i.live.time * 1000);
+      const today = t.toDateString() === new Date().toDateString();
+      const when = (today ? "" : t.toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }) + " ") + t.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
+      return i.live.state === "ouvert" ? '<span class="mk-on">● en séance</span> · cours de ' + when : "fermé · dernier cours " + when;
+    }
+    if (base.date) return "clôture du " + new Date(base.date + "T12:00:00").toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" });
+  }
+  return "";
+}
+function groupMarket(host) {
+  const cards = [...host.querySelectorAll(".card[data-sym]")];
+  host.querySelectorAll(".tr-g").forEach(e => e.remove());
+  MK_GROUPS.forEach(([k, label]) => {
+    const list = cards.filter(c => mkGroup(c.dataset.sym) === k);
+    if (!list.length) return;
+    const h = document.createElement("div"); h.className = "tr-g"; h.dataset.g = k;
+    h.innerHTML = "<b>" + label + "</b> <span>" + mkState(list.map(c => c.dataset.sym)) + "</span>";
+    host.appendChild(h); list.forEach(c => host.appendChild(c));
+  });
+}
+function updMarketHeads() {
+  document.querySelectorAll("#grid .tr-g").forEach(h => {
+    const syms = [...document.querySelectorAll("#grid .card[data-sym]")].map(c => c.dataset.sym).filter(s => mkGroup(s) === h.dataset.g);
+    const sp = h.querySelector("span"); if (sp) sp.innerHTML = mkState(syms);
+  });
 }
 </script>
 </body>
