@@ -592,7 +592,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v114</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v115</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -731,7 +731,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <h3>Ajouter une valeur</h3>
     <label>Portefeuille<select id="fPf"></select></label>
     <label>Symbole Yahoo Finance<input id="fSym" placeholder="ex. VU.PA, AI.PA, AAPL" autocapitalize="characters" required></label>
-    <p class="hint">Suffixe de la place : .PA Paris · .BR Bruxelles · .AS Amsterdam · .DE Xetra · .MI Milan · rien pour les États-Unis.
+    <p class="hint">Suffixe de la place : .PA Paris · .BR Bruxelles · .AS Amsterdam · .DE Xetra · .MI Milan · rien pour les USA.
       <a id="fLookup" href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener">Trouver le symbole sur Yahoo Finance</a></p>
     <label>Nom affiché<input id="fName" placeholder="ex. VusionGroup" required></label>
     <div class="tokbox" id="tokBox">
@@ -1061,7 +1061,7 @@ function renderGrid() {
     host.appendChild(card);
   });
   if (isGrouped(pf) && typeof groupMarket === "function") groupMarket(host);
-  if (host.classList && host.classList.contains("multi")) fitCompactHeads(host);     // tableau ou graphiques : bandeaux Europe / États-Unis / Futures / Cryptos
+  if (host.classList && host.classList.contains("multi")) fitCompactHeads(host);     // tableau ou graphiques : bandeaux Europe / USA / Futures / Cryptos
   if (editing && !pf.virtual) {                // mode Modifier : ✕ sur chaque valeur, et une tuile pour en ajouter une
     const add = document.createElement("button");
     add.className = "add-tile" + (host !== g ? " row" : ""); add.type = "button";
@@ -3688,7 +3688,7 @@ async function renderPf() {
   // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
   const openL = document.createElement("div"), closedL = document.createElement("div");
   openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
-  const openB = [], closedB = [];                // cartes à répartir ensuite par groupe (Europe, États-Unis, trackers, cryptos)
+  const openB = [], closedB = [];                // cartes à répartir ensuite par groupe (Europe, USA, trackers, cryptos)
   pos.forEach(p => {
     const list = p.qty > 0 ? openB : closedB;
     const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
@@ -3741,8 +3741,8 @@ async function renderPf() {
   }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
 }
-/* Groupes de positions : Europe, États-Unis (autre fuseau horaire), trackers, cryptos */
-const PF_CATS = [["eu", "Europe"], ["us", "États-Unis"], ["etf", "Trackers (ETF)"], ["crypto", "Cryptos"], ["other", "Autres"]];
+/* Groupes de positions : Europe, USA (autre fuseau horaire), trackers, cryptos */
+const PF_CATS = [["eu", "Europe"], ["us", "USA"], ["etf", "Trackers (ETF)"], ["crypto", "Cryptos"], ["other", "Autres"]];
 const EU_SUFFIX = /\.(PA|AS|BR|DE|F|MI|MC|LS|L|IR|SW|VI|ST|HE|CO|OL|WA|PR|AT)$/;
 function pfCat(p) {
   const info = summary.symbols[p.sym] || {}, ty = (info.type || "").toUpperCase(), nm = (p.name || "") + " " + p.sym;
@@ -4624,10 +4624,10 @@ function renderQuadQuick(box) {
   quadApplyHi();
 }
 
-/* Onglet Market en mode compact : regroupement Europe / États-Unis / Futures / Cryptos, avec l'état de chaque marché */
+/* Onglet Market en mode compact : regroupement Europe / USA / Futures / Cryptos, avec l'état de chaque marché */
 // onglets regroupés par région : Market (ordre fixe) et Hold (le tri choisi s'applique dans chaque groupe)
 function isGrouped(pf) { return !!pf && (pf.name === "Market" || pf.name === "Hold"); }
-const MK_GROUPS = [["eu", "Europe"], ["us", "États-Unis"], ["fut", "Futures"], ["cry", "Cryptos"]];
+const MK_GROUPS = [["eu", "Europe"], ["us", "USA"], ["fut", "Futures"], ["cry", "Cryptos"]];
 const EU_IDX = new Set(["^FCHI", "^GDAXI", "^BFX", "^STOXX50E", "^AEX", "^FTSE", "^IBEX", "^FTSEMIB", "^SSMI", "^N100"]);
 function mkGroup(sym) {
   if (/-(USD|EUR|USDT|USDC)$/.test(sym)) return "cry";
