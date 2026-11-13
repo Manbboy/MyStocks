@@ -181,6 +181,14 @@
   .grid.compact .tr-h span:nth-child(5), .grid.compact .tr-h span:nth-child(6) { text-align:center; }
   .grid.compact .card { border:0; border-bottom:1px solid var(--border); border-radius:0; background:transparent; }
   .grid.compact .card:last-child { border-bottom:0; }
+  /* Couleurs (essai, bouton 🎨) — compacte : 2 = cellule teintée, 3 = teinte graduée selon l'ampleur ; graphiques : 3 = carte teintée */
+  #grid.compact.paint-c1 .card.pos, #grid.compact.paint-c2 .card.pos { background:color-mix(in srgb, var(--up) var(--k), var(--card)); }
+  #grid.compact.paint-c1 .card.neg, #grid.compact.paint-c2 .card.neg { background:color-mix(in srgb, var(--down) var(--k), var(--card)); }
+  .grid.compact.paint-c1 .card { --k:16%; border-bottom:2px solid var(--card); }
+  .grid.compact.paint-c2 .card { --k:calc(5% + var(--m, 0) * 33%); border-bottom:2px solid var(--card); }
+  .grid.compact.paint-c1 .tbl.multi .card, .grid.compact.paint-c2 .tbl.multi .card { border-left:1px solid var(--card); border-right:1px solid var(--card); }
+  .grid.paint-g2:not(.compact) .card.pos { background:color-mix(in srgb, var(--up) 13%, var(--card)); }
+  .grid.paint-g2:not(.compact) .card.neg { background:color-mix(in srgb, var(--down) 12%, var(--card)); }
   .grid.compact .card:nth-child(even) { background:rgba(127,127,127,.05); }
   .grid.compact .row1, .grid.compact .row2 { display:contents; }
   .grid.compact .chart, .grid.compact .card-tap, .grid.compact .px, .grid.compact .sym { display:none; }
@@ -558,7 +566,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v104</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v105</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -576,6 +584,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <button class="btn live-btn" id="liveBtn" title="Cours en séance (≈ 15 min de retard) : toucher pour activer / désactiver"></button>
     <button class="btn sort-btn" id="sortBtn" title="Trier les cartes">⇅</button>
     <button class="btn cmp-btn" id="cmpBtn" title="Mode compact (sans graphiques)">≡</button>
+    <button class="btn" id="paintBtn" title="Couleurs (essai) : changer de présentation, 3 au choix">🎨 1</button>
     <button class="btn" id="addBtn" title="Ajouter une valeur" hidden>+<span class="lbl"> Ajouter</span></button>
     <div class="pick live-menu" id="liveMenu" hidden></div>
     <div class="pick live-menu" id="sortMenu" hidden></div>
@@ -877,7 +886,7 @@ async function drawCard(el, info) {
     crosshair:{ horzLine:{ visible:false }, vertLine:{ visible:false } },
   }));
   const s = chart.addAreaSeries({
-    lineColor:col, topColor:col + "33", bottomColor:col + "00", lineWidth: small ? 1.5 : 2,
+    lineColor:col, ...areaFill(col), lineWidth: small ? 1.5 : 2,
     priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false,
     autoscaleInfoProvider: autoscaleWith(info),
   });
@@ -957,6 +966,10 @@ function renderGrid() {
     : "Aucune valeur. Touche « ✎ Modifier » puis « + Ajouter une valeur ».") + '</div>';
   $("editBtn").hidden = !!pf.virtual;   // l'ajout se fait depuis le mode Modifier (tuile « + Ajouter une valeur »)
   g.classList.toggle("compact", !!prefs.gridCompact);
+  ["paint-g1", "paint-g2", "paint-c1", "paint-c2"].forEach(c => g.classList.remove(c));
+  if (prefs.paintG) g.classList.add("paint-g" + prefs.paintG);
+  if (prefs.paintC) g.classList.add("paint-c" + prefs.paintC);
+  $("paintBtn").textContent = "🎨 " + (1 + ((prefs.gridCompact ? prefs.paintC : prefs.paintG) || 0));
   let host = g;
   if (prefs.gridCompact && pf.items.length) {
     host = document.createElement("div"); host.className = "tbl" + (pf.name === "Hold" ? " multi" : "");
@@ -997,6 +1010,7 @@ function renderGrid() {
       if (info.live) card.querySelector(".nm").insertAdjacentHTML("afterbegin", liveDot(info));
       setRtBadge(card, info);
       setNewsIcon(card, item, info);
+      paintCard(card, pct);
       const nr = nearestLevel(info);
       if (nr) {
         const el = card.querySelector(".near");
@@ -3208,6 +3222,7 @@ function refreshLiveCards() {
     const info = withLive(sym, summary.symbols[sym]); if (!info || !info.live) return;
     setRtBadge(card, info);
     const pct = info.changePct;
+    paintCard(card, pct);
     const pxEl = card.querySelector(".px"), before = card._lastPx;
     card._lastPx = info.last;
     if (before != null && before !== info.last) {          // le cours a bougé : petit éclair vert ou rouge
@@ -3387,7 +3402,7 @@ function dayPts(d) {
 function dayStyle(d) {
   const up = d.pts.length && d.pts[d.pts.length - 1].value >= d.prev;
   const col = up ? css("--up") : css("--down");
-  return { lineColor:col, topColor:col + "33", bottomColor:col + "00" };
+  return Object.assign({ lineColor:col }, areaFill(col));
 }
 async function drawCardDay(el, info) {
   const sym = el.dataset.sym;
@@ -4773,6 +4788,24 @@ document.addEventListener("click", e => {
   const sym = ic.closest(".card").dataset.sym, it = ((cfg.portfolios[prefs.active] || {}).items || []).find(x => x.yahoo === sym);
   if (it) openNews(it);
 }, true);
+
+/* ===== Couleurs (essai) : bouton 🎨, 3 présentations pour la vue graphiques et 3 pour la vue compacte =====
+   graphiques : 1 = actuelle, 2 = aire sous la courbe pleine, 3 = aire pleine + carte teintée
+   compacte   : 1 = actuelle, 2 = cellule teintée (vert / rouge), 3 = teinte graduée selon l'ampleur de la variation */
+function areaFill(col) {
+  return prefs.paintG ? { topColor:col + "aa", bottomColor:col + "55" } : { topColor:col + "33", bottomColor:col + "00" };
+}
+function paintCard(card, pct) {
+  card.classList.toggle("pos", pct != null && pct >= 0);
+  card.classList.toggle("neg", pct != null && pct < 0);
+  card.style.setProperty("--m", pct == null ? 0 : Math.min(1, Math.abs(pct) / 4).toFixed(3));    // 4 % ou plus = teinte maximale
+}
+$("paintBtn").onclick = () => {
+  const k = prefs.gridCompact ? "paintC" : "paintG";
+  prefs[k] = ((prefs[k] || 0) + 1) % 3; savePrefs(); render();
+  const N = prefs.gridCompact ? ["actuelle", "cellules teintées", "teinte graduée selon la variation"] : ["actuelle", "aire pleine", "aire pleine + carte teintée"];
+  toast("Couleurs " + (prefs[k] + 1) + "/3 : " + N[prefs[k]], 1800);
+};
 </script>
 </body>
 </html>
