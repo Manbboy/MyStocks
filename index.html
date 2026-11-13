@@ -636,7 +636,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v129</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v130</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -967,7 +967,7 @@ async function drawCard(el, info) {
   s.setData(pts);
   el._series = s; el._lastT = pts.length ? pts[pts.length - 1].time : null;
   el._first = pts.length ? pts[0].value : null; el._up = up;
-  if (pts.length) periodPct(el, pts[pts.length - 1].value);
+  if (pts.length) { periodFirst[el.dataset.sym + "|" + prefs.range] = pts[0].value; periodPct(el, pts[pts.length - 1].value); }
   addLevels(s, info, prefs.cols <= 2);
   chart.timeScale().fitContent();
   charts.push(chart);
@@ -1087,6 +1087,7 @@ function renderGrid() {
       setRtBadge(card, info);
       setNewsIcon(card, item, info);
       paintCard(card, pct);
+      applyShownPct(card, item.yahoo, info);              // 1M, 3M… : variation de la période (si déjà connue)
       const nr = nearestLevel(info);
       if (nr) {
         const el = card.querySelector(".near");
@@ -1110,6 +1111,7 @@ function renderGrid() {
     host.appendChild(card);
   });
   if (isGrouped(pf) && typeof groupMarket === "function") groupMarket(host);
+  loadPeriodFirsts(pf);
   if (host.classList && host.classList.contains("multi")) fitCompactHeads(host);     // tableau ou graphiques : bandeaux Europe / USA / Futures / Cryptos
   if (editing && !pf.virtual) {                // mode Modifier : ✕ sur chaque valeur, et une tuile pour en ajouter une
     const add = document.createElement("button");
@@ -1281,7 +1283,7 @@ function sortedOrder(pi) {
   if (mode === "add") return idx;
   const inf = i => withLive(items[i].yahoo, summary.symbols[items[i].yahoo] || {});
   const key = {
-    perfDesc: i => -(inf(i).changePct ?? -Infinity), perfAsc: i => inf(i).changePct ?? Infinity,
+    perfDesc: i => -(shownPct(items[i].yahoo, inf(i)) ?? -Infinity), perfAsc: i => shownPct(items[i].yahoo, inf(i)) ?? Infinity,   // jour, ou période choisie
     nearS: i => levelDist(inf(i), "S"), nearR: i => levelDist(inf(i), "R"),
   }[mode];
   if (mode === "name") return idx.sort((a, b) => items[a].name.localeCompare(items[b].name, "fr"));
@@ -3304,7 +3306,7 @@ function refreshLiveCards() {
     const sym = card.dataset.sym;
     const info = withLive(sym, summary.symbols[sym]); if (!info || !info.live) return;
     setRtBadge(card, info);
-    const pct = info.changePct, ceP = card.querySelector(".chart"), byPeriod = periodMode() && ceP && ceP._first;
+    const pct = info.changePct, ceP = card.querySelector(".chart"), byPeriod = periodMode() && periodFirst[sym + "|" + prefs.range] > 0;
     if (!byPeriod) paintCard(card, pct);
     const pxEl = card.querySelector(".px"), before = card._lastPx;
     card._lastPx = info.last;
@@ -3324,7 +3326,7 @@ function refreshLiveCards() {
     } catch (e) {}
     pxEl.textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
     card.querySelector(".px2").textContent = fmt(info.last, null);
-    if (byPeriod) periodPct(ceP, info.last);          // vue graphiques sur 1M, 3M… : variation sur la période affichée
+    if (byPeriod) { if (ceP && ceP._first) periodPct(ceP, info.last); else applyShownPct(card, sym, info); }   // 1M, 3M… : variation sur la période affichée
     else { const ch = card.querySelector(".chg"); ch.textContent = fmtPct(pct); ch.className = "chg " + (pct >= 0 ? "up" : "down"); }
     const nm = card.querySelector(".nm"), old = nm.querySelector(".live-dot");
     const tmp = document.createElement("span"); tmp.innerHTML = liveDot(info); const dot = tmp.firstChild;
@@ -5045,7 +5047,33 @@ try { if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js"
 
 /* Vue graphiques sur une période (1M, 3M, 6M…) : la variation affichée sur la carte est celle de la période,
    comme la couleur de la courbe (en 1J et en vue compacte : variation du jour) */
-function periodMode() { return !prefs.gridCompact && !prefs.view && prefs.range && prefs.range !== "1J"; }
+function periodMode() { return !prefs.view && prefs.range && prefs.range !== "1J"; }
+const periodFirst = {};                       // « symbole|période » -> cours de début de la période affichée
+function shownPct(sym, info) {
+  const f = periodMode() && periodFirst[sym + "|" + prefs.range];
+  return f > 0 && info && info.last != null ? (info.last / f - 1) * 100 : info ? info.changePct : null;
+}
+function applyShownPct(card, sym, info) {
+  const f = periodMode() && periodFirst[sym + "|" + prefs.range];
+  if (f > 0 && info && info.last != null) periodPct({ _first:f, closest:() => card }, info.last);
+}
+// en 1M, 3M… : charge le début de période de toutes les valeurs (vue compacte et tri), puis met à jour l'affichage
+let periodLoading = "";
+function loadPeriodFirsts(pf) {
+  if (!periodMode() || !pf) return;
+  const R = RANGES.find(r => r[0] === prefs.range); if (!R) return;
+  const key = prefs.range, items = pf.items.filter(it => { const i = summary.symbols[it.yahoo]; return i && i.file && !(periodFirst[it.yahoo + "|" + key] > 0); });
+  if (!items.length || periodLoading === key + pf.name) return;
+  periodLoading = key + pf.name;
+  Promise.all(items.map(it => getSeries(summary.symbols[it.yahoo]).then(d => {
+    const rows = d.rows.slice(-R[2]); if (rows.length) periodFirst[it.yahoo + "|" + key] = rows[0][4];
+  }).catch(() => {}))).then(() => {
+    periodLoading = "";
+    if (prefs.range !== key || pfView()) return;
+    if ((prefs.sort || "add").startsWith("perf") && pf.name !== "Market") render();           // le tri dépend de la période
+    else document.querySelectorAll("#grid .card[data-sym]").forEach(c => { const sy = c.dataset.sym; applyShownPct(c, sy, withLive(sy, summary.symbols[sy] || {})); });
+  });
+}
 function periodPct(el, last) {
   if (!periodMode() || !(el._first > 0) || last == null) return;
   const card = el.closest(".card"); if (!card) return;
