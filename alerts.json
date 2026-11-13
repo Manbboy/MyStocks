@@ -29,6 +29,16 @@
       "label": "",
       "note": "Coucou test btc",
       "created": 1794607459137
+    },
+    {
+      "id": "mwfj443duac5",
+      "sym": "BTC-USD",
+      "name": "Bitcoin (BTC/USDT)",
+      "op": "above",
+      "price": 68355.6,
+      "label": "",
+      "note": "",
+      "created": 1794607742137
     }
   ]
 }
