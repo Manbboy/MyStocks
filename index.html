@@ -365,6 +365,9 @@
   .grid.compact .tbl:not(.multi) .boc { display:block; grid-column:6; grid-row:1; text-align:center; font-size:10.5px; font-weight:800; white-space:nowrap; }
   .boc.up { color:#00c853; } .boc.dn { color:#FF5252; }
   .boc:not(.now) { opacity:.75; }
+  /* vue compacte : seule la variation du jour est en vert / rouge ; les indications (S/R proche, cassures) restent en gris, la flèche donne le sens */
+  .grid.compact .near.s, .grid.compact .near.r, .grid.compact .boc.up, .grid.compact .boc.dn { color:var(--muted); }
+  .grid.compact .boc:not(.now) { opacity:.7; }
   .grid.compact .tbl.multi .boc { display:block; grid-column:1; grid-row:2; justify-self:end; align-self:center; font-size:10px; font-weight:800; white-space:nowrap; }
   .grid.compact .tbl:not(.multi) .rtc { display:block; grid-column:5; grid-row:1; text-align:center; font-size:13px; font-weight:800; }
   .grid.compact .tbl:not(.multi) .nm .rt-up { display:none; }
@@ -508,8 +511,8 @@
 .live-dot.on { background:#16a34a; box-shadow:0 0 0 2px #16a34a33; }
 .live-dot.on::after { content:""; position:absolute; inset:-3px; border-radius:50%; background:#16a34a33; animation:livepulse 2s ease-in-out infinite; will-change:opacity; }
 .live-dot.off { background:#9ca3af; }
-/* vue compacte : pas de pastille à côté du nom (l'état du marché est dans l'en-tête de rubrique ou en haut de page) */
-#grid.compact .nm .live-dot { display:none; }
+/* liste et graphiques : pas de pastille à côté du nom (l'état du marché est dans l'en-tête de rubrique ou en haut de page) */
+#grid .nm .live-dot { display:none; }
 @keyframes livepulse { 0%, 100% { opacity:0; } 50% { opacity:1; } }
 .live-btn, .day-btn, .sort-btn { white-space:nowrap; }
 .bar > .btn[hidden] { display:none; }
@@ -541,7 +544,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v101</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v102</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
