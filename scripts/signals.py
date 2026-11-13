@@ -89,8 +89,24 @@ def levels(h, l, ref, lookback, w, pct=0.02):
         if len(cur) >= 2:
             out.append((float(np.mean(cur)), len(cur)))
         return out
-    sup = sorted([x for x in cluster(lp) if x[0] < ref], key=lambda x: -x[0])
-    res = sorted([x for x in cluster(hp) if x[0] > ref], key=lambda x: x[0])
+
+    def cluster_tight(ps):
+        """Comme cluster(), mais seuls les points à moins de tol du niveau final comptent (pas d'étirement de proche en proche)."""
+        res = []
+        for m, _ in cluster(ps):
+            pts = [p for p in ps if abs(p - m) <= tol]
+            for _ in range(3):
+                if not pts:
+                    break
+                m2 = float(np.mean(pts)); pts2 = [p for p in ps if abs(p - m2) <= tol]
+                if pts2 == pts:
+                    m = m2; break
+                pts, m = pts2, m2
+            if len(pts) >= 2:
+                res.append((float(np.mean(pts)), len(pts)))
+        return res
+    sup = sorted([x for x in cluster_tight(lp) if x[0] < ref], key=lambda x: -x[0])
+    res = sorted([x for x in cluster_tight(hp) if x[0] > ref], key=lambda x: x[0])
     return sup, res
 
 

@@ -96,6 +96,15 @@ def support_resistance(df: pd.DataFrame, lookback: int, window: int, pct: float)
                 c["mean"] = sum(c["prices"]) / len(c["prices"])
             else:
                 clusters.append({"prices": [p], "idx": [i], "kinds": [kind], "mean": p})
+        # un groupe formé de proche en proche peut s'étirer au-delà de la précision : on ne garde que les points à moins de tol du niveau final
+        for c in clusters:
+            for _ in range(3):
+                keep = [k for k, p in enumerate(c["prices"]) if abs(p - c["mean"]) <= tol]
+                if not keep or len(keep) == len(c["prices"]):
+                    break
+                for key in ("prices", "idx", "kinds"):
+                    c[key] = [c[key][k] for k in keep]
+                c["mean"] = sum(c["prices"]) / len(c["prices"])
         out = []
         for c in clusters:
             if len(c["prices"]) < MIN_TOUCHES:

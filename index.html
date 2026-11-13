@@ -531,7 +531,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v93</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v95</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1996,6 +1996,15 @@ function computeLevels(data, last, pct, roleChange) {
         if (c && Math.abs(p - c.mean) <= tol) { c.items.push([p, i, k]); c.mean = c.items.reduce((s, x) => s + x[0], 0) / c.items.length; }
         else cl.push({ items:[[p, i, k]], mean:p });
       }
+      /* un groupe formé de proche en proche peut s'étirer bien au-delà de la précision (8.200 → 8.760 pour un niveau à 8.370) :
+         on ne garde que les points réellement à moins de « tol » du niveau final */
+      cl.forEach(c => {
+        for (let k = 0; k < 3; k++) {
+          const kept = c.items.filter(x => Math.abs(x[0] - c.mean) <= tol);
+          if (!kept.length || kept.length === c.items.length) break;
+          c.items = kept; c.mean = kept.reduce((s, x) => s + x[0], 0) / kept.length;
+        }
+      });
       return cl.filter(c => c.items.length >= 2).map(c => {
         const hits = c.items.slice().sort((a, b) => a[1] - b[1]);
         return { price:c.mean, touches:hits.length, last:d[hits[hits.length - 1][1]][0], tol,
@@ -2492,9 +2501,11 @@ function onChartLineTap(param) {
     if (yy != null && Math.abs(yy - y) < (best ? best.d : 13)) best = { d:Math.abs(yy - y), act:() => toggleMa(sr._n) }; });
   if (best) best.act();
 }
+let hiBand = [];
 function applyHighlight() {
   setTimeout(renderQuick, 0);
   if (!ovCandles) return;
+  hiBand.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} }); hiBand = [];
   const sel = lineMeta.find(m => m.key === hiKey);
   const maSel = hiMa && ovMa.some(s => s._n === hiMa) ? hiMa : null;
   const flipSel = hiFlip != null && ovFlips[hiFlip] ? hiFlip : null;
@@ -2533,6 +2544,11 @@ function applyHighlight() {
     return;
   }
   ovMaReact = null; flipRaw = null;
+  /* zone de tolérance du niveau (± « Précision des contacts ») : les contacts numérotés sont les sommets / creux tombés dans cette zone */
+  if (sel.level.tol) {
+    const t = sel.level.tol, c = sel.opts.color;
+    hiBand = [sel.level.price + t, sel.level.price - t].map(pr => ovCandles.createPriceLine({ price:pr, color:c, lineWidth:1, lineStyle:LW.LineStyle.Dotted, axisLabelVisible:false, title:"" }));
+  }
   /* chaque contact est placé sur le chandelier affiché qui contient sa date */
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   const byKey = new Map(rows.map(r => [keyOf(iv, r[0]), r[0]]));
