@@ -518,7 +518,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v82</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v83</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -568,6 +568,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <div class="tbs" id="tbs">
       <div class="seg" id="ivSeg"></div>
       <button class="mmb lay" id="quadBtn" aria-pressed="false" title="Disposition : 1, 2 ou 4 graphiques"></button>
+      <button class="mmb lay" id="qsyncBtn" aria-pressed="false" title="Synchroniser le zoom et le défilement des graphiques" hidden></button>
       <span class="tb-br" aria-hidden="true"></span>
       <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
@@ -1203,7 +1204,7 @@ $("mmBtn").onclick = () => {
   }, true);
 })();
 /* ---------- Vue 1/4 : jour, semaine, mois, trimestre côte à côte ---------- */
-let quadCharts = [];
+let quadCharts = [], quadMain = [];
 const splitN = () => prefs.split === 2 || prefs.split === 4 ? prefs.split : (prefs.split === 1 ? 1 : (prefs.quad ? 4 : 1));
 const LAYOUT_ICON = {
   1:'<rect x="1.5" y="1.5" width="17" height="13" rx="2"/>',
@@ -1217,7 +1218,7 @@ function layoutIcon() {
   $("quadBtn").innerHTML = '<svg width="20" height="16" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' + icon + "</svg><small>" + n + "</small>";
   $("quadBtn").title = { 1:"1 graphique · toucher pour 2 (semaine, jour)", 2:"2 graphiques · toucher pour 4 (trimestre, mois, semaine, jour)", 4:"4 graphiques · toucher pour revenir à 1" }[n];
 }
-function clearQuad() { quadCharts.forEach(c => c.remove()); quadCharts = []; $("quad").innerHTML = ""; }
+function clearQuad() { quadCharts.forEach(c => c.remove()); quadCharts = []; quadMain = []; $("quad").innerHTML = ""; }
 function applyQuad() {
   const wrap = document.querySelector("#ov .chart-wrap");
   const multi = splitN() > 1;
@@ -1225,6 +1226,7 @@ function applyQuad() {
   $("quad").classList.toggle("two", splitN() === 2);
   $("quadBtn").classList.toggle("on", multi); $("quadBtn").setAttribute("aria-pressed", multi ? "true" : "false");
   layoutIcon();
+  $("qsyncBtn").hidden = !multi; renderQsync();
   if (multi) drawQuad(); else clearQuad();
 }
 function drawQuad() {
@@ -1317,6 +1319,7 @@ function drawQuad() {
     if (width && rows.length > width) ch.timeScale().setVisibleLogicalRange({ from:rows.length - 1 - width, to:rows.length - 1 });
     else ch.timeScale().fitContent();
     quadCharts.push(ch);
+    qsyncBind({ ch, c, n:rows.length, rows, box });
   });
 }
 window.addEventListener("resize", () => { if ($("quadBtn").innerHTML) layoutIcon(); if (splitN() > 1 && $("ov").classList.contains("show")) $("quad").style.height = $("ovChart").offsetHeight + "px"; });
@@ -4369,6 +4372,66 @@ async function renderAlertsView() {
   });
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">« encore x % » : écart entre le cours et le niveau de l\'alerte.</div>');
 }
+
+/* ===== Vues 2 / 4 graphiques : zoom et défilement synchronisés (bouton 🔗 à côté de la disposition) =====
+   Horizontal : même nombre de bougies visibles (chaque graphique garde son unité) et bord droit à la même date.
+   Vertical : quand on étire l'échelle des prix d'un graphique, les autres affichent la même fourchette de prix ; retour à l'automatique ensemble. */
+let qsMaster = null, qsBusy = false, qsRaf = 0;
+const qsOn = () => prefs.qsync === true;
+function renderQsync() {
+  const b = $("qsyncBtn"), on = qsOn();
+  b.innerHTML = '<svg width="18" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+    (on ? '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>' : '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>') +
+    "</svg><small>" + (on ? "Sync" : "Libre") + "</small>";
+  b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+  b.title = on ? "Zoom synchronisé entre les graphiques · toucher pour libérer" : "Graphiques indépendants · toucher pour synchroniser le zoom et le défilement";
+}
+$("qsyncBtn").onclick = () => {
+  prefs.qsync = !qsOn(); savePrefs(); renderQsync();
+  if (qsOn() && quadMain.length) qsFrom(quadMain[quadMain.length - 1]);      // aligne tout sur le graphique jour
+  else quadMain.forEach(q => qsPrice(q, null));
+};
+function qsPrice(q, range) {
+  if (range) {
+    q.c.applyOptions({ autoscaleInfoProvider:() => ({ priceRange:{ minValue:range[0], maxValue:range[1] } }) });
+    q.ch.priceScale("right").applyOptions({ autoScale:true, scaleMargins:{ top:0, bottom:0 } });
+  } else {
+    q.c.applyOptions({ autoscaleInfoProvider:undefined });
+    q.ch.priceScale("right").applyOptions({ autoScale:true, scaleMargins:{ top:0.16, bottom:0.06 } });
+  }
+}
+function qsFrom(m) {
+  if (!qsOn() || qsBusy || !m || !quadMain.includes(m)) return;       // graphique encore affiché (pas une vue déjà remplacée)
+  let lr; try { lr = m.ch.timeScale().getVisibleLogicalRange(); } catch (e) { return; }
+  if (!lr) return;
+  // même nombre de bougies visibles ; bord droit à la même date (ou même marge à droite de la dernière bougie)
+  const w = lr.to - lr.from, past = lr.to < m.n - 1, tR = past ? m.rows[Math.max(0, Math.floor(lr.to))][0] : null, extra = lr.to - (m.n - 1);
+  // échelle des prix étirée à la main sur le graphique touché : même fourchette pour les autres
+  let manual = false; try { manual = m.ch.priceScale("right").options().autoScale === false; } catch (e) {}
+  const h = m.box.clientHeight, top = m.c.coordinateToPrice(0), bot = m.c.coordinateToPrice(h - (m.ch.timeScale().height ? m.ch.timeScale().height() : 0));
+  qsBusy = true;
+  quadMain.forEach(q => {
+    if (q === m) return;
+    let to = q.n - 1 + extra;
+    if (past) { let k = q.rows.length - 1; while (k > 0 && q.rows[k][0] > tR) k--; to = k + (lr.to - Math.floor(lr.to)); }
+    q.ch.timeScale().setVisibleLogicalRange({ from:to - w, to });
+    if (manual && top != null && bot != null) { qsPrice(q, [Math.min(top, bot), Math.max(top, bot)]); q.fixed = false; }
+    else if (q.synced) qsPrice(q, null);
+    q.synced = !!manual;
+  });
+  qsBusy = false;
+}
+function qsBind(q) {
+  quadMain.push(q);
+  const mark = () => { qsMaster = q; };
+  ["pointerdown", "touchstart", "wheel", "mousedown"].forEach(ev => q.box.addEventListener(ev, mark, { passive:true, capture:true }));
+  const later = () => { if (qsMaster !== q) return; cancelAnimationFrame(qsRaf); qsRaf = requestAnimationFrame(() => qsFrom(q)); };
+  q.ch.timeScale().subscribeVisibleLogicalRangeChange(later);
+  ["pointermove", "touchmove", "wheel", "pointerup", "touchend"].forEach(ev => q.box.addEventListener(ev, later, { passive:true }));
+  q.box.addEventListener("dblclick", () => setTimeout(() => { if (qsMaster === q) { qsPrice(q, null); quadMain.forEach(o => { if (o.synced) { qsPrice(o, null); o.synced = false; } }); } }, 30));
+}
+const qsyncBind = qsBind;
+renderQsync();
 </script>
 </body>
 </html>
