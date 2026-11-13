@@ -248,6 +248,9 @@
   .px { font-size:13px; font-weight:600; white-space:nowrap; }
   .row2 { display:flex; justify-content:space-between; gap:6px; font-size:11px; color:var(--muted); margin-top:1px; }
   .chg { white-space:nowrap; }
+  /* cartes étroites : le symbole se coupe (…) au lieu de passer sur 2 lignes, sinon les graphiques d'une rangée ne finissent plus à la même hauteur */
+  .row2 .sym { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  .row1 .nm { min-width:0; }
   .up { color:var(--up); } .down { color:var(--down); }
   .chart { height:var(--h,150px); }
   .msg { color:var(--muted); font-size:12px; padding:20px 10px; text-align:center; }
@@ -621,7 +624,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v125</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v126</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
