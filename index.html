@@ -164,6 +164,11 @@
   .tokbox p, .tokbox ol { margin:6px 0; padding-left:18px; line-height:1.5; }
   .tokbox p { padding-left:0; }
   .tokbox input { width:100%; font-size:14px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
+  .add-tile { border:2px dashed var(--border); border-radius:12px; background:transparent; color:var(--accent); font:inherit; font-size:15px; font-weight:600; cursor:pointer; min-height:var(--h, 120px); display:flex; align-items:center; justify-content:center; gap:8px; }
+  .add-tile b { font-size:22px; }
+  #addBtn[hidden] { display:none; }
+  .add-tile.row { min-height:0; width:100%; padding:12px; border-radius:0; border-width:2px 0 0; }
+  .grid.compact .tbl .card .rm { top:50%; transform:translateY(-50%); right:6px; }
   .card .rm { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:12px; border:0; background:var(--down); color:#fff; font-size:13px; cursor:pointer; display:none; z-index:3; }
   .editing .card .rm { display:block; }
   .card-tap { position:absolute; inset:0; z-index:2; -webkit-tap-highlight-color:transparent; }
@@ -526,7 +531,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v91</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v92</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -545,10 +550,10 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <button class="btn day-btn" id="dayBtn" title="1J : courbe étirée sur toute la largeur, ou placée sur la journée entière (se remplit jusqu'au bord droit à la clôture)"></button>
     <button class="btn sort-btn" id="sortBtn" title="Trier les cartes">⇅</button>
     <button class="btn cmp-btn" id="cmpBtn" title="Mode compact (sans graphiques)">≡</button>
-    <button class="btn" id="addBtn" title="Ajouter une valeur">+<span class="lbl"> Ajouter</span></button>
+    <button class="btn" id="addBtn" title="Ajouter une valeur" hidden>+<span class="lbl"> Ajouter</span></button>
     <div class="pick live-menu" id="liveMenu" hidden></div>
     <div class="pick live-menu" id="sortMenu" hidden></div>
-    <button class="btn" id="editBtn" title="Modifier la liste (retirer des valeurs)">✎<span class="lbl"> Modifier</span></button>
+    <button class="btn" id="editBtn" title="Modifier la liste : ajouter ou retirer des valeurs">✎<span class="lbl"> Modifier</span></button>
   </div>
   <div class="toast" id="toast"></div>
 
@@ -913,8 +918,8 @@ function renderGrid() {
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
   if (!pf.items.length) g.innerHTML = '<div class="msg" style="grid-column:1/-1">' + (pf.virtual
     ? (typeof pfState !== "undefined" && pfState.data ? "Aucune position ouverte dans les portefeuilles M et D." : "Déverrouillez l'onglet Portefeuille (mot de passe) pour voir ici les valeurs que vous détenez.")
-    : "Aucune valeur. Touche « + Ajouter ».") + '</div>';
-  $("addBtn").hidden = $("editBtn").hidden = !!pf.virtual;
+    : "Aucune valeur. Touche « ✎ Modifier » puis « + Ajouter une valeur ».") + '</div>';
+  $("editBtn").hidden = !!pf.virtual;   // l'ajout se fait depuis le mode Modifier (tuile « + Ajouter une valeur »)
   g.classList.toggle("compact", !!prefs.gridCompact);
   let host = g;
   if (prefs.gridCompact && pf.items.length) {
@@ -978,6 +983,13 @@ function renderGrid() {
     host.appendChild(card);
   });
   if (prefs.gridCompact && host !== g && pf.name === "Market" && typeof groupMarket === "function") groupMarket(host);
+  if (editing && !pf.virtual) {                // mode Modifier : ✕ sur chaque valeur, et une tuile pour en ajouter une
+    const add = document.createElement("button");
+    add.className = "add-tile" + (host !== g ? " row" : ""); add.type = "button";
+    add.innerHTML = "<b>＋</b> Ajouter une valeur";
+    add.onclick = openAdd;
+    host.appendChild(add);
+  }
   // Direct : un onglet dont les valeurs n'ont pas encore de cours en direct est rafraîchi tout de suite (sans attendre le prochain tour)
   if (liveOn() && pf.items.some(i => !liveQuotes[i.yahoo])) { liveNext = 0; setTimeout(liveTick, 50); }
   if (prefs.gridCompact && host !== g && typeof boFill === "function") boFill(host);
@@ -3009,7 +3021,7 @@ $("lvClose").onclick = closeLevel;
     $("sortBtn").textContent = (prefs.sort || "add") === "add" ? "⇅" : "⇅ " + { perfDesc:"Var. ↓", perfAsc:"Var. ↑", name:"A→Z", nearS:"Supp.", nearR:"Rés." }[prefs.sort];
     $("sortBtn").title = "Tri : " + m[1]; $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); };
   updSortBtn();
-  $("cmpBtn").onclick = () => { prefs.gridCompact = !prefs.gridCompact; savePrefs(); render();
+  $("cmpBtn").onclick = () => { prefs.gridCompact = !prefs.gridCompact; savePrefs(); render(); updDayBtn();
     toast(prefs.gridCompact ? "Mode compact : sans graphiques" : "Graphiques affichés", 1300); };
   $("sortBtn").onclick = e => {
     e.stopPropagation();
@@ -3048,7 +3060,7 @@ function liveOn() { return prefs.live !== false; }
 function liveSec() { return [5, 15, 30, 60].includes(+prefs.liveSec) ? +prefs.liveSec : 60; }   // fréquence du mode Direct
 function updDayBtn() {
   const b = $("dayBtn"); if (!b) return;
-  b.hidden = !liveOn();                          // visible en direct ; hors 1J, le toucher passe en 1J
+  b.hidden = !liveOn() || !!prefs.gridCompact;   // visible en direct (inutile en mode compact, sans graphiques) ; hors 1J, le toucher passe en 1J
   b.classList.toggle("dim", prefs.range !== "1J"); b.title = prefs.range !== "1J" ? "Passer en période 1J (séance du jour)" : "1J : courbe étirée ou journée entière";
   b.innerHTML = prefs.dayFull ? "⇥<span class=\"lbl\"> Journée</span>" : "↔<span class=\"lbl\"> Ajusté</span>";   // texte masqué sur téléphone
 }
