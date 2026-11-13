@@ -345,6 +345,8 @@
   .grid.compact .tr-g b { color:var(--text); font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
 
   .mk-on { color:var(--up); font-weight:600; }
+  :root[data-theme="dark"] .grid.compact .tr-g { --g:#94a3b8; background:color-mix(in srgb, #94a3b8 24%, var(--card)); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grid.compact .tr-g { --g:#94a3b8; background:color-mix(in srgb, #94a3b8 24%, var(--card)); } }
   .rtc { display:none; }
   .boc { display:none; }
   .grid.compact .tbl:not(.multi) .boc { display:block; grid-column:6; grid-row:1; text-align:center; font-size:10.5px; font-weight:800; white-space:nowrap; }
@@ -524,7 +526,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v89</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v90</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
