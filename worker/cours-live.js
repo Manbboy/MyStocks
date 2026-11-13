@@ -126,9 +126,10 @@ async function tgRoute(path, env) {
   if (!ready.kv) return { error: "L'espace de stockage ALERTS n'est pas encore relié au relais." };
   if (path === "/tg/link") {
     // la conversation du dernier message reçu par le bot (après avoir touché « Démarrer » dans Telegram)
-    const u = await tg(env, "getUpdates", { limit: 20 });
-    if (!u.ok) return { error: u.error_code === 401 ? "Telegram refuse le jeton (TG_TOKEN) : il est sans doute ancien ou mal copié. Recopiez le jeton actuel de BotFather dans le secret TG_TOKEN." :
-      u.error_code === 409 ? "Le bot a un webhook actif : envoyez /deleteWebhook n'est pas possible ici, dites-le à Claude." : "Telegram a refusé : " + (u.description || "erreur") };
+    let u = await tg(env, "getUpdates", { limit: 20 });
+    if (!u.ok && u.error_code === 409) { await tg(env, "deleteWebhook", {}); u = await tg(env, "getUpdates", { limit: 20 }); }   // webhook actif : on le retire
+    if (!u.ok) return { error: u.error_code === 401 ? "Telegram refuse le jeton (TG_TOKEN) : il est sans doute ancien ou mal copié. Recopiez le jeton actuel de BotFather dans le secret TG_TOKEN."
+      : "Telegram a refusé : " + (u.description || "erreur") };
     const msgs = (u.result || []).map(x => x.message || x.edited_message).filter(Boolean);
     const last = msgs[msgs.length - 1];
     if (!last) return { error: "Aucun message reçu par le bot : ouvrez-le dans Telegram, touchez « Démarrer » (ou envoyez-lui « bonjour »), puis réessayez." };
