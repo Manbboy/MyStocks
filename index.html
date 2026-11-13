@@ -23,9 +23,9 @@
             --s-D:#bbf7d0; --s-W:#2dd4bf; --s-M:#22c55e; --s-Q:#15803d;
             --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; --buy:#60a5fa; --sell:#a78bfa; }
   /* thème gris (intermédiaire) : un clair adouci, sans blanc éblouissant, pour le soir */
-  :root[data-theme="light"][data-dim] { --bg:#c9cdd3; --card:#d9dce1; --text:#1c2026; --muted:#525a66; --border:#b4b9c1; --chip:#c2c7ce; --grid:#c8ccd2;
-            --up:#15803d; --down:#c42020; --sup:#15803d; --res:#c42020; }
-  :root[data-theme="light"][data-dim] .grid .tr-g { --g:#4b5563; background:color-mix(in srgb, #64748b 32%, var(--card)); }
+  :root[data-theme="light"][data-dim] { --bg:#a3a8b0; --card:#b4b9c0; --text:#111418; --muted:#3c434d; --border:#959ba3; --chip:#a9aeb5; --grid:#aab0b7;
+            --up:#0e6a2f; --down:#a91818; --sup:#0e6a2f; --res:#a91818; }
+  :root[data-theme="light"][data-dim] .grid .tr-g { --g:#374151; background:color-mix(in srgb, #475569 30%, var(--card)); }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) { color-scheme:dark; --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
@@ -643,7 +643,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v135</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v136</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
