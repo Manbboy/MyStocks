@@ -518,7 +518,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v84</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v85</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1229,10 +1229,11 @@ function applyQuad() {
   $("quadBtn").classList.toggle("on", multi); $("quadBtn").setAttribute("aria-pressed", multi ? "true" : "false");
   layoutIcon();
   $("qsyncBtn").hidden = !multi; renderQsync();
-  if (multi) drawQuad(); else clearQuad();
+  if (multi) drawQuad(); else { clearQuad(); quadHi = null; setTimeout(renderQuick, 0); }
 }
 function drawQuad() {
   if (!ovData || !ovItem) return;
+  setTimeout(renderQuick, 0);
   const lr = ovChart ? ovChart.timeScale().getVisibleLogicalRange() : null;
   const width = lr ? Math.max(10, lr.to - lr.from) : null;
   clearQuad();
@@ -1263,29 +1264,32 @@ function drawQuad() {
       ch.priceScale("").applyOptions({ scaleMargins:{ top:0.85, bottom:0 } });
       v.setData(rows.map(r => ({ time:r[0], value:r[5] })));
     }
+    const q = { ch, c, n:rows.length, rows, box, ma:[], lv:[], geo:[], flip:[] };     // éléments dessinés, pour la mise en évidence
     selMaP().forEach(n => {
       const pts = maSeries(ovData, tf, n, tf);
       if (!pts.length) return;
       const s = ch.addLineSeries({ color:MA_COL[n], lineWidth:1.5, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
       s.setData(pts);
+      q.ma.push({ s, n, col:MA_COL[n] });
     });
     if (selectedKinds().length && selectedLv().length) {
       const L = levelsOf(ovItem, tf), st = LV[tf];
       KINDS.filter(([k]) => selectedKinds().includes(k)).forEach(([p, , k, cc]) =>
-        L[k].forEach(l => c.createPriceLine({ price:l.price, color:colorOf(cc, tf), lineWidth:st.width, lineStyle:st.style, axisLabelVisible:false, title:"" })));
+        L[k].forEach(l => q.lv.push({ pl:c.createPriceLine({ price:l.price, color:colorOf(cc, tf), lineWidth:st.width, lineStyle:st.style, axisLabelVisible:false, title:"" }), col:colorOf(cc, tf), w:st.width })));
     }
     const geoIt = (prefs.chan || prefs.tl) ? geoItems(rows, tf) : [];
-    if (geoIt.length) drawGeoOn(ch, geoIt, null);
+    if (geoIt.length) drawGeoOn(ch, geoIt, null).forEach(s => q.geo.push({ s, t:geoIt[s._geo].g === "chan" ? "chan" : "tl", col:s.options().color, w:s.options().lineWidth }));
     if (prefs.flip || geoIt.length) {
       const fl = prefs.flip ? flipLevels(rows, tf, tolPct()) : [], lastT = rows[rows.length - 1][0], marks = geoMarks(geoIt, null);
       fl.forEach(f => {
         const s = ch.addLineSeries({ color:FLIP_COL[f.type], lineWidth:2, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
         s.setData([{ time:f.pivotTime, value:f.price }, { time:lastT, value:f.price }]);
+        q.flip.push({ s, col:FLIP_COL[f.type], w:2 });
         const up = f.type === "RS";
         if (prefs.dots !== false) marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:FLIP_COL[f.type] });
         f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:FLIP_COL[f.type] }));
       });
-      const sorted = marks.sort((a, b) => a.time < b.time ? -1 : 1);
+      const sorted = marks.sort((a, b) => a.time < b.time ? -1 : 1).map(m => Object.assign(m, { size:m.shape === "circle" ? 0.5 : 0.8 }));   // petits graphiques : petits marqueurs
       const apply = () => c.setMarkers(declutter(ch, rows, sorted));
       let t = null;
       ch.timeScale().subscribeVisibleLogicalRangeChange(() => { cancelAnimationFrame(t); t = requestAnimationFrame(apply); });
@@ -1321,7 +1325,7 @@ function drawQuad() {
     if (width && rows.length > width) ch.timeScale().setVisibleLogicalRange({ from:rows.length - 1 - width, to:rows.length - 1 });
     else ch.timeScale().fitContent();
     quadCharts.push(ch);
-    qsyncBind({ ch, c, n:rows.length, rows, box });
+    qsyncBind(q);
   });
 }
 window.addEventListener("resize", () => { if ($("quadBtn").innerHTML) layoutIcon(); if (splitN() > 1 && $("ov").classList.contains("show")) $("quad").style.height = $("ovChart").offsetHeight + "px"; });
@@ -2412,6 +2416,7 @@ function toggleFlip(n) {
 function renderQuick() {
   const box = $("quick"); if (!box) return;
   const items = [];
+  if (typeof splitN === "function" && splitN() > 1) { renderQuadQuick(box); return; }
   if (ovCandles && typeof splitN === "function" && splitN() === 1) {
     lineMeta.forEach(m => items.push({ grp:1, price:m.opts.price, c:m.opts.color, t:m.p + (m.i + 1) + "·" + LV[m.tf].short,
       on:hiKey === m.key, act:() => toggleLevelKey(m.tf, m.p, m.i), tip:(m.p === "R" ? "Résistance " : "Support ") + fmt(m.opts.price) }));
@@ -4434,6 +4439,40 @@ function qsBind(q) {
 }
 const qsyncBind = qsBind;
 renderQsync();
+
+/* Vues 2 / 4 graphiques : pastilles sous les graphiques (moyennes mobiles, S/R, canaux, obliques, bascules) pour mettre en évidence sur tous les graphiques */
+let quadHi = null;
+function quadApplyHi() {
+  const on = (t, n) => !quadHi || (quadHi.t === t && (n == null || quadHi.n === n));
+  quadMain.forEach(q => {
+    try {
+      q.ma.forEach(m => m.s.applyOptions({ color:on("ma", m.n) ? m.col : dim(m.col), lineWidth:quadHi && on("ma", m.n) ? 2.5 : 1.5 }));
+      q.lv.forEach(l => l.pl.applyOptions({ color:on("sr") ? l.col : dim(l.col, "33") }));
+      q.geo.forEach(g => g.s.applyOptions({ color:on(g.t) ? g.col : dim(g.col, "33"), lineWidth:quadHi && on(g.t) ? 3 : g.w }));
+      q.flip.forEach(f => f.s.applyOptions({ color:on("flip") ? f.col : dim(f.col, "33"), lineWidth:quadHi && on("flip") ? 3 : f.w }));
+    } catch (e) {}
+  });
+}
+function renderQuadQuick(box) {
+  const has = k => quadMain.some(q => q[k].length);
+  const items = [];
+  [20, 50, 200].forEach(n => { if (quadMain.some(q => q.ma.some(m => m.n === n))) items.push({ t:"MM" + n, c:MA_COL[n], k:{ t:"ma", n } }); });
+  if (has("lv")) items.push({ t:"S/R", c:"var(--res)", k:{ t:"sr" } });
+  if (quadMain.some(q => q.geo.some(g => g.t === "chan"))) items.push({ t:"Canaux", c:CHAN_COL, k:{ t:"chan" } });
+  if (quadMain.some(q => q.geo.some(g => g.t === "tl"))) items.push({ t:"Obliques", c:TL_COL.res, k:{ t:"tl" } });
+  if (has("flip")) items.push({ t:"R⇄S", c:FLIP_COL.RS, k:{ t:"flip" } });
+  if (quadHi && !items.some(x => x.k.t === quadHi.t && x.k.n === quadHi.n)) quadHi = null;
+  box.innerHTML = "";
+  items.forEach(x => {
+    const b = document.createElement("button");
+    const sel = quadHi && quadHi.t === x.k.t && quadHi.n === x.k.n;
+    b.className = "q-chip" + (sel ? " on" : ""); b.style.setProperty("--c", x.c); b.textContent = x.t;
+    b.title = "Mettre en évidence sur tous les graphiques";
+    b.onclick = () => { quadHi = sel ? null : x.k; quadApplyHi(); renderQuadQuick(box); };
+    box.appendChild(b);
+  });
+  quadApplyHi();
+}
 </script>
 </body>
 </html>
