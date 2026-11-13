@@ -19,6 +19,16 @@
       "label": "S→R",
       "note": "",
       "created": 1794525092992
+    },
+    {
+      "id": "mwfiy1q9a2py",
+      "sym": "BTC-USD",
+      "name": "Bitcoin (BTC/USDT)",
+      "op": "below",
+      "price": 68325,
+      "label": "",
+      "note": "Coucou test btc",
+      "created": 1794607459137
     }
   ]
 }
