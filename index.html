@@ -248,6 +248,7 @@
   .px { font-size:13px; font-weight:600; white-space:nowrap; }
   .row2 { display:flex; justify-content:space-between; gap:6px; font-size:11px; color:var(--muted); margin-top:1px; }
   .chg { white-space:nowrap; }
+  .chg .per { font-size:.82em; font-weight:500; color:var(--muted); }
   /* cartes étroites (vue graphiques) : symbole et variation l'un sous l'autre, en entier, sur toutes les cartes,
      pour que les graphiques d'une rangée commencent et finissent à la même hauteur */
   .grid:not(.compact) .card { container-type:inline-size; }
@@ -635,7 +636,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v128</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v129</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -946,7 +947,10 @@ async function drawCard(el, info) {
   const data = await getSeries(info);
   const n = RANGES.find(r => r[0] === prefs.range)[2];
   const rows = data.rows.slice(-n);
-  const up = rows.length > 1 && rows[rows.length - 1][4] >= rows[0][4];
+  const pts = rows.map(r => ({ time:r[0], value:r[4] }));
+  const lq = liveOn() && liveQuotes[el.dataset.sym];
+  if (lq && pts.length) { if (lq.day > pts[pts.length - 1].time) pts.push({ time:lq.day, value:lq.price }); else if (lq.day === pts[pts.length - 1].time) pts[pts.length - 1].value = lq.price; }
+  const up = pts.length > 1 && pts[pts.length - 1].value >= pts[0].value;
   const col = up ? css("--up") : css("--down");
   const small = prefs.cols >= 3;
   const chart = LW.createChart(el, Object.assign(baseOptions(small), {
@@ -960,11 +964,10 @@ async function drawCard(el, info) {
     priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false,
     autoscaleInfoProvider: autoscaleWith(info),
   });
-  const pts = rows.map(r => ({ time:r[0], value:r[4] }));
-  const lq = liveOn() && liveQuotes[el.dataset.sym];
-  if (lq && pts.length) { if (lq.day > pts[pts.length - 1].time) pts.push({ time:lq.day, value:lq.price }); else if (lq.day === pts[pts.length - 1].time) pts[pts.length - 1].value = lq.price; }
   s.setData(pts);
   el._series = s; el._lastT = pts.length ? pts[pts.length - 1].time : null;
+  el._first = pts.length ? pts[0].value : null; el._up = up;
+  if (pts.length) periodPct(el, pts[pts.length - 1].value);
   addLevels(s, info, prefs.cols <= 2);
   chart.timeScale().fitContent();
   charts.push(chart);
@@ -3301,8 +3304,8 @@ function refreshLiveCards() {
     const sym = card.dataset.sym;
     const info = withLive(sym, summary.symbols[sym]); if (!info || !info.live) return;
     setRtBadge(card, info);
-    const pct = info.changePct;
-    paintCard(card, pct);
+    const pct = info.changePct, ceP = card.querySelector(".chart"), byPeriod = periodMode() && ceP && ceP._first;
+    if (!byPeriod) paintCard(card, pct);
     const pxEl = card.querySelector(".px"), before = card._lastPx;
     card._lastPx = info.last;
     if (before != null && before !== info.last) {          // le cours a bougé : petit éclair vert ou rouge
@@ -3321,7 +3324,8 @@ function refreshLiveCards() {
     } catch (e) {}
     pxEl.textContent = fmt(info.last, prefs.cols >= 4 ? null : info.currency);
     card.querySelector(".px2").textContent = fmt(info.last, null);
-    const ch = card.querySelector(".chg"); ch.textContent = fmtPct(pct); ch.className = "chg " + (pct >= 0 ? "up" : "down");
+    if (byPeriod) periodPct(ceP, info.last);          // vue graphiques sur 1M, 3M… : variation sur la période affichée
+    else { const ch = card.querySelector(".chg"); ch.textContent = fmtPct(pct); ch.className = "chg " + (pct >= 0 ? "up" : "down"); }
     const nm = card.querySelector(".nm"), old = nm.querySelector(".live-dot");
     const tmp = document.createElement("span"); tmp.innerHTML = liveDot(info); const dot = tmp.firstChild;
     if (old && old.className === dot.className) old.title = dot.title; else { if (old) old.remove(); nm.insertAdjacentElement("afterbegin", dot); }
@@ -5038,6 +5042,22 @@ addEventListener("resize", () => { clearTimeout(ccT); ccT = setTimeout(() => { i
 
 /* Appli installable sur l'écran d'accueil (ouverture en plein écran, sans barre d'adresse) */
 try { if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}
+
+/* Vue graphiques sur une période (1M, 3M, 6M…) : la variation affichée sur la carte est celle de la période,
+   comme la couleur de la courbe (en 1J et en vue compacte : variation du jour) */
+function periodMode() { return !prefs.gridCompact && !prefs.view && prefs.range && prefs.range !== "1J"; }
+function periodPct(el, last) {
+  if (!periodMode() || !(el._first > 0) || last == null) return;
+  const card = el.closest(".card"); if (!card) return;
+  const pct = (last / el._first - 1) * 100, up = pct >= 0;
+  const ch = card.querySelector(".chg");
+  if (ch) { ch.innerHTML = fmtPct(pct) + ' <span class="per">' + ((RANGES.find(r => r[0] === prefs.range) || [0, prefs.range])[1]) + "</span>"; ch.className = "chg " + (up ? "up" : "down");
+    ch.title = "Variation sur la période affichée (" + prefs.range + ")"; }
+  const R = RANGES.find(r => r[0] === prefs.range) || [prefs.range, prefs.range, 21];
+  paintCard(card, pct / Math.sqrt(Math.max(1, Math.min(R[2], 2520) / 21)));   // teinte graduée : plus la période est longue, plus il faut d'écart
+  card.classList.toggle("pos", up); card.classList.toggle("neg", !up);
+  if (el._series && el._up !== up) { const col = up ? css("--up") : css("--down"); el._series.applyOptions(Object.assign({ lineColor:col }, areaFill(col))); el._up = up; }
+}
 </script>
 </body>
 </html>
