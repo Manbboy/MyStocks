@@ -5,6 +5,7 @@
 //   /chart?s=MC.PA&range=1d&interval=5m   -> bougies intraday d'un symbole
 //   /tg/status | /tg/link | /tg/test      -> alertes Telegram : état, liaison avec votre conversation, message d'essai
 //   /alerts/sent                          -> alertes déjà envoyées (pour les afficher dans la page)
+//   /news?q=Renault&s=RNO.PA              -> actualités des 3 derniers jours : Google Actualités en français, puis Yahoo Finance (anglais)
 //
 // Alertes de prix : toutes les 5 minutes en semaine (déclencheur « crons » de wrangler.toml), le relais lit
 // alerts.json dans le dépôt, vérifie les cours et envoie un message Telegram quand un niveau est franchi (une seule fois).
@@ -29,6 +30,7 @@ export default {
 
     const url = new URL(request.url);
     if (url.pathname.startsWith("/tg/") || url.pathname === "/alerts/sent") return json(await tgRoute(url.pathname, env), 200, cors);
+    if (url.pathname === "/news") return news(url, ctx, cors);
     const syms = (url.searchParams.get("s") || "").split(",").map(s => s.trim()).filter(Boolean).slice(0, 60);
     if (!syms.length) return json({ error: "paramètre s manquant" }, 400, cors);
 
@@ -59,6 +61,51 @@ export default {
     ctx.waitUntil(checkAlerts(env));
   },
 };
+
+/* ===== Actualités d'une valeur ===== */
+const UA = { "User-Agent": "Mozilla/5.0 (compatible; MyStocks/1.0)" };
+async function news(url, ctx, cors) {
+  const q = (url.searchParams.get("q") || "").replace(/\s*\(.*?\)\s*/g, " ").trim().slice(0, 80);
+  const sym = (url.searchParams.get("s") || "").trim().slice(0, 20);
+  if (!q && !sym) return json({ error: "paramètre q ou s manquant" }, 400, cors);
+  const cache = caches.default, key = new Request("https://cache.local/news?q=" + encodeURIComponent(q) + "&s=" + encodeURIComponent(sym));
+  const hit = await cache.match(key);
+  if (hit) { const r = new Response(hit.body, hit); Object.entries(cors).forEach(([k, v]) => r.headers.set(k, v)); return r; }
+  const since = Date.now() - 3 * 864e5;
+  const [fr, en] = await Promise.all([q ? gnews(q).catch(() => []) : [], sym ? ynews(sym).catch(() => []) : []]);
+  const pick = list => list.filter(n => n.time >= since && n.title).sort((a, b) => b.time - a.time).slice(0, 8);
+  const res = json({ q, sym, fr: pick(fr), en: pick(en) }, 200, Object.assign({ "Cache-Control": "public, max-age=900" }, cors));   // 15 min
+  ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
+}
+function unxml(t) {
+  return (t || "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").trim();
+}
+// Google Actualités (flux RSS), en français : le nom de la valeur, avec des mots de bourse pour éviter les homonymes
+async function gnews(q) {
+  const query = '"' + q + '" (bourse OR action OR titre OR cours OR résultats) when:3d';
+  const r = await fetch("https://news.google.com/rss/search?q=" + encodeURIComponent(query) + "&hl=fr&gl=FR&ceid=FR:fr", { headers: UA });
+  if (!r.ok) return [];
+  const xml = await r.text(), out = [];
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const it = m[1], g = tag => { const x = it.match(new RegExp("<" + tag + "[^>]*>([\\s\\S]*?)</" + tag + ">")); return x ? unxml(x[1]) : ""; };
+    const source = g("source");
+    let title = g("title");
+    if (source && title.endsWith(" - " + source)) title = title.slice(0, -(source.length + 3));
+    out.push({ title, link: g("link"), source, time: Date.parse(g("pubDate")) || 0, lang: "fr" });
+  }
+  return out;
+}
+// Yahoo Finance : actualités liées au symbole (surtout en anglais)
+async function ynews(sym) {
+  const r = await fetch("https://query2.finance.yahoo.com/v1/finance/search?q=" + encodeURIComponent(sym) + "&quotesCount=0&newsCount=12&enableFuzzyQuery=false", { headers: UA });
+  if (!r.ok) return [];
+  const j = await r.json();
+  return (j.news || []).filter(n => !n.relatedTickers || !n.relatedTickers.length || n.relatedTickers.includes(sym))
+    .map(n => ({ title: n.title, link: n.link, source: n.publisher, time: (n.providerPublishTime || 0) * 1000, lang: "en" }));
+}
 
 /* ===== Alertes Telegram ===== */
 const ALERTS_URL = "https://raw.githubusercontent.com/Manbboy/MyStocks/main/alerts.json";

@@ -503,6 +503,20 @@
   .lv .it { font-size:14px; font-weight:600; padding:4px 0; }
   .lv .it span { white-space:nowrap; }
   .lv small { display:block; color:var(--muted); font-weight:400; font-size:12px; }
+  /* Actualités : icône sur les cartes (mouvement inhabituel), bloc du détail, fenêtre */
+  .newsic { position:relative; z-index:3; display:inline-block; margin-right:5px; font-size:.95em; filter:grayscale(1); opacity:.75; cursor:pointer; }
+  .news { margin:12px 2px 0; }
+  .news h3 { font-size:14px; margin:0 0 6px; }
+  .news .ctx { margin:0 0 8px; padding:0; list-style:none; font-size:13px; line-height:1.45; }
+  .news .ctx li { padding:3px 0 3px 14px; position:relative; }
+  .news .ctx li::before { content:"•"; position:absolute; left:2px; color:var(--muted); }
+  .news .nl a { display:block; padding:7px 0; border-top:1px solid var(--border); color:var(--text); text-decoration:none; font-size:13.5px; line-height:1.35; }
+  .news .nl a small { display:block; color:var(--muted); font-size:11.5px; margin-top:2px; }
+  .news .nl .en { font-size:10px; font-weight:700; color:var(--muted); border:1px solid var(--border); border-radius:4px; padding:0 3px; margin-right:4px; }
+  .news .nl .old { opacity:.7; }
+  .news .none { color:var(--muted); font-size:13px; }
+  #newsDlg .dlg { max-width:560px; width:100%; }
+  #newsDlg .news { margin:0; }
   .ov-foot { font-size:12px; color:var(--muted); margin:12px 0 30px; line-height:1.5; }
   .ov-foot a { color:var(--accent); }
 
@@ -544,7 +558,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v102</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v103</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -653,6 +667,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="fitbtn" id="sideBtn" title="Afficher ou cacher les informations détaillées (listes des niveaux, canaux, moyennes…)"></button>
       <button class="navsm" id="ovNext2" aria-label="Action suivante">›</button>
     </div>
+    <div class="news" id="ovNews"></div>
     </div>
     <div class="ov-side">
     <div class="lgd" id="ovLegend"></div>
@@ -669,6 +684,13 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   </div>
 </div>
 
+<div class="dlg-bg" id="newsDlg">
+  <div class="dlg">
+    <h3 id="newsTitle"></h3>
+    <div class="news" id="newsBody"></div>
+    <div class="row"><button type="button" class="btn" id="newsChart">Voir le graphique</button><button type="button" class="btn primary" id="newsClose">Fermer</button></div>
+  </div>
+</div>
 <div class="dlg-bg" id="addDlg">
   <form class="dlg" id="addForm" autocomplete="off">
     <h3>Ajouter une valeur</h3>
@@ -974,6 +996,7 @@ function renderGrid() {
       card.querySelector(".chg").textContent = fmtPct(pct);
       if (info.live) card.querySelector(".nm").insertAdjacentHTML("afterbegin", liveDot(info));
       setRtBadge(card, info);
+      setNewsIcon(card, item, info);
       const nr = nearestLevel(info);
       if (nr) {
         const el = card.querySelector(".near");
@@ -1426,6 +1449,7 @@ async function openDetail(item, info, pos) {
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
   $("ovFoot").append(t, a);
 
+  renderNews($("ovNews"), item, info);
   const seq = ++openSeq;
   const data = await withLiveData(item.yahoo, await getSeries(info));
   if (seq !== openSeq) return;          // une autre action a été ouverte entre-temps
@@ -3206,6 +3230,8 @@ function refreshLiveCards() {
     const nm = card.querySelector(".nm"), old = nm.querySelector(".live-dot");
     const tmp = document.createElement("span"); tmp.innerHTML = liveDot(info); const dot = tmp.firstChild;
     if (old && old.className === dot.className) old.title = dot.title; else { if (old) old.remove(); nm.insertAdjacentElement("afterbegin", dot); }
+    const it = ((cfg.portfolios[prefs.active] || {}).items || []).find(x => x.yahoo === sym);
+    if (it) setNewsIcon(card, it, info);
   });
 }
 /* Une horloge à la seconde : compte à rebours affiché, et mise à jour de toutes les cartes quand il arrive à 0 */
@@ -4623,6 +4649,122 @@ addEventListener("resize", () => {                // rotation / redimensionnemen
     if (g && pf && isGrouped(pf) && !prefs.gridCompact && !prefs.view && !editing && g.querySelector(".tr-g.flow")) groupMarket(g);
   }, 200);
 });
+
+/* ===== Pourquoi ça bouge ? Comparaison à l'indice, résultats / dividende, actualités du jour ===== */
+const BENCH_NM = { "^FCHI":"CAC 40", "^GDAXI":"DAX", "^BFX":"BEL 20", "^GSPC":"S&P 500", "^IXIC":"Nasdaq", "BTC-USD":"Bitcoin" };
+function benchOf(item) {
+  const s = item.yahoo;
+  if (s.startsWith("^") || /=F$/.test(s)) return null;
+  const g = mkGroup(s);
+  if (g === "cry") return /^BTC-/.test(s) ? null : "BTC-USD";
+  if (g === "eu") return /\.(DE|F)$/.test(s) ? "^GDAXI" : /\.BR$/.test(s) ? "^BFX" : "^FCHI";
+  return /^NASDAQ:/.test(item.tv || "") ? "^IXIC" : "^GSPC";
+}
+function prevWeekday(d) { const t = dOf(d); do t.setUTCDate(t.getUTCDate() - 1); while (t.getUTCDay() === 0 || t.getUTCDay() === 6); return t.toISOString().slice(0, 10); }
+function frDay(d) { return new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }); }
+function pctTxt(p) { return p.toLocaleString(NUM_LOC, { minimumFractionDigits:1, maximumFractionDigits:1 }) + " %"; }
+// résultats publiés pour la séance du jour (pendant la séance, ou la veille après la clôture), dividende détaché ce jour-là
+function dayEvents(sym, info) {
+  const base = summary.symbols[sym] || {}, S = info.date, P = S && prevWeekday(S), out = {};
+  if (!S) return out;
+  (base.earn || []).forEach(e => {
+    const d = e.slice(0, 10), late = e.endsWith("*");
+    if ((d === S && !late) || (d === P && late)) out.earn = { d, late };
+    else if (d > S && !out.next && (dOf(d) - dOf(S)) / 864e5 <= 10) out.next = d;
+  });
+  (base.div || []).forEach(([d, a]) => { if (d === S) out.div = a; });
+  return out;
+}
+function unusualMove(sym, info) {
+  if (info.changePct == null) return false;
+  const v = (summary.symbols[sym] || {}).vol, a = Math.abs(info.changePct), ev = dayEvents(sym, info);
+  return !!(ev.earn || ev.div) || (v ? a >= Math.max(2, 2 * v) : a >= 3);
+}
+function moveContext(item, info) {
+  const out = [], sym = item.yahoo, pct = info.changePct;
+  if (pct == null) return out;
+  const b = benchOf(item), bi = b && summary.symbols[b] && withLive(b, summary.symbols[b]);
+  if (bi && bi.date === info.date && bi.changePct != null) {
+    const d = pct - bi.changePct, tol = mkGroup(sym) === "cry" ? 1.5 : 0.75, nm = BENCH_NM[b] || b;
+    out.push(Math.abs(d) <= tol
+      ? "En ligne avec le " + nm + " (" + fmtPct(bi.changePct) + ") : mouvement surtout lié au marché."
+      : (d > 0 ? "Fait mieux" : "Fait moins bien") + " que le " + nm + " (" + fmtPct(bi.changePct) + "), écart de " + pctTxt(Math.abs(d)).replace("%", "pt" + (Math.abs(d) >= 2 ? "s" : "")) + " : mouvement propre à l'action.");
+  }
+  const v = (summary.symbols[sym] || {}).vol;
+  if (v && Math.abs(pct) >= 2 * v && Math.abs(pct) >= 1)
+    out.push("Mouvement inhabituel : environ " + Math.round(Math.abs(pct) / v) + " fois la variation habituelle (± " + pctTxt(v) + " par jour).");
+  const ev = dayEvents(sym, info);
+  if (ev.earn) out.push("Résultats publiés le " + frDay(ev.earn.d) + (ev.earn.late ? " après la clôture" : "") + " : ils expliquent souvent un écart fort.");
+  if (ev.div) {
+    const prev = info.last / (1 + pct / 100);
+    out.push("Dividende détaché ce jour (" + fmt(ev.div, info.currency) + ", soit " + pctTxt(ev.div / prev * 100) + " du cours) : cette part de la baisse est mécanique, ce n'est pas une mauvaise nouvelle.");
+  }
+  if (ev.next) out.push("Prochains résultats le " + frDay(ev.next) + ".");
+  return out;
+}
+function setNewsIcon(card, item, info) {
+  const nm = card.querySelector(".nm"); if (!nm) return;
+  const old = nm.querySelector(".newsic"), on = unusualMove(item.yahoo, info);
+  if (!on) { if (old) old.remove(); return; }
+  if (old) return;
+  const ic = document.createElement("span"); ic.className = "newsic"; ic.textContent = "📰"; ic.title = "Pourquoi ça bouge ? Contexte et actualités";
+  nm.insertAdjacentElement("afterbegin", ic);
+}
+const newsCache = {};
+function fetchNews(item) {
+  const k = item.yahoo, c = newsCache[k];
+  if (c && Date.now() - c.t < 10 * 60e3) return c.p;
+  const p = fetch(LIVE_URL + "/news?q=" + encodeURIComponent(item.name) + "&s=" + encodeURIComponent(item.yahoo))
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+  newsCache[k] = { t:Date.now(), p };
+  p.catch(() => { delete newsCache[k]; });
+  return p;
+}
+function agoTxt(t) {
+  const m = Math.round((Date.now() - t) / 60e3);
+  if (m < 60) return "il y a " + Math.max(1, m) + " min";
+  const d = new Date(t), today = new Date(); const y = new Date(); y.setDate(y.getDate() - 1);
+  const hm = d.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
+  if (d.toDateString() === today.toDateString()) return "aujourd'hui " + hm;
+  if (d.toDateString() === y.toDateString()) return "hier " + hm;
+  return d.toLocaleDateString("fr-FR", { weekday:"short", day:"2-digit", month:"2-digit" }) + " " + hm;
+}
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[c]); }
+let newsSeq = 0;
+function renderNews(el, item, info) {
+  const seq = ++newsSeq, ctx = moveContext(item, info);
+  el.innerHTML = "<h3>Pourquoi ça bouge ?</h3>" + (ctx.length ? '<ul class="ctx">' + ctx.map(t => "<li>" + esc(t) + "</li>").join("") + "</ul>" : "") +
+    '<div class="nl"><span class="none">Actualités en chargement…</span></div>';
+  const nl = el.querySelector(".nl");
+  fetchNews(item).then(j => {
+    if (el.id === "ovNews" && seq !== newsSeq) return;      // une autre action a été ouverte entre-temps
+    let list = (j.fr || []).slice(0, 5);
+    if (list.length < 3) list = list.concat((j.en || []).slice(0, 5 - list.length));     // en français d'abord, sinon en anglais
+    if (!list.length) { nl.innerHTML = '<span class="none">Aucune actualité ces 3 derniers jours.</span>'; return; }
+    const day0 = Date.now() - 36 * 3600e3;
+    nl.innerHTML = list.map(n => '<a href="' + esc(n.link) + '" target="_blank" rel="noopener"' + (n.time < day0 ? ' class="old"' : "") + ">" +
+      (n.lang === "en" ? '<span class="en">EN</span>' : "") + esc(n.title) + "<small>" + esc(n.source || "") + (n.source ? " · " : "") + agoTxt(n.time) + "</small></a>").join("");
+  }).catch(() => { nl.innerHTML = '<span class="none">Actualités indisponibles pour le moment (relais injoignable).</span>'; });
+}
+let newsItem = null;
+function openNews(item) {
+  const info = withLive(item.yahoo, summary.symbols[item.yahoo] || {});
+  newsItem = item;
+  $("newsTitle").innerHTML = esc(item.name) + ' <span class="' + (info.changePct >= 0 ? "up" : "down") + '">' + fmtPct(info.changePct) + "</span>";
+  renderNews($("newsBody"), item, info);
+  $("newsDlg").classList.add("show");
+}
+function closeNews() { $("newsDlg").classList.remove("show"); }
+$("newsClose").onclick = closeNews;
+$("newsDlg").addEventListener("click", e => { if (e.target === $("newsDlg")) closeNews(); });
+$("newsChart").onclick = () => { closeNews(); const it = newsItem; if (it) openDetail(it, summary.symbols[it.yahoo] || {}); };
+document.addEventListener("click", e => {
+  const ic = e.target.closest && e.target.closest("#grid .newsic");
+  if (!ic) return;
+  e.stopPropagation(); e.preventDefault();
+  const sym = ic.closest(".card").dataset.sym, it = ((cfg.portfolios[prefs.active] || {}).items || []).find(x => x.yahoo === sym);
+  if (it) openNews(it);
+}, true);
 </script>
 </body>
 </html>

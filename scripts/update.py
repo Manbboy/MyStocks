@@ -170,6 +170,42 @@ def all_levels(df: pd.DataFrame):
 
 
 KIND = {}
+EVENTS = {}   # dates de résultats et dividendes détachés, pour expliquer un mouvement du jour
+
+
+def fetch_events(t, sym: str, df):
+    """Résultats (passés récents et prochains) et dividendes détachés : seulement pour les actions."""
+    ev = {}
+    try:
+        if "Dividends" in df.columns:
+            d = df[df["Dividends"] > 0].tail(4)
+            ev["div"] = [[r.Date, round(float(r.Dividends), 4)] for r in d.itertuples()]
+    except Exception:
+        pass
+    if KIND.get(sym) not in (None, "EQUITY"):
+        EVENTS[sym] = ev
+        return
+    today = pd.Timestamp.today().normalize()
+    dates = set()
+    try:
+        ed = t.get_earnings_dates(limit=8)
+        if ed is not None and not ed.empty:
+            for x in ed.index:
+                x = pd.Timestamp(x)
+                dates.add(x.strftime("%Y-%m-%d") + ("*" if x.hour >= 16 else ""))    # * : publié après la clôture
+    except Exception as e:
+        print(f"  {sym}: dates de résultats indisponibles ({e})")
+    if not dates:
+        try:
+            cal = t.calendar or {}
+            for x in (cal.get("Earnings Date") or []):
+                dates.add(pd.Timestamp(x).strftime("%Y-%m-%d"))
+        except Exception:
+            pass
+    keep = [d for d in sorted(dates) if abs((pd.Timestamp(d[:10]) - today).days) <= 120]
+    if keep:
+        ev["earn"] = keep
+    EVENTS[sym] = ev
 
 
 def fetch_real(sym: str):
@@ -217,6 +253,10 @@ def fetch_real(sym: str):
         KIND[sym] = (t.history_metadata or {}).get("instrumentType")
     except Exception:
         pass
+    try:
+        fetch_events(t, sym, df)
+    except Exception as e:
+        print(f"  {sym}: événements indisponibles ({e})")
     return df[["Date", "Open", "High", "Low", "Close", "Volume"]].dropna(subset=["Close"]), currency
 
 
@@ -277,7 +317,12 @@ def main():
                 "resistances": res,
                 "levels": levels,
                 "rt": rsi_trend_tail([r[4] for r in rows]),
+                # variation journalière habituelle (écart type sur 60 séances, en %) : repère d'un mouvement inhabituel
+                "vol": round(float(df["Close"].pct_change().tail(60).std() * 100), 2) if len(df) > 20 else None,
             }
+            ev = EVENTS.get(sym) or {}
+            if ev.get("earn"): summary["symbols"][sym]["earn"] = ev["earn"]
+            if ev.get("div"): summary["symbols"][sym]["div"] = ev["div"]
             print(f"OK   {sym:10s} {last:>10.2f}  " + "  ".join(f"{tf}:{len(v['supports'])}S/{len(v['resistances'])}R" for tf, v in levels.items()))
         except Exception as e:
             errors.append(sym)

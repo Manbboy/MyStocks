@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
 
       - name: Installer les dépendances
-        run: pip install yfinance pandas numpy
+        run: pip install yfinance pandas numpy lxml
 
       - name: Télécharger les cours et calculer les niveaux
         run: python scripts/update.py
