@@ -123,7 +123,7 @@
   .pf-list.compact .pf-pos, .pf-list.compact .pf-fill { background:var(--card); border:0; border-radius:0; padding:7px 12px; }
   @media (min-width:1300px) { .pf-list.compact { grid-template-columns:repeat(3, minmax(0, 1fr)); } .pf-list.compact .pf-fill { display:none; } }
   .pf-sub { grid-column:1 / -1; font-size:12px; font-weight:700; color:var(--muted); padding:8px 2px 2px; text-transform:uppercase; letter-spacing:.04em; }
-  .pf-sub span { font-weight:500; }
+  .pf-sub span { font-weight:500; font-size:9.5px; opacity:.75; letter-spacing:0; }   /* nombre de valeurs : discret */
   .pf-list.compact .pf-sub { background:var(--chip); padding:5px 12px; }
   .pf-list:not(.compact) .pf-sub:first-child { padding-top:0; }
   @media (max-width:699px) {
@@ -152,7 +152,7 @@
   .pf-sum.compact > div { padding:6px 8px; border-radius:9px; }
   .pf-sum.compact span { font-size:10px; } .pf-sum.compact b { font-size:13px; }
   .pf-grp { display:flex; align-items:baseline; gap:8px; font-size:14px; margin:14px 2px 6px; color:var(--text); }
-  .pf-grp span { font-size:12px; color:var(--muted); font-weight:500; }
+  .pf-grp span { font-size:10.5px; color:var(--muted); font-weight:500; opacity:.8; }
   .pf-grp em { margin-left:auto; font-style:normal; font-size:13px; }
   .pf-note { margin-top:12px; }
   .imp-list { margin:8px 0 0; padding-left:18px; font-size:13px; line-height:1.5; text-align:left; }
@@ -603,7 +603,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v116</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v117</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -953,13 +953,19 @@ const io = new IntersectionObserver(entries => {
 
 function renderTabs() {
   const t = $("tabs"); t.innerHTML = "";
+  const pb = document.createElement("button");                 // onglet « Portefeuille » (achats / ventes de M et D), juste après Hold
+  pb.className = "tab pf-tab" + (prefs.view === "pf" ? " active" : "");
+  pb.textContent = "Portefeuille";
+  pb.onclick = () => { prefs.view = "pf"; savePrefs(); render(); };
   cfg.portfolios.forEach((p, i) => {
     const b = document.createElement("button");
     b.className = "tab" + (i === prefs.active && !prefs.view ? " active" : "");
     b.textContent = p.name;
     b.onclick = () => { prefs.active = i; prefs.view = ""; savePrefs(); render(); };
     t.appendChild(b);
+    if (p.name === "Hold") t.appendChild(pb);
   });
+  if (!pb.parentNode) t.appendChild(pb);
   const sb = document.createElement("button");                 // onglet « À regarder » (situations du soir)
   sb.className = "tab sig-tab" + (prefs.view === "sig" ? " active" : "");
   const nNew = sigData ? new Set((sigData.items || []).filter(e => e.age === 0 && e.sig.some(g => SIG_BULL.has(g.k))).map(e => e.sym)).size : 0;
@@ -973,11 +979,6 @@ function renderTabs() {
   ab.innerHTML = "Alertes" + (nWait ? ' <span class="al-n">' + nWait + "</span>" : "");
   ab.onclick = () => { prefs.view = "alerts"; savePrefs(); render(); };
   t.appendChild(ab);
-  const pb = document.createElement("button");                 // onglet « Portefeuille » (achats / ventes de M et D)
-  pb.className = "tab pf-tab" + (prefs.view === "pf" ? " active" : "");
-  pb.textContent = "Portefeuille";
-  pb.onclick = () => { prefs.view = "pf"; savePrefs(); render(); };
-  t.appendChild(pb);
 }
 function renderSeg(id, opts, cur, pick) {
   const s = $(id); s.innerHTML = "";
