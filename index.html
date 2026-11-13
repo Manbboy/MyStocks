@@ -355,6 +355,11 @@
   .grid .tr-g { --g:#64748b; padding:11px 12px 9px; font-size:12px; color:var(--muted); border-top:2px solid var(--border); border-left:5px solid var(--g);
     background:color-mix(in srgb, var(--g) 16%, var(--card)); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
   .grid .tr-g:first-of-type { border-top:none; }
+  /* tableau sur plusieurs colonnes : titre de rubrique sur une seule ligne, de la hauteur exacte d'une action, pour que les colonnes restent alignées */
+  .grid.compact .tbl.multi .tr-g { box-sizing:border-box; border-top:none; break-inside:avoid; flex-wrap:nowrap; align-items:center; white-space:nowrap; overflow:hidden; padding-top:0; padding-bottom:0; }
+  .grid.compact .tbl.multi .tr-g b { flex:none; }
+  .grid.compact .tbl.multi .tr-g span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  #grid.compact.paint-c1 .tbl.multi .tr-g, #grid.compact.paint-c2 .tbl.multi .tr-g { border-bottom:2px solid var(--card); }
   .grid .tr-g.band { grid-column:1 / -1; border-radius:10px; border-top:none; margin-top:6px; }
   .grid .tr-g.flow { min-width:0; overflow:hidden; white-space:nowrap; flex-wrap:nowrap; align-self:stretch; align-items:center; margin-bottom:-4px; }
   .grid .tr-g.flow b { flex:none; }
@@ -579,7 +584,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v109</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v110</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1048,7 +1053,8 @@ function renderGrid() {
     }
     host.appendChild(card);
   });
-  if (isGrouped(pf) && typeof groupMarket === "function") groupMarket(host);     // tableau ou graphiques : bandeaux Europe / États-Unis / Futures / Cryptos
+  if (isGrouped(pf) && typeof groupMarket === "function") groupMarket(host);
+  if (host.classList && host.classList.contains("multi")) fitCompactHeads(host);     // tableau ou graphiques : bandeaux Europe / États-Unis / Futures / Cryptos
   if (editing && !pf.virtual) {                // mode Modifier : ✕ sur chaque valeur, et une tuile pour en ajouter une
     const add = document.createElement("button");
     add.className = "add-tile" + (host !== g ? " row" : ""); add.type = "button";
@@ -4832,6 +4838,14 @@ function compactCols() {
   return Math.max(1, Math.min(prefs.ccols || 1, Math.floor(w / 160)));
 }
 addEventListener("resize", () => { const t = document.querySelector("#grid .tbl.multi"); if (t) t.style.columnCount = compactCols(); });
+
+/* Tableau sur plusieurs colonnes : chaque titre de rubrique prend la hauteur d'une ligne d'action */
+function fitCompactHeads(host) {
+  const c = host.querySelector(".card"); if (!c) return;
+  const h = c.offsetHeight;
+  if (h) host.querySelectorAll(".tr-g").forEach(t => { t.style.height = h + "px"; });
+}
+addEventListener("resize", () => { const t = document.querySelector("#grid .tbl.multi"); if (t) fitCompactHeads(t); });
 </script>
 </body>
 </html>
