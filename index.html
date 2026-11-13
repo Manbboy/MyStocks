@@ -197,7 +197,7 @@
   .grid.compact .chg { grid-column:3; grid-row:1; text-align:right; font-size:13.5px; font-weight:600; font-variant-numeric:tabular-nums; }
   .grid.compact .near { grid-column:4; grid-row:1; margin:0; text-align:right; font-size:11px; }
   @media (max-width:420px) { .grid.compact .tr-h, .grid.compact .card-head { grid-template-columns:minmax(0, 1fr) 58px 54px 64px 14px 38px; column-gap:4px; padding-left:10px; padding-right:10px; } }
-  /* onglet Hold en compact : tableau sur 2 colonnes (3 sur tablette), lecture de haut en bas */
+  /* vue compacte : tableau sur 2 colonnes (3 sur tablette, 4 sur grand écran), lecture de haut en bas */
   .grid.compact .tbl.multi { columns:2; column-gap:0; column-rule:1px solid var(--border); }
   .grid.compact .tbl.multi .tr-h { display:none; }
   .grid.compact .tbl.multi .card { break-inside:avoid; background:transparent; }
@@ -208,6 +208,7 @@
   .grid.compact .tbl.multi .near { grid-column:2; grid-row:2; font-size:10px; }
   .drag-ghost .tbl.multi { columns:1; }
   @media (min-width:700px) { .grid.compact .tbl.multi { columns:3; } }
+  @media (min-width:1400px) { .grid.compact .tbl.multi { columns:4; } }
   .cmp-btn { min-width:36px; font-size:15px; }
   /* déplacement des cartes (appui long) */
   #grid .card { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
@@ -568,7 +569,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v106</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v107</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -974,7 +975,7 @@ function renderGrid() {
   $("paintBtn").textContent = "🎨 " + (1 + ((prefs.gridCompact ? prefs.paintC : prefs.paintG) || 0));
   let host = g;
   if (prefs.gridCompact && pf.items.length) {
-    host = document.createElement("div"); host.className = "tbl" + (pf.name === "Hold" ? " multi" : "");
+    host = document.createElement("div"); host.className = "tbl multi";      // toutes les feuilles : tableau sur plusieurs colonnes
     host.innerHTML = '<div class="tr-h"><span>Valeur</span><span>Cours</span><span>Jour</span><span>Niveau</span><span title="Changement RSI Trends journalier du jour">RT</span><span title="Sortie de canal, d\'oblique, de résistance ou de support ces 5 dernières séances (journalier)">Cass.</span></div>';
     g.appendChild(host);
   }
