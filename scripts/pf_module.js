@@ -189,7 +189,7 @@ async function renderPf() {
   // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
   const openL = document.createElement("div"), closedL = document.createElement("div");
   openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
-  const openB = [], closedB = [];                // cartes à répartir ensuite par groupe (Europe, États-Unis, trackers, cryptos)
+  const openB = [], closedB = [];                // cartes à répartir ensuite par groupe (Europe, USA, trackers, cryptos)
   pos.forEach(p => {
     const list = p.qty > 0 ? openB : closedB;
     const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
@@ -242,8 +242,8 @@ async function renderPf() {
   }
   box.insertAdjacentHTML("beforeend", '<p class="hint pf-note">PRU = coût moyen pondéré, frais d\'achat inclus ; une vente réalise (prix − PRU) × quantité − frais. Cours en séance si « Direct » est actif. Données chiffrées sur GitHub (' + PF_FILE + ').</p>');
 }
-/* Groupes de positions : Europe, États-Unis (autre fuseau horaire), trackers, cryptos */
-const PF_CATS = [["eu", "Europe"], ["us", "États-Unis"], ["etf", "Trackers (ETF)"], ["crypto", "Cryptos"], ["other", "Autres"]];
+/* Groupes de positions : Europe, USA (autre fuseau horaire), trackers, cryptos */
+const PF_CATS = [["eu", "Europe"], ["us", "USA"], ["etf", "Trackers (ETF)"], ["crypto", "Cryptos"], ["other", "Autres"]];
 const EU_SUFFIX = /\.(PA|AS|BR|DE|F|MI|MC|LS|L|IR|SW|VI|ST|HE|CO|OL|WA|PR|AT)$/;
 function pfCat(p) {
   const info = summary.symbols[p.sym] || {}, ty = (info.type || "").toUpperCase(), nm = (p.name || "") + " " + p.sym;
