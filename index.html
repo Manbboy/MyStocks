@@ -352,7 +352,9 @@
   .grid .tr-g.flow { min-width:0; overflow:hidden; white-space:nowrap; flex-wrap:nowrap; align-self:stretch; align-items:center; margin-bottom:-4px; }
   .grid .tr-g.flow b { flex:none; }
   .grid .tr-g.flow span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .grid .tr-g.cont b { opacity:.75; }
+  .grid .tr-g.flow { border-left:none; }
+  .grid .tr-g.flow.start { border-left:5px solid var(--g); }
+  .grid .tr-g.flow.end { border-right:5px solid var(--g); }
   .grid .tr-g b { color:var(--text); font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
 
   .mk-on { color:var(--up); font-weight:600; }
@@ -537,7 +539,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v98</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v99</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -4595,9 +4597,11 @@ function flowMarket(host, cards) {
       const k = mkGroup(row[j].dataset.sym); let e = j;
       while (e + 1 < row.length && mkGroup(row[e + 1].dataset.sym) === k) e++;
       const label = (MK_GROUPS.find(x => x[0] === k) || [k, k])[1], cont = seen.has(k);
-      const h = document.createElement("div"); h.className = "tr-g band flow" + (cont ? " cont" : ""); h.dataset.g = k;
+      const grp = ordered.filter(c => mkGroup(c.dataset.sym) === k), end = grp[grp.length - 1] === row[e];
+      // début du groupe : barre à gauche et titre ; fin du groupe : barre à droite ; suite sur une autre ligne : bandeau seul, sans texte
+      const h = document.createElement("div"); h.className = "tr-g band flow" + (cont ? " cont" : " start") + (end ? " end" : ""); h.dataset.g = k;
       h.style.gridRow = String(2 * r + 1); h.style.gridColumn = (j + 1) + " / " + (e + 2);
-      h.innerHTML = "<b>" + label + (cont ? " (suite)" : "") + "</b> <span>" + (cont ? "" : mkState(ordered.filter(c => mkGroup(c.dataset.sym) === k).map(c => c.dataset.sym))) + "</span>";
+      h.innerHTML = cont ? "&nbsp;" : "<b>" + label + "</b> <span>" + mkState(grp.map(c => c.dataset.sym)) + "</span>";
       host.appendChild(h); seen.add(k); j = e + 1;
     }
   }
