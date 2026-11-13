@@ -423,6 +423,9 @@
   .grid .tr-g { --g:#64748b; padding:11px 12px 9px; font-size:12px; color:var(--muted); border-top:2px solid var(--border); border-left:5px solid var(--g);
     background:color-mix(in srgb, var(--g) 16%, var(--card)); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
   .grid .tr-g:first-of-type { border-top:none; }
+  /* cases teintées (🎨 2 et 3) : bandeau de rubrique sans barre à gauche, texte aligné sur les noms des actions */
+  #grid.compact.paint-c1 .tbl .tr-g, #grid.compact.paint-c2 .tbl .tr-g { border-left:none !important; padding-left:12px; }
+  @media (max-width:420px) { #grid.compact.paint-c1 .tbl .tr-g, #grid.compact.paint-c2 .tbl .tr-g { padding-left:10px; } }
   /* tableau sur plusieurs colonnes : titre de rubrique sur une seule ligne, de la hauteur exacte d'une action, pour que les colonnes restent alignées */
   .grid.compact .tbl.multi .tr-g { box-sizing:border-box; border-top:none; break-inside:avoid; flex-wrap:nowrap; align-items:center; white-space:nowrap; overflow:hidden; padding-top:0; padding-bottom:0; }
   .grid.compact .tbl.multi .tr-g b { flex:none; }
@@ -664,7 +667,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v141</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v142</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
