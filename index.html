@@ -69,6 +69,9 @@
   .spacer { flex:1; }
   header { position:relative; }
   .theme-btn { position:absolute; right:0; top:12px; padding:4px 11px; font-size:17px; line-height:1.2; }
+  .rot-btn { right:52px; }
+  .rot-btn[hidden] { display:none; }
+  .rot-btn.on { background:var(--text); color:var(--bg); }
   header { padding-right:96px; }          /* la ligne « Clôtures… En séance » ne passe plus sous le bouton de thème */
   .btn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:9px; padding:6px 11px; font-size:13px; font-weight:600; cursor:pointer; }
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -636,8 +639,9 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v131</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v132</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
+    <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
   </header>
   <div class="demo" id="demo">Données simulées (test). Les vrais cours apparaîtront après la première mise à jour automatique.</div>
@@ -5086,6 +5090,35 @@ function periodPct(el, last) {
   card.classList.toggle("pos", up); card.classList.toggle("neg", !up);
   if (el._series && el._up !== up) { const col = up ? css("--up") : css("--down"); el._series.applyOptions(Object.assign({ lineColor:col }, areaFill(col))); el._up = up; }
 }
+
+/* Appli installée : bouton 🔒 pour figer l'écran dans le sens actuel (le verrouillage de rotation du téléphone
+   n'est pas toujours respecté par les applis web installées) */
+(function () {
+  const b = $("rotBtn"), so = screen.orientation;
+  let standalone = false;
+  try { standalone = matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
+  if (!b || !standalone || !so || !so.lock) return;
+  b.hidden = false;
+  const show = () => { b.textContent = prefs.rotLock ? "🔒" : "🔄"; b.classList.toggle("on", !!prefs.rotLock);
+    b.title = prefs.rotLock ? "Écran figé (" + (prefs.rotLock.startsWith("portrait") ? "portrait" : "paysage") + ") : toucher pour laisser tourner" : "L'écran tourne : toucher pour le figer dans le sens actuel"; };
+  const apply = async quiet => {
+    try {
+      if (prefs.rotLock) await so.lock(prefs.rotLock); else so.unlock();
+      return true;
+    } catch (e) {
+      if (!quiet) toast("Ce navigateur refuse de figer l'écran (" + (e.name || "erreur") + ").", 3500);
+      return false;
+    }
+  };
+  b.onclick = async () => {
+    prefs.rotLock = prefs.rotLock ? "" : (so.type || "portrait-primary");
+    if (!(await apply(false))) prefs.rotLock = "";
+    savePrefs(); show();
+    if (prefs.rotLock) toast("Écran figé en " + (prefs.rotLock.startsWith("portrait") ? "portrait" : "paysage") + ".", 1500);
+  };
+  show(); apply(true);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && prefs.rotLock) apply(true); });
+})();
 </script>
 </body>
 </html>
