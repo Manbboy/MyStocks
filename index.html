@@ -231,14 +231,14 @@
   .ov-id { position:relative; }
   #ovTitle { cursor:pointer; }
   #ovTitle .caret { font-size:.75em; color:var(--muted); }
-  #ovPick { position:absolute; top:calc(100% + 6px); left:0; width:min(340px, 92vw); max-height:min(70vh, 520px); overflow:auto; background:var(--card);
+  div.pick:not(.it) { position:absolute; top:calc(100% + 6px); left:0; width:min(340px, 92vw); max-height:min(70vh, 520px); overflow:auto; background:var(--card);
           border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.2); z-index:40; padding:4px; }
-  #ovPick button { display:flex; width:100%; align-items:center; gap:8px; border:0; background:none; color:var(--text); text-align:left; padding:8px 10px; border-radius:8px; font-size:14px; cursor:pointer; }
-  #ovPick button:hover, #ovPick button.cur { background:var(--chip); }
-  #ovPick button.cur { font-weight:700; }
-  #ovPick .nm { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  #ovPick .px { color:var(--muted); font-size:12px; white-space:nowrap; }
-  #ovPick .ch { font-size:12px; min-width:56px; text-align:right; white-space:nowrap; }
+  div.pick:not(.it) button { display:flex; width:100%; align-items:center; gap:8px; border:0; background:none; color:var(--text); text-align:left; padding:8px 10px; border-radius:8px; font-size:14px; cursor:pointer; }
+  div.pick:not(.it) button:hover, div.pick:not(.it) button.cur { background:var(--chip); }
+  div.pick:not(.it) button.cur { font-weight:700; }
+  div.pick:not(.it) .nm { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  div.pick:not(.it) .px { color:var(--muted); font-size:12px; white-space:nowrap; }
+  div.pick:not(.it) .ch { font-size:12px; min-width:56px; text-align:right; white-space:nowrap; }
   .ov-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border-bottom:1px solid var(--border); }
   .ov-title { font-size:17px; font-weight:700; }
   .ov-sub { font-size:13px; color:var(--muted); }
@@ -498,7 +498,7 @@
 @keyframes flashDown { 0%, 35% { background:#dc2626; color:#fff; } 100% { background:transparent; } }
 .flash-up, .flash-down { border-radius:5px; padding:0 3px; margin:0 -3px; }
 .flash-up { animation:flashUp 1.8s ease-out; } .flash-down { animation:flashDown 1.8s ease-out; }
-.live-menu { position:fixed; width:auto; min-width:220px; }
+div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 .day-btn[hidden], .mmb[hidden] { display:none; }
 .day-btn.dim { opacity:.55; }
 #rtBtn.on.nopane { border-style:dashed; }
@@ -518,7 +518,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v81</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v82</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
