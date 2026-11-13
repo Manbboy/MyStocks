@@ -621,7 +621,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v124</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v125</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -4484,15 +4484,35 @@ async function ghFile(path, mutate, message, init) {
 }
 async function alertsLoad(force) {
   if (alertsData && !force) return alertsData;
-  try {
+  // lecture à jour par l'API GitHub (avec le jeton) : la copie « raw » est mise en cache quelques minutes et
+  // faisait croire qu'une alerte venant d'être créée avait remplacé la précédente
+  let got = null;
+  const tok = getTok();
+  if (tok) try {
+    const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/alerts.json?ref=main&t=" + Date.now(),
+      { headers:{ Authorization:"Bearer " + tok, Accept:"application/vnd.github+json" }, cache:"no-store" });
+    if (r.ok) got = JSON.parse(b64dec((await r.json()).content)); else if (r.status === 404) got = { alerts:[] };
+  } catch (e) {}
+  if (!got) try {
     const r = await fetch("https://raw.githubusercontent.com/" + REPO + "/main/alerts.json?t=" + Date.now(), { cache:"no-store" });
-    alertsData = r.ok ? await r.json() : { alerts:[] };
-  } catch (e) { alertsData = alertsData || { alerts:[] }; }
+    got = r.ok ? await r.json() : { alerts:[] };
+  } catch (e) {}
+  // garder les alertes que cette page vient d'enregistrer si la copie lue est plus ancienne
+  if (got && alertsSavedAt && Date.now() - alertsSavedAt < 10 * 60e3 && alertsData) {
+    const ids = new Set((got.alerts || []).map(a => a.id));
+    if ((alertsData.alerts || []).some(a => !ids.has(a.id) && a.created >= alertsSavedAt - 6e4) || alertsDeleted.some(id => ids.has(id))) got = alertsData;
+  }
+  alertsData = got || alertsData || { alerts:[] };
   try { alertsSent = (await (await fetch(LIVE_URL + "/alerts/sent")).json()).sent || {}; } catch (e) {}
   return alertsData;
 }
+let alertsSavedAt = 0, alertsDeleted = [];
 async function alertsSave(mutate, msg) {
+  const before = new Set(((alertsData || {}).alerts || []).map(a => a.id));
   alertsData = await ghFile("alerts.json", mutate, msg, { alerts:[] });
+  const now = new Set((alertsData.alerts || []).map(a => a.id));
+  alertsDeleted = alertsDeleted.concat([...before].filter(id => !now.has(id)));
+  alertsSavedAt = Date.now();
   return alertsData;
 }
 const alertErr = e => e.message === "NOTOKEN" || e.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (bouton + de la page d'accueil)." : e.message;
