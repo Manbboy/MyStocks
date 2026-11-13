@@ -167,7 +167,7 @@
   .add-tile { border:2px dashed var(--border); border-radius:12px; background:transparent; color:var(--accent); font:inherit; font-size:15px; font-weight:600; cursor:pointer; min-height:var(--h, 120px); display:flex; align-items:center; justify-content:center; gap:8px; }
   .add-tile b { font-size:22px; }
   #addBtn[hidden] { display:none; }
-  .add-tile.row { min-height:0; width:100%; padding:12px; border-radius:0; border-width:2px 0 0; }
+  .add-tile.row { min-height:0; width:100%; padding:12px; border-radius:0; border-width:0 0 2px; }
   .grid.compact .tbl .card .rm { top:50%; transform:translateY(-50%); right:6px; }
   .card .rm { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:12px; border:0; background:var(--down); color:#fff; font-size:13px; cursor:pointer; display:none; z-index:3; }
   .editing .card .rm { display:block; }
@@ -531,7 +531,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v92</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v93</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -547,13 +547,14 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <div class="legend"><span><i style="color:var(--sup)"></i>Support</span><span><i style="color:var(--res)"></i>Résistance</span></div>
     <div class="spacer"></div>
     <button class="btn live-btn" id="liveBtn" title="Cours en séance (≈ 15 min de retard) : toucher pour activer / désactiver"></button>
-    <button class="btn day-btn" id="dayBtn" title="1J : courbe étirée sur toute la largeur, ou placée sur la journée entière (se remplit jusqu'au bord droit à la clôture)"></button>
     <button class="btn sort-btn" id="sortBtn" title="Trier les cartes">⇅</button>
     <button class="btn cmp-btn" id="cmpBtn" title="Mode compact (sans graphiques)">≡</button>
     <button class="btn" id="addBtn" title="Ajouter une valeur" hidden>+<span class="lbl"> Ajouter</span></button>
     <div class="pick live-menu" id="liveMenu" hidden></div>
     <div class="pick live-menu" id="sortMenu" hidden></div>
     <button class="btn" id="editBtn" title="Modifier la liste : ajouter ou retirer des valeurs">✎<span class="lbl"> Modifier</span></button>
+    <!-- en dernier : il apparaît / disparaît sans décaler les autres boutons -->
+    <button class="btn day-btn" id="dayBtn" title="1J : courbe étirée sur toute la largeur, ou placée sur la journée entière (se remplit jusqu'au bord droit à la clôture)"></button>
   </div>
   <div class="toast" id="toast"></div>
 
@@ -988,7 +989,8 @@ function renderGrid() {
     add.className = "add-tile" + (host !== g ? " row" : ""); add.type = "button";
     add.innerHTML = "<b>＋</b> Ajouter une valeur";
     add.onclick = openAdd;
-    host.appendChild(add);
+    const first = host.querySelector(".tr-g, .card");           // en tête de liste (sous l'en-tête du tableau), là où on la voit
+    if (first) host.insertBefore(add, first); else host.appendChild(add);
   }
   // Direct : un onglet dont les valeurs n'ont pas encore de cours en direct est rafraîchi tout de suite (sans attendre le prochain tour)
   if (liveOn() && pf.items.some(i => !liveQuotes[i.yahoo])) { liveNext = 0; setTimeout(liveTick, 50); }
