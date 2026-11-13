@@ -360,7 +360,9 @@
   .grid.compact .tbl.multi .tr-g { box-sizing:border-box; border-top:none; break-inside:avoid; flex-wrap:nowrap; align-items:center; white-space:nowrap; overflow:hidden; padding-top:0; padding-bottom:0; }
   .grid.compact .tbl.multi .tr-g b { flex:none; }
   .grid.compact .tbl.multi .tr-g span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
-  #grid.compact.paint-c1 .tbl.multi .tr-g, #grid.compact.paint-c2 .tbl.multi .tr-g { border-bottom:2px solid var(--card); }
+  /* même format qu'une action (pas de barre épaisse à gauche, qui faisait une bande sombre entre deux colonnes) */
+  .grid.compact .tbl.multi .tr-g { border-left:none; padding-left:10px; padding-right:10px; }
+  #grid.compact.paint-c1 .tbl.multi .tr-g, #grid.compact.paint-c2 .tbl.multi .tr-g { border-bottom:2px solid var(--card); border-left:1px solid var(--card); border-right:1px solid var(--card); }
   .grid .tr-g.band { grid-column:1 / -1; border-radius:10px; border-top:none; margin-top:6px; }
   .grid .tr-g.flow { min-width:0; overflow:hidden; white-space:nowrap; flex-wrap:nowrap; align-self:stretch; align-items:center; margin-bottom:-4px; }
   .grid .tr-g.flow b { flex:none; }
@@ -585,7 +587,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v112</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v113</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
