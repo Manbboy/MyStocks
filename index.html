@@ -338,6 +338,7 @@
   .rings { position:absolute; left:0; top:0; right:0; height:0; pointer-events:none; z-index:2; }
   .ring { position:absolute; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%; border:1.5px solid var(--card); background:#00c853; box-sizing:border-box; }
   .ring.down { background:#FF5252; }
+  .ring.lvd { background:var(--c); width:8px; height:8px; margin:-4px 0 0 -4px; }
   .ring b { position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:9px; font-weight:600; color:var(--c); }
   .quick { display:flex; gap:5px; align-items:center; overflow-x:auto; scrollbar-width:none; padding:5px 2px 1px; min-height:0; }
   .quick::-webkit-scrollbar { display:none; }
@@ -531,7 +532,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v95</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v96</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2501,9 +2502,10 @@ function onChartLineTap(param) {
     if (yy != null && Math.abs(yy - y) < (best ? best.d : 13)) best = { d:Math.abs(yy - y), act:() => toggleMa(sr._n) }; });
   if (best) best.act();
 }
-let hiBand = [];
+let hiBand = [], hiDots = null;
 function applyHighlight() {
   setTimeout(renderQuick, 0);
+  hiDots = null;
   if (!ovCandles) return;
   hiBand.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} }); hiBand = [];
   const sel = lineMeta.find(m => m.key === hiKey);
@@ -2557,10 +2559,12 @@ function applyHighlight() {
   (sel.level.hits || []).forEach((h, j) => {
     let t = byKey.get(keyOf(iv, h[0]));
     if (!t && iv === "D") t = (rows.find(r => r[0] >= h[0]) || [])[0];
-    if (t) marks.push({ time:t, position:isH(h) ? "aboveBar" : "belowBar", shape:isH(h) ? "arrowDown" : "arrowUp", color:col, text:String(j + 1) });
+    if (t) marks.push({ time:t, price:h[1], type:"lvd" });
   });
   marks.sort((a, b) => a.time < b.time ? -1 : 1);
-  ovCandles.setMarkers(marks);
+  /* contacts : petits points posés à l'endroit exact du sommet ou du creux (plus de flèches numérotées) */
+  ovCandles.setMarkers([]);
+  hiDots = { events:marks, color:col };
   /* prévient si les contacts sont hors de la zone affichée (le graphique ne bouge pas) */
   const vr = ovChart.timeScale().getVisibleRange();
   if (!selFitted && vr && marks.length && !marks.some(m => m.time >= vr.from && m.time <= vr.to)) toast("Contacts hors de la zone affichée : dézoome ou fais glisser le graphique pour les voir.", 3500);
@@ -2588,7 +2592,8 @@ function updateTags() {
   try {
     updateTags();
     const s = ovMaReact && hiMa ? ovMa.find(x => x._n === hiMa) : null;
-    drawRings($("rings"), ovChart, s, ovMaReact && ovMaReact.events, MA_COL[hiMa]);
+    if (hiDots && hiKey) drawRings($("rings"), ovChart, ovCandles, hiDots.events, hiDots.color);
+    else drawRings($("rings"), ovChart, s, ovMaReact && ovMaReact.events, MA_COL[hiMa]);
     if (lvRingState && lvChart) drawRings($("lvRings"), lvChart, lvRingState.series, lvRingState.events, lvRingState.color);
     else drawRings($("lvRings"), null);
   } catch (e) {}
