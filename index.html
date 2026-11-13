@@ -130,6 +130,17 @@
     .pf-list.compact .pf-pos, .pf-list.compact .pf-fill { padding:7px 10px; }
   }
   .pf-list.compact .pf-tx { display:none; }
+  /* Couleurs (🎨) du portefeuille : 2 = cases teintées selon le gain / la perte, 3 = teinte graduée ; rubriques foncées */
+  .pf-list.paint-1 .pf-pos { --k:16%; } .pf-list.paint-2 .pf-pos { --k:calc(5% + var(--m, 0) * 33%); }
+  .pf-list.paint .pf-pos.pos { background:color-mix(in srgb, var(--up) var(--k), var(--card)); }
+  .pf-list.paint .pf-pos.neg { background:color-mix(in srgb, var(--down) var(--k), var(--card)); }
+  .pf-list.paint.compact { background:var(--card); gap:2px; }
+  .pf-list.paint .pf-sub { background:#334155; color:#fff; border-radius:8px; padding:7px 12px; }
+  .pf-list.paint .pf-sub span { color:#cbd5e1; }
+  .pf-list.paint.compact .pf-sub { border-radius:0; }
+  .pf-list.paint:not(.compact) .pf-sub:first-child { padding-top:7px; }
+  :root[data-theme="dark"] .pf-list.paint .pf-sub { background:#e2e8f0; color:#0f172a; }
+  :root[data-theme="dark"] .pf-list.paint .pf-sub span { color:#334155; }
   .pf-list.compact .cp { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:10px; row-gap:1px; align-items:baseline; }
   .pf-list.compact .cp .nm { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pf-list.compact .cp .pc { font-size:14px; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -592,7 +603,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v115</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v116</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -3658,7 +3669,11 @@ async function renderPf() {
   cmpB.textContent = prefs.pfCompact ? "☰ Détaillé" : "≡ Compact";
   cmpB.title = prefs.pfCompact ? "Afficher les achats et ventes de chaque valeur" : "Une ligne par valeur, sans le détail des opérations";
   cmpB.onclick = () => { prefs.pfCompact = !prefs.pfCompact; savePrefs(); renderPf(); };
-  head.append(cmpB, addB, lockB);
+  const pntB = document.createElement("button"); pntB.className = "btn"; pntB.textContent = "🎨 " + (1 + (prefs.paintP || 0));
+  pntB.title = "Couleurs (essai) : 1 = actuelle, 2 = cases teintées vert / rouge, 3 = teinte graduée selon le gain ou la perte";
+  pntB.onclick = () => { prefs.paintP = ((prefs.paintP || 0) + 1) % 3; savePrefs(); renderPf();
+    toast("Couleurs " + (prefs.paintP + 1) + "/3 : " + ["actuelle", "cases teintées", "teinte graduée selon le gain ou la perte"][prefs.paintP], 1800); };
+  head.append(cmpB, pntB, addB, lockB);
 
   const own = pfOwner(), tx = (pfState.data[own] && pfState.data[own].tx) || [];
   const pos = pfPositions(tx);
@@ -3687,7 +3702,7 @@ async function renderPf() {
 
   // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
   const openL = document.createElement("div"), closedL = document.createElement("div");
-  openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "");
+  openL.className = closedL.className = "pf-list" + (prefs.pfCompact ? " compact" : "") + (prefs.paintP ? " paint paint-" + prefs.paintP : "");
   const openB = [], closedB = [];                // cartes à répartir ensuite par groupe (Europe, USA, trackers, cryptos)
   pos.forEach(p => {
     const list = p.qty > 0 ? openB : closedB;
@@ -3723,6 +3738,8 @@ async function renderPf() {
       if (pi < 0 || !summary.symbols[p.sym]) { toast("Ajoutez d'abord cette valeur à un onglet pour voir son graphique.", 2200); return; }
       openDetail(p.item, summary.symbols[p.sym], { pi, idx:cfg.portfolios[pi].items.findIndex(i => i.yahoo === p.sym) });
     };
+    { const pc = open ? p.latentPct : p.realizedPct, v = open ? p.latent : p.realized;      // teinte (🎨) : gain ou perte affiché
+      c.classList.add(v >= 0 ? "pos" : "neg"); c.style.setProperty("--m", pc == null ? 0.3 : Math.min(1, Math.abs(pc) / 20).toFixed(3)); }   // 20 % ou plus = teinte maximale
     c._cat = pfCat(p); list.push(c);
   });
   const fill = (L, B) => PF_CATS.forEach(([k, lab]) => {
