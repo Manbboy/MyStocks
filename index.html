@@ -22,6 +22,8 @@
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
             --s-D:#bbf7d0; --s-W:#2dd4bf; --s-M:#22c55e; --s-Q:#15803d;
             --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; --buy:#60a5fa; --sell:#a78bfa; }
+  /* thème gris (intermédiaire) : variante plus claire du thème sombre */
+  :root[data-theme="dark"][data-dim] { --bg:#2a2e35; --card:#353a42; --text:#f1f3f5; --muted:#b6bcc6; --border:#4a505a; --chip:#40464f; --grid:#40464f; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) { color-scheme:dark; --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
@@ -639,7 +641,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v133</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v134</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -900,14 +902,16 @@ function addLevels(series, info, labels) {
 /* ---------- Thème ---------- */
 // deux thèmes seulement : clair ou sombre (l'ancien « automatique » prend le thème actuel de l'appareil)
 function applyTheme() {
-  if (prefs.theme !== "light" && prefs.theme !== "dark") {
+  if (prefs.theme !== "light" && prefs.theme !== "dark" && prefs.theme !== "dim") {
     let dark = false; try { dark = matchMedia("(prefers-color-scheme: dark)").matches; } catch (e) {}
     prefs.theme = dark ? "dark" : "light"; savePrefs();
   }
-  document.documentElement.dataset.theme = prefs.theme;
+  document.documentElement.dataset.theme = prefs.theme === "light" ? "light" : "dark";      // le gris est une variante du sombre
+  if (prefs.theme === "dim") document.documentElement.dataset.dim = "1"; else delete document.documentElement.dataset.dim;
   try { document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#0f172a"; } catch (e) {}   // barre d'état du téléphone assortie
   const b = $("themeBtn");
-  if (b) { b.textContent = prefs.theme === "dark" ? "☾" : "☀"; b.title = prefs.theme === "dark" ? "Thème sombre (toucher pour passer en clair)" : "Thème clair (toucher pour passer en sombre)"; }
+  if (b) { b.textContent = { light:"☀", dim:"🌗", dark:"☾" }[prefs.theme];
+    b.title = { light:"Thème clair (toucher : gris)", dim:"Thème gris (toucher : sombre)", dark:"Thème sombre (toucher : clair)" }[prefs.theme]; }
 }
 function setTheme(t) {
   prefs.theme = t; savePrefs(); applyTheme();
@@ -916,7 +920,7 @@ function setTheme(t) {
   if ($("ov").classList.contains("show") && ovData) drawDetail();
 }
 applyTheme();
-$("themeBtn").onclick = () => setTheme(prefs.theme === "dark" ? "light" : "dark");
+$("themeBtn").onclick = () => setTheme({ light:"dim", dim:"dark", dark:"light" }[prefs.theme] || "light");   // clair → gris → sombre
 /* Réticule : libre (suit le doigt / la souris) ou aimanté (suit les cours) */
 const crossOpt = () => ({ mode: prefs.cross === "magnet" ? LW.CrosshairMode.Magnet : LW.CrosshairMode.Normal });
 
@@ -2275,8 +2279,8 @@ function renderToggles() {
     prefs.role = v; savePrefs();
     if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), v); refreshLevels(); }
   });
-  renderSeg("themeSeg", [["light","☀"],["dark","☾"]], prefs.theme, v => { setTheme(v); renderToggles(); });
-  [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème clair", "Thème sombre"][i]);
+  renderSeg("themeSeg", [["light","☀"],["dim","🌗"],["dark","☾"]], prefs.theme, v => { setTheme(v); renderToggles(); });
+  [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème clair", "Thème gris", "Thème sombre"][i]);
   renderSeg("rsiSeg", [["none","Aucun"],["rsi","RSI 14"],["trend","RSI Trends"]], indMode(), v => { if (v === "trend") prefs.rtPane = true; setInd(v); });
   paint($("rsiSeg").children[1], RSI_COL);
   paint($("rsiSeg").children[2], RSI_COL);
