@@ -539,7 +539,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v99</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v100</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -991,7 +991,7 @@ function renderGrid() {
     }
     host.appendChild(card);
   });
-  if (pf.name === "Market" && typeof groupMarket === "function") groupMarket(host);     // tableau ou graphiques : bandeaux Europe / États-Unis / Futures / Cryptos
+  if (isGrouped(pf) && typeof groupMarket === "function") groupMarket(host);     // tableau ou graphiques : bandeaux Europe / États-Unis / Futures / Cryptos
   if (editing && !pf.virtual) {                // mode Modifier : ✕ sur chaque valeur, et une tuile pour en ajouter une
     const add = document.createElement("button");
     add.className = "add-tile" + (host !== g ? " row" : ""); add.type = "button";
@@ -3894,11 +3894,13 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
     const el = document.elementFromPoint(x, y);
     st.ghost.style.display = "";
     const over = el && el.closest(".card[data-sym]");
-    if (over && over !== st.card && over.parentNode === st.card.parentNode) {
+    const grp = isGrouped(cfg.portfolios[prefs.active]);
+    if (over && over !== st.card && over.parentNode === st.card.parentNode && (!grp || mkGroup(over.dataset.sym) === mkGroup(st.card.dataset.sym))) {
       const r = over.getBoundingClientRect();
       const table = grid().classList.contains("compact");
       const after = table ? y > r.top + r.height / 2 : (y > r.bottom - r.height / 3 || (y > r.top + r.height / 3 && x > r.left + r.width / 2));
       over.parentNode.insertBefore(st.card, after ? over.nextSibling : over);
+      if (grp && st.card.style.gridRow) groupMarket(st.card.parentNode);      // vue graphiques regroupée : positions recalculées
     }
     // défilement automatique près des bords de l'écran
     const edge = 70;
@@ -4537,6 +4539,8 @@ function renderQuadQuick(box) {
 }
 
 /* Onglet Market en mode compact : regroupement Europe / États-Unis / Futures / Cryptos, avec l'état de chaque marché */
+// onglets regroupés par région : Market (ordre fixe) et Hold (le tri choisi s'applique dans chaque groupe)
+function isGrouped(pf) { return !!pf && (pf.name === "Market" || pf.name === "Hold"); }
 const MK_GROUPS = [["eu", "Europe"], ["us", "États-Unis"], ["fut", "Futures"], ["cry", "Cryptos"]];
 const EU_IDX = new Set(["^FCHI", "^GDAXI", "^BFX", "^STOXX50E", "^AEX", "^FTSE", "^IBEX", "^FTSEMIB", "^SSMI", "^N100"]);
 function mkGroup(sym) {
@@ -4611,7 +4615,7 @@ addEventListener("resize", () => {                // rotation / redimensionnemen
   clearTimeout(mkFlowT);
   mkFlowT = setTimeout(() => {
     const g = $("grid"), pf = cfg && cfg.portfolios[prefs.active];
-    if (g && pf && pf.name === "Market" && !prefs.gridCompact && !prefs.view && !editing && g.querySelector(".tr-g.flow")) groupMarket(g);
+    if (g && pf && isGrouped(pf) && !prefs.gridCompact && !prefs.view && !editing && g.querySelector(".tr-g.flow")) groupMarket(g);
   }, 200);
 });
 </script>
