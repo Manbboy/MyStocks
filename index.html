@@ -526,7 +526,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v90</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v91</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -924,6 +924,7 @@ function renderGrid() {
   }
   $("cmpBtn").textContent = prefs.gridCompact ? "▦" : "≡"; $("cmpBtn").classList.toggle("on", !!prefs.gridCompact);
   $("cmpBtn").title = prefs.gridCompact ? "Afficher les graphiques" : "Mode compact (sans graphiques)";
+  $("sortBtn").hidden = pf.name === "Market";                 // pas de tri dans Market (ordre fixe)
   const order = sortedOrder(cfg.portfolios.indexOf(pf));
   navOrder = { pi:cfg.portfolios.indexOf(pf), list:order };
   order.map(i => pf.items[i]).forEach(item => {
@@ -1130,7 +1131,8 @@ function levelDist(info, kind) {          // écart (%) au support (ou à la ré
 }
 /* indices des valeurs du portefeuille pi dans l'ordre d'affichage choisi */
 function sortedOrder(pi) {
-  const items = (cfg.portfolios[pi] || { items:[] }).items, idx = items.map((_, i) => i), mode = prefs.sort || "add";
+  const items = (cfg.portfolios[pi] || { items:[] }).items, idx = items.map((_, i) => i);
+  const mode = (cfg.portfolios[pi] || {}).name === "Market" ? "add" : prefs.sort || "add";     // Market : toujours l'ordre défini
   if (mode === "add") return idx;
   const inf = i => withLive(items[i].yahoo, summary.symbols[items[i].yahoo] || {});
   const key = {

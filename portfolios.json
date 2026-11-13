@@ -24,14 +24,14 @@
           "name": "S&P 500"
         },
         {
-          "yahoo": "^DJI",
-          "tv": "DJ:DJI",
-          "name": "Dow Jones"
-        },
-        {
           "yahoo": "^IXIC",
           "tv": "NASDAQ:IXIC",
           "name": "Nasdaq"
+        },
+        {
+          "yahoo": "^DJI",
+          "tv": "DJ:DJI",
+          "name": "Dow Jones"
         },
         {
           "yahoo": "ES=F",
@@ -52,6 +52,16 @@
           "yahoo": "BTC-USD",
           "tv": "BINANCE:BTCUSDT",
           "name": "Bitcoin (BTC/USDT)"
+        },
+        {
+          "yahoo": "ETH-USD",
+          "tv": "BINANCE:ETHUSDT",
+          "name": "Ethereum (ETH/USD)"
+        },
+        {
+          "yahoo": "XRP-USD",
+          "tv": "BINANCE:XRPUSDT",
+          "name": "XRP (XRP/USD)"
         }
       ]
     },
