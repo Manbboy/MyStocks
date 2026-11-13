@@ -248,9 +248,20 @@
   .px { font-size:13px; font-weight:600; white-space:nowrap; }
   .row2 { display:flex; justify-content:space-between; gap:6px; font-size:11px; color:var(--muted); margin-top:1px; }
   .chg { white-space:nowrap; }
-  /* cartes étroites : le symbole se coupe (…) au lieu de passer sur 2 lignes, sinon les graphiques d'une rangée ne finissent plus à la même hauteur */
-  .row2 .sym { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  /* cartes étroites (vue graphiques) : symbole et variation l'un sous l'autre, en entier, sur toutes les cartes,
+     pour que les graphiques d'une rangée commencent et finissent à la même hauteur */
+  .grid:not(.compact) .card { container-type:inline-size; }
+  .row2 .sym { white-space:nowrap; min-width:0; }
   .row1 .nm { min-width:0; }
+  @container (max-width: 130px) {
+    .card-head { padding:6px 5px 0; }
+    .row2 { flex-direction:column; gap:0; }
+    .row2 .sym, .row2 .chg { font-size:10px; line-height:1.3; }
+    .card-head .near { font-size:9.5px; }
+    .row1 .nm { display:none; }                       /* trop étroit pour le nom : le ticker l'identifie */
+    .row1 { justify-content:flex-start; }
+    .row1 .px { font-size:11.5px; }
+  }
   .up { color:var(--up); } .down { color:var(--down); }
   .chart { height:var(--h,150px); }
   .msg { color:var(--muted); font-size:12px; padding:20px 10px; text-align:center; }
@@ -624,7 +635,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v126</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v127</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
