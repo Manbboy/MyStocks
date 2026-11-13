@@ -61,7 +61,7 @@
 
   .spacer { flex:1; }
   header { position:relative; }
-  .theme-btn { position:absolute; right:0; top:12px; padding:5px 10px; font-size:12px; }
+  .theme-btn { position:absolute; right:0; top:12px; padding:4px 11px; font-size:17px; line-height:1.2; }
   header { padding-right:96px; }          /* la ligne « Clôtures… En séance » ne passe plus sous le bouton de thème */
   .btn { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:9px; padding:6px 11px; font-size:13px; font-weight:600; cursor:pointer; }
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -585,7 +585,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v111</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v112</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -842,12 +842,15 @@ function addLevels(series, info, labels) {
 }
 
 /* ---------- Thème ---------- */
-const THEMES = [["auto","Auto"],["light","Clair"],["dark","Sombre"]];
+// deux thèmes seulement : clair ou sombre (l'ancien « automatique » prend le thème actuel de l'appareil)
 function applyTheme() {
-  const t = prefs.theme === "light" || prefs.theme === "dark" ? prefs.theme : "auto";
-  if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
-  const lbl = { auto:"◐ Auto", light:"☀ Clair", dark:"☾ Sombre" }[t];
-  if ($("themeBtn")) $("themeBtn").textContent = lbl;
+  if (prefs.theme !== "light" && prefs.theme !== "dark") {
+    let dark = false; try { dark = matchMedia("(prefers-color-scheme: dark)").matches; } catch (e) {}
+    prefs.theme = dark ? "dark" : "light"; savePrefs();
+  }
+  document.documentElement.dataset.theme = prefs.theme;
+  const b = $("themeBtn");
+  if (b) { b.textContent = prefs.theme === "dark" ? "☾" : "☀"; b.title = prefs.theme === "dark" ? "Thème sombre (toucher pour passer en clair)" : "Thème clair (toucher pour passer en sombre)"; }
 }
 function setTheme(t) {
   prefs.theme = t; savePrefs(); applyTheme();
@@ -856,11 +859,7 @@ function setTheme(t) {
   if ($("ov").classList.contains("show") && ovData) drawDetail();
 }
 applyTheme();
-try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if ((prefs.theme || "auto") === "auto") setTheme("auto"); }); } catch (e) {}
-$("themeBtn").onclick = () => {
-  const order = ["auto","light","dark"], i = order.indexOf(prefs.theme || "auto");
-  setTheme(order[(i + 1) % 3]);
-};
+$("themeBtn").onclick = () => setTheme(prefs.theme === "dark" ? "light" : "dark");
 /* Réticule : libre (suit le doigt / la souris) ou aimanté (suit les cours) */
 const crossOpt = () => ({ mode: prefs.cross === "magnet" ? LW.CrosshairMode.Magnet : LW.CrosshairMode.Normal });
 
@@ -2214,8 +2213,8 @@ function renderToggles() {
     prefs.role = v; savePrefs();
     if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), v); refreshLevels(); }
   });
-  renderSeg("themeSeg", [["auto","Auto"],["light","☀"],["dark","☾"]], prefs.theme || "auto", v => { renderToggles(); setTheme(v); });
-  [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème automatique", "Thème clair", "Thème sombre"][i]);
+  renderSeg("themeSeg", [["light","☀"],["dark","☾"]], prefs.theme, v => { setTheme(v); renderToggles(); });
+  [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème clair", "Thème sombre"][i]);
   renderSeg("rsiSeg", [["none","Aucun"],["rsi","RSI 14"],["trend","RSI Trends"]], indMode(), v => { if (v === "trend") prefs.rtPane = true; setInd(v); });
   paint($("rsiSeg").children[1], RSI_COL);
   paint($("rsiSeg").children[2], RSI_COL);
