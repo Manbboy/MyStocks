@@ -360,6 +360,11 @@
   .grid.compact .tbl.multi .tr-g { box-sizing:border-box; border-top:none; break-inside:avoid; flex-wrap:nowrap; align-items:center; white-space:nowrap; overflow:hidden; padding-top:0; padding-bottom:0; }
   .grid.compact .tbl.multi .tr-g b { flex:none; }
   .grid.compact .tbl.multi .tr-g span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  /* texte trop long pour une ligne : titre en haut, état de la séance en dessous, en plus petit */
+  .grid.compact .tbl.multi .tr-g.two { flex-direction:column; align-items:flex-start; justify-content:center; gap:1px; }
+  .grid.compact .tbl.multi .tr-g.two span { font-size:11px; max-width:100%; }
+  .tr-g i.mk-l { font-style:normal; }
+  .grid.compact .tbl.multi .tr-g.short i.mk-l { display:none; }
   /* même format qu'une action (pas de barre épaisse à gauche, qui faisait une bande sombre entre deux colonnes) */
   .grid.compact .tbl.multi .tr-g { border-left:none; padding-left:10px; padding-right:10px; }
   #grid.compact.paint-c1 .tbl.multi .tr-g, #grid.compact.paint-c2 .tbl.multi .tr-g { border-bottom:2px solid var(--card); border-left:1px solid var(--card); border-right:1px solid var(--card); }
@@ -587,7 +592,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v113</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v114</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -4640,9 +4645,10 @@ function mkState(syms) {
       const t = new Date(i.live.time * 1000);
       const today = t.toDateString() === new Date().toDateString();
       const when = (today ? "" : t.toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }) + " ") + t.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
-      return i.live.state === "ouvert" ? '<span class="mk-on">● en séance</span> · cours de ' + when : "fermé · dernier cours " + when;
+      // les mots entre <i class="mk-l"> disparaissent quand la place manque (titre sur deux lignes encore trop long)
+      return i.live.state === "ouvert" ? '<span class="mk-on">● en séance</span> · <i class="mk-l">cours de </i>' + when : 'fermé · <i class="mk-l">dernier cours </i>' + when;
     }
-    if (base.date) return "clôture du " + new Date(base.date + "T12:00:00").toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }) + (!liveOn() ? "" : (window._liveAsked && syms.every(x => window._liveAsked.has(x)) ? " · pas de cours en direct" : " · cours en direct en chargement…"));
+    if (base.date) return "clôture du " + new Date(base.date + "T12:00:00").toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }) + (!liveOn() ? "" : '<i class="mk-l">' + (window._liveAsked && syms.every(x => window._liveAsked.has(x)) ? " · pas de cours en direct" : " · cours en direct en chargement…") + "</i>");
   }
   return "";
 }
@@ -4659,6 +4665,7 @@ function groupMarket(host) {
   });
 }
 function updMarketHeads() {
+  setTimeout(() => { const t = document.querySelector("#grid .tbl.multi"); if (t) fitCompactHeads(t); }, 0);
   document.querySelectorAll("#grid .tr-g").forEach(h => {
     const syms = [...document.querySelectorAll("#grid .card[data-sym]")].map(c => c.dataset.sym).filter(s => mkGroup(s) === h.dataset.g);
     const sp = h.querySelector("span"); if (sp) sp.innerHTML = mkState(syms);
@@ -4845,7 +4852,16 @@ addEventListener("resize", () => { const t = document.querySelector("#grid .tbl.
 function fitCompactHeads(host) {
   const c = host.querySelector(".card"); if (!c) return;
   const h = c.offsetHeight;
-  if (h) host.querySelectorAll(".tr-g").forEach(t => { t.style.height = h + "px"; });
+  host.querySelectorAll(".tr-g").forEach(t => {
+    if (h) t.style.height = h + "px";
+    t.classList.remove("two", "short");                         // sur une ligne si tout tient, sinon sur deux
+    const sp = t.querySelector("span");
+    const over = () => sp.scrollWidth > sp.clientWidth + 1 || t.scrollWidth > t.clientWidth + 1;
+    if (sp && sp.textContent.trim() && over()) {
+      t.classList.add("two");
+      if (over()) t.classList.add("short");                     // encore trop long : forme courte (« ● en séance · 19:46 »)
+    }
+  });
 }
 addEventListener("resize", () => { const t = document.querySelector("#grid .tbl.multi"); if (t) fitCompactHeads(t); });
 
