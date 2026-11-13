@@ -668,7 +668,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v143</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v144</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4116,9 +4116,12 @@ function drawTxMarks() {
       const st = holdStart(tx);
       const from = st ? (byKey.get(keyOf(iv, st)) || (rows.find(r => r[0] >= st) || [])[0]) : null;
       if (from) {
+        // couleurs plus soutenues sur fond sombre (sinon la zone ne se voit presque pas)
+        const dk = document.documentElement.dataset.theme === "dark", G = dk ? "34,197,94" : "22,163,74", R = dk ? "248,113,113" : "220,38,38";
+        const [aL, a1, a2] = dk ? [0.9, 0.42, 0.16] : [0.6, 0.28, 0.06];
         const z = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:p.pru }, lineWidth:1,
-          topLineColor:"rgba(22,163,74,0.55)", topFillColor1:"rgba(22,163,74,0.22)", topFillColor2:"rgba(22,163,74,0.04)",
-          bottomLineColor:"rgba(220,38,38,0.55)", bottomFillColor1:"rgba(220,38,38,0.04)", bottomFillColor2:"rgba(220,38,38,0.22)",
+          topLineColor:`rgba(${G},${aL})`, topFillColor1:`rgba(${G},${a1})`, topFillColor2:`rgba(${G},${a2})`,
+          bottomLineColor:`rgba(${R},${aL})`, bottomFillColor1:`rgba(${R},${a2})`, bottomFillColor2:`rgba(${R},${a1})`,
           priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
         z.setData(rows.filter(r => r[0] >= from).map(r => ({ time:r[0], value:r[4] })));
         txZones.push(z);
