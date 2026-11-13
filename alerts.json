@@ -39,6 +39,16 @@
       "label": "",
       "note": "",
       "created": 1794607742137
+    },
+    {
+      "id": "mwfj4c6cbm6a",
+      "sym": "BTC-USD",
+      "name": "Bitcoin (BTC/USDT)",
+      "op": "below",
+      "price": 68119.47,
+      "label": "",
+      "note": "Test 3",
+      "created": 1794607752612
     }
   ]
 }
