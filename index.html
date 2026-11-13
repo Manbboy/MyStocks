@@ -22,10 +22,15 @@
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
             --s-D:#bbf7d0; --s-W:#2dd4bf; --s-M:#22c55e; --s-Q:#15803d;
             --r-D:#fed7aa; --r-W:#fb7185; --r-M:#ef4444; --r-Q:#b91c1c; --buy:#60a5fa; --sell:#a78bfa; }
-  /* thème gris (intermédiaire) : un clair adouci, sans blanc éblouissant, pour le soir */
-  :root[data-theme="light"][data-dim] { --bg:#a3a8b0; --card:#b4b9c0; --text:#111418; --muted:#3c434d; --border:#959ba3; --chip:#a9aeb5; --grid:#aab0b7;
-            --up:#0e6a2f; --down:#a91818; --sup:#0e6a2f; --res:#a91818; }
-  :root[data-theme="light"][data-dim] .grid .tr-g { --g:#374151; background:color-mix(in srgb, #475569 30%, var(--card)); }
+  /* thème intermédiaire 🌗 : base du thème sombre, mais cases vert / rouge pâles comme en clair (palettes 🎨 2 et 3) */
+  :root[data-dim] #grid.compact.paint-c1 .card.pos, :root[data-dim] #grid.compact.paint-c2 .card.pos,
+  :root[data-dim] #grid.compact.paint-c1 .card.neg, :root[data-dim] #grid.compact.paint-c2 .card.neg,
+  :root[data-dim] .grid.paint-g2:not(.compact) .card.pos, :root[data-dim] .grid.paint-g2:not(.compact) .card.neg,
+  :root[data-dim] .pf-list.paint .pf-pos.pos, :root[data-dim] .pf-list.paint .pf-pos.neg {
+    --card:#ffffff; --text:#16181d; --muted:#4b5563; --up:#16a34a; --down:#dc2626; --sup:#15803d; --res:#c42020; --border:#d6d9de; color:var(--text); }
+  :root[data-dim] #grid.compact.paint-c1 .tr-g, :root[data-dim] #grid.compact.paint-c2 .tr-g { --g:#0f172a; background:#334155; color:#cbd5e1; }
+  :root[data-dim] #grid.compact.paint-c1 .tr-g b, :root[data-dim] #grid.compact.paint-c2 .tr-g b { color:#fff; }
+  :root[data-dim] #grid.compact.paint-c1 .tr-g .mk-on, :root[data-dim] #grid.compact.paint-c2 .tr-g .mk-on { color:#4ade80; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) { color-scheme:dark; --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --border:#2a2e36; --accent:#60a5fa; --chip:#22262e;
             --up:#22c55e; --down:#f87171; --sup:#22c55e; --res:#f87171; --grid:#22262e;
@@ -651,7 +656,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v138</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v139</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -916,12 +921,12 @@ function applyTheme() {
     let dark = false; try { dark = matchMedia("(prefers-color-scheme: dark)").matches; } catch (e) {}
     prefs.theme = dark ? "dark" : "light"; savePrefs();
   }
-  document.documentElement.dataset.theme = prefs.theme === "dark" ? "dark" : "light";      // le gris est une variante adoucie du clair
+  document.documentElement.dataset.theme = prefs.theme === "light" ? "light" : "dark";      // l'intermédiaire part du sombre
   if (prefs.theme === "dim") document.documentElement.dataset.dim = "1"; else delete document.documentElement.dataset.dim;
   try { document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#0f172a"; } catch (e) {}   // barre d'état du téléphone assortie
   const b = $("themeBtn");
   if (b) { b.textContent = { light:"☀", dim:"🌗", dark:"☾" }[prefs.theme];
-    b.title = { light:"Thème clair (toucher : gris)", dim:"Thème gris (toucher : sombre)", dark:"Thème sombre (toucher : clair)" }[prefs.theme]; }
+    b.title = { light:"Thème clair (toucher : gris)", dim:"Thème intermédiaire (toucher : sombre)", dark:"Thème sombre (toucher : clair)" }[prefs.theme]; }
 }
 function setTheme(t) {
   prefs.theme = t; savePrefs(); applyTheme();
@@ -953,7 +958,7 @@ function baseOptions(small) {
   return {
     autoSize:true,
     layout:{ background:{ type:"solid", color:"transparent" }, textColor:css("--muted"), fontSize: small ? 9 : 10, attributionLogo:false },
-    grid:{ vertLines:{ visible:false }, horzLines:{ color:css("--grid") } },
+    grid:{ vertLines:{ visible:false }, horzLines:{ color: document.documentElement.dataset.dim ? "rgba(128,128,128,.22)" : css("--grid") } },   // 🌗 : discret sur cases pâles comme sombres
     rightPriceScale:{ borderVisible:false },
     timeScale:{ borderVisible:false, timeVisible:true, secondsVisible:false },   // heures visibles en 15 min (sans effet sur les jours)
     localization:{ locale:"fr-FR", timeFormatter:crossTime, priceFormatter:axisPrice },
@@ -2290,7 +2295,7 @@ function renderToggles() {
     if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), v); refreshLevels(); }
   });
   renderSeg("themeSeg", [["light","☀"],["dim","🌗"],["dark","☾"]], prefs.theme, v => { setTheme(v); renderToggles(); });
-  [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème clair", "Thème gris", "Thème sombre"][i]);
+  [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème clair", "Thème intermédiaire", "Thème sombre"][i]);
   renderSeg("rsiSeg", [["none","Aucun"],["rsi","RSI 14"],["trend","RSI Trends"]], indMode(), v => { if (v === "trend") prefs.rtPane = true; setInd(v); });
   paint($("rsiSeg").children[1], RSI_COL);
   paint($("rsiSeg").children[2], RSI_COL);
