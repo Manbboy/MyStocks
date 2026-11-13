@@ -349,6 +349,10 @@
     background:color-mix(in srgb, var(--g) 16%, var(--card)); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
   .grid .tr-g:first-of-type { border-top:none; }
   .grid .tr-g.band { grid-column:1 / -1; border-radius:10px; border-top:none; margin-top:6px; }
+  .grid .tr-g.flow { min-width:0; overflow:hidden; white-space:nowrap; flex-wrap:nowrap; align-self:stretch; align-items:center; margin-bottom:-4px; }
+  .grid .tr-g.flow b { flex:none; }
+  .grid .tr-g.flow span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .grid .tr-g.cont b { opacity:.75; }
   .grid .tr-g b { color:var(--text); font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
 
   .mk-on { color:var(--up); font-weight:600; }
@@ -533,7 +537,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v97</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v98</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -4558,6 +4562,7 @@ function mkState(syms) {
 function groupMarket(host) {
   const cards = [...host.querySelectorAll(".card[data-sym]")];
   host.querySelectorAll(".tr-g").forEach(e => e.remove());
+  if (host.id === "grid" && !editing) { flowMarket(host, cards); return; }
   MK_GROUPS.forEach(([k, label]) => {
     const list = cards.filter(c => mkGroup(c.dataset.sym) === k);
     if (!list.length) return;
@@ -4572,6 +4577,39 @@ function updMarketHeads() {
     const sp = h.querySelector("span"); if (sp) sp.innerHTML = mkState(syms);
   });
 }
+
+/* Vue graphiques de Market : les groupes se suivent sans ligne vide ; au-dessus de chaque ligne de graphiques,
+   un bandeau par groupe couvre exactement ses colonnes (un groupe coupé en fin de ligne a son bandeau sur les deux lignes) */
+function flowMarket(host, cards) {
+  const ordered = [];
+  MK_GROUPS.forEach(([k]) => cards.filter(c => mkGroup(c.dataset.sym) === k).forEach(c => ordered.push(c)));
+  ordered.forEach(c => host.appendChild(c));
+  const C = Math.max(1, getComputedStyle(host).gridTemplateColumns.split(" ").filter(Boolean).length);
+  const seen = new Set();
+  for (let r = 0; r * C < ordered.length; r++) {
+    const row = ordered.slice(r * C, r * C + C);
+    row.forEach((c, j) => { c.style.gridRow = String(2 * r + 2); c.style.gridColumn = String(j + 1); });
+    // segments de bandeau : colonnes consécutives d'un même groupe sur cette ligne
+    let j = 0;
+    while (j < row.length) {
+      const k = mkGroup(row[j].dataset.sym); let e = j;
+      while (e + 1 < row.length && mkGroup(row[e + 1].dataset.sym) === k) e++;
+      const label = (MK_GROUPS.find(x => x[0] === k) || [k, k])[1], cont = seen.has(k);
+      const h = document.createElement("div"); h.className = "tr-g band flow" + (cont ? " cont" : ""); h.dataset.g = k;
+      h.style.gridRow = String(2 * r + 1); h.style.gridColumn = (j + 1) + " / " + (e + 2);
+      h.innerHTML = "<b>" + label + (cont ? " (suite)" : "") + "</b> <span>" + (cont ? "" : mkState(ordered.filter(c => mkGroup(c.dataset.sym) === k).map(c => c.dataset.sym))) + "</span>";
+      host.appendChild(h); seen.add(k); j = e + 1;
+    }
+  }
+}
+let mkFlowT = 0;
+addEventListener("resize", () => {                // rotation / redimensionnement : nombre de colonnes différent
+  clearTimeout(mkFlowT);
+  mkFlowT = setTimeout(() => {
+    const g = $("grid"), pf = cfg && cfg.portfolios[prefs.active];
+    if (g && pf && pf.name === "Market" && !prefs.gridCompact && !prefs.view && !editing && g.querySelector(".tr-g.flow")) groupMarket(g);
+  }, 200);
+});
 </script>
 </body>
 </html>
