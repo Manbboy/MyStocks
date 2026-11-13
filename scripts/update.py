@@ -170,6 +170,7 @@ def all_levels(df: pd.DataFrame):
 
 
 KIND = {}
+FX = "EURUSD=X"   # dollars pour 1 euro
 EVENTS = {}   # dates de résultats et dividendes détachés, pour expliquer un mouvement du jour
 
 
@@ -280,7 +281,7 @@ def main():
     demo = "--demo" in sys.argv
     fetch = fetch_demo if demo else fetch_real
     cfg = json.loads((ROOT / "portfolios.json").read_text(encoding="utf-8"))
-    symbols = sorted({it["yahoo"] for p in cfg["portfolios"] for it in p["items"]})
+    symbols = sorted({it["yahoo"] for p in cfg["portfolios"] for it in p["items"]} | {FX})   # + taux EUR/USD (conversion du Portfolio en euros)
 
     SERIES.mkdir(parents=True, exist_ok=True)
     summary = {"timeframes": {k: v["label"] for k, v in TIMEFRAMES.items()}, "updated": datetime.now(timezone.utc).isoformat(timespec="minutes"), "demo": demo, "symbols": {}}
@@ -300,7 +301,8 @@ def main():
             sup, res = levels["D"]["supports"], levels["D"]["resistances"]
             rows = [[r.Date, round(r.Open, 4), round(r.High, 4), round(r.Low, 4), round(r.Close, 4), int(r.Volume or 0)]
                     for r in df.itertuples()]
-            allrows[sym] = rows
+            if sym != FX:
+                allrows[sym] = rows          # le taux de change n'entre pas dans « À regarder »
             fname = safe_name(sym) + ".json"
             long_rows = [[r.Date, round(r.Open, 4), round(r.High, 4), round(r.Low, 4), round(r.Close, 4), int(r.Volume or 0)]
                          for r in monthly.itertuples()]

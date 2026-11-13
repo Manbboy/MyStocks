@@ -149,6 +149,10 @@
   .pf-warn { background:rgba(234,179,8,.14); border:1px solid rgba(234,179,8,.45); color:var(--text); border-radius:10px; padding:8px 12px; font-size:12.5px; margin-bottom:10px; }
   .pf-tx .dup { font-size:10.5px; font-weight:700; color:#b45309; background:rgba(234,179,8,.18); border-radius:5px; padding:1px 5px; white-space:nowrap; }
   .pf-sum.compact { grid-template-columns:repeat(4, minmax(0, 1fr)); gap:4px; }
+  .pf-tot > div { border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }        /* ligne « Total en € » */
+  .pf-fxnote { margin:-6px 2px 10px; }
+  .pf-tx .q { white-space:normal; }     /* le montant en € peut passer à la ligne */
+  #txEurBox[hidden] { display:none; }
   .pf-sum.compact > div { padding:6px 8px; border-radius:9px; }
   .pf-sum.compact span { font-size:10px; } .pf-sum.compact b { font-size:13px; }
   .pf-grp { display:flex; align-items:baseline; gap:8px; font-size:14px; margin:14px 2px 6px; color:var(--text); }
@@ -603,7 +607,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v119</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v120</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -773,6 +777,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <label>Prix unitaire<input type="text" inputmode="decimal" id="txPrice" required placeholder="40,25"></label>
       <label>Frais<input type="text" inputmode="decimal" id="txFees" placeholder="0"></label>
     </div>
+    <label id="txEurBox" hidden><span id="txEurLbl">Montant débité en € (avis d'opéré, facultatif)</span><input type="text" inputmode="decimal" id="txEur" placeholder=""></label>
     <p class="hint">Prix unitaire hors frais, dans la devise de la valeur. Le PRU est calculé automatiquement (frais d'achat inclus).</p>
     <p class="err" id="txErr"></p>
     <div class="row"><button type="button" class="btn" id="txCancel">Annuler</button><button type="submit" class="btn primary" id="txOk">Enregistrer</button></div>
@@ -3591,16 +3596,22 @@ function allSymbols() {
 function pfPositions(tx) {
   const by = new Map();
   tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.t || 0) - (b.t || 0)).forEach(t => {
-    const p = by.get(t.sym) || { sym:t.sym, qty:0, cost:0, realized:0, soldCost:0, bought:0, fees:0, first:t.date, tx:[] };
+    const p = by.get(t.sym) || { sym:t.sym, qty:0, cost:0, realized:0, soldCost:0, bought:0, fees:0, first:t.date, tx:[], costE:0, realizedE:0, soldCostE:0 };
     const fees = +t.fees || 0;
     p.fees += fees; p.tx.push(t);
-    if (t.type === "A") { p.qty += +t.qty; p.cost += t.qty * t.price + fees; p.bought += t.qty * t.price + fees; }
+    // montant en euros de l'opération : celui de l'avis d'opéré s'il est saisi, sinon converti au taux EUR/USD du jour
+    const curT = (summary.symbols[t.sym] || {}).currency || "EUR";
+    const native = t.type === "A" ? t.qty * t.price + fees : Math.min(+t.qty, p.qty) * t.price - fees;
+    const eurT = curT === "EUR" ? native : +t.eur > 0 ? +t.eur : curT === "USD" && fxOn(t.date) ? native / fxOn(t.date) : null;
+    if (eurT == null) p.noE = true;
+    if (t.type === "A") { p.qty += +t.qty; p.cost += t.qty * t.price + fees; p.bought += t.qty * t.price + fees; p.costE += eurT || 0; }
     else {
-      const avg = p.qty > 0 ? p.cost / p.qty : 0, q = Math.min(+t.qty, p.qty);
+      const avg = p.qty > 0 ? p.cost / p.qty : 0, q = Math.min(+t.qty, p.qty), avgE = p.qty > 0 ? p.costE / p.qty : 0;
       p.realized += q * t.price - fees - q * avg;
       p.soldCost += q * avg;                     // prix de revient des actions vendues : base du % réalisé
-      p.cost -= q * avg; p.qty -= q;
-      if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; }
+      p.realizedE += (eurT || 0) - q * avgE; p.soldCostE += q * avgE;
+      p.cost -= q * avg; p.costE -= q * avgE; p.qty -= q;
+      if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; p.costE = 0; }
     }
     by.set(t.sym, p);
   });
@@ -3611,11 +3622,31 @@ function pfPositions(tx) {
     const price = info.last, pru = p.qty > 0 ? p.cost / p.qty : null;
     const value = p.qty > 0 && price != null ? p.qty * price : 0;
     const latent = p.qty > 0 && price != null ? value - p.cost : 0;
+    const cur = info.currency || "EUR", now = cur === "EUR" ? 1 : cur === "USD" ? fxNow() : null;
+    if (now == null) p.noE = true;
+    const valueE = now ? value / now : 0, latentE = p.qty > 0 && now ? valueE - p.costE : 0;
+    Object.assign(p, { valueE, latentE, latentPctE: p.costE > 0 ? latentE / p.costE * 100 : null, realizedPctE: p.soldCostE > 0 ? p.realizedE / p.soldCostE * 100 : null });
     return Object.assign(p, { name:it.name, item:it, cur:info.currency || "EUR", price, pru, value, latent,
       latentPct: p.cost > 0 ? latent / p.cost * 100 : null, dayPct:info.changePct,
       realizedPct: p.soldCost > 0 ? p.realized / p.soldCost * 100 : null });
   }).sort((a, b) => (b.qty > 0) - (a.qty > 0) || b.value - a.value || a.name.localeCompare(b.name));
 }
+
+/* --- taux EUR/USD (dollars pour 1 euro) : historique journalier chargé une fois, et taux actuel --- */
+let fxRows = null;
+async function loadFx() {
+  if (fxRows) return;
+  const f = (summary.symbols["EURUSD=X"] || {}).file; if (!f) return;
+  try { fxRows = (await (await fetch(f + "?v=" + encodeURIComponent(summary.updated || ""))).json()).rows.map(r => [r[0], r[4]]); } catch (e) {}
+}
+function fxOn(d) {                                  // clôture du jour, ou du dernier jour coté avant
+  if (!fxRows || !fxRows.length) return null;
+  let lo = 0, hi = fxRows.length - 1;
+  if (d < fxRows[0][0]) return fxRows[0][1];
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (fxRows[m][0] <= d) lo = m; else hi = m - 1; }
+  return fxRows[lo][1];
+}
+function fxNow() { const b = summary.symbols["EURUSD=X"]; return b && b.last ? withLive("EURUSD=X", b).last : null; }
 
 /* --- affichage --- */
 const pfView = () => prefs.view === "pf";
@@ -3626,6 +3657,7 @@ async function renderPf() {
   document.body.classList.add("pf-mode");
   const box = $("pfView"); box.hidden = false;
   if (!pfState.loaded) { box.innerHTML = '<div class="msg">Chargement du portefeuille…</div>'; await pfLoad(); }
+  if (!fxRows) await loadFx();
   box.innerHTML = "";
   const head = document.createElement("div"); head.className = "pf-head";
   head.innerHTML = '<div class="seg" id="pfOwnerSeg"></div><span class="spacer"></span>';
@@ -3700,6 +3732,21 @@ async function renderPf() {
       '<div><span>Réalisé (ventes)</span><b class="' + (t.realized >= 0 ? "up" : "down") + '">' + money(t.realized, cur) + (t.soldCost > 0 ? " (" + fmtPct(t.realized / t.soldCost * 100) + ")" : "") + '</b></div>');
   });
   box.appendChild(sum);
+  // total en euros : tout converti, les achats et ventes en dollars au taux du jour de l'opération (ou au montant saisi)
+  if (Object.keys(tot).some(c => c !== "EUR")) {
+    const E = { cost:0, value:0, latent:0, realized:0, soldCost:0 }, miss = pos.some(p => p.noE);
+    pos.filter(p => !p.noE).forEach(p => { E.cost += p.costE; E.value += p.valueE; E.latent += p.latentE; E.realized += p.realizedE; E.soldCost += p.soldCostE; });
+    const pct = E.cost > 0 ? E.latent / E.cost * 100 : null, auto = pos.some(p => p.cur === "USD" && p.tx.some(t => !(+t.eur > 0)));
+    const tE = document.createElement("div"); tE.className = "pf-sum pf-tot" + (prefs.pfCompact ? " compact" : "");
+    tE.innerHTML =
+      '<div><span>Total investi en €</span><b>' + fmt(E.cost, "EUR") + '</b></div>' +
+      '<div><span>Valeur totale en €</span><b>' + fmt(E.value, "EUR") + '</b></div>' +
+      '<div><span>Plus-value latente en €</span><b class="' + (E.latent >= 0 ? "up" : "down") + '">' + money(E.latent, "EUR") + (pct != null ? " (" + fmtPct(pct) + ")" : "") + '</b></div>' +
+      '<div><span>Réalisé en €</span><b class="' + (E.realized >= 0 ? "up" : "down") + '">' + money(E.realized, "EUR") + (E.soldCost > 0 ? " (" + fmtPct(E.realized / E.soldCost * 100) + ")" : "") + '</b></div>';
+    box.appendChild(tE);
+    box.insertAdjacentHTML("beforeend", '<p class="hint pf-fxnote">Dollars convertis au taux EUR/USD du jour de chaque opération' + (fxNow() ? " (aujourd'hui 1 € = " + fxNow().toLocaleString(NUM_LOC, { minimumFractionDigits:4, maximumFractionDigits:4 }) + " $)" : "") +
+      (auto ? ". Pour un résultat exact au centime, indiquez le montant débité en € de l'avis d'opéré (✎ sur l'opération)." : ".") + (miss ? " Certaines valeurs d'une autre devise ne sont pas comptées." : "") + '</p>');
+  }
 
   // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
   const openL = document.createElement("div"), closedL = document.createElement("div");
@@ -3715,7 +3762,9 @@ async function renderPf() {
       '<div class="r2">' + (open
         ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " → cours " + fmt(p.price, p.cur) + (p.dayPct != null ? ' <span class="' + (p.dayPct >= 0 ? "up" : "down") + '">(' + fmtPct(p.dayPct) + " auj.)</span>" : "")
         : "Aucune action détenue") +
-      (open && Math.abs(p.realized) > 0.005 ? ' · réalisé <span class="' + (p.realized >= 0 ? "up" : "down") + '">' + money(p.realized, p.cur) + (p.realizedPct != null ? " (" + fmtPct(p.realizedPct) + ")" : "") + '</span>' : "") + '</div>';
+      (open && Math.abs(p.realized) > 0.005 ? ' · réalisé <span class="' + (p.realized >= 0 ? "up" : "down") + '">' + money(p.realized, p.cur) + (p.realizedPct != null ? " (" + fmtPct(p.realizedPct) + ")" : "") + '</span>' : "") +
+      (p.cur !== "EUR" && !p.noE ? '<br>en € : ' + (open ? 'investi ' + fmt(p.costE, "EUR") + ' → ' + fmt(p.valueE, "EUR") + ' <span class="' + (p.latentE >= 0 ? "up" : "down") + '">' + money(p.latentE, "EUR") + (p.latentPctE != null ? " (" + fmtPct(p.latentPctE) + ")" : "") + '</span>'
+        : 'réalisé <span class="' + (p.realizedE >= 0 ? "up" : "down") + '">' + money(p.realizedE, "EUR") + (p.realizedPctE != null ? " (" + fmtPct(p.realizedPctE) + ")" : "") + '</span>') : "") + '</div>';
     c.querySelector(".nm").textContent = p.name;
     if (prefs.pfCompact) {
       const v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct, cl = v >= 0 ? "up" : "down";
@@ -3728,7 +3777,7 @@ async function renderPf() {
       const row = document.createElement("div");
       row.innerHTML = '<span class="ty ' + (t.type === "A" ? "a" : "v") + '">' + (t.type === "A" ? "Achat" : "Vente") + '</span><span class="d"></span><span class="q"></span>' + (t._dup ? '<span class="dup" title="Opération semblable à quelques jours d\'écart">doublon ?</span>' : '') + '<button class="e" title="Modifier cette opération">✎</button><button class="x" title="Supprimer cette opération">✕</button>';
       row.querySelector(".d").textContent = new Date(t.date + "T00:00:00Z").toLocaleDateString("fr-FR", { timeZone:"UTC" });
-      row.querySelector(".q").textContent = fmt(+t.qty, null).replace(/,00$/, "") + " × " + fmt(+t.price, p.cur) + (+t.fees ? " + frais " + fmt(+t.fees, p.cur).replace(" ", "\u00a0") : "");
+      row.querySelector(".q").textContent = fmt(+t.qty, null).replace(/,00$/, "") + " × " + fmt(+t.price, p.cur) + (+t.fees ? " + frais " + fmt(+t.fees, p.cur).replace(" ", "\u00a0") : "") + txEurTxt(t, p.cur);
       row.querySelector(".x").onclick = ev => { ev.stopPropagation(); delTx(own, t, p.name); };
       row.querySelector(".e").onclick = ev => { ev.stopPropagation(); openTxDlg(t); };
       tl.appendChild(row);
@@ -3861,12 +3910,14 @@ function openTxDlg(edit) {
   if (txEdit) {
     sel.value = txEdit.sym; $("txDate").value = txEdit.date;
     $("txQty").value = n2(txEdit.qty); $("txPrice").value = n2(txEdit.price); $("txFees").value = +txEdit.fees ? n2(txEdit.fees) : "";
+    $("txEur").value = +txEdit.eur > 0 ? n2(txEdit.eur) : "";
     document.querySelector('input[name="txType"][value="' + txEdit.type + '"]').checked = true;
   } else {
     $("txDate").value = new Date().toISOString().slice(0, 10);
-    $("txQty").value = ""; $("txPrice").value = ""; $("txFees").value = "";
+    $("txQty").value = ""; $("txPrice").value = ""; $("txFees").value = ""; $("txEur").value = "";
     document.querySelector('input[name="txType"][value="A"]').checked = true;
   }
+  updTxEur();
   $("txDlg").classList.add("show");
 }
 async function submitTx(e) {
@@ -3876,6 +3927,10 @@ async function submitTx(e) {
   const t = { id:edit ? edit.id : Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:edit ? edit.t : Date.now(),
     type:document.querySelector('input[name="txType"]:checked').value, sym:$("txSym").value, date:$("txDate").value,
     qty:numIn($("txQty").value), price:numIn($("txPrice").value), fees:numIn($("txFees").value || "0") };
+  if (!$("txEurBox").hidden && $("txEur").value.trim()) {
+    const e2 = numIn($("txEur").value); if (!(e2 > 0)) { $("txErr").textContent = "Montant en € invalide."; return; }
+    t.eur = e2;
+  }
   if (!t.sym || !t.date || !(t.qty > 0) || !(t.price > 0) || !(t.fees >= 0)) { $("txErr").textContent = "Vérifiez la date, la quantité, le prix et les frais."; return; }
   const after = ((pfState.data[own] || {}).tx || []).filter(x => !edit || x.id !== edit.id).concat([t]);
   const bad = checkTxList(after, t.sym) || (edit && edit.sym !== t.sym ? checkTxList(after, edit.sym) : "");
@@ -3893,6 +3948,28 @@ async function submitTx(e) {
   $("txOk").disabled = false;
 }
 $("txForm").addEventListener("submit", submitTx);
+/* champ « montant en € » : seulement pour une valeur cotée dans une autre devise ; l'exemple montre la conversion au taux du jour */
+async function updTxEur() {
+  const sym = $("txSym").value, cur = (summary.symbols[sym] || {}).currency || "EUR", box = $("txEurBox");
+  box.hidden = cur === "EUR";
+  if (box.hidden) return;
+  if (!fxRows) await loadFx();
+  const sale = document.querySelector('input[name="txType"]:checked').value === "V";
+  $("txEurLbl").textContent = (sale ? "Montant crédité en €" : "Montant débité en €") + " (avis d'opéré, facultatif)";
+  const q = numIn($("txQty").value), pr = numIn($("txPrice").value), fe = numIn($("txFees").value || "0"), r = cur === "USD" ? fxOn($("txDate").value) : null;
+  $("txEur").placeholder = q > 0 && pr > 0 && r ? "≈ " + ((sale ? q * pr - fe : q * pr + fe) / r).toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }) + " au taux du " + new Date($("txDate").value + "T12:00:00").toLocaleDateString("fr-FR") : "vide = taux du jour de l'opération";
+}
+["txSym", "txDate", "txQty", "txPrice", "txFees"].forEach(id => $(id).addEventListener("input", updTxEur));
+$("txSym").addEventListener("change", updTxEur);
+document.querySelectorAll('input[name="txType"]').forEach(r => r.addEventListener("change", updTxEur));
+function txEurTxt(t, cur) {
+  if (cur === "EUR") return "";
+  if (+t.eur > 0) return " = " + fmt(+t.eur, "EUR");
+  const r = cur === "USD" ? fxOn(t.date) : null;
+  if (!r) return "";
+  const native = t.type === "A" ? t.qty * t.price + (+t.fees || 0) : t.qty * t.price - (+t.fees || 0);
+  return " ≈ " + fmt(native / r, "EUR");
+}
 $("txCancel").onclick = () => { $("txDlg").classList.remove("show"); txEdit = null; };
 
 /* --- repères d'achat / vente et PRU sur le graphique du détail --- */
