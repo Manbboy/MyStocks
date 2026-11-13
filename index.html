@@ -621,7 +621,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v123</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v124</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -2925,7 +2925,9 @@ function drawDetail(keep) {
       "<div>Ouv. <b>" + fmt(row[1]) + "</b> · Haut <b>" + fmt(row[2]) + "</b> · Bas <b>" + fmt(row[3]) + "</b> · Clôt. <b>" + fmt(row[4]) + "</b></div>";
   };
   showOhlc(rows[rows.length - 1]);
+  window.ovCrossPrice = null;                       // dernier prix pointé par le curseur (proposé par défaut pour une alerte 🔔)
   ovChart.subscribeCrosshairMove(param => {
+    if (param && param.point && ovCandles) { const cp = ovCandles.coordinateToPrice(param.point.y); if (cp > 0) window.ovCrossPrice = cp; }
     const row = param && param.time ? bySeries.get(typeof param.time !== "object" ? param.time :
       param.time.year + "-" + String(param.time.month).padStart(2, "0") + "-" + String(param.time.day).padStart(2, "0")) : null;
     if (rsiChart && rsiSeries && !crossSync) {
@@ -4553,6 +4555,10 @@ async function openAlertDlg() {
   $("alPrice").oninput = () => { label = ""; dir(); };
   bg.querySelectorAll(".al-lv .q-chip").forEach(b => b.onclick = () => { const x = lv[+b.dataset.k]; $("alPrice").value = fmt(x.price); label = x.t; dir(); });
   $("alClose").onclick = () => bg.classList.remove("show");
+  // prix proposé : là où le curseur s'est arrêté sur le graphique, sinon le cours actuel
+  { const cp = window.ovCrossPrice, p0 = cp > 0 ? cp : last;
+    if (p0 > 0) { $("alPrice").value = fmt(p0); dir();
+      $("alDir").textContent += cp > 0 ? " (prix du curseur)" : " (cours actuel)"; } }
   const list = async () => {
     await alertsLoad(true);
     const mine = (alertsData.alerts || []).filter(a => a.sym === sym);
