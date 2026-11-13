@@ -518,7 +518,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v83</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v84</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <p class="sub" id="updated"></p>
   </header>
@@ -1189,7 +1189,9 @@ $("rtBtn").onclick = () => {
 };
 $("mmBtn").onclick = () => {
   prefs.maP = selMaP().length ? [] : MA_PERIODS.slice();
+  if (!prefs.maP.length && hiMa) hiMa = null;          // moyennes masquées : la moyenne mise en évidence disparaît aussi
   savePrefs(); refreshLevels();
+  setTimeout(renderQuick, 0);
 };
 (() => {
   let lastTap = 0, lx = 0, ly = 0, downAt = null;
