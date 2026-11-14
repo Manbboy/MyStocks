@@ -392,6 +392,11 @@
           "yahoo": "ELEC.PA",
           "tv": "EURONEXT:ELEC",
           "name": "Électricité de Strasbourg"
+        },
+        {
+          "yahoo": "OVH.PA",
+          "tv": "EURONEXT:OVH",
+          "name": "OVH Groupe S.A."
         }
       ]
     },
