@@ -45,3 +45,13 @@ jobs:
           git diff --cached --quiet || git commit -m "Mise à jour des cours"
           git pull --rebase
           git push
+
+      # alertes R⇄S automatiques : écrites dans alerts.json (lu toutes les 5 minutes par le relais Telegram)
+      - name: Alertes R⇄S automatiques (Telegram)
+        run: |
+          git pull --rebase
+          node scripts/flip_alerts.mjs
+          git add alerts.json
+          git diff --cached --quiet || git commit -m "Alertes R⇄S automatiques"
+          git pull --rebase
+          git push

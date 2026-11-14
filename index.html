@@ -674,6 +674,10 @@
   .cfg-flow > div { display:flex; flex-direction:column; gap:3px; min-width:0; }
   .cfg-flow .seg { flex-wrap:nowrap; }
   .cfg-flow .seg button { padding:5px 7px; white-space:nowrap; }
+  .al-auto-h { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:16px; }
+  .al-auto-h .swb { font-weight:400; font-size:12.5px; text-transform:none; letter-spacing:0; }
+  .al-auto-ex { font-size:12px; color:var(--muted); margin:2px 0 6px; }
+  .al-step { grid-column:1 / -1; display:block; font-size:11.5px; font-weight:600; color:var(--muted); margin-top:-2px; }
   .cfg-line { display:flex; align-items:center; flex-wrap:wrap; gap:4px 14px; }
   .cfg-line input[type="range"] { flex:1 1 140px; min-width:120px; width:auto; margin:0; }
   .cfg-lab { color:var(--muted); white-space:nowrap; }
@@ -782,7 +786,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v171</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v172</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1164,7 +1168,7 @@ function renderTabs() {
   const ab = document.createElement("button");                 // onglet « Alertes » (suivi des alertes Telegram)
   ab.className = "tab" + (prefs.view === "alerts" ? " active" : "");
   let nWait = 0;
-  try { nWait = alertsData ? (alertsData.alerts || []).filter(a => !alertsSent[a.id]).length : 0; } catch (e) {}
+  try { nWait = alertsData ? (alertsData.alerts || []).filter(a => !a.auto && !alertsSent[a.id]).length : 0; } catch (e) {}
   ab.innerHTML = "Alertes" + (nWait ? ' <span class="al-n">' + nWait + "</span>" : "");
   ab.onclick = () => { prefs.view = "alerts"; savePrefs(); render(); };
   t.appendChild(ab);
@@ -4980,7 +4984,8 @@ async function renderAlertsView() {
   await alertsLoad(true);
   if (prefs.view !== "alerts") return;
   box.innerHTML = "";
-  const all = (alertsData.alerts || []).slice();
+  const all = (alertsData.alerts || []).filter(a => !a.auto);
+  const autos = (alertsData.alerts || []).filter(a => a.auto);
   const intro = document.createElement("div"); intro.className = "sig-intro";
   intro.innerHTML = "<b>Mes alertes de prix</b> : vérifiées toutes les 5 minutes en semaine par le relais, message Telegram au franchissement (une seule fois). " +
     "Créez-en depuis le graphique d'une valeur avec le bouton 🔔.";
@@ -4994,14 +4999,16 @@ async function renderAlertsView() {
     // une seule ligne : nom (+ note) · niveau · cours · écart (ou date d'envoi) · date de création (tablette) · boutons
     const esc2 = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
     const d2 = d => new Date(d).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" });
-    el.innerHTML = '<span class="al-nm"><b>' + esc2(a.name || a.sym) + "</b>" + (a.note ? ' <span class="al-note2 inl">📝 ' + esc2(a.note) + "</span>" : "") + "</span>" +
-      '<span class="al-lvl">' + (a.op === "above" ? "▲" : "▼") + " <b>" + fmt(a.price) + "</b>" + (a.label ? ' <span class="al-lab">' + a.label + "</span>" : "") + "</span>" +
+    el.innerHTML = '<span class="al-nm"><b>' + esc2(a.name || a.sym) + "</b>" + (a.note && !a.auto ? ' <span class="al-note2 inl">📝 ' + esc2(a.note) + "</span>" : "") +
+      "</span>" +
+      '<span class="al-lvl">' + (a.op === "above" ? "▲" : "▼") + " <b>" + fmt(a.price) + "</b>" + (a.label && !a.auto ? ' <span class="al-lab">' + a.label + "</span>" : "") + "</span>" +
       '<span class="al-cur">' + (last ? fmt(last) : "") + "</span>" +
       '<span class="al-dist">' + (dist != null ? (dist >= 0 ? "+" : "") + dist.toFixed(1).replace(".", ",") + " %"
         : done ? "✓ " + d2(done) + '<span class="al-hm"> ' + new Date(done).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }) + "</span>" : "") + "</span>" +
       '<span class="al-cre">' + (a.created ? "créée " + d2(a.created) : "") + "</span>" +
-      '<span class="al-act">' + (done ? '<button class="btn al-re" title="Recréer la même alerte">↻</button>' : "") + '<button class="btn al-del" title="Supprimer">✕</button></span>' +
-      (a.note ? '<span class="al-note2 al-noteL">📝 ' + esc2(a.note) + "</span>" : "");      // note sur une 2e ligne si elle ne tient pas
+      '<span class="al-act">' + (a.auto ? "" : (done ? '<button class="btn al-re" title="Recréer la même alerte">↻</button>' : "") + '<button class="btn al-del" title="Supprimer">✕</button>') + "</span>" +
+      (a.note && !a.auto ? '<span class="al-note2 al-noteL">📝 ' + esc2(a.note) + "</span>" : "") +      // note sur une 2e ligne si elle ne tient pas
+      (a.auto ? '<span class="al-step">' + esc2(a.label) + "</span>" : "");                                  // alerte R⇄S auto : niveau et étape sur une 2e ligne
     el.onclick = e => {
       if (e.target.closest("button")) return;
       for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === a.sym); if (it) { openDetail(it, withLive(a.sym, summary.symbols[a.sym])); return; } }
@@ -5026,6 +5033,27 @@ async function renderAlertsView() {
       catch (err) { b.disabled = false; toast(alertErr(err), 4000); }
     });
   });
+  // alertes R⇄S automatiques (recalculées chaque soir par la mise à jour des cours, envoyées par le relais comme les autres)
+  const on = alertsData.autoFlips !== false;
+  const h = document.createElement("div"); h.className = "pf-sub al-auto-h";
+  h.innerHTML = "<span>R⇄S automatiques (#" + autos.length + ")</span>";
+  const sw = document.createElement("div"); sw.id = "autoFlipSw"; sw.dataset.label = on ? "Activées" : "Coupées"; sw.className = "swone"; h.appendChild(sw); box.appendChild(h);
+  renderSw("autoFlipSw", on, async v => {
+    try {
+      await alertsSave(d => { d.autoFlips = v; if (!v) d.alerts = (d.alerts || []).filter(a => !a.auto); }, v ? "Alertes R⇄S automatiques activées" : "Alertes R⇄S automatiques coupées");
+      toast(v ? "Activées : elles seront calculées à la prochaine mise à jour du soir." : "Alertes R⇄S automatiques coupées.", 3000); renderAlertsView();
+    } catch (err) { toast(alertErr(err), 4000); }
+  });
+  const ex = document.createElement("div"); ex.className = "sig-intro al-auto-ex";
+  ex.innerHTML = "Recalculées chaque soir pour les bascules R⇄S proches du cours (jour et hebdo), envoyées sur Telegram comme les autres : " +
+    "<b>R→S sous le cours</b> → au <b>contact</b> du support, puis à la <b>réaction</b> (le cours repasse au-dessus du plus haut de la bougie de contact) ; " +
+    "<b>S→R au-dessus</b> → à l'<b>approche</b> de la résistance, puis quand elle est <b>franchie</b>. Au plus 30 valeurs, les plus proches de leur niveau. Détails dans Help.";
+  box.appendChild(ex);
+  const ab = document.createElement("div"); ab.className = "al-list"; box.appendChild(ab);
+  if (!on) ab.innerHTML = '<span class="sig-none">Coupées.</span>';
+  else if (!autos.length) ab.innerHTML = '<span class="sig-none">Aucune pour l\'instant (calculées à la mise à jour du soir).</span>';
+  autos.slice().sort((x, y) => (alertsSent[x.id] ? 1 : 0) - (alertsSent[y.id] ? 1 : 0) ||
+    Math.abs(x.price / (lastOf(x.sym) || x.price) - 1) - Math.abs(y.price / (lastOf(y.sym) || y.price) - 1)).forEach(a => ab.appendChild(row(a)));
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">« encore x % » : écart entre le cours et le niveau de l\'alerte.</div>');
 }
 
