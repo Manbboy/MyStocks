@@ -291,6 +291,19 @@ def main():
     for sym in symbols:
         try:
             df, currency = fetch(sym)
+            # Yahoo omet parfois la dernière séance (souvent le samedi matin pour l'Europe) : on garde les séances
+            # déjà connues plus récentes que ce que Yahoo renvoie, pour ne jamais revenir en arrière
+            try:
+                old = json.loads((SERIES / (safe_name(sym) + ".json")).read_text(encoding="utf-8")).get("rows") or []
+                lastd = df["Date"].iloc[-1]
+                extra = [r for r in old if r[0] > lastd]
+                if extra:
+                    print(f"  {sym}: séance(s) gardée(s) du fichier précédent : {', '.join(r[0] for r in extra)}")
+                    df = pd.concat([df, pd.DataFrame(extra, columns=["Date", "Open", "High", "Low", "Close", "Volume"])], ignore_index=True)
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                print(f"  {sym}: fichier précédent illisible ({e})")
             if len(df) < 2:
                 raise RuntimeError("historique trop court")
             monthly = resample(df, "M")
