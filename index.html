@@ -514,19 +514,28 @@
   .rtbt b { font-weight:700; } .rtbt .up { color:var(--up); } .rtbt .down { color:var(--down); }
   .rtbt .hold { opacity:.8; }
   .al-n { display:inline-block; min-width:16px; padding:0 5px; border-radius:9px; background:var(--accent); color:#fff; font-size:11px; font-weight:800; line-height:16px; margin-left:3px; }
-  /* une alerte = une ligne principale + une petite ligne d'infos ; séparées par un simple trait, sans cadre */
-  .al-row.al-big { cursor:pointer; padding:8px 4px; display:grid; grid-template-columns:minmax(0, 1fr) 150px 64px 76px; column-gap:10px; row-gap:1px; align-items:center;
-    border:none; border-radius:0; background:none; border-bottom:1px solid var(--border); }
+  /* une alerte = une ligne, séparées par un simple trait, sans cadre */
+  .al-row.al-big { cursor:pointer; padding:8px 2px; display:grid; grid-template-columns:minmax(0, 1fr) 130px 76px 104px 78px 70px; column-gap:10px; align-items:center;
+    border:none; border-radius:0; background:none; border-bottom:1px solid var(--border); white-space:nowrap; font-size:13.5px; }
   .al-list .al-row.al-big:last-child { border-bottom:none; }
-  .al-big .al-nm { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14.5px; }
-  .al-big .al-lvl { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .al-big .al-dist { text-align:right; font-size:13px; white-space:nowrap; }
-  .al-big .al-lab { font-size:11px; }
-  .al-big .al-act { justify-content:flex-end; grid-row:1 / 3; grid-column:4; }
-  .al-big .al-act .btn { padding:4px 9px; font-size:13px; }
-  .al-big .al-sub { grid-column:1 / 4; font-size:11.5px; color:var(--muted); line-height:1.35; }
-  .al-big .al-note2 { display:block; color:var(--text); opacity:.85; white-space:normal; }
-  @media (max-width:420px) { .al-row.al-big { column-gap:7px; grid-template-columns:minmax(0, 1fr) 118px 56px 72px; } .al-big .al-nm { font-size:13.5px; } }
+  .al-big .al-nm { overflow:hidden; text-overflow:ellipsis; }
+  .al-big .al-nm b { font-size:14px; }
+  .al-big .al-note2 { color:var(--muted); font-size:12px; }
+  .al-big .al-lvl { overflow:hidden; text-overflow:ellipsis; }
+  .al-big .al-lab { font-size:10.5px; color:var(--muted); }
+  .al-big .al-cur, .al-big .al-cre { color:var(--muted); font-size:12px; text-align:right; }
+  .al-big .al-dist { text-align:right; font-weight:700; }
+  .al-big .al-act { display:flex; justify-content:flex-end; gap:4px; }
+  .al-big .al-act .btn { padding:2px 7px; font-size:12px; }
+  @media (max-width:520px) {
+    .al-row.al-big { column-gap:6px; font-size:12px; grid-template-columns:minmax(0, 1fr) 104px 50px 50px 56px; }
+    .al-big .al-hm { display:none; }
+    .al-big .al-nm b { font-size:12.5px; } .al-big .al-note2 { font-size:10.5px; }
+    .al-big .al-cur, .al-big .al-cre { font-size:10.5px; }
+    .al-big .al-cre { display:none; }
+    .al-big .al-dist { font-size:11.5px; }
+    .al-big .al-act .btn { padding:2px 5px; font-size:11px; }
+  }
   .al-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .al-top { display:flex; align-items:center; gap:8px; font-size:15px; }
   .al-badge { font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; color:#fff; }
@@ -700,7 +709,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v154</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v155</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4777,15 +4786,16 @@ async function renderAlertsView() {
     const last = lastOf(a.sym), done = alertsSent[a.id];
     const dist = last && !done ? (a.price / last - 1) * 100 : null;
     const el = document.createElement("div"); el.className = "al-row al-big" + (done ? " done" : ""); el.dataset.id = a.id;
-    // ligne principale : nom · niveau · écart (ou date d'envoi) · boutons ; en dessous, en petit : cours, note, dates (tout visible, pas d'info-bulle)
+    // une seule ligne : nom (+ note) · niveau · cours · écart (ou date d'envoi) · date de création (tablette) · boutons
     const esc2 = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-    const dt = d => new Date(d).toLocaleString("fr-FR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
-    const sub = [last ? "cours " + fmt(last) : "", done ? "envoyée le " + dt(done) : "", a.created ? "créée le " + new Date(a.created).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }) : ""].filter(Boolean).join(" · ");
-    el.innerHTML = '<b class="al-nm">' + esc2(a.name || a.sym) + "</b>" +
-      '<span class="al-lvl">' + (a.op === "above" ? "▲ " : "▼ ") + "<b>" + fmt(a.price) + "</b>" + (a.label ? ' <span class="al-lab">' + a.label + "</span>" : "") + "</span>" +
-      '<span class="al-dist">' + (dist != null ? (dist >= 0 ? "+" : "") + dist.toFixed(1).replace(".", ",") + " %" : done ? "✓" : "") + "</span>" +
-      '<span class="al-act">' + (done ? '<button class="btn al-re" title="Recréer la même alerte">↻</button>' : "") + '<button class="btn al-del" title="Supprimer">✕</button></span>' +
-      '<span class="al-sub">' + sub + (a.note ? '<span class="al-note2">📝 ' + esc2(a.note) + "</span>" : "") + "</span>";
+    const d2 = d => new Date(d).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" });
+    el.innerHTML = '<span class="al-nm"><b>' + esc2(a.name || a.sym) + "</b>" + (a.note ? ' <span class="al-note2">📝 ' + esc2(a.note) + "</span>" : "") + "</span>" +
+      '<span class="al-lvl">' + (a.op === "above" ? "▲" : "▼") + " <b>" + fmt(a.price) + "</b>" + (a.label ? ' <span class="al-lab">' + a.label + "</span>" : "") + "</span>" +
+      '<span class="al-cur">' + (last ? fmt(last) : "") + "</span>" +
+      '<span class="al-dist">' + (dist != null ? (dist >= 0 ? "+" : "") + dist.toFixed(1).replace(".", ",") + " %"
+        : done ? "✓ " + d2(done) + '<span class="al-hm"> ' + new Date(done).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }) + "</span>" : "") + "</span>" +
+      '<span class="al-cre">' + (a.created ? "créée " + d2(a.created) : "") + "</span>" +
+      '<span class="al-act">' + (done ? '<button class="btn al-re" title="Recréer la même alerte">↻</button>' : "") + '<button class="btn al-del" title="Supprimer">✕</button></span>';
     el.onclick = e => {
       if (e.target.closest("button")) return;
       for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === a.sym); if (it) { openDetail(it, withLive(a.sym, summary.symbols[a.sym])); return; } }
