@@ -24,11 +24,15 @@ def _pivots(rows, k):
     return out
 
 
-def zones(rows, last):
+P = {"M": {"k": 3, "win": 240, "span": 48, "ext": 36, "hor": 120, "wmax": 1.30},      # mensuel : 20 ans, oblique sur 4 ans au moins
+     "W": {"k": 4, "win": 260, "span": 39, "ext": 52, "hor": 104, "wmax": 1.20}}      # hebdomadaire : 5 ans, oblique sur 9 mois au moins
+
+
+def zones(rows, last, k=3, wmax=1.30):
     """Zones de prix (lo, hi) bâties sur les sommets et creux mensuels qui se regroupent."""
     if len(rows) < 24:
         return []
-    piv = _pivots(rows, 3)
+    piv = _pivots(rows, k)
     bands = []
     for i, t in piv:
         o, h, l, c = rows[i][1], rows[i][2], rows[i][3], rows[i][4]
@@ -44,7 +48,7 @@ def zones(rows, last):
     bands.sort(key=lambda b: b["lo"])
     merged = []
     for b in bands:      # regroupe les bandes qui se chevauchent (à 2 % près)
-        if merged and b["lo"] <= merged[-1]["hi"] * 1.02 and (max(merged[-1]["hi"], b["hi"]) / min(merged[-1]["lo"], b["lo"])) < 1.30:
+        if merged and b["lo"] <= merged[-1]["hi"] * 1.02 and (max(merged[-1]["hi"], b["hi"]) / min(merged[-1]["lo"], b["lo"])) < wmax:
             m = merged[-1]
             m["lo"], m["hi"] = min(m["lo"], b["lo"]), max(m["hi"], b["hi"])
             m["piv"] += b["piv"]
@@ -71,12 +75,12 @@ def zones(rows, last):
     return out
 
 
-def oblique(rows, last_date):
+def oblique(rows, last_date, win=240, span=48):
     """Oblique longue de support : arête de l'enveloppe basse des creux mensuels, couvrant au moins 3 ans et la plus récente."""
     n = len(rows)
     if n < 48:
         return None
-    start = max(0, n - 240)              # 20 dernières années
+    start = max(0, n - win)
     pts = [(i, rows[i][3]) for i in range(start, n)]
     hull = []
     for p in pts:                       # enveloppe convexe basse (monotone chain)
@@ -85,7 +89,7 @@ def oblique(rows, last_date):
         hull.append(p)
     best = None
     for a, b in zip(hull, hull[1:]):
-        if b[0] - a[0] < 48 or b[1] <= a[1]:          # au moins 4 ans, et montante
+        if b[0] - a[0] < span or b[1] <= a[1]:        # assez longue, et montante
             continue
         m = (b[1] - a[1]) / (b[0] - a[0])
         now = a[1] + m * (n - 1 - a[0])
@@ -105,17 +109,25 @@ def oblique(rows, last_date):
             "now": round(val(n - 1), 4), "slope": m, "touches": best["touch"], "_n": n, "_i1": i1}
 
 
+def _add(d, k, unit):
+    if unit == "W":
+        import datetime as _dt
+        return (_dt.date.fromisoformat(d[:10]) + _dt.timedelta(days=7 * k)).isoformat()
+    return _add_months(d, k)
+
+
 def _add_months(d, k):
     y, mo = int(d[:4]), int(d[5:7]) - 1 + k
     return f"{y + mo // 12:04d}-{mo % 12 + 1:02d}-01"
 
 
-def analyse(rows):
+def analyse(rows, unit="M"):
     """Résumé pour summary.json : zones de support sous le cours (2 ou 3), résistance au-dessus, oblique, cible."""
     if not rows or len(rows) < 24:
         return None
     last = rows[-1][4]
-    zs = zones(rows, last)
+    p = P[unit]
+    zs = zones(rows, last, p["k"], p["wmax"])
     sup = sorted([z for z in zs if z["hi"] < last * 0.995 or z["role"] == "in"], key=lambda z: -z["hi"])
     # zones de support : on garde les plus marquantes (au moins 2 contacts), en évitant les zones collées
     keep = []
@@ -133,14 +145,22 @@ def analyse(rows):
         keep.append(z)
         if len(keep) == 3:
             break
-    res = sorted([z for z in zs if z["lo"] > last * 1.005 and z["n"] >= 2], key=lambda z: z["lo"])[:1]
-    ob = oblique(rows, rows[-1][0])
+    res = []
+    top = max([z["hi"] for z in keep], default=0)
+    for z in sorted([z for z in zs if z["hi"] > last * 1.005 and z["n"] >= 2 and z["role"] != "in"], key=lambda z: z["lo"]):
+        z = dict(z)
+        if z["lo"] < top:                 # pas de chevauchement avec une zone de soutien
+            z["lo"] = top
+        if z["hi"] / z["lo"] >= 1.02 and z["lo"] > last * 1.005:
+            res = [z]
+            break
+    ob = oblique(rows, rows[-1][0], p["win"], p["span"])
     out = {"zones": [{"lo": z["lo"], "hi": z["hi"], "n": z["n"], "from": z["from"], "in": z["role"] == "in"} for z in keep],
            "res": [{"lo": z["lo"], "hi": z["hi"], "n": z["n"], "from": z["from"]} for z in res]}
     if ob:
         o = {k: ob[k] for k in ("t1", "p1", "t2", "p2", "now", "touches")}
-        o["end"] = _add_months(rows[-1][0], 36)
-        o["pend"] = round(ob["p1"] + ob["slope"] * (ob["_n"] - 1 + 36 - ob["_i1"]), 4)
+        o["end"] = _add(rows[-1][0], p["ext"], unit)
+        o["pend"] = round(ob["p1"] + ob["slope"] * (ob["_n"] - 1 + p["ext"] - ob["_i1"]), 4)
         out["obl"] = o
         # cible : premier mois (dans les 10 ans) où l'oblique entre dans une zone de support
         if ob["slope"] > 0:
@@ -148,12 +168,27 @@ def analyse(rows):
                 if ob["now"] >= z["lo"]:
                     continue
                 k = math.ceil((z["lo"] - ob["now"]) / ob["slope"])
-                if 0 < k <= 120:
-                    out["target"] = {"date": _add_months(rows[-1][0], k), "lo": z["lo"], "hi": z["hi"]}
-                    o["end"] = _add_months(rows[-1][0], max(36, k + 12))
-                    o["pend"] = round(ob["p1"] + ob["slope"] * (ob["_n"] - 1 + max(36, k + 12) - ob["_i1"]), 4)
+                if 0 < k <= p["hor"]:
+                    out["target"] = {"date": _add(rows[-1][0], k, unit), "lo": z["lo"], "hi": z["hi"]}
+                    e = max(p["ext"], k + p["ext"] // 3)
+                    o["end"] = _add(rows[-1][0], e, unit)
+                    o["pend"] = round(ob["p1"] + ob["slope"] * (ob["_n"] - 1 + e - ob["_i1"]), 4)
                     break
     z0 = out["zones"][0] if out["zones"] else None
     if z0:
         out["dist"] = 0.0 if z0["in"] else round((z0["hi"] / last - 1) * 100, 1)
+    return out
+
+
+def confluence(m, w):
+    """Zones hebdomadaires qui chevauchent une zone mensuelle (ou que l'oblique mensuelle traverse aujourd'hui)."""
+    if not m or not w:
+        return []
+    out = []
+    for z in w.get("zones", []):
+        hit = any(z["lo"] <= y["hi"] and y["lo"] <= z["hi"] for y in m.get("zones", []))
+        ob = m.get("obl")
+        on_obl = bool(ob and z["lo"] * 0.98 <= ob["now"] <= z["hi"] * 1.02)
+        if hit or on_obl:
+            out.append({"lo": z["lo"], "hi": z["hi"], "why": "zone" if hit else "oblique"})
     return out

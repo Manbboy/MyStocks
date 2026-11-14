@@ -341,9 +341,15 @@ def main():
             ev = EVENTS.get(sym) or {}
             if ev.get("earn"): summary["symbols"][sym]["earn"] = ev["earn"]
             if ev.get("div"): summary["symbols"][sym]["div"] = ev["div"]
-            try:     # indicateur « Tino » : zones et oblique longue sur tout l'historique mensuel
+            try:     # indicateur « Tino » : mensuel (tout l'historique) et hebdomadaire (5 ans)
                 tn = tino.analyse(long_rows)
                 if tn: summary["symbols"][sym]["tino"] = tn
+                wk = resample(df, "W").tail(300)       # même analyse en hebdomadaire, sur environ 5 ans
+                w_rows = [[r.Date, r.Open, r.High, r.Low, r.Close, 0] for r in wk.itertuples()]
+                tw = tino.analyse(w_rows, "W")
+                if tw:
+                    tw["conf"] = tino.confluence(tn, tw)
+                    summary["symbols"][sym]["tinoW"] = tw
             except Exception as e:
                 print(f"  {sym}: Tino indisponible ({e})")
             print(f"OK   {sym:10s} {last:>10.2f}  " + "  ".join(f"{tf}:{len(v['supports'])}S/{len(v['resistances'])}R" for tf, v in levels.items()))
