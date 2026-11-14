@@ -369,109 +369,9 @@
       "name": "US",
       "items": [
         {
-          "yahoo": "NKE",
-          "tv": "NYSE:NKE",
-          "name": "Nike"
-        },
-        {
-          "yahoo": "NFLX",
-          "tv": "NASDAQ:NFLX",
-          "name": "Netflix"
-        },
-        {
-          "yahoo": "PYPL",
-          "tv": "NASDAQ:PYPL",
-          "name": "PayPal"
-        },
-        {
-          "yahoo": "ADBE",
-          "tv": "NASDAQ:ADBE",
-          "name": "Adobe"
-        },
-        {
           "yahoo": "FISV",
           "tv": "NASDAQ:FISV",
           "name": "Fiserv"
-        },
-        {
-          "yahoo": "^GSPC",
-          "tv": "SP:SPX",
-          "name": "S&P 500"
-        },
-        {
-          "yahoo": "NVDA",
-          "tv": "NASDAQ:NVDA",
-          "name": "NVIDIA"
-        },
-        {
-          "yahoo": "AAPL",
-          "tv": "NASDAQ:AAPL",
-          "name": "Apple"
-        },
-        {
-          "yahoo": "BABA",
-          "tv": "NYSE:BABA",
-          "name": "Alibaba"
-        },
-        {
-          "yahoo": "TSLA",
-          "tv": "NASDAQ:TSLA",
-          "name": "Tesla"
-        },
-        {
-          "yahoo": "AVGO",
-          "tv": "NASDAQ:AVGO",
-          "name": "Broadcom"
-        },
-        {
-          "yahoo": "DIS",
-          "tv": "NYSE:DIS",
-          "name": "Disney"
-        },
-        {
-          "yahoo": "UNH",
-          "tv": "NYSE:UNH",
-          "name": "UnitedHealth"
-        },
-        {
-          "yahoo": "AMD",
-          "tv": "NASDAQ:AMD",
-          "name": "AMD"
-        },
-        {
-          "yahoo": "KO",
-          "tv": "NYSE:KO",
-          "name": "Coca-Cola"
-        },
-        {
-          "yahoo": "SNAP",
-          "tv": "NYSE:SNAP",
-          "name": "Snap"
-        },
-        {
-          "yahoo": "IT",
-          "tv": "NYSE:IT",
-          "name": "Gartner"
-        },
-        {
-          "yahoo": "BZ=F",
-          "tv": "TVC:UKOIL",
-          "name": "Brent"
-        },
-        {
-          "yahoo": "COO",
-          "tv": "NASDAQ:COO",
-          "name": "Cooper Companies"
-        },
-        {
-          "yahoo": "DECK",
-          "tv": "NYSE:DECK",
-          "name": "Deckers Outdoor"
-        },
-        {
-          "yahoo": "MSFT",
-          "tv": "NASDAQ:MSFT",
-          "name": "Microsoft"
         },
         {
           "yahoo": "META",
@@ -479,64 +379,24 @@
           "name": "Meta"
         },
         {
-          "yahoo": "SNOW",
-          "tv": "NYSE:SNOW",
-          "name": "Snowflake"
+          "yahoo": "DECK",
+          "tv": "NYSE:DECK",
+          "name": "Deckers Outdoor"
         },
         {
-          "yahoo": "DELL",
-          "tv": "NYSE:DELL",
-          "name": "Dell"
+          "yahoo": "ADBE",
+          "tv": "NASDAQ:ADBE",
+          "name": "Adobe"
         },
         {
-          "yahoo": "RIVN",
-          "tv": "NASDAQ:RIVN",
-          "name": "Rivian"
+          "yahoo": "KO",
+          "tv": "NYSE:KO",
+          "name": "Coca-Cola"
         },
         {
-          "yahoo": "FDX",
-          "tv": "NYSE:FDX",
-          "name": "FedEx"
-        },
-        {
-          "yahoo": "MCD",
-          "tv": "NYSE:MCD",
-          "name": "McDonald's"
-        },
-        {
-          "yahoo": "ORCL",
-          "tv": "NYSE:ORCL",
-          "name": "Oracle"
-        },
-        {
-          "yahoo": "NANO.PA",
-          "tv": "EURONEXT:NANO",
-          "name": "Nanobiotix"
-        },
-        {
-          "yahoo": "AMAT",
-          "tv": "NASDAQ:AMAT",
-          "name": "Applied Materials"
-        },
-        {
-          "yahoo": "C",
-          "tv": "NYSE:C",
-          "name": "Citigroup"
-        },
-        {
-          "yahoo": "CTSH",
-          "tv": "NASDAQ:CTSH",
-          "name": "Cognizant"
-        },
-        {
-          "yahoo": "GE",
-          "tv": "NYSE:GE",
-          "name": "GE Aerospace"
-        },
-        {
-          "yahoo": "GILD",
-          "tv": "NASDAQ:GILD",
-          "name": "Gilead Sciences"
+          "yahoo": "PYPL",
+          "tv": "NASDAQ:PYPL",
+          "name": "PayPal"
         },
         {
           "yahoo": "HPQ",
@@ -544,54 +404,14 @@
           "name": "HP"
         },
         {
+          "yahoo": "FDX",
+          "tv": "NYSE:FDX",
+          "name": "FedEx"
+        },
+        {
           "yahoo": "HUM",
           "tv": "NYSE:HUM",
           "name": "Humana"
-        },
-        {
-          "yahoo": "KLAC",
-          "tv": "NASDAQ:KLAC",
-          "name": "KLA"
-        },
-        {
-          "yahoo": "LMT",
-          "tv": "NYSE:LMT",
-          "name": "Lockheed Martin"
-        },
-        {
-          "yahoo": "ON",
-          "tv": "NASDAQ:ON",
-          "name": "ON Semiconductor"
-        },
-        {
-          "yahoo": "BKNG",
-          "tv": "NASDAQ:BKNG",
-          "name": "Booking"
-        },
-        {
-          "yahoo": "QCOM",
-          "tv": "NASDAQ:QCOM",
-          "name": "Qualcomm"
-        },
-        {
-          "yahoo": "TXN",
-          "tv": "NASDAQ:TXN",
-          "name": "Texas Instruments"
-        },
-        {
-          "yahoo": "CRM",
-          "tv": "NYSE:CRM",
-          "name": "Salesforce"
-        },
-        {
-          "yahoo": "EXPE",
-          "tv": "NASDAQ:EXPE",
-          "name": "Expedia"
-        },
-        {
-          "yahoo": "AMP",
-          "tv": "NYSE:AMP",
-          "name": "Ameriprise Financial"
         },
         {
           "yahoo": "TDG",
@@ -599,9 +419,189 @@
           "name": "TransDigm"
         },
         {
+          "yahoo": "AMP",
+          "tv": "NYSE:AMP",
+          "name": "Ameriprise Financial"
+        },
+        {
+          "yahoo": "SNAP",
+          "tv": "NYSE:SNAP",
+          "name": "Snap"
+        },
+        {
+          "yahoo": "COO",
+          "tv": "NASDAQ:COO",
+          "name": "Cooper Companies"
+        },
+        {
+          "yahoo": "IT",
+          "tv": "NYSE:IT",
+          "name": "Gartner"
+        },
+        {
+          "yahoo": "DIS",
+          "tv": "NYSE:DIS",
+          "name": "Disney"
+        },
+        {
+          "yahoo": "NKE",
+          "tv": "NYSE:NKE",
+          "name": "Nike"
+        },
+        {
+          "yahoo": "UNH",
+          "tv": "NYSE:UNH",
+          "name": "UnitedHealth"
+        },
+        {
+          "yahoo": "AAPL",
+          "tv": "NASDAQ:AAPL",
+          "name": "Apple"
+        },
+        {
+          "yahoo": "GE",
+          "tv": "NYSE:GE",
+          "name": "GE Aerospace"
+        },
+        {
           "yahoo": "ABBV",
           "tv": "NYSE:ABBV",
           "name": "AbbVie"
+        },
+        {
+          "yahoo": "MSFT",
+          "tv": "NASDAQ:MSFT",
+          "name": "Microsoft"
+        },
+        {
+          "yahoo": "BABA",
+          "tv": "NYSE:BABA",
+          "name": "Alibaba"
+        },
+        {
+          "yahoo": "CRM",
+          "tv": "NYSE:CRM",
+          "name": "Salesforce"
+        },
+        {
+          "yahoo": "GILD",
+          "tv": "NASDAQ:GILD",
+          "name": "Gilead Sciences"
+        },
+        {
+          "yahoo": "BZ=F",
+          "tv": "TVC:UKOIL",
+          "name": "Brent"
+        },
+        {
+          "yahoo": "C",
+          "tv": "NYSE:C",
+          "name": "Citigroup"
+        },
+        {
+          "yahoo": "^GSPC",
+          "tv": "SP:SPX",
+          "name": "S&P 500"
+        },
+        {
+          "yahoo": "MCD",
+          "tv": "NYSE:MCD",
+          "name": "McDonald's"
+        },
+        {
+          "yahoo": "NFLX",
+          "tv": "NASDAQ:NFLX",
+          "name": "Netflix"
+        },
+        {
+          "yahoo": "BKNG",
+          "tv": "NASDAQ:BKNG",
+          "name": "Booking"
+        },
+        {
+          "yahoo": "CTSH",
+          "tv": "NASDAQ:CTSH",
+          "name": "Cognizant"
+        },
+        {
+          "yahoo": "EXPE",
+          "tv": "NASDAQ:EXPE",
+          "name": "Expedia"
+        },
+        {
+          "yahoo": "LMT",
+          "tv": "NYSE:LMT",
+          "name": "Lockheed Martin"
+        },
+        {
+          "yahoo": "ORCL",
+          "tv": "NYSE:ORCL",
+          "name": "Oracle"
+        },
+        {
+          "yahoo": "TSLA",
+          "tv": "NASDAQ:TSLA",
+          "name": "Tesla"
+        },
+        {
+          "yahoo": "NVDA",
+          "tv": "NASDAQ:NVDA",
+          "name": "NVIDIA"
+        },
+        {
+          "yahoo": "SNOW",
+          "tv": "NYSE:SNOW",
+          "name": "Snowflake"
+        },
+        {
+          "yahoo": "QCOM",
+          "tv": "NASDAQ:QCOM",
+          "name": "Qualcomm"
+        },
+        {
+          "yahoo": "AMAT",
+          "tv": "NASDAQ:AMAT",
+          "name": "Applied Materials"
+        },
+        {
+          "yahoo": "TXN",
+          "tv": "NASDAQ:TXN",
+          "name": "Texas Instruments"
+        },
+        {
+          "yahoo": "KLAC",
+          "tv": "NASDAQ:KLAC",
+          "name": "KLA"
+        },
+        {
+          "yahoo": "ON",
+          "tv": "NASDAQ:ON",
+          "name": "ON Semiconductor"
+        },
+        {
+          "yahoo": "NANO.PA",
+          "tv": "EURONEXT:NANO",
+          "name": "Nanobiotix"
+        },
+        {
+          "yahoo": "AVGO",
+          "tv": "NASDAQ:AVGO",
+          "name": "Broadcom"
+        },
+        {
+          "yahoo": "RIVN",
+          "tv": "NASDAQ:RIVN",
+          "name": "Rivian"
+        },
+        {
+          "yahoo": "DELL",
+          "tv": "NYSE:DELL",
+          "name": "Dell"
+        },
+        {
+          "yahoo": "AMD",
+          "tv": "NASDAQ:AMD",
+          "name": "AMD"
         }
       ]
     },
