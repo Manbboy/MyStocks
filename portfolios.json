@@ -512,6 +512,96 @@
           "yahoo": "NANO.PA",
           "tv": "EURONEXT:NANO",
           "name": "Nanobiotix"
+        },
+        {
+          "yahoo": "AMAT",
+          "tv": "NASDAQ:AMAT",
+          "name": "Applied Materials"
+        },
+        {
+          "yahoo": "C",
+          "tv": "NYSE:C",
+          "name": "Citigroup"
+        },
+        {
+          "yahoo": "CTSH",
+          "tv": "NASDAQ:CTSH",
+          "name": "Cognizant"
+        },
+        {
+          "yahoo": "GE",
+          "tv": "NYSE:GE",
+          "name": "GE Aerospace"
+        },
+        {
+          "yahoo": "GILD",
+          "tv": "NASDAQ:GILD",
+          "name": "Gilead Sciences"
+        },
+        {
+          "yahoo": "HPQ",
+          "tv": "NYSE:HPQ",
+          "name": "HP"
+        },
+        {
+          "yahoo": "HUM",
+          "tv": "NYSE:HUM",
+          "name": "Humana"
+        },
+        {
+          "yahoo": "KLAC",
+          "tv": "NASDAQ:KLAC",
+          "name": "KLA"
+        },
+        {
+          "yahoo": "LMT",
+          "tv": "NYSE:LMT",
+          "name": "Lockheed Martin"
+        },
+        {
+          "yahoo": "ON",
+          "tv": "NASDAQ:ON",
+          "name": "ON Semiconductor"
+        },
+        {
+          "yahoo": "BKNG",
+          "tv": "NASDAQ:BKNG",
+          "name": "Booking"
+        },
+        {
+          "yahoo": "QCOM",
+          "tv": "NASDAQ:QCOM",
+          "name": "Qualcomm"
+        },
+        {
+          "yahoo": "TXN",
+          "tv": "NASDAQ:TXN",
+          "name": "Texas Instruments"
+        },
+        {
+          "yahoo": "CRM",
+          "tv": "NYSE:CRM",
+          "name": "Salesforce"
+        },
+        {
+          "yahoo": "EXPE",
+          "tv": "NASDAQ:EXPE",
+          "name": "Expedia"
+        },
+        {
+          "yahoo": "AMP",
+          "tv": "NYSE:AMP",
+          "name": "Ameriprise Financial"
+        },
+        {
+          "yahoo": "TDG",
+          "tv": "NYSE:TDG",
+          "name": "TransDigm"
+        },
+        {
+          "yahoo": "ABBV",
+          "tv": "NYSE:ABBV",
+          "name": "AbbVie"
         }
       ]
     },
