@@ -134,6 +134,8 @@
   .pf-sum > div { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
   .pf-sum span { font-size:12px; color:var(--muted); }
   .pf-sum b { font-size:16px; }
+  .pf-head { flex-wrap:wrap; row-gap:6px; }        /* boutons sur 2 lignes si l'écran est étroit (sinon la page déborde à droite) */
+  html, body { overflow-x:hidden; }
   .pf-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:8px; }
   .pf-pos { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; cursor:pointer; }
   .pf-pos.closed { opacity:.7; }
@@ -668,7 +670,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v144</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v145</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3709,7 +3711,7 @@ let fxRows = null;
 async function loadFx() {
   if (fxRows) return;
   const f = (summary.symbols["EURUSD=X"] || {}).file; if (!f) return;
-  try { fxRows = (await (await fetch(f + "?v=" + encodeURIComponent(summary.updated || ""))).json()).rows.map(r => [r[0], r[4]]); } catch (e) {}
+  try { fxRows = (await (await fetch("data/" + f + "?v=" + encodeURIComponent(summary.updated || ""))).json()).rows.map(r => [r[0], r[4]]); } catch (e) {}
 }
 function fxOn(d) {                                  // clôture du jour, ou du dernier jour coté avant
   if (!fxRows || !fxRows.length) return null;
