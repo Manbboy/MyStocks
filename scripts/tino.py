@@ -128,7 +128,7 @@ def channel(rows, ob, k=3):
             continue
         if best is None or (len(touch), d) > (best[1], best[0]):
             best = (d, len(touch))
-    if not best:
+    if not best or line(n - 1) + best[0] > 1.6 * rows[-1][4]:     # trop haut au-dessus du cours : sans intérêt
         return None
     return {"d": round(best[0], 4), "now": round(line(n - 1) + best[0], 4), "touches": best[1]}
 
