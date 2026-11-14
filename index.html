@@ -636,14 +636,18 @@
   .cfg.show { display:block; }
   /* Réglages du graphique : panneau sur la moitié droite, toute la hauteur ; le graphique se rétrécit à gauche */
   #ov { --cfgw:clamp(260px, 50vw, 560px); }
+  /* panneau des réglages : fond et bords distincts du graphique, selon le thème */
+  #ov .cfg { --cfgbg:#e6ebf2; --chip:#d7dee8; --border:#c3ccd8; background:var(--cfgbg); }
+  :root[data-theme="dark"] #ov .cfg { --cfgbg:#272d38; --chip:#343b48; --border:#424a59; }
+  #ov .cfg .trendin input { background:var(--card); }
   #ov.cfg-open .cfg { position:fixed; top:0; right:0; bottom:0; left:auto; width:var(--cfgw); max-width:none; max-height:none; margin:0;
-    border-radius:0; border-width:0 0 0 1px; box-shadow:-8px 0 24px rgba(0,0,0,.14); padding:10px 12px calc(16px + env(safe-area-inset-bottom)); z-index:40; overscroll-behavior:contain; }
+    border-radius:0; border-width:0 0 0 1px; box-shadow:-8px 0 24px rgba(0,0,0,.22); padding:10px 12px calc(16px + env(safe-area-inset-bottom)); z-index:40; overscroll-behavior:contain; }
   #ov.cfg-open .cfg .cfg-grid { grid-template-columns:1fr; }
   #ov.cfg-open .ov-head, #ov.cfg-open .ov-body { margin:0 var(--cfgw) 0 0; width:auto; max-width:none; }
   #ov.cfg-open .ov-body, #ov.cfg-open .ov-main, #ov.cfg-open .tb, #ov.cfg-open .tbs { min-width:0; }
   #ov.cfg-open .ov-side { display:none; }
   #ov.cfg-open .chart-wrap, #ov.cfg-open .ov-chart, #ov.cfg-open .rsi-chart, #ov.cfg-open #quad { min-width:0; max-width:100%; overflow:hidden; }          /* la colonne d'informations laisse sa place au graphique */
-  #ov.cfg-open .cfg-head { position:sticky; top:-10px; background:var(--card); z-index:1; padding:4px 0; }
+  #ov.cfg-open .cfg-head { position:sticky; top:-10px; background:var(--cfgbg); z-index:1; padding:4px 0; }
   /* téléphone en portrait : moitié droite trop étroite pour le graphique → panneau sur la moitié basse */
   @media (max-width:599px) {
     #ov.cfg-open .cfg { top:auto; left:0; right:0; width:auto; height:auto; max-height:65dvh; overflow:auto; padding-top:6px; border-width:1px 0 0; border-radius:14px 14px 0 0; box-shadow:0 -8px 24px rgba(0,0,0,.16); }
@@ -771,7 +775,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v168</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v169</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -842,7 +846,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <div class="cfg-head"><strong>Réglages</strong><span class="spacer"></span><div class="seg" id="themeSeg"></div><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
       <div class="cfg-grid">
         <div class="cfg-row wide"><span>Supports / Résistances <small id="lvSeg"></small></span>
-          <div class="cfg-line"><div class="seg" id="kindSeg"></div><div id="roleSeg" class="swone" data-label="+ changements de rôle"></div></div></div>
+          <div class="cfg-line"><div class="seg" id="kindSeg"></div></div></div>
         <div class="cfg-row wide"><div class="cfg-line"><span class="cfg-lab">Précision des contacts <b id="tolVal"></b></span>
           <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div></div>
         <div class="cfg-row wide"><div class="pair tight">
@@ -1709,7 +1713,7 @@ async function openDetail(item, info, pos) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine (●) et un point (●) marque chaque retest réussi ; le prix du niveau est dans la liste. Canaux : deux obliques parallèles avec au moins deux contacts de chaque côté (●) et le cours contenu entre elles ; pointillés = milieu du canal. Obliques : lignes de tendance reliant au moins trois creux (support, orange) ou trois sommets (résistance, violet) sans clôture nette de l'autre côté. Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Une résistance devenue support (ou l'inverse) est montrée par R⇄S. Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine (●) et un point (●) marque chaque retest réussi ; le prix du niveau est dans la liste. Canaux : deux obliques parallèles avec au moins deux contacts de chaque côté (●) et le cours contenu entre elles ; pointillés = milieu du canal. Obliques : lignes de tendance reliant au moins trois creux (support, orange) ou trois sommets (résistance, violet) sans clôture nette de l'autre côté. Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -1721,7 +1725,7 @@ async function openDetail(item, info, pos) {
   if (seq !== openSeq) return;          // une autre action a été ouverte entre-temps
   ovItem = info;
   ovData = data; ovSym = item.yahoo;
-  ovLevels = computeLevels(ovData, info.last, tolPct(), !!prefs.role);
+  ovLevels = computeLevels(ovData, info.last, tolPct(), false);
   drawDetail(keepView);
 }
 
@@ -2410,7 +2414,7 @@ $("tolRange").addEventListener("input", e => {
   clearTimeout(tolTimer);
   tolTimer = setTimeout(() => {
     savePrefs();
-    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), !!prefs.role); refreshLevels(); drawFlips(); drawGeo(); applyHighlight(); }
+    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), false); refreshLevels(); drawFlips(); drawGeo(); applyHighlight(); }
   }, 120);
 });
 function renderToggles() {
@@ -2447,10 +2451,6 @@ function renderToggles() {
   renderSw("crossSeg", prefs.cross === "magnet", on => {
     prefs.cross = on ? "magnet" : "free"; savePrefs(); renderToggles();
     [ovChart, rsiChart, lvChart].forEach(c => { if (c) c.applyOptions({ crosshair:crossOpt() }); });
-  });
-  renderSw("roleSeg", !!prefs.role, v => {
-    prefs.role = v; savePrefs();
-    if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), v); refreshLevels(); }
   });
   renderSeg("themeSeg", [["light","☀"],["dim","🌗"],["dark","☾"]], prefs.theme, v => { setTheme(v); renderToggles(); });
   [...$("themeSeg").children].forEach((b, i) => b.title = ["Thème clair", "Thème intermédiaire", "Thème sombre"][i]);
@@ -4645,7 +4645,7 @@ async function renderSig() {
    d'un canal, d'une oblique, d'une résistance ou d'un support — mêmes calculs que les graphiques ===== */
 const BO_KEY = "mes-actions-bo-v2", BO_DAYS = 5;
 let boStore = (() => { try { return JSON.parse(localStorage.getItem(BO_KEY)) || {}; } catch (e) { return {}; } })();
-const boSig = () => summary.updated + "|" + tolPct() + "|" + (prefs.role ? 1 : 0);
+const boSig = () => summary.updated + "|" + tolPct() + "|0";
 function boCompute(data) {
   const rows = barsFor(data, "D"), n = rows.length, ev = [];
   if (n < 60) return ev;
@@ -4672,7 +4672,7 @@ function boCompute(data) {
   if (m > 30) {
     const ci = data.rows.findIndex(r => r[0] > rows[m][0]);
     const cut = { symbol:data.symbol + "#bo", rows:data.rows.slice(0, ci < 0 ? data.rows.length : ci), long:data.long };
-    const lv = computeLevels(cut, rows[m][4], tolPct(), !!prefs.role);
+    const lv = computeLevels(cut, rows[m][4], tolPct(), false);
     Object.keys(barsCache).forEach(k => { if (k.startsWith(cut.symbol)) delete barsCache[k]; });
     ["D", "W"].forEach(tf => {
       const L = lv[tf]; if (!L) return;
