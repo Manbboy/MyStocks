@@ -310,6 +310,8 @@
   .ov.show { display:flex; }
   .ov-posinfo { display:flex; flex-wrap:wrap; gap:2px 10px; font-size:12px; color:var(--muted); }
   .ov-posinfo:empty { display:none; }
+  #ov.pf-on .ov-posinfo:empty { display:block; height:var(--pih, 18px); }     /* place réservée : pas de saut d'une action à l'autre */
+  .mmb.ghost { visibility:hidden; pointer-events:none; }
   .ov-posinfo .pi { white-space:nowrap; } .ov-posinfo i { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:3px; vertical-align:middle; }
   .ov-id { position:relative; }
   #ovTitle { cursor:pointer; }
@@ -670,7 +672,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v147</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v148</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -2285,7 +2287,7 @@ function renderToggles() {
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
   const volOn = prefs.vol !== false;
   { const av = typeof posAvail === "function" && posAvail(), po = av && prefs.pos !== false;
-    $("posBtn").hidden = !av;                     // bouton visible seulement si cette valeur a eu un achat ou une vente
+    posBtnShow(av);                               // bouton actif seulement si cette valeur a eu un achat ou une vente
     $("posBtn").classList.toggle("on", po); $("posBtn").setAttribute("aria-pressed", po ? "true" : "false"); }
   $("volBtn").classList.toggle("on", volOn); $("volBtn").setAttribute("aria-pressed", volOn ? "true" : "false");
   $("rsiBtn").classList.toggle("on", indMode() === "rsi"); $("rsiBtn").setAttribute("aria-pressed", indMode() === "rsi" ? "true" : "false");
@@ -4080,6 +4082,14 @@ $("txCancel").onclick = () => { $("txDlg").classList.remove("show"); txEdit = nu
 let txSeries = null, txSeries2 = null, txLines = [], txZones = [];
 /* Début de la détention actuelle : dernière date où la quantité est repassée de 0 à plus de 0 */
 /* La valeur affichée a-t-elle au moins une opération (M ou D) ? */
+/* Portfolio déverrouillé : le bouton « Pos. » et la ligne de position gardent leur place (invisibles si la valeur n'est pas
+   détenue), pour que le graphique ne change pas de taille en passant d'une action à l'autre avec les flèches */
+function posBtnShow(av) {
+  const pfOn = !!(pfState && pfState.data), b = $("posBtn");
+  b.hidden = !pfOn; b.classList.toggle("ghost", pfOn && !av);
+  const pi = $("ovPosInfo"); if (pi && pi.firstChild && pi.offsetHeight) $("ov").style.setProperty("--pih", pi.offsetHeight + "px");   // hauteur exacte de la ligne
+  $("ov").classList.toggle("pf-on", pfOn);
+}
 function posAvail() {
   return !!(pfState.data && ovSym && ["M", "D"].some(o => ((pfState.data[o] || {}).tx || []).some(t => t.sym === ovSym)));
 }
@@ -4096,7 +4106,7 @@ function drawTxMarks() {
   if (ovCandles) txLines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
   txLines = [];
   const infoEl = $("ovPosInfo"); if (infoEl) infoEl.innerHTML = "";
-  if ($("posBtn")) { const av = posAvail(); $("posBtn").hidden = !av; $("posBtn").classList.toggle("on", av && prefs.pos !== false); }
+  if ($("posBtn")) { const av = posAvail(); posBtnShow(av); $("posBtn").classList.toggle("on", av && prefs.pos !== false); }
   if (!ovChart || !ovCandles || !ovData || !pfState.data || !ovSym || prefs.pos === false) return;
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
   if (!rows.length || typeof rows[0][0] !== "string") return;          // pas de repères en 15 min
