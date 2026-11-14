@@ -514,16 +514,19 @@
   .rtbt b { font-weight:700; } .rtbt .up { color:var(--up); } .rtbt .down { color:var(--down); }
   .rtbt .hold { opacity:.8; }
   .al-n { display:inline-block; min-width:16px; padding:0 5px; border-radius:9px; background:var(--accent); color:#fff; font-size:11px; font-weight:800; line-height:16px; margin-left:3px; }
-  .al-row.al-big { cursor:pointer; padding:6px 8px 6px 11px; display:grid; justify-content:stretch; grid-template-columns:minmax(0, 1fr) 150px 80px 70px 76px; align-items:center; gap:8px; white-space:nowrap; }
-  .al-big .al-nm { overflow:hidden; text-overflow:ellipsis; font-size:14px; }
-  .al-big .al-nt { font-weight:400; font-size:11px; }
-  .al-big .al-lvl { overflow:hidden; text-overflow:ellipsis; }
-  .al-big .al-cur { color:var(--muted); font-size:12px; text-align:right; }
-  .al-big .al-dist { text-align:right; font-size:12.5px; overflow:hidden; }
+  /* une alerte = une ligne principale + une petite ligne d'infos ; séparées par un simple trait, sans cadre */
+  .al-row.al-big { cursor:pointer; padding:8px 4px; display:grid; grid-template-columns:minmax(0, 1fr) 150px 64px 76px; column-gap:10px; row-gap:1px; align-items:center;
+    border:none; border-radius:0; background:none; border-bottom:1px solid var(--border); }
+  .al-list .al-row.al-big:last-child { border-bottom:none; }
+  .al-big .al-nm { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14.5px; }
+  .al-big .al-lvl { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .al-big .al-dist { text-align:right; font-size:13px; white-space:nowrap; }
   .al-big .al-lab { font-size:11px; }
-  .al-big .al-act { justify-content:flex-end; }
-  .al-big .al-act .btn { padding:3px 8px; font-size:13px; }
-  @media (max-width:420px) { .al-row.al-big { gap:6px; grid-template-columns:minmax(0, 1fr) 118px 62px 70px; } .al-big .al-nm { font-size:13px; } .al-big .al-cur { display:none; } .al-big .al-dist { font-size:12px; } }
+  .al-big .al-act { justify-content:flex-end; grid-row:1 / 3; grid-column:4; }
+  .al-big .al-act .btn { padding:4px 9px; font-size:13px; }
+  .al-big .al-sub { grid-column:1 / 4; font-size:11.5px; color:var(--muted); line-height:1.35; }
+  .al-big .al-note2 { display:block; color:var(--text); opacity:.85; white-space:normal; }
+  @media (max-width:420px) { .al-row.al-big { column-gap:7px; grid-template-columns:minmax(0, 1fr) 118px 56px 72px; } .al-big .al-nm { font-size:13.5px; } }
   .al-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .al-top { display:flex; align-items:center; gap:8px; font-size:15px; }
   .al-badge { font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; color:#fff; }
@@ -532,7 +535,7 @@
   .al-act { display:flex; gap:6px; }
   .al-tg { margin:4px 2px 8px; }
   .al-lv { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 2px; }
-  .al-list { display:flex; flex-direction:column; gap:6px; }
+  .al-list { display:flex; flex-direction:column; gap:0; }
   .al-row { display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:7px 9px; font-size:13px; background:var(--card); }
   .al-row.done { opacity:.6; }
   .al-lab { font-size:11px; color:var(--muted); } .al-note { font-size:12px; color:var(--muted); } .al-st { font-size:11px; color:var(--muted); margin-top:2px; }
@@ -697,7 +700,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v153</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v154</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4774,16 +4777,15 @@ async function renderAlertsView() {
     const last = lastOf(a.sym), done = alertsSent[a.id];
     const dist = last && !done ? (a.price / last - 1) * 100 : null;
     const el = document.createElement("div"); el.className = "al-row al-big" + (done ? " done" : ""); el.dataset.id = a.id;
-    // une seule ligne : nom · niveau · cours · écart (ou date d'envoi) · boutons ; note et date de création dans l'info-bulle
+    // ligne principale : nom · niveau · écart (ou date d'envoi) · boutons ; en dessous, en petit : cours, note, dates (tout visible, pas d'info-bulle)
     const esc2 = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-    el.title = (a.note ? "📝 " + a.note + "\n" : "") + (a.created ? "créée le " + new Date(a.created).toLocaleDateString("fr-FR") : "") +
-      (done ? "\nenvoyée le " + new Date(done).toLocaleString("fr-FR", { dateStyle:"short", timeStyle:"short" }) : "");
-    el.innerHTML = '<b class="al-nm">' + esc2(a.name || a.sym) + (a.note ? ' <span class="al-nt">📝</span>' : "") + "</b>" +
+    const dt = d => new Date(d).toLocaleString("fr-FR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+    const sub = [last ? "cours " + fmt(last) : "", done ? "envoyée le " + dt(done) : "", a.created ? "créée le " + new Date(a.created).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }) : ""].filter(Boolean).join(" · ");
+    el.innerHTML = '<b class="al-nm">' + esc2(a.name || a.sym) + "</b>" +
       '<span class="al-lvl">' + (a.op === "above" ? "▲ " : "▼ ") + "<b>" + fmt(a.price) + "</b>" + (a.label ? ' <span class="al-lab">' + a.label + "</span>" : "") + "</span>" +
-      '<span class="al-cur">' + (last ? fmt(last) : "") + "</span>" +
-      '<span class="al-dist">' + (dist != null ? (dist >= 0 ? "+" : "") + dist.toFixed(1).replace(".", ",") + " %"
-        : done ? "✓ " + new Date(done).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit" }) : "") + "</span>" +    // heure exacte dans l'info-bulle
-      '<span class="al-act">' + (done ? '<button class="btn al-re" title="Recréer la même alerte">↻</button>' : "") + '<button class="btn al-del" title="Supprimer">✕</button></span>';
+      '<span class="al-dist">' + (dist != null ? (dist >= 0 ? "+" : "") + dist.toFixed(1).replace(".", ",") + " %" : done ? "✓" : "") + "</span>" +
+      '<span class="al-act">' + (done ? '<button class="btn al-re" title="Recréer la même alerte">↻</button>' : "") + '<button class="btn al-del" title="Supprimer">✕</button></span>' +
+      '<span class="al-sub">' + sub + (a.note ? '<span class="al-note2">📝 ' + esc2(a.note) + "</span>" : "") + "</span>";
     el.onclick = e => {
       if (e.target.closest("button")) return;
       for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === a.sym); if (it) { openDetail(it, withLive(a.sym, summary.symbols[a.sym])); return; } }
