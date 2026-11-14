@@ -670,7 +670,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v145</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v146</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3774,7 +3774,7 @@ async function renderPf() {
   const addB = document.createElement("button"); addB.className = "btn primary"; addB.textContent = "+ Opération";
   addB.onclick = () => openTxDlg();
   const cmpB = document.createElement("button"); cmpB.className = "btn" + (prefs.pfCompact ? " on" : "");
-  cmpB.textContent = prefs.pfCompact ? "☰ Détaillé" : "≡ Compact";
+  cmpB.textContent = prefs.pfCompact ? "▦" : "≡";            // même icône que dans les autres onglets
   cmpB.title = prefs.pfCompact ? "Afficher les achats et ventes de chaque valeur" : "Une ligne par valeur, sans le détail des opérations";
   cmpB.onclick = () => { prefs.pfCompact = !prefs.pfCompact; savePrefs(); renderPf(); };
   const pntB = document.createElement("button"); pntB.className = "btn"; pntB.textContent = "🎨 " + (1 + (prefs.paintP || 0));
