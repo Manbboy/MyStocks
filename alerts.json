@@ -49,6 +49,16 @@
       "label": "",
       "note": "Test 3",
       "created": 1794607752612
+    },
+    {
+      "id": "mwfzt06yk2zg",
+      "sym": "HO.PA",
+      "name": "Thales",
+      "op": "above",
+      "price": 264,
+      "label": "",
+      "note": "Take profit ROB",
+      "created": 1794635777338
     }
   ]
 }
