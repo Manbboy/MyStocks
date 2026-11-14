@@ -24,8 +24,8 @@ def _pivots(rows, k):
     return out
 
 
-P = {"M": {"k": 3, "win": 240, "span": 48, "ext": 36, "hor": 120, "wmax": 1.30},      # mensuel : 20 ans, oblique sur 4 ans au moins
-     "W": {"k": 4, "win": 260, "span": 39, "ext": 52, "hor": 104, "wmax": 1.20}}      # hebdomadaire : 5 ans, oblique sur 9 mois au moins
+P = {"M": {"k": 3, "win": 240, "span": 48, "ext": 36, "hor": 120, "wmax": 1.30, "dwin": 72, "dspan": 12},      # mensuel : 20 ans, oblique sur 4 ans au moins
+     "W": {"k": 4, "win": 260, "span": 39, "ext": 52, "hor": 104, "wmax": 1.20, "dwin": 104, "dspan": 13}}      # hebdomadaire : 5 ans, oblique sur 9 mois au moins
 
 
 def zones(rows, last, k=3, wmax=1.30):
@@ -75,7 +75,7 @@ def zones(rows, last, k=3, wmax=1.30):
     return out
 
 
-def oblique(rows, last_date, win=240, span=48):
+def oblique(rows, last_date, win=240, span=48, recent=120):
     """Oblique longue de support : arête de l'enveloppe basse des creux mensuels, couvrant au moins 3 ans et la plus récente."""
     n = len(rows)
     if n < 48:
@@ -96,7 +96,7 @@ def oblique(rows, last_date, win=240, span=48):
         if now <= 0 or now < 0.2 * rows[-1][4]:      # trop loin sous le cours : sans intérêt
             continue
         # contacts : creux mensuels à moins de 5 % au-dessus de la droite
-        touch = [i for i in range(a[0], n) if rows[i][3] <= (a[1] + m * (i - a[0])) * 1.05]
+        touch = [i for i in range(max(a[0], n - recent), n) if rows[i][3] <= (a[1] + m * (i - a[0])) * 1.05]
         cand = {"i1": a[0], "i2": b[0], "p1": a[1], "m": m, "touch": len(touch), "now": now}
         # le plus de contacts (la droite « travaille » le plus longtemps), puis la plus récente
         if best is None or (len(touch), b[0]) > (best["touch"], best["i2"]):
@@ -107,6 +107,64 @@ def oblique(rows, last_date, win=240, span=48):
     val = lambda i: best["p1"] + m * (i - i1)
     return {"t1": rows[i1][0], "p1": round(best["p1"], 4), "t2": rows[best["i2"]][0], "p2": round(val(best["i2"]), 4),
             "now": round(val(n - 1), 4), "slope": m, "touches": best["touch"], "_n": n, "_i1": i1}
+
+
+def channel(rows, ob, k=3):
+    """Haut de canal : parallèle à l'oblique, posée sur le plus de sommets possible depuis le premier creux (canaux de Tino)."""
+    if not ob:
+        return None
+    i1, p1, m, n = ob["_i1"], ob["p1"], ob["slope"], ob["_n"]
+    line = lambda i: p1 + m * (i - i1)
+    highs = [i for i, t in _pivots(rows, k) if t == "H" and i >= i1]
+    best = None
+    for c in highs:
+        d = rows[c][2] - line(c)
+        if d <= 0:
+            continue
+        top = lambda i: line(i) + d
+        touch = [i for i in highs if abs(rows[i][2] - top(i)) <= 0.05 * top(i)]
+        over = sum(1 for i in range(i1, n) if rows[i][4] > top(i) * 1.03)     # clôtures nettement au-dessus du canal
+        if len(touch) < 2 or touch[-1] - touch[0] < 12 or over > 3:
+            continue
+        if best is None or (len(touch), d) > (best[1], best[0]):
+            best = (d, len(touch))
+    if not best:
+        return None
+    return {"d": round(best[0], 4), "now": round(line(n - 1) + best[0], 4), "touches": best[1]}
+
+
+def downline(rows, win, span):
+    """Oblique baissière : arête de l'enveloppe haute des sommets depuis le plus haut récent (droite qui coiffe les sommets)."""
+    n = len(rows)
+    start = max(0, n - win)
+    ip = max(range(start, n), key=lambda i: rows[i][2])
+    if n - 1 - ip < span:
+        return None
+    hull = []
+    for p in [(i, rows[i][2]) for i in range(ip, n - 2)]:       # enveloppe convexe haute
+        while len(hull) >= 2 and (hull[-1][0] - hull[-2][0]) * (p[1] - hull[-2][1]) - (hull[-1][1] - hull[-2][1]) * (p[0] - hull[-2][0]) >= 0:
+            hull.pop()
+        hull.append(p)
+    best = None
+    for a, b in zip(hull, hull[1:]):
+        if b[0] - a[0] < span // 2 or b[1] >= a[1]:
+            continue
+        m = (b[1] - a[1]) / (b[0] - a[0])
+        line = lambda i: a[1] + m * (i - a[0])
+        now = line(n - 1)
+        if now <= 0 or now > 1.6 * rows[-1][4]:           # trop haut au-dessus du cours : sans intérêt
+            continue
+        touch = [i for i in range(a[0], n) if rows[i][2] >= line(i) * 0.96]
+        if best is None or (len(touch), b[0]) > (best["touches"], best["_j"]):
+            best = {"t1": rows[a[0]][0], "p1": round(a[1], 4), "t2": rows[b[0]][0], "p2": round(b[1], 4), "now": round(now, 4),
+                    "touches": len(touch), "broken": rows[-1][4] > now, "slope": m, "_i1": a[0], "_n": n, "_j": b[0]}
+    return best
+
+
+def ma200(rows):
+    if len(rows) < 200:
+        return None
+    return sum(r[4] for r in rows[-200:]) / 200
 
 
 def _add(d, k, unit):
@@ -174,6 +232,22 @@ def analyse(rows, unit="M"):
                     o["end"] = _add(rows[-1][0], e, unit)
                     o["pend"] = round(ob["p1"] + ob["slope"] * (ob["_n"] - 1 + e - ob["_i1"]), 4)
                     break
+    if ob:
+        ch = channel(rows, ob, p["k"])
+        if ch:
+            out["chan"] = ch
+    dl = downline(rows, p["dwin"], p["dspan"])
+    if dl:
+        e = p["ext"] // 2
+        out["down"] = {k: dl[k] for k in ("t1", "p1", "t2", "p2", "now", "touches", "broken")}
+        out["down"]["end"] = _add(rows[-1][0], e, unit)
+        out["down"]["pend"] = round(max(dl["p1"] + dl["slope"] * (dl["_n"] - 1 + e - dl["_i1"]), 0), 4)
+    mm = ma200(rows)
+    if mm:
+        out["mm"] = round(mm, 4)
+        for z in out["zones"]:          # la MM200 passe dans la zone : soutien renforcé (Total, LVMH, Capgemini…)
+            if z["lo"] * 0.97 <= mm <= z["hi"] * 1.03:
+                z["mm"] = True
     z0 = out["zones"][0] if out["zones"] else None
     if z0:
         out["dist"] = 0.0 if z0["in"] else round((z0["hi"] / last - 1) * 100, 1)

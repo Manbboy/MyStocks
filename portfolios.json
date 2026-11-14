@@ -362,6 +362,36 @@
           "yahoo": "TRI.PA",
           "tv": "EURONEXT:TRI",
           "name": "Trigano"
+        },
+        {
+          "yahoo": "ACA.PA",
+          "tv": "EURONEXT:ACA",
+          "name": "Crédit Agricole"
+        },
+        {
+          "yahoo": "APAM.AS",
+          "tv": "EURONEXT:APAM",
+          "name": "Aperam"
+        },
+        {
+          "yahoo": "NEX.PA",
+          "tv": "EURONEXT:NEX",
+          "name": "Nexans"
+        },
+        {
+          "yahoo": "ATE.PA",
+          "tv": "EURONEXT:ATE",
+          "name": "Alten"
+        },
+        {
+          "yahoo": "EXENS.PA",
+          "tv": "EURONEXT:EXENS",
+          "name": "Exosens"
+        },
+        {
+          "yahoo": "ELEC.PA",
+          "tv": "EURONEXT:ELEC",
+          "name": "Électricité de Strasbourg"
         }
       ]
     },
@@ -602,6 +632,11 @@
           "yahoo": "AMD",
           "tv": "NASDAQ:AMD",
           "name": "AMD"
+        },
+        {
+          "yahoo": "SWKS",
+          "tv": "NASDAQ:SWKS",
+          "name": "Skyworks"
         }
       ]
     },

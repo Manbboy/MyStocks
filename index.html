@@ -718,7 +718,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v160</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v161</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5339,6 +5339,18 @@ function drawTino() {
       if (t1 < first) { const k = (dOf(first) - dOf(o.t1)) / (dOf(o.end) - dOf(o.t1)); p1 = o.p1 + (o.pend - o.p1) * k; t1 = first; }
       s.setData([{ time:t1, value:p1 }, { time:o.end > lastT ? o.end : lastT, value:o.pend }]);
       tinoSeries.push(s);
+      if (x.t.chan) {                                   // haut de canal : parallèle à l'oblique, plus fine
+        const c = ovChart.addLineSeries({ color:`rgba(${TINO_SUP},.35)`, lineWidth:x.tgt ? 4 : 3, priceLineVisible:false, lastValueVisible:false,
+          crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+        c.setData([{ time:t1, value:p1 + x.t.chan.d }, { time:o.end > lastT ? o.end : lastT, value:o.pend + x.t.chan.d }]);
+        tinoSeries.push(c);
+      }
+    }
+    if (x.obl && x.t.down) {                            // oblique baissière (pointillés) : sa cassure est un signal
+      const o = x.t.down, s = ovChart.addLineSeries({ color:o.broken ? "rgba(34,197,94,.8)" : `rgba(${TINO_RES},.85)`, lineWidth:2, lineStyle:2,
+        priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+      s.setData([{ time:clampT(o.t1), value:o.p1 }, { time:o.end > lastT ? o.end : lastT, value:o.pend }]);
+      tinoSeries.push(s);
     }
     if (x.tgt && x.t.target) {
       const s = ovChart.addLineSeries({ color:"#facc15", lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:9,
@@ -5373,9 +5385,13 @@ function renderTinoList() {
     t.zones.forEach(z => { const c = conf.find(x => x.lo === z.lo && x.hi === z.hi);
       row(c ? "#ca8a04" : "#0ea5e9", (c ? "★ " : "") + "Zone de soutien " + fmt(z.lo, cur) + " – " + fmt(z.hi, cur),
         (z.in ? "le cours est dans la zone" : "haut de zone à " + pc(z.hi)) + " · " + z.n + " contacts depuis " + yr(z.from) +
-        (c ? (c.why === "zone" ? " · confluence avec une zone mensuelle" : " · sur l'oblique mensuelle") : "")); });
+        (c ? (c.why === "zone" ? " · confluence avec une zone mensuelle" : " · sur l'oblique mensuelle") : "") + (z.mm ? " · la MM200 y passe" : "")); });
     if (!t.zones.length) row("#0ea5e9", "Aucune zone de soutien nette", "sous le cours actuel");
     if (t.obl) row("#38bdf8", "Oblique ↗", "creux de " + (w ? when(t.obl.t1, 1) : yr(t.obl.t1)) + " et " + (w ? when(t.obl.t2, 1) : yr(t.obl.t2)) + " · " + t.obl.touches + " contacts · aujourd'hui à " + fmt(t.obl.now, cur) + " (" + pc(t.obl.now) + ")");
+    if (t.chan) row("#38bdf8", "Haut du canal", "parallèle à l'oblique · " + t.chan.touches + " sommets · aujourd'hui à " + fmt(t.chan.now, cur) + " (" + pc(t.chan.now) + ")");
+    if (t.down) row(t.down.broken ? "#16a34a" : "#f87171", "Oblique baissière ↘" + (t.down.broken ? " cassée ✓" : ""),
+      "sommets de " + (w ? when(t.down.t1, 1) : when(t.down.t1)) + " et " + (w ? when(t.down.t2, 1) : when(t.down.t2)) + " · aujourd'hui à " + fmt(t.down.now, cur) +
+      (t.down.broken ? " · le cours est passé au-dessus" : " (" + pc(t.down.now) + ") · à casser pour repartir"));
     if (t.target) row("#ca8a04", "Cible : l'oblique rejoint la zone " + fmt(t.target.lo, cur) + " – " + fmt(t.target.hi, cur), "vers " + when(t.target.date, w) + " (si le cours y revient)");
   };
   const iv = prefs.iv || "D";
