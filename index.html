@@ -718,7 +718,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v159</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v160</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5322,6 +5322,12 @@ function drawTino() {
     }
     tinoSeries.push(s);
   };
+  // moyenne mobile 200 périodes (200 mois en M, 200 semaines en S), la courbe bleue des graphiques de Tino
+  if (iv === "M" || iv === "W" || iv === "Q") {
+    const m = tinoMa200(rows);
+    if (m.length) { const s = ovChart.addLineSeries({ color:"#0ea5e9", lineWidth:2, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+      s.setData(m); tinoSeries.push(s); }
+  }
   sets.forEach(x => {
     const conf = x.conf ? (x.t.conf || []) : [], isConf = z => conf.some(c => c.lo === z.lo && c.hi === z.hi);
     x.t.zones.forEach(z => band(z, TINO_SUP, x.a, isConf(z) ? "#eab308" : null, x.a >= 0.16));    // confluence : bord jaune
@@ -5341,6 +5347,11 @@ function drawTino() {
       tinoSeries.push(s);
     }
   });
+}
+function tinoMa200(rows) {
+  const out = []; let sum = 0;
+  rows.forEach((r, i) => { sum += r[4]; if (i >= 200) sum -= rows[i - 200][4]; if (i >= 199) out.push({ time:r[0], value:sum / 200 }); });
+  return out;
 }
 function renderTinoList() {
   const box = $("ovTinoList"); if (!box) return;
@@ -5368,6 +5379,11 @@ function renderTinoList() {
     if (t.target) row("#ca8a04", "Cible : l'oblique rejoint la zone " + fmt(t.target.lo, cur) + " – " + fmt(t.target.hi, cur), "vers " + when(t.target.date, w) + " (si le cours y revient)");
   };
   const iv = prefs.iv || "D";
+  if ((iv === "M" || iv === "W" || iv === "Q") && ovData) {
+    const m = tinoMa200(barsFor(ovData, iv)), u = { M:"mois", W:"semaines", Q:"trimestres" }[iv];
+    if (m.length) { const v = m[m.length - 1].value; row("#0ea5e9", "MM200 (200 " + u + ") " + fmt(v, cur), "cours à " + fmtPct(Math.round((last / v - 1) * 10000) / 100) + (last >= v ? " au-dessus" : " en dessous")); }
+    else row("#0ea5e9", "MM200", "pas assez d'historique (200 " + u + ")");
+  }
   if (iv === "W" || iv === "D") { part(b.tinoW, "Hebdomadaire (5 ans)", true); part(b.tino, "Mensuel (tout l'historique)"); }
   else { part(b.tino, "Mensuel (tout l'historique)"); part(b.tinoW, "Hebdomadaire (5 ans)", true); }
 }
