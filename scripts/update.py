@@ -21,6 +21,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import tino   # noqa: E402  (indicateur « Tino »)
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 SERIES = DATA / "series"
@@ -338,6 +341,11 @@ def main():
             ev = EVENTS.get(sym) or {}
             if ev.get("earn"): summary["symbols"][sym]["earn"] = ev["earn"]
             if ev.get("div"): summary["symbols"][sym]["div"] = ev["div"]
+            try:     # indicateur « Tino » : zones et oblique longue sur tout l'historique mensuel
+                tn = tino.analyse(long_rows)
+                if tn: summary["symbols"][sym]["tino"] = tn
+            except Exception as e:
+                print(f"  {sym}: Tino indisponible ({e})")
             print(f"OK   {sym:10s} {last:>10.2f}  " + "  ".join(f"{tf}:{len(v['supports'])}S/{len(v['resistances'])}R" for tf, v in levels.items()))
         except Exception as e:
             errors.append(sym)

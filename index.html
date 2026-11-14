@@ -273,7 +273,12 @@
   .grid.compact .tbl.multi .tr-h { display:none; }
   .grid.compact .tbl.multi .card { break-inside:avoid; background:transparent; }
   /* nom à gauche, % à droite ; 2e ligne : cours à gauche, indicateurs (cassure, S/R proche) au milieu de la colonne */
-  .ind { display:contents; }        /* groupe « indicateurs » : invisible sauf en compact multi-colonnes */
+  .ind { display:contents; }
+  /* Tino : repère « dans la zone » / « zone à −x % » (vue compacte en colonnes) */
+  .tnc { display:none; }
+  .grid.compact .tbl.multi .tnc:not(:empty) { display:inline; font-size:10px; font-weight:700; color:#0284c7; white-space:nowrap; }
+  [data-theme="dark"] .grid.compact .tbl.multi .tnc { color:#38bdf8; }
+  #ovTinoList .it { cursor:default; }        /* groupe « indicateurs » : invisible sauf en compact multi-colonnes */
   .grid.compact .tbl.multi .card-head { grid-template-columns:auto minmax(0, 1fr) auto; column-gap:8px; row-gap:2px; padding:7px 10px; }
   .grid.compact .tbl.multi .nm { grid-column:1 / 3; grid-row:1; font-size:13.5px; }
   .grid.compact .tbl.multi .chg { grid-column:3; grid-row:1; justify-self:end; font-size:13px; }
@@ -712,7 +717,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v157</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v158</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -771,6 +776,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
       <button class="mmb" id="chanBtn" aria-pressed="false" title="Canaux : deux obliques parallèles qui encadrent le cours">Canal<span class="mmdots"><i style="background:#0891b2;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="tlBtn" aria-pressed="false" title="Obliques : lignes de tendance (supports et résistances en diagonale)">Obl.<span class="mmdots"><i style="background:#f97316;width:12px;transform:rotate(-18deg)"></i></span></button>
+      <button class="mmb" id="tinoBtn" aria-pressed="false" title="Tino : grandes zones de soutien et oblique longue, sur tout l'historique mensuel (d'après les analyses de Tino, Le Podcast de la Bourse)">Tino<span class="mmdots"><i style="background:#38bdf8;width:12px;height:5px;border-radius:2px"></i><i style="background:#facc15"></i></span></button>
       <button class="mmb" id="flipBtn" aria-pressed="false" title="Bascules de rôle : résistance devenue support (ou l'inverse)">R⇄S<span class="mmdots"><i style="background:var(--res)"></i><i style="background:var(--sup)"></i></span></button>
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
       <button class="mmb" id="rtBtn" aria-pressed="false" title="Afficher / masquer RSI Trends (chandeliers colorés)">RT<span class="mmdots"><i style="background:#4CAF50"></i><i style="background:#787B86"></i><i style="background:#FF5252"></i></span></button>
@@ -831,6 +837,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
+      <div class="lv" id="boxTino"><h3>Tino (mensuel, tout l'historique)</h3><div id="ovTinoList"></div></div>
       <div class="lv" id="boxGeo"><h3>Canaux et obliques</h3><div id="ovGeoList"></div></div>
       <div class="lv" id="boxFlip"><h3>Bascules R⇄S</h3><div id="ovFlipList"></div></div>
       <div class="lv" id="boxMa"><h3>Moyennes mobiles</h3><div id="ovMaList"></div></div>
@@ -1160,7 +1167,7 @@ function renderGrid() {
     const cls = pct == null ? "" : pct >= 0 ? "up" : "down";
     card.innerHTML =
       '<div class="card-head"><div class="row1"><span class="nm"></span><span class="px"></span></div>' +
-      '<div class="row2"><span class="sym"></span><span class="px2"></span><span class="chg ' + cls + '"></span></div><span class="ind"><span class="boc"></span><div class="near"></div></span><span class="rtc"></span></div>' +
+      '<div class="row2"><span class="sym"></span><span class="px2"></span><span class="chg ' + cls + '"></span></div><span class="ind"><span class="boc"></span><div class="near"></div><span class="tnc"></span></span><span class="rtc"></span></div>' +
       '<div class="chart"></div>';
     card.querySelector(".nm").textContent = item.name;
     card.querySelector(".sym").textContent = item.yahoo;
@@ -1182,6 +1189,7 @@ function renderGrid() {
       if (info.live) card.querySelector(".nm").insertAdjacentHTML("afterbegin", liveDot(info));
       setRtBadge(card, info);
       setNewsIcon(card, item, info);
+      setTinoChip(card, info);
       paintCard(card, pct);
       applyShownPct(card, item.yahoo, info);              // 1M, 3M… : variation de la période (si déjà connue)
       const nr = nearestLevel(info);
@@ -2338,6 +2346,7 @@ $("tolRange").addEventListener("input", e => {
 function renderToggles() {
   $("chanBtn").classList.toggle("on", !!prefs.chan); $("chanBtn").setAttribute("aria-pressed", prefs.chan ? "true" : "false");
   $("tlBtn").classList.toggle("on", !!prefs.tl); $("tlBtn").setAttribute("aria-pressed", prefs.tl ? "true" : "false");
+  $("tinoBtn").classList.toggle("on", !!prefs.tino); $("tinoBtn").setAttribute("aria-pressed", prefs.tino ? "true" : "false");
   $("flipBtn").classList.toggle("on", !!prefs.flip); $("flipBtn").setAttribute("aria-pressed", prefs.flip ? "true" : "false");
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
   $("srBtn").classList.toggle("on", srOn); $("srBtn").setAttribute("aria-pressed", srOn ? "true" : "false");
@@ -3031,6 +3040,7 @@ function drawDetail(keep) {
   drawMas();
   drawFlips();
   drawGeo();
+  tinoSeries = []; drawTino();
   applyHighlight();
   const bySeries = new Map(rows.map(r => [r[0], r]));
   const showOhlc = row => {
@@ -5266,6 +5276,89 @@ function fitAlertNotes(root) {
   });
 }
 addEventListener("resize", () => { if (prefs.view === "alerts") fitAlertNotes(); });
+
+/* ===== Indicateur « Tino » : zones de soutien et oblique longue (calculées chaque soir sur tout l'historique mensuel) ===== */
+let tinoSeries = [];
+const TINO_SUP = "56,189,248", TINO_RES = "248,113,113";
+function tinoOf(sym) { const b = summary.symbols[sym]; return b && b.tino; }
+function tinoEnd(t, lastT) { return (t.obl && t.obl.end) || lastT; }
+function drawTino() {
+  tinoSeries.forEach(s => { try { ovChart && ovChart.removeSeries(s); } catch (e) {} });
+  tinoSeries = [];
+  renderTinoList();
+  const t = prefs.tino && ovChart && ovSym && tinoOf(ovSym), iv = prefs.iv || "D";
+  if (!t || iv === "I") return;                                        // pas en 15 min (échelle de temps différente)
+  const rows = barsFor(ovData, iv), lastT = rows[rows.length - 1][0], end = tinoEnd(t, lastT) > lastT ? tinoEnd(t, lastT) : lastT;
+  const first = rows[0][0], clampT = d => d < first ? first : d;
+  const band = (z, rgb, a) => {
+    const s = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:z.lo }, lineWidth:1,
+      topLineColor:`rgba(${rgb},${a + 0.25})`, topFillColor1:`rgba(${rgb},${a})`, topFillColor2:`rgba(${rgb},${a})`,
+      bottomLineColor:"rgba(0,0,0,0)", bottomFillColor1:"rgba(0,0,0,0)", bottomFillColor2:"rgba(0,0,0,0)",
+      priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    s.setData([{ time:clampT(z.from), value:z.hi }, { time:end, value:z.hi }]);
+    // prix du haut et du bas de la zone sur l'axe, comme sur les graphiques de Tino
+    s.createPriceLine({ price:z.hi, color:`rgba(${rgb},.9)`, lineWidth:1, lineStyle:LW.LineStyle.Solid, lineVisible:false, axisLabelVisible:true, title:"" });
+    s.createPriceLine({ price:z.lo, color:`rgba(${rgb},.9)`, lineWidth:1, lineStyle:LW.LineStyle.Solid, lineVisible:false, axisLabelVisible:true, title:"" });
+    tinoSeries.push(s);
+  };
+  // espace futur : une case vide par période jusqu'à la fin de l'oblique (sinon le futur est écrasé en une seule case)
+  if (end > lastT) {
+    const fut = [], step = { D:1, W:7, M:0, Q:0 }[iv], d = dOf(lastT);
+    for (let g = 0; g < 3000; g++) {
+      if (iv === "M" || iv === "Q") d.setUTCMonth(d.getUTCMonth() + (iv === "Q" ? 3 : 1), 1);
+      else { d.setUTCDate(d.getUTCDate() + step); if (iv === "D" && (d.getUTCDay() === 0 || d.getUTCDay() === 6)) continue; }
+      const k = d.toISOString().slice(0, 10); if (k > end) break; fut.push({ time:k });
+    }
+    if (fut.length) { const w = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+      w.setData(fut); tinoSeries.push(w); }
+  }
+  t.zones.forEach(z => band(z, TINO_SUP, 0.22));
+  (t.res || []).forEach(z => band(z, TINO_RES, 0.18));
+  if (t.obl) {
+    const o = t.obl, s = ovChart.addLineSeries({ color:`rgba(${TINO_SUP},.45)`, lineWidth:8, priceLineVisible:false, lastValueVisible:false,
+      crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    // la droite part du premier creux (ou du début du graphique s'il est plus ancien)
+    let t1 = o.t1, p1 = o.p1;
+    if (t1 < first) { const k = (dOf(first) - dOf(o.t1)) / (dOf(o.end) - dOf(o.t1)); p1 = o.p1 + (o.pend - o.p1) * k; t1 = first; }
+    s.setData([{ time:t1, value:p1 }, { time:o.end > lastT ? o.end : lastT, value:o.pend }]);
+    tinoSeries.push(s);
+  }
+  if (t.target) {
+    const s = ovChart.addLineSeries({ color:"#facc15", lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:9,
+      priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    s.setData([{ time:t.target.date > lastT ? t.target.date : lastT, value:(t.target.lo + t.target.hi) / 2 }]);
+    tinoSeries.push(s);
+  }
+}
+function renderTinoList() {
+  const box = $("ovTinoList"); if (!box) return;
+  $("boxTino").style.display = prefs.tino ? "" : "none";
+  box.innerHTML = "";
+  if (!prefs.tino) return;
+  const t = ovSym && tinoOf(ovSym), cur = ovItem && ovItem.currency, last = ovItem && ovItem.last;
+  if (!t) { box.innerHTML = "<small>Pas assez d'historique mensuel (ou calcul pas encore fait : il se fait à la mise à jour du soir).</small>"; return; }
+  const row = (col, a, b) => { const d = document.createElement("div"); d.className = "it"; d.style.setProperty("--c", col);
+    const x = document.createElement("span"); x.style.color = col; x.textContent = a; const y = document.createElement("small"); y.textContent = b; d.append(x, y); box.appendChild(d); };
+  const yr = d => d.slice(0, 4), pc = p => fmtPct(Math.round((p / last - 1) * 10000) / 100);
+  (t.res || []).forEach(z => row("#f87171", "Résistance " + fmt(z.lo, cur) + " – " + fmt(z.hi, cur), z.n + " contacts depuis " + yr(z.from) + " · " + pc(z.lo)));
+  t.zones.forEach((z, i) => row("#0ea5e9", "Zone de soutien " + fmt(z.lo, cur) + " – " + fmt(z.hi, cur),
+    (z.in ? "le cours est dans la zone" : "haut de zone à " + pc(z.hi)) + " · " + z.n + " contacts depuis " + yr(z.from)));
+  if (!t.zones.length) row("#0ea5e9", "Aucune zone de soutien nette", "sous le cours actuel, sur tout l'historique");
+  if (t.obl) row("#38bdf8", "Oblique longue ↗", "creux de " + yr(t.obl.t1) + " et " + yr(t.obl.t2) + " · " + t.obl.touches + " contacts · aujourd'hui à " + fmt(t.obl.now, cur) + " (" + pc(t.obl.now) + ")");
+  if (t.target) row("#ca8a04", "Cible : l'oblique rejoint la zone " + fmt(t.target.lo, cur) + " – " + fmt(t.target.hi, cur),
+    "vers " + new Date(t.target.date + "T12:00:00").toLocaleDateString("fr-FR", { month:"long", year:"numeric" }) + " (si le cours y revient)");
+}
+function setTinoChip(card, info) {
+  const el = card.querySelector(".tnc"); if (!el) return;
+  const t = tinoOf(card.dataset.sym), z = t && t.zones && t.zones[0];
+  el.textContent = ""; el.title = "";
+  if (!z || !info || !info.last) return;
+  if (z.in || (info.last >= z.lo && info.last <= z.hi)) { el.textContent = "◆ zone"; el.title = "Tino : le cours est dans une zone de soutien"; return; }
+  const d = (z.hi / info.last - 1) * 100;
+  if (d > -8) { el.textContent = "◆ " + d.toFixed(0) + " %"; el.title = "Tino : zone de soutien " + fmt(z.lo) + " – " + fmt(z.hi); }
+}
+$("tinoBtn").onclick = () => { prefs.tino = !prefs.tino; savePrefs(); drawTino(); renderToggles();
+  if (prefs.tino && (prefs.iv || "D") !== "M" && (prefs.iv || "D") !== "Q") toast("Tino : analyse faite en mensuel (bouton M) ; les zones restent visibles dans les autres unités.", 2600); };
 </script>
 </body>
 </html>
