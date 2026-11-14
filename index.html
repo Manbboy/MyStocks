@@ -668,6 +668,10 @@
   .swb[aria-checked="true"] .sw { background:var(--accent); }
   .swb[aria-checked="true"] .sw::after { left:16px; }
   .swone .swb { width:auto; gap:6px; }
+  .cfg-flow { display:flex; flex-wrap:wrap; gap:4px 12px; align-items:flex-end; }
+  .cfg-flow > div { display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .cfg-flow .seg { flex-wrap:nowrap; }
+  .cfg-flow .seg button { padding:5px 7px; white-space:nowrap; }
   .cfg-line { display:flex; align-items:center; flex-wrap:wrap; gap:4px 14px; }
   .cfg-line input[type="range"] { flex:1 1 140px; min-width:120px; width:auto; margin:0; }
   .cfg-lab { color:var(--muted); white-space:nowrap; }
@@ -676,6 +680,7 @@
   @media (orientation:portrait) {
     .swgrid { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0 8px; }
     .swgrid .swb { font-size:11.5px; gap:5px; padding:5px 0; line-height:1.2; }
+    @media (max-width:400px) { .swgrid { gap:0 6px; } .swgrid .swb { font-size:10.5px; letter-spacing:-.1px; gap:4px; } }
     .swgrid .sw { width:28px; height:16px; border-radius:8px; }
     .swgrid .sw::after { width:12px; height:12px; }
     .swgrid .swb[aria-checked="true"] .sw::after { left:14px; }
@@ -775,7 +780,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v169</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v170</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -845,14 +850,13 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
       <div class="cfg-head"><strong>Réglages</strong><span class="spacer"></span><div class="seg" id="themeSeg"></div><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
       <div class="cfg-grid">
-        <div class="cfg-row wide"><span>Supports / Résistances <small id="lvSeg"></small></span>
-          <div class="cfg-line"><div class="seg" id="kindSeg"></div></div></div>
-        <div class="cfg-row wide"><div class="cfg-line"><span class="cfg-lab">Précision des contacts <b id="tolVal"></b></span>
-          <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div></div>
-        <div class="cfg-row wide"><div class="pair tight">
+        <div class="cfg-row wide"><div class="cfg-flow">
+          <div><span>S / R <small id="lvSeg" hidden></small></span><div class="seg" id="kindSeg"></div></div>
           <div><span>Moy. mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
           <div><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
         </div></div>
+        <div class="cfg-row wide"><div class="cfg-line"><span class="cfg-lab">Précision des contacts <b id="tolVal"></b></span>
+          <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div></div>
         <div class="cfg-row wide" id="trendRow"><span>RSI Trends <small>(vert ≥ haut · rouge ≤ bas)</small></span>
           <div class="trendin"><div id="trendSeg" data-label="Chandeliers colorés" class="swone"></div>
             <label>Longueur<input type="number" id="tLen" min="2" max="100" step="1" inputmode="numeric"></label>
@@ -863,7 +867,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
           <div id="axisSeg" data-label="Prix sur l'axe"></div>
           <div id="dotsSeg" data-label="Points ●"></div>
           <div id="projSeg" data-label="Projection ┈"></div>
-          <div id="sideSeg" data-label="Infos détaillées"></div>
+          <div id="sideSeg" data-label="Infos détail"></div>
           <div id="crossSeg" data-label="Réticule aimanté"></div>
           <div id="tbRowsSeg" data-label="Boutons 2 lignes"></div>
         </div></div>
@@ -2469,14 +2473,7 @@ function renderToggles() {
     b.onclick = () => { const cur = selectedKinds(); prefs.kinds = cur.includes(k) ? cur.filter(x => x !== k) : cur.concat(k); savePrefs(); refreshLevels(); };
     ks.appendChild(b);
   });
-  {
-    const both = selK.length === 2, b = document.createElement("button");
-    b.className = "all" + (both ? " on" : "");
-    b.textContent = "Tout/rien";
-    b.title = both ? "Masquer supports et résistances" : "Afficher supports et résistances";
-    b.onclick = () => { prefs.kinds = both ? [] : ["S","R"]; savePrefs(); refreshLevels(); };
-    ks.appendChild(b);
-  }
+
   const lg = $("ovLegend"); lg.innerHTML = "";
   selectedLv().forEach(tf => selK.forEach(k => {
     const s = document.createElement("span");
