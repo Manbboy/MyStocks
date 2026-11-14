@@ -646,9 +646,10 @@
   #ov.cfg-open .cfg-head { position:sticky; top:-10px; background:var(--card); z-index:1; padding:4px 0; }
   /* téléphone en portrait : moitié droite trop étroite pour le graphique → panneau sur la moitié basse */
   @media (max-width:599px) {
-    #ov.cfg-open .cfg { top:auto; left:0; right:0; width:auto; height:50dvh; border-width:1px 0 0; border-radius:14px 14px 0 0; box-shadow:0 -8px 24px rgba(0,0,0,.16); }
+    #ov.cfg-open .cfg { top:auto; left:0; right:0; width:auto; height:auto; max-height:65dvh; overflow:auto; padding-top:6px; border-width:1px 0 0; border-radius:14px 14px 0 0; box-shadow:0 -8px 24px rgba(0,0,0,.16); }
     #ov.cfg-open .ov-head, #ov.cfg-open .ov-body { margin-right:0; }
-    #ov.cfg-open .ov-body { padding-bottom:50dvh; }
+    #ov.cfg-open .ov-body { padding-bottom:var(--cfgh, 50dvh); }
+    #ov.cfg-open .cfg-row { padding:4px 0; }
     #ov.cfg-open .cfg .cfg-grid { grid-template-columns:1fr 1fr; }
   }
   .cfg-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; font-size:13px; }
@@ -663,6 +664,10 @@
   .swb[aria-checked="true"] .sw { background:var(--accent); }
   .swb[aria-checked="true"] .sw::after { left:16px; }
   .swone .swb { width:auto; gap:6px; }
+  .cfg-line { display:flex; align-items:center; flex-wrap:wrap; gap:4px 14px; }
+  .cfg-line input[type="range"] { flex:1 1 140px; min-width:120px; width:auto; margin:0; }
+  .cfg-lab { color:var(--muted); white-space:nowrap; }
+  .cfg-lab b { color:var(--text); }
   /* portrait (téléphone ou tablette) : 3 colonnes d'interrupteurs, plus serrés */
   @media (orientation:portrait) {
     .swgrid { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0 8px; }
@@ -766,7 +771,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v167</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v168</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -836,18 +841,15 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <div class="cfg" id="cfg" role="dialog" aria-label="Réglages du graphique">
       <div class="cfg-head"><strong>Réglages</strong><span class="spacer"></span><div class="seg" id="themeSeg"></div><button class="cfg-x" id="cfgClose" aria-label="Fermer">✕</button></div>
       <div class="cfg-grid">
-        <div class="cfg-row wide"><div class="pair">
-          <div><span>Supports / Résistances</span><div class="seg" id="kindSeg"></div></div>
-          <div><span>Échelle des niveaux</span><div id="lvSeg"></div></div>
-          <div><span>Contacts S/R</span><div id="roleSeg" class="swone" data-label="+ changements de rôle"></div></div>
-        </div></div>
-        <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
-          <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
+        <div class="cfg-row wide"><span>Supports / Résistances <small id="lvSeg"></small></span>
+          <div class="cfg-line"><div class="seg" id="kindSeg"></div><div id="roleSeg" class="swone" data-label="+ changements de rôle"></div></div></div>
+        <div class="cfg-row wide"><div class="cfg-line"><span class="cfg-lab">Précision des contacts <b id="tolVal"></b></span>
+          <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div></div>
         <div class="cfg-row wide"><div class="pair tight">
           <div><span>Moy. mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
           <div><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
         </div></div>
-        <div class="cfg-row wide" id="trendRow"><span>RSI Trends <small>(vert : RSI ≥ haut · rouge : ≤ bas · gris : entre)</small></span>
+        <div class="cfg-row wide" id="trendRow"><span>RSI Trends <small>(vert ≥ haut · rouge ≤ bas)</small></span>
           <div class="trendin"><div id="trendSeg" data-label="Chandeliers colorés" class="swone"></div>
             <label>Longueur<input type="number" id="tLen" min="2" max="100" step="1" inputmode="numeric"></label>
             <label>Haut<input type="number" id="tOb" min="1" max="99" step="1" inputmode="numeric"></label>
@@ -855,11 +857,11 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
         <div class="cfg-row wide"><span>Affichage</span><div class="swgrid">
           <div id="volSeg" data-label="Volumes"></div>
           <div id="axisSeg" data-label="Prix sur l'axe"></div>
-          <div id="dotsSeg" data-label="Points ● de contact"></div>
+          <div id="dotsSeg" data-label="Points ●"></div>
           <div id="projSeg" data-label="Projection ┈"></div>
           <div id="sideSeg" data-label="Infos détaillées"></div>
-          <div id="crossSeg" data-label="Réticule sur le cours"></div>
-          <div id="tbRowsSeg" data-label="Raccourcis sur 2 lignes"></div>
+          <div id="crossSeg" data-label="Réticule aimanté"></div>
+          <div id="tbRowsSeg" data-label="Boutons 2 lignes"></div>
         </div></div>
       </div>
     </div>
@@ -2399,6 +2401,7 @@ function toggleCfg(open) {
 $("cfgBtn").onclick = e => { e.stopPropagation(); toggleCfg(); };
 $("cfgClose").onclick = () => toggleCfg(false);
 $("cfg").addEventListener("click", e => e.stopPropagation());
+try { new ResizeObserver(() => { const c = $("cfg"); $("ov").style.setProperty("--cfgh", (c.classList.contains("show") ? c.offsetHeight : 0) + "px"); }).observe($("cfg")); } catch (e) {}
 /* Le panneau reste ouvert pendant qu'on regarde ou touche le graphique : il se ferme avec ✕, le bouton Réglages ou en quittant le graphique */
 let tolTimer = null;
 $("tolRange").addEventListener("input", e => {
@@ -2488,8 +2491,8 @@ function renderToggles() {
     lg.appendChild(s);
   }));
   const s = $("lvSeg"), tf = selectedLv()[0];
-  s.innerHTML = '<span class="lv-auto">' + { D:"Journaliers", W:"Hebdomadaires", M:"Mensuels", Q:"Trimestriels" }[tf] +
-    " — suivent l'unité du graphique</span>";
+  s.innerHTML = '<span class="lv-auto">· niveaux ' + { D:"journaliers", W:"hebdomadaires", M:"mensuels", Q:"trimestriels" }[tf] +
+    " (unité du graphique)</span>";
 }
 function autoscaleDetail(info) {
   const extra = [];
