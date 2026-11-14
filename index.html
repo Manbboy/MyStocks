@@ -655,6 +655,14 @@
   .cfg-x { border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; padding:2px 6px; }
   .cfg-row { display:flex; flex-direction:column; gap:3px; padding:5px 0; border-top:1px solid var(--border); font-size:11px; color:var(--muted); min-width:0; }
   .cfg-row b { color:var(--text); }
+  .swgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:0 14px; }
+  .swb { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; border:0; background:none; padding:6px 0; font:inherit; font-size:12.5px; color:var(--text); cursor:pointer; text-align:left; }
+  .swb span { min-width:0; }
+  .sw { flex:0 0 auto; width:34px; height:20px; border-radius:10px; background:var(--border); position:relative; transition:background .15s; }
+  .sw::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.3); transition:left .15s; }
+  .swb[aria-checked="true"] .sw { background:var(--accent); }
+  .swb[aria-checked="true"] .sw::after { left:16px; }
+  .swone .swb { width:auto; gap:6px; }
   .trendin { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; }
   .trendin label { display:flex; align-items:center; gap:4px; font-size:11px; }
   .trendin input { width:44px; font-size:13px; padding:3px 4px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); }
@@ -750,7 +758,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v165</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v166</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -823,26 +831,28 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
         <div class="cfg-row wide"><div class="pair">
           <div><span>Supports / Résistances</span><div class="seg" id="kindSeg"></div></div>
           <div><span>Échelle des niveaux</span><div id="lvSeg"></div></div>
+          <div><span>Contacts S/R</span><div id="roleSeg" class="swone" data-label="+ changements de rôle"></div></div>
         </div></div>
         <div class="cfg-row wide"><span>Précision des contacts : <b id="tolVal"></b> <small>(écart max. entre deux contacts d'un même niveau)</small></span>
           <input type="range" id="tolRange" min="0.3" max="6" step="0.1" aria-label="Précision des contacts en pourcentage"></div>
-        <div class="cfg-row wide"><span>Contacts pris en compte</span><div class="seg" id="roleSeg"></div></div>
         <div class="cfg-row wide"><div class="pair tight">
           <div><span>Moy. mobiles <small id="maHint"></small></span><div class="seg" id="maSeg"></div></div>
           <div><span>Indicateur</span><div class="seg" id="rsiSeg"></div></div>
         </div></div>
-        <div class="cfg-row wide" id="trendRow"><span>RSI Trends · chandeliers colorés (vert : RSI ≥ seuil haut · rouge : ≤ seuil bas · gris : entre)</span>
-          <div class="trendin"><div class="seg" id="trendSeg"></div>
+        <div class="cfg-row wide" id="trendRow"><span>RSI Trends <small>(vert : RSI ≥ haut · rouge : ≤ bas · gris : entre)</small></span>
+          <div class="trendin"><div id="trendSeg" data-label="Chandeliers colorés" class="swone"></div>
             <label>Longueur<input type="number" id="tLen" min="2" max="100" step="1" inputmode="numeric"></label>
             <label>Haut<input type="number" id="tOb" min="1" max="99" step="1" inputmode="numeric"></label>
             <label>Bas<input type="number" id="tOs" min="1" max="99" step="1" inputmode="numeric"></label></div></div>
-        <div class="cfg-row"><span>Réticule</span><div class="seg" id="crossSeg"></div></div>
-        <div class="cfg-row"><span>Raccourcis</span><div class="seg" id="tbRowsSeg"></div></div>
-        <div class="cfg-row"><span>Valeurs sur l'axe</span><div class="seg" id="axisSeg"></div></div>
-        <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
-        <div class="cfg-row"><span>Informations détaillées</span><div class="seg" id="sideSeg"></div></div>
-        <div class="cfg-row"><span>Points ● (S/R, R⇄S, canaux, obliques)</span><div class="seg" id="dotsSeg"></div></div>
-        <div class="cfg-row"><span>Projection ┈ (indicateurs proches prolongés sur les prochaines séances)</span><div class="seg" id="projSeg"></div></div>
+        <div class="cfg-row wide"><span>Affichage</span><div class="swgrid">
+          <div id="volSeg" data-label="Volumes"></div>
+          <div id="axisSeg" data-label="Prix sur l'axe"></div>
+          <div id="dotsSeg" data-label="Points ● de contact"></div>
+          <div id="projSeg" data-label="Projection ┈"></div>
+          <div id="sideSeg" data-label="Infos détaillées"></div>
+          <div id="crossSeg" data-label="Réticule sur le cours"></div>
+          <div id="tbRowsSeg" data-label="Raccourcis sur 2 lignes"></div>
+        </div></div>
       </div>
     </div>
     </div>
@@ -2336,6 +2346,16 @@ function paint(b, color) {
   b.classList.add("col");
   b.style.setProperty("--c", color);
 }
+/* Interrupteur oui / non (libellé à gauche, bouton à droite) ; le libellé vient de data-label */
+function renderSw(id, on, onChange) {
+  const box = $(id); if (!box) return;
+  box.className = (box.className.includes("swone") ? "swone " : "") + "swrow";
+  let b = box.querySelector(".swb");
+  if (!b) { b = document.createElement("button"); b.type = "button"; b.className = "swb"; b.setAttribute("role", "switch");
+    b.innerHTML = "<span></span><i class=\"sw\" aria-hidden=\"true\"></i>"; b.firstChild.textContent = box.dataset.label || ""; box.appendChild(b); }
+  b.setAttribute("aria-checked", on ? "true" : "false");
+  b.onclick = () => onChange(!on);
+}
 function multiSeg(id, opts, selected, onChange, colorOf, allLabel) {
   const s = $(id); s.innerHTML = "";
   opts.forEach(([v, label]) => {
@@ -2396,10 +2416,10 @@ function renderToggles() {
   $("volBtn").classList.toggle("on", volOn); $("volBtn").setAttribute("aria-pressed", volOn ? "true" : "false");
   $("rsiBtn").classList.toggle("on", indMode() === "rsi"); $("rsiBtn").setAttribute("aria-pressed", indMode() === "rsi" ? "true" : "false");
   $("rtBtn").classList.toggle("on", indMode() === "trend"); $("rtBtn").classList.toggle("nopane", indMode() === "trend" && prefs.rtPane === false); $("rtBtn").setAttribute("aria-pressed", indMode() === "trend" ? "true" : "false");
-  renderSeg("volSeg", [[true,"Afficher"],[false,"Masquer"]], volOn, v => setVol(v));
-  renderSeg("sideSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.side !== false, v => setSide(v));
-  renderSeg("projSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.proj !== false, v => { prefs.proj = v; savePrefs(); drawProj(); renderToggles(); });
-  renderSeg("dotsSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.dots !== false, v => {
+  renderSw("volSeg", volOn, v => setVol(v));
+  renderSw("sideSeg", prefs.side !== false, v => setSide(v));
+  renderSw("projSeg", prefs.proj !== false, v => { prefs.proj = v; savePrefs(); drawProj(); renderToggles(); });
+  renderSw("dotsSeg", prefs.dots !== false, v => {
     prefs.dots = v; savePrefs(); refreshLevels(); applyHighlight();
   });
   const mmOn = selMaP().length > 0;
@@ -2411,13 +2431,13 @@ function renderToggles() {
   const n = (selectedKinds().length ? selectedLv().length : 0) + selMaP().length;
   $("cfgCount").textContent = n ? String(n) : "";
   multiSeg("maSeg", MA_PERIODS.map(p => [p, String(p)]), selMaP(), v => { prefs.maP = v; savePrefs(); refreshLevels(); }, v => MA_COL[v], "Tout/rien");
-  renderSeg("tbRowsSeg", [[1,"1 ligne"],[2,"2 lignes"]], prefs.tbRows === 2 ? 2 : 1, v => { prefs.tbRows = v; savePrefs(); applyTbRows(); renderToggles(); });
-  renderSeg("axisSeg", [[false,"Masquer"],[true,"Afficher"]], !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
-  renderSeg("crossSeg", [["free","Libre"],["magnet","Sur le cours"]], prefs.cross === "magnet" ? "magnet" : "free", v => {
-    prefs.cross = v; savePrefs(); renderToggles();
+  renderSw("tbRowsSeg", prefs.tbRows === 2, on => { prefs.tbRows = on ? 2 : 1; savePrefs(); applyTbRows(); renderToggles(); });
+  renderSw("axisSeg", !!prefs.axis, v => { prefs.axis = v; savePrefs(); refreshLevels(); });
+  renderSw("crossSeg", prefs.cross === "magnet", on => {
+    prefs.cross = on ? "magnet" : "free"; savePrefs(); renderToggles();
     [ovChart, rsiChart, lvChart].forEach(c => { if (c) c.applyOptions({ crosshair:crossOpt() }); });
   });
-  renderSeg("roleSeg", [[false,"Rebonds et rejets seulement"],[true,"+ changements de rôle"]], !!prefs.role, v => {
+  renderSw("roleSeg", !!prefs.role, v => {
     prefs.role = v; savePrefs();
     if (ovData) { ovLevels = computeLevels(ovData, ovItem.last, tolPct(), v); refreshLevels(); }
   });
@@ -2427,7 +2447,7 @@ function renderToggles() {
   paint($("rsiSeg").children[1], RSI_COL);
   paint($("rsiSeg").children[2], RSI_COL);
   $("trendRow").style.display = indMode() === "trend" ? "" : "none";
-  renderSeg("trendSeg", [[true,"Colorer"],[false,"Normaux"]], prefs.trendBars !== false, v => { prefs.trendBars = v; savePrefs(); renderToggles(); setCandles(); refreshMulti(); });
+  renderSw("trendSeg", prefs.trendBars !== false, v => { prefs.trendBars = v; savePrefs(); renderToggles(); setCandles(); refreshMulti(); });
   [["tLen", TREND.len], ["tOb", TREND.ob], ["tOs", TREND.os]].forEach(([id, v]) => { if (document.activeElement !== $(id)) $(id).value = v; });
   const ks = $("kindSeg"); ks.innerHTML = "";
   const selK = selectedKinds();
@@ -4713,7 +4733,7 @@ function setSide(v) {
   prefs.side = v; savePrefs();
   document.body.classList.toggle("noside", v === false);
   $("sideBtn").textContent = v === false ? "☰ Infos" : "✕ Infos";
-  if (typeof renderSeg === "function" && $("sideSeg")) renderSeg("sideSeg", [[true,"Afficher"],[false,"Masquer"]], v !== false, setSide);
+  if (typeof renderSw === "function" && $("sideSeg")) renderSw("sideSeg", v !== false, setSide);
   setTimeout(() => { window.dispatchEvent(new Event("resize")); }, 30);
 }
 $("sideBtn").onclick = () => setSide(prefs.side === false);
