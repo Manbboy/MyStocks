@@ -733,7 +733,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v162</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v163</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -825,6 +825,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
         <div class="cfg-row"><span>Volumes</span><div class="seg" id="volSeg"></div></div>
         <div class="cfg-row"><span>Informations détaillées</span><div class="seg" id="sideSeg"></div></div>
         <div class="cfg-row"><span>Points ● (S/R, R⇄S, canaux, obliques)</span><div class="seg" id="dotsSeg"></div></div>
+        <div class="cfg-row"><span>Projection ┈ (indicateurs proches prolongés sur les prochaines séances)</span><div class="seg" id="projSeg"></div></div>
       </div>
     </div>
     </div>
@@ -853,6 +854,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <div class="levels">
       <div class="lv" id="boxRes"><h3 style="color:var(--res)">Résistances</h3><div id="ovRes"></div></div>
       <div class="lv" id="boxSup"><h3 style="color:var(--sup)">Supports</h3><div id="ovSup"></div></div>
+      <div class="lv" id="boxProj" style="display:none"><h3>Projection ┈</h3><div id="ovProjList"></div></div>
       <div class="lv" id="boxTino"><h3>Tino</h3><div id="ovTinoList"></div></div>
       <div class="lv" id="boxGeo"><h3>Canaux et obliques</h3><div id="ovGeoList"></div></div>
       <div class="lv" id="boxFlip"><h3>Bascules R⇄S</h3><div id="ovFlipList"></div></div>
@@ -2011,12 +2013,13 @@ function geoMarks(items, sel) {
 function drawGeo() {
   geoSeries.forEach(s => ovChart && ovChart.removeSeries(s));
   geoSeries = []; ovGeo = [];
-  if ((!prefs.chan && !prefs.tl) || !ovChart || !ovData) { renderGeoList(); return; }
+  if ((!prefs.chan && !prefs.tl) || !ovChart || !ovData) { renderGeoList(); drawProj(); return; }
   const iv = prefs.iv || "D";
   ovGeo = geoItems(barsFor(ovData, iv), iv);
   if (hiGeo != null && hiGeo >= ovGeo.length) hiGeo = null;
   geoSeries = drawGeoOn(ovChart, ovGeo, hiGeo);
   renderGeoList();
+  drawProj();
 }
 function renderGeoList() {
   const box = $("ovGeoList"); if (!box) return;
@@ -2054,7 +2057,7 @@ function drawFlips() {
   flipSeries.forEach(s => ovChart && ovChart.removeSeries(s));
   flipSeries = [];
   ovFlips = [];
-  if (!prefs.flip || !ovChart || !ovData) { renderFlipList(); return; }
+  if (!prefs.flip || !ovChart || !ovData) { renderFlipList(); drawProj(); return; }
   const iv = prefs.iv || "D", rows = barsFor(ovData, iv), last = rows[rows.length - 1][0];
   ovFlips = flipLevels(rows, iv, tolPct());
   ovFlips.forEach((f, n) => {
@@ -2066,6 +2069,7 @@ function drawFlips() {
   });
   if (hiFlip != null && hiFlip >= ovFlips.length) hiFlip = null;
   renderFlipList();
+  drawProj();
 }
 function flipMarkers(only) {
   const marks = [];
@@ -2381,6 +2385,7 @@ function renderToggles() {
   $("rtBtn").classList.toggle("on", indMode() === "trend"); $("rtBtn").classList.toggle("nopane", indMode() === "trend" && prefs.rtPane === false); $("rtBtn").setAttribute("aria-pressed", indMode() === "trend" ? "true" : "false");
   renderSeg("volSeg", [[true,"Afficher"],[false,"Masquer"]], volOn, v => setVol(v));
   renderSeg("sideSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.side !== false, v => setSide(v));
+  renderSeg("projSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.proj !== false, v => { prefs.proj = v; savePrefs(); drawProj(); renderToggles(); });
   renderSeg("dotsSeg", [[true,"Afficher"],[false,"Masquer"]], prefs.dots !== false, v => {
     prefs.dots = v; savePrefs(); refreshLevels(); applyHighlight();
   });
@@ -2489,10 +2494,11 @@ function drawMas() {
       autoscaleInfoProvider: () => null,
     });
     s.setData(pts);
-    s._n = n;
+    s._n = n; s._pts = pts;
     ovMa.push(s);
   }));
   applyHighlight();
+  drawProj();
 }
 /* Indicateur sous le graphique : "none", "rsi" (RSI 14 classique) ou "trend" (RSI Trends, d'après zzzcrypto123) */
 const TV_COL = { green:"#4CAF50", red:"#FF5252", gray:"#787B86" };   // color.green / color.red / color.gray de TradingView
@@ -2674,6 +2680,94 @@ function addDetailLevels(series, info) {
 const fade = c => /^#[0-9a-f]{6}$/i.test(c) ? c + "40" : c;
 /* Met en évidence un niveau : trait épais, étiquette sur l'axe, flèches sur ses contacts ; les autres s'estompent */
 const dim = (c, a = "59") => /^#[0-9a-f]{6}$/i.test(c) ? c + a : c;   // ~35 % d'opacité
+/* ---------- Projection ┈ : les indicateurs les plus proches du cours, prolongés en pointillés sur les prochaines séances ----------
+   Pour chaque famille affichée (obliques, canal, supports / résistances, R⇄S, moyennes mobiles) : le plus proche sous le cours
+   et le plus proche au-dessus, s'ils sont assez près. Droites : prolongées telles quelles ; horizontaux : à plat ;
+   moyennes : pente moyenne des 10 derniers chandeliers. Le bloc « Projection » donne le cadre (plancher / plafond) à l'horizon. */
+const PROJ = { D:{ h:20, max:12, u:"séances" }, W:{ h:13, max:20, u:"semaines" }, M:{ h:12, max:35, u:"mois" }, Q:{ h:4, max:50, u:"trimestres" } };
+let projSeries = [], ovProj = [];
+function futureTimes(last, iv, h) {
+  const out = [], d = dOf(last);
+  while (out.length < h) {
+    if (iv === "M" || iv === "Q") d.setUTCMonth(d.getUTCMonth() + (iv === "Q" ? 3 : 1), 1);
+    else { d.setUTCDate(d.getUTCDate() + (iv === "W" ? 7 : 1)); if (iv === "D" && (d.getUTCDay() === 0 || d.getUTCDay() === 6)) continue; }
+    out.push(d.toISOString().slice(0, 10));
+  }
+  return out;
+}
+function projCandidates(rows, iv) {
+  const len = rows.length, C = rows[len - 1][4], out = [];
+  // obliques intactes : prolongées avec leur pente
+  ovGeo.forEach(g => {
+    if (g.g === "tl" && !g.broken) out.push({ fam:"tl", name:g.kind === "sup" ? "Oblique de support" : "Oblique de résistance", col:TL_COL[g.kind],
+      at:k => g.base + g.m * (len - 1 + k - g.a) });
+  });
+  // canal intact le plus étroit : ses deux bords
+  const ch = ovGeo.filter(g => g.g === "chan" && !g.broken).sort((a, b) => (a.up1 - a.lo1) / a.lo1 - (b.up1 - b.lo1) / b.lo1)[0];
+  if (ch && ch.bars > 0) {
+    const mU = (ch.up1 - ch.up0) / ch.bars, mL = (ch.lo1 - ch.lo0) / ch.bars;
+    out.push({ fam:"chanU", name:"Haut du canal", col:CHAN_COL, at:k => ch.up1 + mU * k, both:true });
+    out.push({ fam:"chanL", name:"Bas du canal", col:CHAN_COL, at:k => ch.lo1 + mL * k, both:true });
+  }
+  // supports / résistances horizontaux affichés
+  lineMeta.forEach(m => { if (m.level && !m.level.extreme) out.push({ fam:"sr", name:(m.p === "S" ? "Support " : "Résistance ") + LV[m.tf].short, col:m.opts.color, at:() => m.level.price, flat:true }); });
+  // bascules de rôle
+  ovFlips.forEach(f => out.push({ fam:"flip", name:f.type === "RS" ? "R→S" : "S→R", col:FLIP_COL[f.type], at:() => f.price, flat:true }));
+  // moyennes mobiles : pente moyenne des 10 derniers chandeliers
+  ovMa.forEach(sr => {
+    const p = sr._pts; if (!p || p.length < 11) return;
+    const v = p[p.length - 1].value, m = (v - p[p.length - 11].value) / 10;
+    out.push({ fam:"ma" + sr._n, name:"MM" + sr._n, col:MA_COL[sr._n], at:k => v + m * k, ma:true });     // prolongée sur la moitié de l'horizon
+  });
+  return out.map(c => Object.assign(c, { now:c.at(0) })).filter(c => c.now > 0);
+}
+function drawProj() {
+  projSeries.forEach(x => { try { ovChart.removeSeries(x); } catch (e) {} }); projSeries = []; ovProj = [];
+  const iv = prefs.iv || "D", P = PROJ[iv];
+  if (prefs.proj === false || !P || !ovChart || !ovData || splitN() !== 1) { renderProjList(); return; }
+  const rows = barsFor(ovData, iv); if (rows.length < 30) { renderProjList(); return; }
+  const C = rows[rows.length - 1][4], last = rows[rows.length - 1][0];
+  const cands = projCandidates(rows, iv), keep = [];
+  // par famille : le plus proche sous le cours et le plus proche au-dessus (assez près pour compter dans les prochaines séances)
+  [...new Set(cands.map(c => c.fam))].forEach(f => {
+    const fam = cands.filter(c => c.fam === f && Math.abs(c.now / C - 1) * 100 <= P.max);
+    if (fam.length && fam[0].both) { keep.push(...fam); return; }
+    const below = fam.filter(c => c.now <= C).sort((a, b) => b.now - a.now)[0], above = fam.filter(c => c.now > C).sort((a, b) => a.now - b.now)[0];
+    if (below) keep.push(below); if (above) keep.push(above);
+  });
+  if (!keep.length) { renderProjList(); return; }
+  const fut = futureTimes(last, iv, P.h);
+  const ws = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+  ws.setData(fut.map(t => ({ time:t }))); projSeries.push(ws);
+  keep.forEach(c => {
+    const s = ovChart.addLineSeries({ color:c.col, lineWidth:2, lineStyle:LW.LineStyle.SparseDotted, priceLineVisible:false, lastValueVisible:false,
+      crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    const h = c.ma ? Math.ceil(P.h / 2) : P.h;
+    s.setData([{ time:last, value:c.now }, { time:fut[h - 1], value:c.at(h) }]);
+    projSeries.push(s);
+    ovProj.push({ name:c.name, col:c.col, now:c.now, end:c.at(h), h, ma:!!c.ma });
+  });
+  renderProjList();
+  projView();
+}
+function renderProjList() {
+  const box = $("ovProjList"); if (!box) return;
+  const iv = prefs.iv || "D", P = PROJ[iv], on = prefs.proj !== false && ovProj.length;
+  $("boxProj").style.display = on ? "" : "none";
+  box.innerHTML = ""; if (!on) return;
+  const C = ovItem && ovItem.last, cur = ovItem && ovItem.currency;
+  const pc = v => fmtPct(Math.round((v / C - 1) * 10000) / 100);
+  const row = (col, a, b) => { const d = document.createElement("div"); d.className = "it"; d.style.setProperty("--c", col);
+    const x = document.createElement("span"); x.style.color = col; x.textContent = a; const y = document.createElement("small"); y.textContent = b; d.append(x, y); box.appendChild(d); };
+  // cadre : plus haut repère sous le cours et plus bas au-dessus, à l'horizon
+  const full = ovProj.filter(p => !p.ma).length ? ovProj.filter(p => !p.ma) : ovProj;
+  const lo = full.filter(p => p.end < C).sort((a, b) => b.end - a.end)[0], hi = full.filter(p => p.end >= C).sort((a, b) => a.end - b.end)[0];
+  if (lo || hi) row("#64748b", "Cadre dans " + P.h + " " + P.u, (lo ? "plancher " + fmt(lo.end, cur) + " (" + lo.name + ", " + pc(lo.end) + ")" : "pas de plancher proche") +
+    " · " + (hi ? "plafond " + fmt(hi.end, cur) + " (" + hi.name + ", " + pc(hi.end) + ")" : "pas de plafond proche"));
+  ovProj.slice().sort((a, b) => b.end - a.end).forEach(p => row(p.col, p.name + " ┈ " + fmt(p.end, cur),
+    "aujourd'hui " + fmt(p.now, cur) + " (" + pc(p.now) + ") → dans " + p.h + " " + P.u + " " + pc(p.end) + (p.ma ? " · si la pente actuelle se maintient" : "")));
+}
+
 /* ----- Sélection rapide sous le graphique : une pastille par niveau / moyenne mobile, du plus haut au plus bas prix ----- */
 function toggleLevelKey(tf, p, i) {
   onLevelTap(ovItem, tf, p, i, document.createElement("div"));
@@ -2977,6 +3071,15 @@ function defaultView(rows, iv) {
   }
   const show = { I: 9999, D: Math.max(21, RANGES.find(r => r[0] === prefs.range)[2]), W: 104, M: 60, Q: 9999 }[iv];
   padRange(ovChart, rows.length, Math.min(show, rows.length + 0.5));
+  projView();
+}
+/* Projection affichée et vue calée à droite : on élargit le bord droit pour voir les pointillés jusqu'à l'horizon */
+function projView() {
+  const iv = prefs.iv || "D", P = PROJ[iv];
+  if (!P || !ovChart || !ovData || !ovProj.length || splitN() !== 1) return;
+  const n = barsFor(ovData, iv).length, ts = ovChart.timeScale(), r = ts.getVisibleLogicalRange();
+  if (!r || r.to < n - 2 || r.to >= n - 1 + P.h + 1) return;          // vue dans le passé : on n'y touche pas
+  ts.setVisibleLogicalRange({ from:r.from, to:n - 1 + P.h + 1 });
 }
 /* « Tout voir » : tout l'historique de l'unité affichée, hauteur ajustée ; un second toucher revient à la vue d'avant */
 let fitPrev = null;
@@ -3058,7 +3161,7 @@ function drawDetail(keep) {
   ovCandles = c;
   ovLines = addDetailLevels(c, info);
   ovMa = [];
-  flipSeries = []; geoSeries = [];
+  flipSeries = []; geoSeries = []; projSeries = []; ovGeo = []; ovFlips = [];     // séries de l'ancien graphique (supprimé)
   drawMas();
   drawFlips();
   drawGeo();

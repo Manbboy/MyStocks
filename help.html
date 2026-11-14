@@ -7,7 +7,7 @@
 <nav class="h-toc">
   <a href="#h-data">1. Données</a><a href="#h-tabs">2. Onglets</a><a href="#h-list">3. Listes et vue compacte</a><a href="#h-chart">4. Graphique détaillé</a>
   <a href="#h-ma">5. Moyennes mobiles</a><a href="#h-sr">6. Supports / résistances</a><a href="#h-flip">7. Bascules R⇄S</a><a href="#h-tl">8. Obliques</a>
-  <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a>
+  <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a><a href="#h-proj">12 bis. Projection ┈</a>
   <a href="#h-tino">13. Tino</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder</a><a href="#h-why">16. Pourquoi ça bouge</a>
   <a href="#h-pf">17. Portfolio</a><a href="#h-al">18. Alertes</a><a href="#h-disp">19. Affichage</a><a href="#h-gl">20. Lexique</a>
 </nav>
@@ -202,6 +202,31 @@
 <details id="h-vol"><summary>12. Volumes (Vol)</summary>
 <p>Nombre de titres échangés par chandelier (barres en bas du graphique). En semaine, mois et trimestre : somme des séances.</p>
 <p>Un volume fort confirme une cassure : « À regarder » exige au moins 1,5 fois la moyenne des 20 dernières séances.</p>
+</details>
+
+<details id="h-proj"><summary>12 bis. Projection ┈ (prolongement des indicateurs proches)</summary>
+<h4>Principe</h4>
+<p>Les indicateurs <b>les plus proches du cours</b> sont prolongés en pointillés sur les prochaines séances. On voit ainsi où le cours pourrait toucher, rebondir ou être rejeté, et le <b>cadre</b> de la zone d'intervention.</p>
+<h4>Ce qui est prolongé</h4>
+<ul>
+<li>Uniquement les indicateurs affichés : obliques intactes, canal, supports / résistances, R⇄S, moyennes mobiles. Tino a sa propre projection (§ 13).</li>
+<li>Pour chaque famille : le plus proche <b>sous</b> le cours et le plus proche <b>au-dessus</b>. Pour le canal : les deux bords du canal intact le plus étroit.</li>
+<li>Seulement s'ils sont assez près du cours : à moins de 12 % (J), 20 % (S), 35 % (M) ou 50 % (T).</li>
+</ul>
+<h4>Comment</h4>
+<ul>
+<li><b>Obliques et canal</b> : la droite continue avec sa pente.</li>
+<li><b>Supports, résistances, R⇄S</b> : à plat.</li>
+<li><b>Moyennes mobiles</b> : pente moyenne des 10 derniers chandeliers, prolongée sur la moitié de l'horizon seulement (une moyenne s'infléchit vite).</li>
+<li><b>Horizon</b> : 20 séances (J), 13 semaines (S), 12 mois (M), 4 trimestres (T). Rien en 15 min ni en vue 2 / 4 graphiques.</li>
+<li>Si la vue est calée sur la dernière bougie, elle s'élargit à droite pour montrer les pointillés.</li>
+</ul>
+<h4>Bloc « Projection » sous le graphique</h4>
+<ul>
+<li><b>Cadre</b> : à l'horizon, le plus haut repère sous le cours (<b>plancher</b>) et le plus bas au-dessus (<b>plafond</b>). Ce sont les droites et niveaux qui comptent ; les moyennes n'y entrent que s'il n'y a rien d'autre.</li>
+<li>Puis chaque prolongement : sa valeur aujourd'hui et à l'horizon, en % du cours actuel.</li>
+</ul>
+<p>Réglage : Réglages → « Projection ┈ » (Afficher / Masquer). C'est une extrapolation géométrique : elle suppose que les droites restent valables, ce qui n'est jamais garanti.</p>
 </details>
 
 <details id="h-tino"><summary>13. Tino (zones, oblique longue, canal, MM200)</summary>
