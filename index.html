@@ -123,6 +123,21 @@
   .pf-view { padding:10px 0 20px; }
   /* onglet « À regarder » */
   .sig-n { display:inline-block; min-width:16px; padding:0 5px; border-radius:9px; background:#00c853; color:#fff; font-size:11px; font-weight:800; line-height:16px; margin-left:3px; }
+  .help { font-size:14px; line-height:1.5; color:var(--text); padding:2px 4px 30px; max-width:900px; }
+  .help h2 { font-size:18px; margin:4px 0 6px; }
+  .help h4 { font-size:14px; margin:12px 0 4px; color:var(--accent); }
+  .help .h-lead { margin:0 0 6px; } .help .h-warn { font-size:12.5px; color:var(--muted); margin:0 0 10px; }
+  .help .h-toc { display:flex; flex-wrap:wrap; gap:4px 6px; margin:0 0 12px; }
+  .help .h-toc a { font-size:12.5px; padding:3px 8px; border:1px solid var(--border); border-radius:12px; color:var(--text); text-decoration:none; background:var(--card); }
+  .help details { border:1px solid var(--border); border-radius:10px; background:var(--card); margin:0 0 8px; padding:0 12px; scroll-margin-top:8px; }
+  .help details[open] { padding-bottom:10px; }
+  .help summary { cursor:pointer; font-weight:700; padding:11px 0; list-style-position:outside; }
+  .help ul, .help ol { margin:4px 0 6px; padding-left:20px; } .help li { margin:3px 0; }
+  .help p { margin:6px 0; }
+  .help .h-t { border-collapse:collapse; font-size:12.5px; margin:6px 0; }
+  .help .h-t th, .help .h-t td { border:1px solid var(--border); padding:3px 7px; text-align:left; }
+  .help .h-dl dt { font-weight:700; margin-top:6px; } .help .h-dl dd { margin:0 0 0 12px; color:var(--muted); }
+  .help .h-foot { font-size:12px; color:var(--muted); text-align:center; margin-top:14px; }
   .sig-intro { font-size:13px; color:var(--muted); line-height:1.45; margin:2px 2px 6px; }
   .sig-intro b { color:var(--text); }
   .sig-intro details { margin-top:6px; } .sig-intro summary { cursor:pointer; color:var(--accent); font-weight:600; }
@@ -718,7 +733,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v161</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v162</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1103,10 +1118,15 @@ function renderTabs() {
   ab.innerHTML = "Alertes" + (nWait ? ' <span class="al-n">' + nWait + "</span>" : "");
   ab.onclick = () => { prefs.view = "alerts"; savePrefs(); render(); };
   t.appendChild(ab);
+  const hb = document.createElement("button");                 // onglet « Help » (explication des méthodes et indicateurs)
+  hb.className = "tab help-tab" + (prefs.view === "help" ? " active" : "");
+  hb.textContent = "Help";
+  hb.onclick = () => { prefs.view = "help"; savePrefs(); render(); };
+  t.appendChild(hb);
   fitTabs();
 }
 /* Onglets : si tout ne tient pas sur une ligne, noms abrégés (MKT, EU, US…), puis espacement réduit — pour ne jamais devoir faire défiler */
-const TAB_SHORT = { "Market":"MKT", "EU":"EU", "US":"US", "Others":"OTH", "Crypto":"CRY", "Hold":"HLD", "Portfolio":"PTF", "À regarder":"ATT", "Alertes":"ALE" };
+const TAB_SHORT = { "Market":"MKT", "EU":"EU", "US":"US", "Others":"OTH", "Crypto":"CRY", "Hold":"HLD", "Portfolio":"PTF", "À regarder":"ATT", "Alertes":"ALE", "Help":"?" };
 function fitTabs() {
   const t = $("tabs"); if (!t || !t.clientWidth) return;
   const btns = [...t.children];
@@ -1253,6 +1273,7 @@ function render() {
   if (prefs.view === "pf" && typeof renderPf === "function") { renderPf(); return; }
   if (prefs.view === "sig" && typeof renderSig === "function") { renderSig(); return; }
   if (prefs.view === "alerts" && typeof renderAlertsView === "function") { renderAlertsView(); return; }
+  if (prefs.view === "help") { renderHelp(); return; }
   document.body.classList.remove("pf-mode"); if ($("pfView")) $("pfView").hidden = true;
   // « Par ligne » : graphiques par ligne en vue graphiques, colonnes du tableau en vue compacte (deux réglages indépendants)
   if (prefs.gridCompact) renderColsCompact();
@@ -5267,6 +5288,26 @@ function periodPct(el, last) {
   show(); apply(true);
   document.addEventListener("visibilitychange", () => { if (!document.hidden && prefs.rotLock) apply(true); });
 })();
+
+/* ===== Onglet Help : page d'aide (help.html), à tenir à jour à chaque changement d'un indicateur ===== */
+let helpHtml = null;
+async function renderHelp() {
+  document.body.classList.add("pf-mode");
+  const box = $("pfView"); box.hidden = false;
+  if (!helpHtml) {
+    box.innerHTML = '<div class="msg">Chargement…</div>';
+    try { const r = await fetch("help.html?v=" + encodeURIComponent($("appVer").textContent), { cache:"no-store" }); if (!r.ok) throw 0; helpHtml = await r.text(); }
+    catch (e) { box.innerHTML = '<div class="msg">Page d\'aide indisponible (pas de connexion ?).</div>'; return; }
+  }
+  if (prefs.view !== "help") return;
+  box.innerHTML = helpHtml;
+  // sommaire : ouvre la rubrique et la fait défiler jusqu'en haut (sans toucher à l'adresse de la page)
+  box.querySelectorAll(".h-toc a").forEach(a => a.onclick = e => {
+    e.preventDefault();
+    const d = box.querySelector(a.getAttribute("href")); if (!d) return;
+    d.open = true; d.scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+}
 
 /* Onglet Alertes : la note passe sur une 2e ligne si elle ne tient pas à côté du nom */
 function fitAlertNotes(root) {

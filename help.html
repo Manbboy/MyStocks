@@ -1,0 +1,369 @@
+<!-- Page d'aide de « Mes actions », chargée dans l'onglet HELP. À METTRE À JOUR à chaque changement d'un indicateur ou d'un calcul. -->
+<div class="help">
+<h2>Help : comment lire l'appli</h2>
+<p class="h-lead">Chaque méthode et chaque indicateur sont décrits ici : <b>ce qu'ils montrent</b>, <b>comment ils sont calculés</b> (avec les vrais paramètres de l'appli) et <b>comment les lire</b>. Touchez un titre pour l'ouvrir.</p>
+<p class="h-warn">Ce sont des outils d'analyse technique, calculés automatiquement. Ils aident à regarder un graphique ; ce ne sont ni des prévisions ni des conseils d'investissement.</p>
+
+<nav class="h-toc">
+  <a href="#h-data">1. Données</a><a href="#h-tabs">2. Onglets</a><a href="#h-list">3. Listes et vue compacte</a><a href="#h-chart">4. Graphique détaillé</a>
+  <a href="#h-ma">5. Moyennes mobiles</a><a href="#h-sr">6. Supports / résistances</a><a href="#h-flip">7. Bascules R⇄S</a><a href="#h-tl">8. Obliques</a>
+  <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a>
+  <a href="#h-tino">13. Tino</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder</a><a href="#h-why">16. Pourquoi ça bouge</a>
+  <a href="#h-pf">17. Portfolio</a><a href="#h-al">18. Alertes</a><a href="#h-disp">19. Affichage</a><a href="#h-gl">20. Lexique</a>
+</nav>
+
+<details id="h-data"><summary>1. D'où viennent les données</summary>
+<h4>Cours du soir (historique)</h4>
+<ul>
+<li>Source : <b>Yahoo Finance</b>, récupéré chaque soir par un script automatique sur GitHub (et à chaque modification de la liste des valeurs).</li>
+<li>Cours <b>réels</b>, ajustés des divisions d'actions mais <b>pas des dividendes</b> (comme TradingView et ProRealTime).</li>
+<li>Journalier : les <b>10 dernières années</b> de séances. Mensuel : <b>tout l'historique disponible</b> (utilisé en M, en T et pour Tino).</li>
+<li>Semaine, mois, trimestre : regroupement des séances (ouverture du premier jour, plus haut et plus bas de la période, clôture du dernier jour, volumes additionnés).</li>
+<li>Si Yahoo oublie la dernière séance (fréquent pour l'Europe), elle est redemandée à part, ou reconstituée à partir des cours horaires ; une séance déjà connue n'est jamais perdue.</li>
+</ul>
+<h4>Cours en direct</h4>
+<ul>
+<li>Pendant la séance, un relais (Cloudflare) va chercher les cours chez Yahoo et les renvoie à l'appli toutes les 5, 15, 30 ou 60 secondes (réglable).</li>
+<li>Le graphique 1J et l'unité 15 min utilisent les chandeliers de 5 minutes du relais.</li>
+<li>Les indicateurs « du jour » (RSI Trends des listes, variation) sont recalculés avec le cours en direct ; les autres (niveaux, Tino, À regarder) sont ceux du dernier calcul du soir.</li>
+</ul>
+</details>
+
+<details id="h-tabs"><summary>2. Les onglets</summary>
+<ul>
+<li><b>Market (MKT)</b> : indices, futures et cryptos de référence, regroupés Europe / USA / Futures / Cryptos, toujours dans l'ordre défini.</li>
+<li><b>EU, US, Others (OTH), Crypto (CRY)</b> : vos listes de valeurs.</li>
+<li><b>Hold (HLD)</b> : les valeurs que vous détenez (positions ouvertes du Portfolio), regroupées Europe / USA / Cryptos ; le tri choisi s'applique dans chaque groupe.</li>
+<li><b>Portfolio (PTF)</b> : achats, ventes et performances (§ 17).</li>
+<li><b>À regarder (ATT)</b> : situations techniques repérées le soir (§ 15). La pastille donne le nombre de valeurs avec une situation haussière à la dernière séance.</li>
+<li><b>Alertes (ALE)</b> : vos alertes de prix Telegram (§ 18). La pastille donne le nombre d'alertes en attente.</li>
+<li><b>Help (?)</b> : cette page.</li>
+</ul>
+<p>Si les noms ne tiennent pas sur une ligne, ils sont abrégés (MKT, EU, US, OTH, CRY, HLD, PTF, ATT, ALE, ?), pour ne jamais devoir faire défiler les onglets.</p>
+</details>
+
+<details id="h-list"><summary>3. Les listes : vue graphiques et vue compacte</summary>
+<h4>Vue graphiques</h4>
+<ul>
+<li>Un petit graphique par valeur, sur la période choisie : <b>1J, 1M (21 séances), 3M (63), 6M (126), 1A (252), 2A (504), 5A (1 260), Max</b>.</li>
+<li><b>1J</b> : séance du jour en 5 minutes ; la ligne de référence est la <b>clôture officielle de la veille</b>.</li>
+<li><b>Variation affichée</b> : en 1J, la variation du jour ; en 1M, 3M… la <b>variation sur la période</b> (cours actuel ÷ clôture du début de période − 1). La couleur de la courbe suit ce signe.</li>
+<li>« Par ligne » : nombre de graphiques côte à côte.</li>
+</ul>
+<h4>Vue compacte (tableau)</h4>
+<ul>
+<li><b>Valeur</b> : nom (coupé par « … » si trop long), symbole.</li>
+<li><b>Cours</b> et <b>Jour</b> : dernier cours et variation du jour (ou de la période en 1M, 3M…). Seul ce % est en vert / rouge.</li>
+<li><b>Niveau</b> : le support (S) ou la résistance (R) le plus proche, toutes échelles confondues, s'il est à <b>moins de 2 %</b> du cours (ex. « S·S 2 contacts »).</li>
+<li><b>RT</b> : changement du RSI Trends journalier <b>aujourd'hui</b> (▲ vers le vert, ▼ vers le rouge ; la couleur est le nouvel état). Vide s'il n'a pas changé (§ 11).</li>
+<li><b>Cass.</b> : sortie de canal, d'oblique, de résistance ou de support ces 5 dernières séances (§ 14).</li>
+<li><b>◆ / ★ Tino</b> (tableau sur plusieurs colonnes) : le cours est dans une zone Tino ou à moins de 8 % au-dessus (§ 13).</li>
+<li>« Colonnes » : nombre de colonnes du tableau (1 = tableau détaillé). Les choix impossibles sur l'écran (moins de 160 px par colonne) sont grisés.</li>
+<li>Touchez une cellule RT ou Cass. pour lire son explication.</li>
+</ul>
+<h4>Tris</h4>
+<ul>
+<li>Ordre par défaut, meilleure / pire variation (du jour, ou de la période choisie en 1M, 3M…), nom, <b>plus proche d'un support</b> ou <b>d'une résistance</b> (écart en % au niveau le plus proche, toutes échelles).</li>
+<li>Market garde toujours son ordre ; Hold trie à l'intérieur de chaque région.</li>
+</ul>
+<h4>Couleurs (bouton 🎨)</h4>
+<ul>
+<li>3 palettes pour les graphiques (actuelle, aire pleine, aire pleine + carte teintée) et 3 pour la vue compacte (actuelle, cellules teintées, teinte graduée).</li>
+<li>Teinte graduée : intensité proportionnelle à la variation, <b>maximale à partir de 4 %</b>. Sur une période (1M, 3M…), la variation est divisée par √(nombre de mois de la période) : il faut un écart plus grand sur 1 an que sur 1 mois pour la même teinte.</li>
+</ul>
+</details>
+
+<details id="h-chart"><summary>4. Le graphique détaillé</summary>
+<ul>
+<li><b>Unités</b> : 15 min, J (jour), S (semaine), M (mois), T (trimestre). M et T utilisent tout l'historique.</li>
+<li><b>Boutons</b> : MM, S/R, Canal, Obl., Tino, R⇄S, RSI, RT, Vol : chacun est décrit plus bas. Le carré « 1 » affiche 1, 2 ou 4 graphiques à la fois.</li>
+<li><b>Toucher un niveau, une moyenne ou une oblique</b> (sur le graphique ou dans les listes sous le graphique) : il est mis en évidence avec ses contacts (cercles), le reste s'estompe ; toucher à nouveau pour revenir.</li>
+<li><b>⤢ Tout voir / ↩ Revenir</b> : tout l'historique, puis retour à la vue précédente.</li>
+<li><b>‹ ›</b> : valeur précédente / suivante, dans l'ordre de tri de la liste.</li>
+<li><b>Réglages</b> (icône curseurs, en haut à droite) : précision des contacts, contacts pris en compte, moyennes, indicateur du bas, réticule, volumes, informations détaillées…</li>
+<li><b>Précision des contacts</b> (0,3 à 6 %, <b>2 % par défaut</b>) : écart maximal entre deux contacts d'un même niveau. Elle sert aux supports / résistances, aux bascules R⇄S, aux obliques, aux canaux et aux réactions sur les moyennes.</li>
+<li><b>Pourquoi ça bouge</b> : explication de la variation du jour (§ 16).</li>
+</ul>
+</details>
+
+<details id="h-ma"><summary>5. Moyennes mobiles (MM20, MM50, MM200)</summary>
+<h4>Calcul</h4>
+<ul>
+<li>Moyenne <b>simple</b> des clôtures des 20, 50 ou 200 derniers chandeliers de l'échelle choisie (bleu, violet, orange).</li>
+<li>Une moyenne d'une autre échelle (ex. MM200 hebdo sur un graphique journalier) est reportée sur les chandeliers affichés.</li>
+</ul>
+<h4>Réactions (cercles)</h4>
+<ul>
+<li><b>Test</b> : un chandelier touche la moyenne (plus bas ≤ MM + précision et plus haut ≥ MM − précision).</li>
+<li><b>Rebond</b> : on arrivait par le dessus (clôture précédente au-dessus de la MM), le plus bas reste au-dessus de MM − précision, et dans les <b>5 chandeliers</b> suivants le cours monte d'au moins <b>max(2 × précision ; 1,5 %)</b> sans clôturer sous la moyenne.</li>
+<li><b>Rejet</b> : l'inverse, par le dessous.</li>
+<li>Période analysée : 250 séances (J), 156 semaines (S), 120 mois (M), 40 trimestres (T), 300 chandeliers en 15 min.</li>
+</ul>
+<h4>Lecture</h4>
+<p>Une moyenne qui a souvent fait rebondir le cours est un appui dynamique. La MM200 sépare la tendance de fond haussière (cours au-dessus) de la baissière.</p>
+</details>
+
+<details id="h-sr"><summary>6. Supports et résistances (S/R)</summary>
+<h4>Calcul</h4>
+<ol>
+<li><b>Pivots</b> : un sommet est le plus haut des <i>w</i> chandeliers de part et d'autre ; un creux, le plus bas.</li>
+<li><b>Regroupement</b> : les pivots dont les prix sont à moins de la <b>précision</b> (2 % du cours par défaut) forment un niveau ; son prix est la moyenne des contacts. Les points qui s'éloignent de plus de la précision du niveau final sont retirés.</li>
+<li>Un niveau doit avoir <b>au moins 2 contacts</b>. On garde les <b>3 plus proches</b> du cours de chaque côté.</li>
+<li>S'il n'y a aucun niveau répété d'un côté, l'appli montre l'extrême de la période (plus bas ou plus haut, 1 contact).</li>
+</ol>
+<table class="h-t"><tr><th>Échelle</th><th>Période analysée</th><th>Pivot <i>w</i></th><th>Trait</th></tr>
+<tr><td>J</td><td>250 séances (1 an)</td><td>5</td><td>pointillé fin</td></tr>
+<tr><td>S</td><td>156 semaines (3 ans)</td><td>3</td><td>tirets</td></tr>
+<tr><td>M</td><td>120 mois (10 ans)</td><td>2</td><td>longs tirets</td></tr>
+<tr><td>T</td><td>40 trimestres (10 ans)</td><td>1</td><td>trait plein</td></tr></table>
+<h4>Contacts pris en compte</h4>
+<ul>
+<li><b>Strict</b> (par défaut) : un support n'est fait que de creux (le cours y a rebondi), une résistance que de sommets.</li>
+<li><b>Changements de rôle</b> : sommets et creux mélangés ; une ancienne résistance peut devenir support.</li>
+</ul>
+<h4>Lecture</h4>
+<p>Le graphique montre les niveaux de l'échelle de l'unité affichée (J → journaliers, S → hebdo…). Plus il y a de contacts et plus l'échelle est longue, plus le niveau est solide. Toucher un niveau montre ses contacts.</p>
+</details>
+
+<details id="h-flip"><summary>7. Bascules de rôle (R⇄S)</summary>
+<h4>Principe</h4>
+<p>Une résistance franchie devient support (R→S), un support enfoncé devient résistance (S→R).</p>
+<h4>Calcul</h4>
+<ol>
+<li>Pivot marquant (plus haut ou plus bas de <i>w</i> chandeliers de part et d'autre).</li>
+<li><b>Cassure</b> : clôture au-delà du niveau de plus de la précision.</li>
+<li><b>Retest</b> : le cours revient sur le niveau (au moins 2 chandeliers après la cassure), ne clôture pas de l'autre côté, puis repart d'au moins <b>max(2,5 × précision ; 4 %)</b> dans les <i>n</i> chandeliers suivants.</li>
+<li>Le niveau doit avoir joué son premier rôle (au moins 2 contacts avant la cassure) ou avoir été retesté au moins 2 fois.</li>
+<li>Il disparaît dès qu'une clôture le recasse nettement. Niveaux proches fusionnés ; au plus 6 affichés (les plus solides : contacts avant + retests).</li>
+</ol>
+<table class="h-t"><tr><th>Échelle</th><th><i>w</i></th><th>Période</th><th><i>n</i> (rebond)</th></tr>
+<tr><td>J</td><td>8</td><td>750 séances</td><td>10</td></tr><tr><td>S</td><td>4</td><td>520 semaines</td><td>8</td></tr>
+<tr><td>M</td><td>2</td><td>240 mois</td><td>4</td></tr><tr><td>T</td><td>1</td><td>80 trimestres</td><td>3</td></tr></table>
+<p>Les retests sont marqués par des points sur le graphique.</p>
+</details>
+
+<details id="h-tl"><summary>8. Obliques (lignes de tendance, Obl.)</summary>
+<h4>Calcul</h4>
+<ol>
+<li>Pivots (même règle que § 6) ; une droite passe par deux creux (oblique de support, orange) ou deux sommets (oblique de résistance, violet), espacés d'au moins 2 <i>w</i>.</li>
+<li>Entre ces deux points, <b>aucune clôture nettement de l'autre côté</b>. Ensuite la droite s'arrête à la première clôture qui la traverse (elle est alors « cassée »).</li>
+<li>Il faut <b>au moins 3 contacts</b> : un creux (sommet) sur la droite, ou une mèche qui la perce avec une clôture du bon côté. Le dernier contact doit être dans les 40 % les plus récents de sa durée.</li>
+<li>Note : contact net 10 points, contact en mèche 5, −2 par chandelier qui traverse en mèche, + bonus de durée, + 6 si elle n'est pas cassée. Les droites presque identiques sont regroupées ; au plus 2 de support et 2 de résistance.</li>
+</ol>
+<table class="h-t"><tr><th>Échelle</th><th><i>w</i></th><th>Période</th><th>Tolérance</th></tr>
+<tr><td>J</td><td>6</td><td>750</td><td>précision × 1</td></tr><tr><td>S</td><td>3</td><td>420</td><td>× 1,25</td></tr>
+<tr><td>M</td><td>2</td><td>240</td><td>× 1,5</td></tr><tr><td>T</td><td>1</td><td>80</td><td>× 2</td></tr></table>
+</details>
+
+<details id="h-chan"><summary>9. Canaux (Canal)</summary>
+<h4>Calcul</h4>
+<ol>
+<li>Une droite de base passe par deux creux (ou deux sommets), espacés d'au moins 3 <i>w</i>.</li>
+<li>Sa <b>parallèle</b> est placée là où elle touche le plus de sommets (ou de creux), pas au point le plus extrême.</li>
+<li>Le canal dure tant que les clôtures restent dedans ; une sortie isolée est tolérée, <b>deux clôtures dehors de suite = cassure</b>.</li>
+<li>Conditions :
+  <ul><li>au moins 2 contacts par bord et 5 au total ;</li>
+  <li>90 % des clôtures dedans ;</li>
+  <li>aucun sommet ni creux qui transperce un bord avant le dernier contact ;</li>
+  <li>largeur raisonnable (entre 12 % et 85 % de l'amplitude, et pas trop large par rapport au prix) ;</li>
+  <li>vraiment incliné (sinon c'est une fourchette horizontale).</li></ul></li>
+<li>Au plus 3 canaux, sans superposition dans le même sens. Un canal de sens inverse (correction dans une tendance) est accepté.</li>
+</ol>
+<p>Les paramètres <i>w</i> et période sont ceux des obliques.</p>
+</details>
+
+<details id="h-rsi"><summary>10. RSI (14)</summary>
+<ul>
+<li>RSI de Wilder sur 14 chandeliers de l'unité affichée.
+  <ul><li>Gain moyen et perte moyenne lissés : moyenne = (ancienne × 13 + nouvelle valeur) ÷ 14.</li>
+  <li>RSI = 100 − 100 ÷ (1 + gain moyen ÷ perte moyenne).</li></ul></li>
+<li>Graphique sous les chandeliers (0 à 100), synchronisé avec le graphique principal.</li>
+<li>Lecture classique : au-dessus de 70, suracheté ; sous 30, survendu ; 50 sépare élan haussier et baissier.</li>
+</ul>
+</details>
+
+<details id="h-rt"><summary>11. RSI Trends (RT)</summary>
+<h4>Calcul</h4>
+<ul>
+<li>Même RSI de Wilder (longueur 14 par défaut, réglable), d'après l'indicateur « RSI Trends » de zzzcrypto123 sur TradingView.</li>
+<li><b>Vert</b> : RSI ≥ 60 (seuil haut) → tendance haussière. <b>Rouge</b> : RSI ≤ 40 (seuil bas) → baissière. <b>Gris</b> : entre les deux. Seuils réglables.</li>
+<li>Les chandeliers sont colorés selon cet état.</li>
+</ul>
+<h4>Dans les listes (colonne RT, étiquette RT▲ / RT▼)</h4>
+<p>État journalier recalculé avec le cours en direct, comparé à celui de la veille. Rien n'est affiché s'il n'a pas changé.</p>
+<h4>Bilan RT (bandeau sur le graphique)</h4>
+<ul>
+<li>Règle testée sur l'historique de l'action, dans l'unité affichée : <b>achat</b> à l'ouverture qui suit le premier chandelier vert (si le cours est au-dessus de la MM200) ; <b>vente</b> à l'ouverture qui suit le premier chandelier rouge. Frais de 0,1 % par ordre.</li>
+<li>Affiche : gain total cumulé, « garder » (acheter au premier trade et garder jusqu'à aujourd'hui), nombre de trades, % gagnants, trade en cours.</li>
+<li>Sortir au premier gris détruit le résultat sur l'historique, d'où la sortie au premier rouge.</li>
+</ul>
+</details>
+
+<details id="h-vol"><summary>12. Volumes (Vol)</summary>
+<p>Nombre de titres échangés par chandelier (barres en bas du graphique). En semaine, mois et trimestre : somme des séances.</p>
+<p>Un volume fort confirme une cassure : « À regarder » exige au moins 1,5 fois la moyenne des 20 dernières séances.</p>
+</details>
+
+<details id="h-tino"><summary>13. Tino (zones, oblique longue, canal, MM200)</summary>
+<p>Inspiré des analyses de Tino (Le Podcast de la Bourse, ProRealTime). Calculé chaque soir :</p>
+<ul><li><b>en mensuel</b>, sur tout l'historique ;</li>
+<li><b>en hebdomadaire</b>, sur environ 5 ans (300 semaines).</li></ul>
+<h4>Ce qui est dessiné selon l'unité</h4>
+<ul>
+<li><b>M et T</b> : analyse mensuelle complète (zones, résistance, oblique, canal, oblique baissière, cible, MM200 de 200 mois).</li>
+<li><b>S</b> : zones mensuelles en fond, analyse hebdomadaire complète, MM200 de 200 semaines.</li>
+<li><b>J</b> : zones des deux, en fond, avec l'oblique hebdomadaire.</li>
+<li><b>15 min</b> : rien.</li>
+</ul>
+<h4>Zones de soutien (bandes bleues)</h4>
+<ol>
+<li>Pivots : sommet ou creux qui domine <b>3 mois</b> (4 semaines en S) de part et d'autre.</li>
+<li>Chaque pivot donne une bande.
+  <ul><li>Sommet : de la mèche au corps.</li>
+  <li>Creux : du corps à la mèche.</li>
+  <li>Épaisseur bornée entre 3 % et 12 % du prix.</li></ul></li>
+<li>Les bandes qui se chevauchent (à 2 % près) fusionnent ; la largeur d'une zone ne dépasse pas ×1,30 entre bas et haut (×1,20 en S). Au moins 2 pivots ; une zone de plus de 18 % est resserrée sur ses contacts.</li>
+<li>Une zone faite de sommets et de creux mélangés est le changement de rôle de Tino : un ancien plafond devenu plancher.</li>
+<li>On garde <b>jusqu'à 3 zones sous le cours</b>, des plus proches aux plus lointaines :
+  <ul><li>séparées d'au moins 3 % ;</li>
+  <li>pas plus bas que 25 % du cours ;</li>
+  <li>une zone « sous les pieds » (le cours est dedans) seulement si elle a au moins 4 contacts.</li></ul></li>
+<li><b>Résistance</b> (bande rouge) : la première zone au-dessus du cours, rognée pour ne pas chevaucher un support.</li>
+</ol>
+<h4>Oblique longue ↗ (trait bleu épais)</h4>
+<ol>
+<li>Sur 240 mois (260 semaines), on trace l'<b>enveloppe basse</b> des plus bas : les droites qui passent sous tous les creux.</li>
+<li>Arêtes retenues :
+  <ul><li>montantes ;</li>
+  <li>d'au moins <b>48 mois</b> (39 semaines) ;</li>
+  <li>dont la valeur d'aujourd'hui reste au-dessus de 20 % du cours.</li></ul></li>
+<li>Choix : le plus de <b>contacts</b> (plus bas à moins de 5 % au-dessus de la droite) sur les <b>120 derniers chandeliers</b>, puis la plus récente. Tino privilégie la droite qui « travaille » ces dernières années.</li>
+<li>Prolongée de 36 mois (52 semaines) dans le futur.</li>
+</ol>
+<h4>Haut du canal (trait bleu plus fin)</h4>
+<ul>
+<li>Parallèle à l'oblique, placée sur les sommets mensuels pour en toucher <b>le plus possible</b> (à 5 % près).</li>
+<li>Il faut au moins 2 sommets espacés d'au moins 12 chandeliers ; au plus 3 clôtures à plus de 3 % au-dessus (les mèches qui percent sont tolérées, comme chez Tino).</li>
+<li>Masqué s'il est à plus de 60 % au-dessus du cours.</li>
+</ul>
+<h4>Oblique baissière ↘ (pointillés rouges, ou verts une fois cassée)</h4>
+<ul>
+<li>Part du <b>plus haut des 72 derniers mois</b> (104 semaines), s'il date d'au moins 12 mois (13 semaines).</li>
+<li>Arête de l'<b>enveloppe haute</b> des sommets suivants : la droite qui coiffe les sommets.
+  <ul><li>Descendante, sur au moins 6 chandeliers.</li>
+  <li>Choisie avec le plus de contacts (sommets à moins de 4 % sous la droite), puis la plus récente.</li></ul></li>
+<li><b>Cassée ✓</b> : la dernière clôture est au-dessus de la droite. C'est souvent le signal de reprise dans les analyses de Tino (Carrefour, Skyworks…).</li>
+</ul>
+<h4>MM200 (trait bleu ciel)</h4>
+<ul>
+<li>Moyenne simple de 200 mois en M (environ 17 ans), de 200 semaines en S. Elle n'existe qu'après 200 périodes d'historique.</li>
+<li>Une zone de soutien où passe la MM200 (à ±3 %) est marquée « la MM200 y passe » : soutien renforcé (Total, LVMH, Capgemini…).</li>
+</ul>
+<h4>Cible (rond jaune)</h4>
+<p>Premier moment, dans les 10 ans (104 semaines en S), où l'oblique montante atteint le bas d'une zone de soutien : là où Tino dessine son ellipse jaune. C'est un rendez-vous si le cours y revient, pas une prévision.</p>
+<h4>Confluence ★ (hebdomadaire)</h4>
+<p>Zone hebdomadaire qui chevauche une zone mensuelle, ou que l'oblique mensuelle traverse aujourd'hui (à 2 % près). Bord jaune sur le graphique, ★ dans la liste.</p>
+<h4>Repère dans les listes (◆ / ★)</h4>
+<p>Zone Tino (mensuelle ou hebdomadaire) la plus proche, si le cours est dedans (« zone ») ou à moins de 8 % au-dessus de son haut (« −5 % »). ★ si c'est une confluence.</p>
+<h4>Limites connues</h4>
+<p>Tino trace à la main. Il peut choisir une oblique plus courte (moins de 4 ans) ou une droite qui coupe quelques mèches ; l'appli ne retrouve donc pas toujours exactement ses lignes. Les valeurs entrées en bourse récemment n'ont pas d'analyse mensuelle.</p>
+</details>
+
+<details id="h-bo"><summary>14. Cassures récentes (colonne Cass.)</summary>
+<p>Calculé dans l'appli sur les chandeliers journaliers, avec la précision choisie. Sorties des <b>5 dernières séances</b>, la plus récente d'abord :</p>
+<ul>
+<li><b>↗Can / ↘Can</b> : sortie d'un canal par le haut / le bas (§ 9).</li>
+<li><b>↗Obl</b> : oblique de résistance franchie. <b>↘Obl</b> : oblique de support enfoncée (§ 8).</li>
+<li><b>↗Rés</b> : résistance journalière ou hebdo (au moins 2 contacts), connue avant ces 5 séances, franchie de plus de 1 %. <b>↘Sup</b> : support enfoncé de plus de 1 %.</li>
+<li><b>?</b> : première clôture au-delà, sans cassure confirmée. <b>+</b> : plusieurs sorties dans le même sens.</li>
+<li>Une oblique confondue avec le bord d'un canal n'est comptée qu'une fois.</li>
+</ul>
+</details>
+
+<details id="h-sig"><summary>15. À regarder (situations du soir)</summary>
+<p>Calculé après la clôture sur les 5 dernières séances, avec les seules données connues à chaque date (le même code a servi à mesurer les résultats passés sur 10 ans). Niveaux utilisés : supports et résistances journaliers et hebdo (§ 6).</p>
+<p><b>Tendance haussière</b> = cours au-dessus de la MM200 et MM50 au-dessus de la MM200.</p>
+<h4>Situations haussières</h4>
+<ul>
+<li><b>Cassure avec volume</b> (3 points) :
+  <ul><li>en tendance haussière, clôture à plus de 1 % au-dessus d'une résistance d'au moins 2 contacts (la veille la clôture était dessous) ;</li>
+  <li>volume ≥ 1,5 × la moyenne de 20 séances ;</li>
+  <li>« forte » si la résistance est hebdo ou si le volume est ≥ 2 ×.</li></ul></li>
+<li><b>Rebond sur support</b> (2 points) :
+  <ul><li>en tendance haussière, le cours revient sur un support (à moins de 2 %, ou mèche dessus) ;</li>
+  <li>il faut que le support soit hebdo ou que le RSI Trends journalier soit vert ;</li>
+  <li>« fort » si les deux.</li></ul></li>
+<li><b>Reprise de tendance</b> (2 points) : la MM20 repasse au-dessus de la MM50 alors que la MM50 est au-dessus de la MM200.</li>
+<li><b>RSI Trends passe au vert</b> (2 points), cours au-dessus de la MM200 : mesuré comme un trade gardé jusqu'au premier jour rouge.</li>
+</ul>
+<p>Note = somme des points (+1 si « fort »). Écartées car sans avantage mesuré : retest d'une cassure, RSI Trends vert seul, rebond sur la MM50.</p>
+<h4>Alertes pour une position ouverte (repères, pas des prévisions)</h4>
+<ul>
+<li><b>Support cassé</b> : clôture à plus de 1 % sous un support d'au moins 2 contacts.</li>
+<li><b>Passage sous la MM200</b>.</li>
+<li><b>RSI Trends au rouge</b>.</li>
+</ul>
+<p>Le bloc « Ce que ça a donné sur l'historique » donne le résultat moyen 20 séances plus tard, en achetant à l'ouverture du lendemain.</p>
+</details>
+
+<details id="h-why"><summary>16. Pourquoi ça bouge (explication du jour)</summary>
+<ul>
+<li><b>Comparaison avec l'indice</b> : CAC 40 pour Paris et Amsterdam, DAX pour l'Allemagne, BEL 20 pour Bruxelles, Nasdaq ou S&amp;P 500 pour les USA, Bitcoin pour les cryptos.
+  <ul><li>Écart ≤ 0,75 point (1,5 pour les cryptos) → « en ligne avec le marché ».</li>
+  <li>Sinon → « mouvement propre à l'action ».</li></ul></li>
+<li><b>Mouvement inhabituel</b> : variation ≥ 2 × la variation habituelle (écart type des variations journalières sur 60 séances) et ≥ 1 %.</li>
+<li><b>Résultats</b> publiés le jour même (ou la veille après la clôture), <b>dividende détaché</b> ce jour-là (la baisse correspondante est mécanique), prochains résultats dans les 10 jours.</li>
+<li><b>Actualités</b> : titres récents de Google Actualités (en français d'abord) et de Yahoo, via le relais.</li>
+<li>L'icône 📰 apparaît devant le nom quand la variation est inhabituelle (≥ 2 × l'habituel et ≥ 2 %, ou ≥ 3 % sans historique) ou qu'il y a un événement.</li>
+</ul>
+</details>
+
+<details id="h-pf"><summary>17. Portfolio</summary>
+<ul>
+<li>Opérations (achat / vente) saisies dans l'appli, chiffrées avec votre mot de passe avant d'être enregistrées sur GitHub.</li>
+<li><b>PRU</b> (prix de revient unitaire) : moyenne pondérée des achats, <b>frais inclus</b>. Une vente ne change pas le PRU des titres restants.</li>
+<li><b>+/− value latente</b> = quantité × cours actuel − prix de revient des titres détenus ; en % du prix de revient.</li>
+<li><b>Réalisé</b> = produit des ventes (frais déduits) − PRU × quantité vendue ; en % du prix de revient des titres vendus.</li>
+<li><b>Total en €</b> :
+  <ul><li>chaque opération en dollars est convertie au taux EUR/USD de <b>son</b> jour ;</li>
+  <li>si vous avez saisi le montant en € de l'avis d'opéré, c'est ce montant qui compte ;</li>
+  <li>la valeur actuelle est convertie au taux du moment.</li></ul></li>
+<li>Catégories (Europe, USA, Trackers ETF, Cryptos…) ; tri par performance dans chaque catégorie (en % ou en €), lu colonne par colonne.</li>
+<li>👁 floute les montants (pour une démonstration) ; ≡ / ▦ bascule entre une ligne par valeur et le détail des opérations.</li>
+</ul>
+</details>
+
+<details id="h-al"><summary>18. Alertes de prix (Telegram)</summary>
+<ul>
+<li>Créées depuis le graphique (🔔), au prix du réticule ou au cours actuel ; plusieurs alertes par valeur sont possibles.</li>
+<li>Le relais Cloudflare vérifie <b>toutes les 5 minutes</b>, du lundi au vendredi, de 7 h à 21 h (heure UTC, donc 8 h à 22 h à Bruxelles en hiver).</li>
+<li>Déclenchement : le dernier cours franchit le prix, ou une bougie de 5 minutes l'a touché depuis la création de l'alerte (mèche entre deux vérifications).</li>
+<li>Message Telegram envoyé <b>une seule fois</b> ; l'alerte apparaît ensuite comme envoyée.</li>
+<li>Le fichier des alertes est dans le dépôt GitHub, qui est public : n'y mettez rien de confidentiel.</li>
+</ul>
+</details>
+
+<details id="h-disp"><summary>19. Affichage</summary>
+<ul>
+<li><b>Thèmes</b> : clair, gris (base sombre, cellules pastel), sombre.</li>
+<li><b>🔒 / 🔄</b> (appli installée) : fige l'écran dans le sens actuel (passe en plein écran).</li>
+<li><b>Appli</b> : à installer depuis Chrome (« Ajouter à l'écran d'accueil ») pour un vrai plein écran.</li>
+<li>Formats : nombres à l'allemande (22.500,75), dates en français.</li>
+</ul>
+</details>
+
+<details id="h-gl"><summary>20. Lexique</summary>
+<dl class="h-dl">
+<dt>Chandelier</dt><dd>ouverture, plus haut, plus bas, clôture d'une période (séance, semaine, mois…).</dd>
+<dt>Mèche</dt><dd>partie fine du chandelier, au-delà du corps (ouverture–clôture).</dd>
+<dt>Pivot</dt><dd>sommet ou creux qui domine les chandeliers voisins.</dd>
+<dt>Contact</dt><dd>pivot qui arrive sur un niveau ou une droite, à la précision près.</dd>
+<dt>Précision</dt><dd>écart maximal (en % du cours) pour considérer deux prix comme le même niveau ; 2 % par défaut.</dd>
+<dt>Cassure</dt><dd>clôture nettement de l'autre côté d'un niveau ou d'une droite.</dd>
+<dt>Retest</dt><dd>retour du cours sur un niveau qu'il vient de casser.</dd>
+<dt>Confluence</dt><dd>plusieurs repères (zones, oblique, moyenne) au même endroit.</dd>
+<dt>Enveloppe basse / haute</dt><dd>ensemble des droites qui passent sous tous les creux / au-dessus de tous les sommets (comme un élastique tendu sous / sur le graphique).</dd>
+</dl>
+</details>
+<p class="h-foot">Page tenue à jour à chaque modification d'un indicateur.</p>
+</div>
