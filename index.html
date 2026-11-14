@@ -634,6 +634,23 @@
   .cfg .seg button.tfb { padding:3px 7px; }
   #tolRange { width:100%; accent-color:var(--accent); margin:2px 0 0; }
   .cfg.show { display:block; }
+  /* Réglages du graphique : panneau sur la moitié droite, toute la hauteur ; le graphique se rétrécit à gauche */
+  #ov { --cfgw:clamp(260px, 50vw, 560px); }
+  #ov.cfg-open .cfg { position:fixed; top:0; right:0; bottom:0; left:auto; width:var(--cfgw); max-width:none; max-height:none; margin:0;
+    border-radius:0; border-width:0 0 0 1px; box-shadow:-8px 0 24px rgba(0,0,0,.14); padding:10px 12px calc(16px + env(safe-area-inset-bottom)); z-index:40; overscroll-behavior:contain; }
+  #ov.cfg-open .cfg .cfg-grid { grid-template-columns:1fr; }
+  #ov.cfg-open .ov-head, #ov.cfg-open .ov-body { margin:0 var(--cfgw) 0 0; width:auto; max-width:none; }
+  #ov.cfg-open .ov-body, #ov.cfg-open .ov-main, #ov.cfg-open .tb, #ov.cfg-open .tbs { min-width:0; }
+  #ov.cfg-open .ov-side { display:none; }
+  #ov.cfg-open .chart-wrap, #ov.cfg-open .ov-chart, #ov.cfg-open .rsi-chart, #ov.cfg-open #quad { min-width:0; max-width:100%; overflow:hidden; }          /* la colonne d'informations laisse sa place au graphique */
+  #ov.cfg-open .cfg-head { position:sticky; top:-10px; background:var(--card); z-index:1; padding:4px 0; }
+  /* téléphone en portrait : moitié droite trop étroite pour le graphique → panneau sur la moitié basse */
+  @media (max-width:599px) {
+    #ov.cfg-open .cfg { top:auto; left:0; right:0; width:auto; height:50dvh; border-width:1px 0 0; border-radius:14px 14px 0 0; box-shadow:0 -8px 24px rgba(0,0,0,.16); }
+    #ov.cfg-open .ov-head, #ov.cfg-open .ov-body { margin-right:0; }
+    #ov.cfg-open .ov-body { padding-bottom:50dvh; }
+    #ov.cfg-open .cfg .cfg-grid { grid-template-columns:1fr 1fr; }
+  }
   .cfg-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; font-size:13px; }
   .cfg-x { border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; padding:2px 6px; }
   .cfg-row { display:flex; flex-direction:column; gap:3px; padding:5px 0; border-top:1px solid var(--border); font-size:11px; color:var(--muted); min-width:0; }
@@ -733,7 +750,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v164</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v165</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1444,7 +1461,6 @@ function goTo(dir) {
   const i = neighbour(dir);
   if (i < 0) { toast(dir > 0 ? "Dernière valeur du portefeuille" : "Première valeur du portefeuille", 1500); return; }
   const item = cfg.portfolios[ovPos.pi].items[i];
-  toggleCfg(false);
   const ov = $("ov");
   ov.classList.remove("go-next", "go-prev");
   navKeep = captureView();            // même zoom (nombre de chandeliers visibles) sur la valeur suivante
@@ -2345,20 +2361,17 @@ document.querySelector("#ov .ov-body").addEventListener("scroll", e => {
   document.querySelector("#ov .tb").classList.toggle("stuck", e.target.scrollTop > 4);
 }, { passive:true });
 function toggleCfg(open) {
-  const show = open == null ? !$("cfg").classList.contains("show") : open;
+  const show = open == null ? !$("cfg").classList.contains("show") : open, was = $("cfg").classList.contains("show");
   $("cfg").classList.toggle("show", show);
   $("cfgBtn").setAttribute("aria-expanded", show ? "true" : "false");
+  // panneau sur le côté droit (en bas sur un téléphone en portrait) : le graphique se rétrécit et reste visible
+  $("ov").classList.toggle("cfg-open", show);
+  if (show !== was) setTimeout(() => window.dispatchEvent(new Event("resize")), 30);
 }
 $("cfgBtn").onclick = e => { e.stopPropagation(); toggleCfg(); };
 $("cfgClose").onclick = () => toggleCfg(false);
 $("cfg").addEventListener("click", e => e.stopPropagation());
-document.addEventListener("click", () => toggleCfg(false));
-/* Le graphique capte les gestes tactiles : on ferme dès qu'on le touche (hors du panneau) */
-document.addEventListener("pointerdown", e => {
-  if (!$("cfg").classList.contains("show")) return;
-  if ($("cfg").contains(e.target) || $("cfgBtn").contains(e.target)) return;
-  toggleCfg(false);
-}, true);
+/* Le panneau reste ouvert pendant qu'on regarde ou touche le graphique : il se ferme avec ✕, le bouton Réglages ou en quittant le graphique */
 let tolTimer = null;
 $("tolRange").addEventListener("input", e => {
   prefs.tol = +e.target.value;
@@ -3216,6 +3229,7 @@ function drawDetail(keep) {
   applyQuad();
 }
 function closeDetail() {
+  toggleCfg(false);
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
