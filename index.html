@@ -733,7 +733,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v163</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v164</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -2702,12 +2702,13 @@ function projCandidates(rows, iv) {
     if (g.g === "tl" && !g.broken) out.push({ fam:"tl", name:g.kind === "sup" ? "Oblique de support" : "Oblique de résistance", col:TL_COL[g.kind],
       at:k => g.base + g.m * (len - 1 + k - g.a) });
   });
-  // canal intact le plus étroit : ses deux bords
-  const ch = ovGeo.filter(g => g.g === "chan" && !g.broken).sort((a, b) => (a.up1 - a.lo1) / a.lo1 - (b.up1 - b.lo1) / b.lo1)[0];
+  // dernier canal (le plus récent encore intact) : ses deux bords, même loin du cours
+  const ch = ovGeo.filter(g => g.g === "chan" && !g.broken).sort((a, b) => a.from < b.from ? 1 : a.from > b.from ? -1 : 0)[0];
   if (ch && ch.bars > 0) {
     const mU = (ch.up1 - ch.up0) / ch.bars, mL = (ch.lo1 - ch.lo0) / ch.bars;
-    out.push({ fam:"chanU", name:"Haut du canal", col:CHAN_COL, at:k => ch.up1 + mU * k, both:true });
-    out.push({ fam:"chanL", name:"Bas du canal", col:CHAN_COL, at:k => ch.lo1 + mL * k, both:true });
+    const d = ch.dir === "up" ? " ↗" : " ↘";
+    out.push({ fam:"chan", name:"Haut du canal" + d, col:CHAN_COL, at:k => ch.up1 + mU * k, both:true });
+    out.push({ fam:"chan", name:"Bas du canal" + d, col:CHAN_COL, at:k => ch.lo1 + mL * k, both:true });
   }
   // supports / résistances horizontaux affichés
   lineMeta.forEach(m => { if (m.level && !m.level.extreme) out.push({ fam:"sr", name:(m.p === "S" ? "Support " : "Résistance ") + LV[m.tf].short, col:m.opts.color, at:() => m.level.price, flat:true }); });
@@ -2730,8 +2731,8 @@ function drawProj() {
   const cands = projCandidates(rows, iv), keep = [];
   // par famille : le plus proche sous le cours et le plus proche au-dessus (assez près pour compter dans les prochaines séances)
   [...new Set(cands.map(c => c.fam))].forEach(f => {
+    if (cands.some(c => c.fam === f && c.both)) { keep.push(...cands.filter(c => c.fam === f)); return; }     // canal : toujours ses deux bords
     const fam = cands.filter(c => c.fam === f && Math.abs(c.now / C - 1) * 100 <= P.max);
-    if (fam.length && fam[0].both) { keep.push(...fam); return; }
     const below = fam.filter(c => c.now <= C).sort((a, b) => b.now - a.now)[0], above = fam.filter(c => c.now > C).sort((a, b) => a.now - b.now)[0];
     if (below) keep.push(below); if (above) keep.push(above);
   });
