@@ -217,6 +217,151 @@
           "yahoo": "SU.PA",
           "tv": "EURONEXT:SU",
           "name": "Schneider Electric"
+        },
+        {
+          "yahoo": "ALO.PA",
+          "tv": "EURONEXT:ALO",
+          "name": "Alstom"
+        },
+        {
+          "yahoo": "AMUN.PA",
+          "tv": "EURONEXT:AMUN",
+          "name": "Amundi"
+        },
+        {
+          "yahoo": "ASML.AS",
+          "tv": "EURONEXT:ASML",
+          "name": "ASML"
+        },
+        {
+          "yahoo": "AUB.PA",
+          "tv": "EURONEXT:AUB",
+          "name": "Aubay"
+        },
+        {
+          "yahoo": "BNP.PA",
+          "tv": "EURONEXT:BNP",
+          "name": "BNP Paribas"
+        },
+        {
+          "yahoo": "CAP.PA",
+          "tv": "EURONEXT:CAP",
+          "name": "Capgemini"
+        },
+        {
+          "yahoo": "DIM.PA",
+          "tv": "EURONEXT:DIM",
+          "name": "Sartorius Stedim Biotech"
+        },
+        {
+          "yahoo": "EDEN.PA",
+          "tv": "EURONEXT:EDEN",
+          "name": "Edenred"
+        },
+        {
+          "yahoo": "EN.PA",
+          "tv": "EURONEXT:EN",
+          "name": "Bouygues"
+        },
+        {
+          "yahoo": "GTT.PA",
+          "tv": "EURONEXT:GTT",
+          "name": "GTT"
+        },
+        {
+          "yahoo": "ML.PA",
+          "tv": "EURONEXT:ML",
+          "name": "Michelin"
+        },
+        {
+          "yahoo": "MT.AS",
+          "tv": "EURONEXT:MT",
+          "name": "ArcelorMittal"
+        },
+        {
+          "yahoo": "NRG.PA",
+          "tv": "EURONEXT:NRG",
+          "name": "NRJ Group"
+        },
+        {
+          "yahoo": "OR.PA",
+          "tv": "EURONEXT:OR",
+          "name": "L'Oréal"
+        },
+        {
+          "yahoo": "RECT.BR",
+          "tv": "EURONEXT:RECT",
+          "name": "Recticel"
+        },
+        {
+          "yahoo": "RI.PA",
+          "tv": "EURONEXT:RI",
+          "name": "Pernod Ricard"
+        },
+        {
+          "yahoo": "RMS.PA",
+          "tv": "EURONEXT:RMS",
+          "name": "Hermès"
+        },
+        {
+          "yahoo": "SW.PA",
+          "tv": "EURONEXT:SW",
+          "name": "Sodexo"
+        },
+        {
+          "yahoo": "TE.PA",
+          "tv": "EURONEXT:TE",
+          "name": "Technip Energies"
+        },
+        {
+          "yahoo": "TFI.PA",
+          "tv": "EURONEXT:TFI",
+          "name": "TF1"
+        },
+        {
+          "yahoo": "TTE.PA",
+          "tv": "EURONEXT:TTE",
+          "name": "TotalEnergies"
+        },
+        {
+          "yahoo": "VETO.PA",
+          "tv": "EURONEXT:VETO",
+          "name": "Vetoquinol"
+        },
+        {
+          "yahoo": "ALVDM.PA",
+          "tv": "EURONEXT:ALVDM",
+          "name": "ALVDM"
+        },
+        {
+          "yahoo": "AIR.PA",
+          "tv": "EURONEXT:AIR",
+          "name": "Airbus"
+        },
+        {
+          "yahoo": "STLAP.PA",
+          "tv": "EURONEXT:STLAP",
+          "name": "Stellantis"
+        },
+        {
+          "yahoo": "PUM.DE",
+          "tv": "XETR:PUM",
+          "name": "Puma"
+        },
+        {
+          "yahoo": "ETDD.PA",
+          "tv": "EURONEXT:ETDD",
+          "name": "BNP Easy Euro Stoxx 50"
+        },
+        {
+          "yahoo": "VK.PA",
+          "tv": "EURONEXT:VK",
+          "name": "Vallourec"
+        },
+        {
+          "yahoo": "TRI.PA",
+          "tv": "EURONEXT:TRI",
+          "name": "Trigano"
         }
       ]
     },
