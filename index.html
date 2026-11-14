@@ -712,7 +712,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v156</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v157</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1548,7 +1548,7 @@ function drawQuad() {
         q.flip.push({ s, col:FLIP_COL[f.type], w:2 });
         const up = f.type === "RS";
         if (prefs.dots !== false) marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:FLIP_COL[f.type] });
-        f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:FLIP_COL[f.type] }));
+        if (prefs.dots !== false) f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:"circle", color:FLIP_COL[f.type] }));   // retests : points, comme les autres contacts
       });
       const sorted = marks.sort((a, b) => a.time < b.time ? -1 : 1).map(m => Object.assign(m, { size:m.shape === "circle" ? 0.5 : 0.8 }));   // petits graphiques : petits marqueurs
       const apply = () => c.setMarkers(declutter(ch, rows, sorted));
@@ -1641,7 +1641,7 @@ async function openDetail(item, info, pos) {
   $("ovSub").append(sub, ch, dt);
 
   $("ovFoot").innerHTML = "";
-  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine (●) et ▲/▼ marquent chaque retest réussi ; le prix du niveau est dans la liste. Canaux : deux obliques parallèles avec au moins deux contacts de chaque côté (●) et le cours contenu entre elles ; pointillés = milieu du canal. Obliques : lignes de tendance reliant au moins trois creux (support, orange) ou trois sommets (résistance, violet) sans clôture nette de l'autre côté. Indicatif, pas un conseil d'investissement. ");
+  const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Avec « + changements de rôle », un ancien sommet peut aussi compter comme support (résistance franchie) et un ancien creux comme résistance (support cassé). Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine (●) et un point (●) marque chaque retest réussi ; le prix du niveau est dans la liste. Canaux : deux obliques parallèles avec au moins deux contacts de chaque côté (●) et le cours contenu entre elles ; pointillés = milieu du canal. Obliques : lignes de tendance reliant au moins trois creux (support, orange) ou trois sommets (résistance, violet) sans clôture nette de l'autre côté. Indicatif, pas un conseil d'investissement. ");
   const a = document.createElement("a");
   a.href = "https://www.tradingview.com/symbols/" + item.tv.replace(":", "-") + "/";
   a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir en direct sur TradingView";
@@ -2043,7 +2043,7 @@ function flipMarkers(only) {
     if (only != null && n !== only) return;
     const col = FLIP_COL[f.type], up = f.type === "RS";
     if (prefs.dots !== false) marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:col });
-    f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:up ? "arrowUp" : "arrowDown", color:col }));
+    if (prefs.dots !== false) f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:"circle", color:col }));      // retests : points, plus de flèches
   });
   return marks.sort((a, b) => a.time < b.time ? -1 : 1);
 }
