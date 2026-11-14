@@ -670,7 +670,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v146</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v147</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1302,6 +1302,12 @@ let ovChart = null;
 let ovPos = { pi:0, idx:0 }, openSeq = 0;
 const hasData = it => { const s = summary.symbols[it.yahoo]; return s && !s.error; };
 /* ---------- Tri des cartes ---------- */
+// « Meilleure variation du jour » devient « … sur 3 mois » etc. quand une période autre que 1J est choisie
+function sortLabel(k, lab) {
+  if ((k !== "perfDesc" && k !== "perfAsc") || !periodMode()) return lab;
+  const R = RANGES.find(r => r[0] === prefs.range), per = { "1M":"1 mois", "3M":"3 mois", "6M":"6 mois", "1A":"1 an", "2A":"2 ans", "5A":"5 ans", "MAX":"tout l'historique" }[prefs.range] || (R ? R[1] : prefs.range);
+  return (k === "perfDesc" ? "Meilleure" : "Pire") + " variation sur " + per;
+}
 const SORTS = [["add", "Ordre par défaut"], ["perfDesc", "Meilleure variation du jour"], ["perfAsc", "Pire variation du jour"],
   ["name", "Nom (A → Z)"], ["nearS", "Plus proche d'un support"], ["nearR", "Plus proche d'une résistance"]];
 function levelDist(info, kind) {          // écart (%) au support (ou à la résistance) le plus proche, toutes échelles
@@ -3214,7 +3220,7 @@ $("lvClose").onclick = closeLevel;
   document.addEventListener("click", e => { if (!e.target.closest("#liveMenu")) $("liveMenu").hidden = true; });
   const updSortBtn = () => { const m = SORTS.find(x => x[0] === (prefs.sort || "add"));
     $("sortBtn").textContent = (prefs.sort || "add") === "add" ? "⇅" : "⇅ " + { perfDesc:"Var. ↓", perfAsc:"Var. ↑", name:"A→Z", nearS:"Supp.", nearR:"Rés." }[prefs.sort];
-    $("sortBtn").title = "Tri : " + m[1]; $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); };
+    $("sortBtn").title = "Tri : " + sortLabel(m[0], m[1]); $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); };
   updSortBtn();
   $("cmpBtn").onclick = () => { prefs.gridCompact = !prefs.gridCompact; savePrefs(); render(); updDayBtn();
     toast(prefs.gridCompact ? "Mode compact : sans graphiques" : "Graphiques affichés", 1300); };
@@ -3226,7 +3232,7 @@ $("lvClose").onclick = closeLevel;
     SORTS.forEach(([k, lab]) => {
       const b = document.createElement("button");
       if ((prefs.sort || "add") === k) b.className = "cur";
-      const sp = document.createElement("span"); sp.className = "nm"; sp.textContent = lab; b.appendChild(sp);
+      const sp = document.createElement("span"); sp.className = "nm"; sp.textContent = sortLabel(k, lab); b.appendChild(sp);
       b.onclick = ev => { ev.stopPropagation(); m.hidden = true; prefs.sort = k; savePrefs(); updSortBtn(); render(); };
       m.appendChild(b);
     });
