@@ -535,10 +535,7 @@
   .ov-nav .close { margin-left:4px; }
   .navb { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; width:34px; height:36px; font-size:20px; line-height:1; padding:0; cursor:pointer; }
   .navb:disabled { opacity:.35; cursor:default; }
-  @keyframes inL { from { transform:translateX(40px); opacity:.3; } to { transform:none; opacity:1; } }
-  @keyframes inR { from { transform:translateX(-40px); opacity:.3; } to { transform:none; opacity:1; } }
-  #ov.go-next .ov-head, #ov.go-next .ov-body { animation:inL .22s ease-out; }
-  #ov.go-prev .ov-head, #ov.go-prev .ov-body { animation:inR .22s ease-out; }
+  /* passage d'une action à l'autre : changement instantané, sans glissement ni fondu */
   .lvov { z-index:30; }
   .lv-chart { height:max(260px, min(560px, calc(100vh - 220px))); height:max(260px, min(560px, calc(100dvh - 220px))); background:var(--card); border:1px solid var(--border); border-radius:12px; }
   .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin:12px 0; }
@@ -672,7 +669,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v148</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v149</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1357,8 +1354,7 @@ function goTo(dir) {
   const item = cfg.portfolios[ovPos.pi].items[i];
   toggleCfg(false);
   const ov = $("ov");
-  ov.classList.remove("go-next", "go-prev"); void ov.offsetWidth;
-  ov.classList.add(dir > 0 ? "go-next" : "go-prev");
+  ov.classList.remove("go-next", "go-prev");
   navKeep = captureView();            // même zoom (nombre de chandeliers visibles) sur la valeur suivante
   openDetail(item, summary.symbols[item.yahoo], { pi:ovPos.pi, idx:i });
 }
