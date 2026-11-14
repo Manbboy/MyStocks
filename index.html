@@ -35,6 +35,12 @@
   :root[data-dim] #grid.compact.paint-c1 .tbl, :root[data-dim] #grid.compact.paint-c2 .tbl { background:var(--bg); column-rule-color:var(--bg); border-color:var(--bg); }
   :root[data-dim] .pf-list.paint.compact { background:var(--bg); }
   :root[data-dim] .pf-list.paint .pf-pos { border-color:var(--bg); }
+  /* positions (ouvertes et soldées) : tons adoucis, comme les soldées, texte plus foncé pour rester bien lisible */
+  :root[data-dim] .pf-list.paint .pf-pos.pos, :root[data-dim] .pf-list.paint .pf-pos.neg {
+    --card:#b2b7bd; --text:#07090c; --muted:#262c34; --up:#0d6a2c; --down:#a3151a; }
+  :root[data-dim] .pf-list.paint .pf-pos.pos { background:color-mix(in srgb, #16a34a var(--k), #b2b7bd); }
+  :root[data-dim] .pf-list.paint .pf-pos.neg { background:color-mix(in srgb, #dc2626 var(--k), #b2b7bd); }
+  :root[data-dim] .pf-list.paint .pf-pos.closed { opacity:.8; }
   :root[data-dim][data-theme] .pf-list.paint .pf-sub { background:#334155; color:#fff; }
   :root[data-dim][data-theme] .pf-list.paint .pf-sub span { color:#cbd5e1; }
   :root[data-dim][data-theme] #grid.compact.paint-c1 .tr-g b, :root[data-dim][data-theme] #grid.compact.paint-c2 .tr-g b { color:#fff; }
@@ -61,6 +67,13 @@
   .tabs::-webkit-scrollbar { display:none; }
   .tab { flex:0 0 auto; border:0; background:none; color:var(--muted); font-size:15px; font-weight:600; padding:8px 14px; border-radius:10px; cursor:pointer; }
   .tab.active { background:var(--chip); color:var(--text); }
+  .tabs.short { gap:2px; justify-content:space-between; }
+  .tabs.short .tab { padding:8px 9px; letter-spacing:.02em; }
+  .tabs.tight .tab { padding:7px 5px; font-size:13.5px; }
+  .tabs.short .sig-n, .tabs.short .al-n { margin-left:2px; }
+  .tabs.tiny { gap:0; }
+  .tabs.tiny .tab { padding:6px 3px; font-size:12px; letter-spacing:0; }
+  .tabs.tiny .sig-n, .tabs.tiny .al-n { font-size:9px; padding:0 4px; min-width:0; margin-left:1px; }
 
   .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 0; border-bottom:1px solid var(--border); }
   .bar-row { display:flex; gap:10px; align-items:center; flex-wrap:nowrap; }
@@ -669,7 +682,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v149</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v150</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1052,7 +1065,24 @@ function renderTabs() {
   ab.innerHTML = "Alertes" + (nWait ? ' <span class="al-n">' + nWait + "</span>" : "");
   ab.onclick = () => { prefs.view = "alerts"; savePrefs(); render(); };
   t.appendChild(ab);
+  fitTabs();
 }
+/* Onglets : si tout ne tient pas sur une ligne, noms abrégés (MKT, EU, US…), puis espacement réduit — pour ne jamais devoir faire défiler */
+const TAB_SHORT = { "Market":"MKT", "EU":"EU", "US":"US", "Others":"OTH", "Crypto":"CRY", "Hold":"HLD", "Portfolio":"PTF", "À regarder":"ATT", "Alertes":"ALE" };
+function fitTabs() {
+  const t = $("tabs"); if (!t || !t.clientWidth) return;
+  const btns = [...t.children];
+  btns.forEach(b => { const n = b.firstChild; if (n && n.nodeType === 3) { if (!b.dataset.full) b.dataset.full = n.textContent.trim(); n.textContent = b.dataset.full; b.title = ""; } });
+  t.classList.remove("short", "tight", "tiny");
+  const over = () => t.scrollWidth > t.clientWidth + 1;
+  if (!over()) return;
+  btns.forEach(b => { const n = b.firstChild, f = b.dataset.full; if (n && n.nodeType === 3 && f) { n.textContent = TAB_SHORT[f] || f.slice(0, 3).toUpperCase(); b.title = f; } });
+  t.classList.add("short");
+  if (over()) t.classList.add("tight");
+  if (over()) t.classList.add("tiny");
+}
+let fitTabsT = 0;
+addEventListener("resize", () => { clearTimeout(fitTabsT); fitTabsT = setTimeout(fitTabs, 120); });
 function renderSeg(id, opts, cur, pick) {
   const s = $(id); s.innerHTML = "";
   opts.forEach(([v, label]) => {
