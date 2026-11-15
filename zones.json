@@ -60,6 +60,17 @@
       "ext": false,
       "shape": "oval",
       "created": 1794751296651
+    },
+    {
+      "id": "zmwhwl8cm",
+      "sym": "AF.PA",
+      "lo": 7.11054,
+      "hi": 9.49803,
+      "t0": "2027-03-01",
+      "t1": "2027-05-10",
+      "ext": false,
+      "shape": "oval",
+      "created": 1794751308707
     }
   ]
 }
