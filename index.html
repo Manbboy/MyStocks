@@ -678,6 +678,16 @@
   .cfg-flow .seg { flex-wrap:nowrap; }
   .cfg-flow .seg button { padding:5px 7px; white-space:nowrap; }
   .manu-box { margin:10px 0 4px; }
+  .mom-new { margin:4px 0 8px; padding:8px 10px; border-radius:10px; background:color-mix(in srgb, #16a34a 14%, var(--card)); font-size:13px; }
+  .mom-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:0 16px; margin:4px 0; }
+  .mom-row { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--border); padding:8px 2px; font:inherit; font-size:14px; color:var(--text); cursor:pointer; }
+  .mom-rk { flex:0 0 22px; height:22px; border-radius:50%; background:var(--chip); display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+  .mom-main { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .mom-main b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mom-tags { display:flex; gap:4px; flex-wrap:wrap; }
+  .mom-pf { flex:0 0 auto; white-space:nowrap; font-size:13px; }
+  .mom-tag { font-size:10.5px; font-weight:700; border-radius:6px; padding:1px 6px; white-space:nowrap; } .mom-tag.in { background:#16a34a; color:#fff; } .mom-tag.warn { background:#d97706; color:#fff; }
+  .mom-foot { font-size:12.5px; color:var(--muted); margin:4px 0 14px; }
   @media (min-width:700px) { #ovManuList { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:4px 16px; } .manu-ctx, .manu-foot { grid-column:1 / -1; } }
   .manu-ctx { font-size:12.5px; color:var(--muted); margin:2px 0 8px; }
   .manu-z { border-left:4px solid #d946ef; padding:4px 0 4px 10px; margin:0 0 10px; }
@@ -802,7 +812,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v179</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v180</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4568,7 +4578,7 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
 })();
 
 /* ===== Onglet « À regarder » : situations détectées chaque soir (data/signals.json, calculé par scripts/signals.py) ===== */
-let sigData = null, sigFlips = null;
+let sigData = null, sigFlips = null, sigMom = null;
 async function sigLoad(force) {
   if (sigData && !force) return sigData;
   try { sigData = await fetch("data/signals.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null); }
@@ -4576,6 +4586,8 @@ async function sigLoad(force) {
   // bascules R⇄S (data/flips.json, calculé par scripts/flip_signals.mjs avec le code de l'appli)
   try { sigFlips = await fetch("data/flips.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null); }
   catch (e) { sigFlips = null; }
+  try { sigMom = await fetch("data/momentum.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null); }
+  catch (e) { sigMom = null; }
   return sigData;
 }
 const SIG_BULL = new Set(["cassure", "rebond", "reprise", "vert"]);
@@ -4672,6 +4684,7 @@ async function renderSig() {
   const h1 = document.createElement("div"); h1.className = "pf-sub"; h1.textContent = "Opportunités (#" + opp.length + ")"; box.appendChild(h1);
   if (!opp.length) box.insertAdjacentHTML("beforeend", '<div class="sig-none">Aucune situation ces 5 dernières séances.</div>');
   opp.forEach(e => box.appendChild(sigRow(e, SIG_BULL)));
+  renderMomentum(box);
   // bascules R⇄S : confirmations (réaction sur R→S, S→R franchie) puis situations à surveiller (contact, test)
   const fl = (sigFlips && sigFlips.items) || [];
   const flPick = kinds => { const by = new Map(); fl.forEach(e => { if (!kinds.has(e.sig[0].k)) return; const b = by.get(e.sym); if (!b || e.age < b.age) by.set(e.sym, e); }); return [...by.values()].sort((a, b) => a.age - b.age); };
@@ -5532,6 +5545,44 @@ async function renderHelp() {
     const d = box.querySelector(a.getAttribute("href")); if (!d) return;
     d.open = true; d.scrollIntoView({ behavior:"smooth", block:"start" });
   });
+}
+
+/* ===== Momentum : les 10 actions (EU + US) qui ont le plus monté sur 6 mois, classement de fin de mois (data/momentum.json) =====
+   Backtest fin 2017 - 2026 : +316 % (17,5 %/an) contre +135 % (10,2 %/an) en gardant tout, frais belges compris. */
+function renderMomentum(box) {
+  const M = sigMom; if (!M || !M.top) return;
+  const nm = s => { for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === s); if (it) return it; } return null; };
+  const d = s => fmtDate(s), pc = v => fmtPct(Math.round(v * 1000) / 10);
+  const h = document.createElement("div"); h.className = "pf-sub"; h.textContent = "Momentum · Top 10 du mois (classement du " + d(M.asof) + ")"; box.appendChild(h);
+  // rappel : nouveau classement en début de mois (5 premiers jours après la fin de mois)
+  const days = (dOf(M.last) - dOf(M.asof)) / 864e5;
+  if (days <= 7 && (M.in.length || M.out.length)) {
+    const b = document.createElement("div"); b.className = "mom-new";
+    b.innerHTML = "🔄 <b>Nouveau classement du mois</b> : " + (M.in.length ? "entrent " + M.in.map(s => (nm(s) || {}).name || s).join(", ") : "aucune entrée") +
+      (M.out.length ? " · sortent " + M.out.map(x => x.name).join(", ") : "");
+    box.appendChild(b);
+  }
+  const intro = document.createElement("div"); intro.className = "sig-intro";
+  intro.innerHTML = "Les 10 actions de vos listes EU et US qui ont le plus monté sur 6 mois, à la dernière fin de mois : le portefeuille à tenir ce mois-ci, à parts égales, " +
+    "à revoir chaque fin de mois. Backtest 2018-2026 : 17,5 % par an contre 10,2 % en gardant tout (frais belges compris). Détails dans Help.";
+  box.appendChild(intro);
+  const list = document.createElement("div"); list.className = "mom-list";
+  M.top.forEach((x, i) => {
+    const it = nm(x.sym), row = document.createElement("button"); row.className = "mom-row";
+    const now = (M.now || []).findIndex(y => y.sym === x.sym);
+    const tags = (M.in.includes(x.sym) ? '<span class="mom-tag in">nouveau ce mois</span>' : "") +
+      (M.nowOut && M.nowOut.includes(x.sym) ? '<span class="mom-tag warn">sortirait aujourd\'hui</span>' : "");
+    row.innerHTML = '<span class="mom-rk">' + (i + 1) + '</span><span class="mom-main"><b>' + esc((it && it.name) || x.name) + "</b>" +
+      (tags ? '<span class="mom-tags">' + tags + "</span>" : "") + '</span><span class="mom-pf up">' + pc(x.perf) + " sur 6 mois</span>";
+    if (it) row.onclick = () => openDetail(it, withLive(x.sym, summary.symbols[x.sym]));
+    list.appendChild(row);
+  });
+  box.appendChild(list);
+  const foot = document.createElement("div"); foot.className = "mom-foot";
+  foot.innerHTML = (M.out.length ? "Sorties ce mois : " + M.out.map(x => esc(x.name)).join(", ") + ". " : "") +
+    ((M.nowIn && M.nowIn.length) ? "Si on reclassait au " + d(M.last) + " : entreraient " + M.nowIn.map(s => esc((nm(s) || {}).name || s)).join(", ") +
+      (M.nowOut.length ? ", sortiraient " + M.nowOut.map(s => esc((nm(s) || {}).name || s)).join(", ") : "") + " (à confirmer à la fin du mois)." : "Au " + d(M.last) + ", le classement n'a pas changé.");
+  box.appendChild(foot);
 }
 
 /* Onglet Alertes : la note passe sur une 2e ligne si elle ne tient pas à côté du nom */

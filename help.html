@@ -8,7 +8,7 @@
   <a href="#h-data">1. Données</a><a href="#h-tabs">2. Onglets</a><a href="#h-list">3. Listes et vue compacte</a><a href="#h-chart">4. Graphique détaillé</a>
   <a href="#h-ma">5. Moyennes mobiles</a><a href="#h-sr">6. Supports / résistances</a><a href="#h-flip">7. Bascules R⇄S</a><a href="#h-tl">8. Obliques</a>
   <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a><a href="#h-proj">12 bis. Projection ┈</a>
-  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder</a><a href="#h-why">16. Pourquoi ça bouge</a>
+  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder (momentum)</a><a href="#h-why">16. Pourquoi ça bouge</a>
   <a href="#h-pf">17. Portfolio</a><a href="#h-al">18. Alertes</a><a href="#h-disp">19. Affichage</a><a href="#h-gl">20. Lexique</a>
 </nav>
 
@@ -401,6 +401,25 @@
 <li><b>Passage sous la MM200</b>.</li>
 <li><b>RSI Trends au rouge</b>.</li>
 </ul>
+<h4>Momentum · Top 10 du mois</h4>
+<p>En tête de l'onglet : les <b>10 actions de vos listes EU et US qui ont le plus monté sur 6 mois</b> (126 séances), au dernier jour de bourse du mois précédent. C'est le portefeuille à tenir ce mois-ci, à parts égales, à revoir à chaque fin de mois. Les indices, futures et cryptos ne sont pas pris en compte.</p>
+<ul>
+<li><b>nouveau ce mois</b> : n'était pas dans le Top 10 de la fin de mois précédente. Les sorties sont listées sous le classement.</li>
+<li><b>sortirait aujourd'hui</b> : avec les cours du dernier soir, l'action ne serait plus dans le Top 10. À confirmer à la fin du mois, rien à faire avant.</li>
+<li>Bandeau 🔄 : rappel du nouveau classement, pendant une semaine après la fin du mois.</li>
+<li>Calculé chaque soir (data/momentum.json). Toucher une ligne ouvre le graphique.</li>
+</ul>
+<p><b>Backtest</b> (fin 2017 → novembre 2026, 112 actions EU et US, classement chaque fin de mois, achat et vente au dernier cours du mois) :</p>
+<table class="h-t">
+<tr><th>Stratégie</th><th>Frais 0,45 % par ordre (TOB 0,35 % + courtage)</th><th>Pire baisse</th><th>2018-2021 / 2022-2026 (frais 0,1 %)</th></tr>
+<tr><td>Garder toutes les actions à parts égales</td><td>+135 % · 10,2 % par an</td><td>26 %</td><td>+77 % / +33 %</td></tr>
+<tr><td><b>Top 10 sur 6 mois</b></td><td><b>+316 % · 17,5 % par an</b></td><td>33 %</td><td>+199 % / +83 %</td></tr>
+<tr><td>Top 10 sur 3 mois</td><td>+227 % · 14,4 % par an</td><td>21 %</td><td>+152 % / +92 %</td></tr>
+<tr><td>Top 20 sur 6 mois</td><td>+193 % · 12,9 % par an</td><td>29 %</td><td>+126 % / +64 %</td></tr>
+</table>
+<p>En moyenne, environ un tiers du portefeuille change chaque mois (3 ou 4 actions sur 10). Ajouter « au-dessus de la MM200 » n'apporte rien. Classer sur 12 mois (sans le dernier) ou sur le RSI hebdo fait moins bien.</p>
+<p><b>Limites</b> : vos listes sont celles d'aujourd'hui, et plusieurs actions y sont entrées parce qu'elles avaient monté (biais de sélection, qui flatte surtout le momentum). Les changes €/$ sont ignorés. 10 actions, c'est concentré. Ce sont des résultats passés, sans garantie.</p>
+<p><b>Ce qui n'a pas marché</b> (même échantillon) : les règles de timing sur une action (RSI Trends et variantes, croisement MM50/MM200, cours/MM200) battent « garder » sur moins d'une action sur trois. Gain médian +1 à +21 % contre +66 %.</p>
 <h4>Bascules R⇄S</h4>
 <p>Calculées chaque soir avec le code même de l'appli (§ 7), en journalier et en hebdo, précision 2 %. On prend les niveaux connus <b>juste avant</b> la période récente (5 séances en J, 2 semaines en S), puis on regarde ce que le cours a fait depuis. Seul le niveau le plus proche de chaque côté compte.</p>
 <ul>
