@@ -818,7 +818,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v182</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v183</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1658,20 +1658,15 @@ function drawQuad() {
     const geoIt = (prefs.chan || prefs.tl) ? geoItems(rows, tf) : [];
     if (geoIt.length) drawGeoOn(ch, geoIt, null).forEach(s => q.geo.push({ s, t:geoIt[s._geo].g === "chan" ? "chan" : "tl", col:s.options().color, w:s.options().lineWidth }));
     if (prefs.flip || geoIt.length) {
-      const fl = prefs.flip ? flipLevels(rows, tf, tolPct()) : [], lastT = rows[rows.length - 1][0], marks = geoMarks(geoIt, null);
+      const fl = prefs.flip ? flipLevels(rows, tf, tolPct()) : [], lastT = rows[rows.length - 1][0], marks = geoMarks(geoIt, null, rows);
       fl.forEach(f => {
         const s = ch.addLineSeries({ color:FLIP_COL[f.type], lineWidth:2, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
         s.setData([{ time:f.pivotTime, value:f.price }, { time:lastT, value:f.price }]);
         q.flip.push({ s, col:FLIP_COL[f.type], w:2 });
-        const up = f.type === "RS";
-        if (prefs.dots !== false) marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:FLIP_COL[f.type] });
-        if (prefs.dots !== false) f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:"circle", color:FLIP_COL[f.type] }));   // retests : points, comme les autres contacts
+        if (prefs.dots !== false) marks.push({ time:f.pivotTime, price:f.price, color:FLIP_COL[f.type] });
+        if (prefs.dots !== false) f.retests.forEach(r => marks.push({ time:r.time, price:f.price, color:FLIP_COL[f.type] }));
       });
-      const sorted = marks.sort((a, b) => a.time < b.time ? -1 : 1).map(m => Object.assign(m, { size:m.shape === "circle" ? 0.5 : 0.8 }));   // petits graphiques : petits marqueurs
-      const apply = () => c.setMarkers(declutter(ch, rows, sorted));
-      let t = null;
-      ch.timeScale().subscribeVisibleLogicalRangeChange(() => { cancelAnimationFrame(t); t = requestAnimationFrame(apply); });
-      setTimeout(apply, 0);
+      q.dots = drawDots(ch, [], marks, 2.5);      // petits graphiques : petits points posés sur les lignes
     }
     /* RSI 14 ou RSI Trends sous chaque graphique, synchronisé avec lui */
     if (withRsi) {
@@ -2083,15 +2078,20 @@ function drawGeoOn(chart, items, sel) {
   });
   return series;
 }
-function geoMarks(items, sel) {
+/* points de contact posés SUR la droite (valeur de l'oblique ou du bord de canal ce jour-là), et non au-dessus / en dessous du chandelier */
+function geoMarks(items, sel, rows) {
   const marks = [];
   if (prefs.dots === false) return marks;      // points de contact masqués, même pour l'élément mis en évidence
+  rows = rows || barsFor(ovData, prefs.iv || "D");
+  const idx = new Map(rows.map((r, i) => [r[0], i]));
+  const on = (it, v0, v1, t) => { const a = idx.get(it.from), b = idx.get(it.to), k = idx.get(t);
+    return a == null || b == null || k == null || b === a ? v0 : v0 + (v1 - v0) * (k - a) / (b - a); };
   items.forEach((it, n) => {
     if (sel != null && sel !== n) return;
     if (it.g === "chan") {
-      it.upTimes.forEach(t => marks.push({ time:t, position:"aboveBar", shape:"circle", color:CHAN_COL }));
-      it.loTimes.forEach(t => marks.push({ time:t, position:"belowBar", shape:"circle", color:CHAN_COL }));
-    } else it.touchTimes.forEach(t => marks.push({ time:t, position: it.kind === "sup" ? "belowBar" : "aboveBar", shape:"circle", color:TL_COL[it.kind] }));
+      it.upTimes.forEach(t => marks.push({ time:t, price:on(it, it.up0, it.up1, t), color:CHAN_COL }));
+      it.loTimes.forEach(t => marks.push({ time:t, price:on(it, it.lo0, it.lo1, t), color:CHAN_COL }));
+    } else it.touchTimes.forEach(t => marks.push({ time:t, price:on(it, it.v0, it.v1, t), color:TL_COL[it.kind] }));
   });
   return marks.sort((a, b) => a.time < b.time ? -1 : 1);
 }
@@ -2165,9 +2165,9 @@ function flipMarkers(only) {
   const marks = [];
   ovFlips.forEach((f, n) => {
     if (only != null && n !== only) return;
-    const col = FLIP_COL[f.type], up = f.type === "RS";
-    if (prefs.dots !== false) marks.push({ time:f.pivotTime, position:up ? "aboveBar" : "belowBar", shape:"circle", color:col });
-    if (prefs.dots !== false) f.retests.forEach(r => marks.push({ time:r.time, position:up ? "belowBar" : "aboveBar", shape:"circle", color:col }));      // retests : points, plus de flèches
+    const col = FLIP_COL[f.type];
+    if (prefs.dots !== false) marks.push({ time:f.pivotTime, price:f.price, color:col });                       // points posés sur le niveau
+    if (prefs.dots !== false) f.retests.forEach(r => marks.push({ time:r.time, price:f.price, color:col }));
   });
   return marks.sort((a, b) => a.time < b.time ? -1 : 1);
 }
@@ -2192,9 +2192,28 @@ function declutter(chart, rows, marks) {
 }
 /* Marqueurs des bascules sur le graphique principal, recalculés à chaque zoom */
 let flipRaw = null;
+/* points de contact : séries de points (une par couleur), posés à la valeur de la ligne ce jour-là */
+function drawDots(chart, old, marks, r) {
+  old.forEach(x => { try { chart.removeSeries(x); } catch (e) {} });
+  const out = [];
+  if (!chart || !marks || !marks.length) return out;
+  const groups = [];                                   // une série ne peut avoir qu'un point par date : on répartit
+  marks.slice().sort((a, b) => a.time < b.time ? -1 : 1).forEach(m => {
+    let g = groups.find(g => g.color === m.color && !g.times.has(m.time));
+    if (!g) groups.push(g = { color:m.color, times:new Set(), pts:[] });
+    g.times.add(m.time); g.pts.push({ time:m.time, value:m.price });
+  });
+  groups.forEach(g => {
+    const s = chart.addLineSeries({ color:g.color, lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:r, priceLineVisible:false,
+      lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    s.setData(g.pts); out.push(s);
+  });
+  return out;
+}
+let dotSeries = [];
 function setFlipMarks(marks) {
   flipRaw = marks;
-  if (ovCandles) ovCandles.setMarkers(marks ? declutter(ovChart, barsFor(ovData, prefs.iv || "D"), marks) : []);
+  dotSeries = drawDots(ovChart, dotSeries, marks, 4);
 }
 function renderFlipList() {
   const box = $("ovFlipList"); if (!box) return;
@@ -2991,10 +3010,10 @@ function applyHighlight() {
       const fm = prefs.flip && geoSel == null ? flipMarkers(flipSel) : [];
       const all = gm.concat(fm).sort((a, b) => a.time < b.time ? -1 : 1);
       setFlipMarks(all.length ? all : null);
-    } else flipRaw = null;
+    } else { flipRaw = null; dotSeries = drawDots(ovChart, dotSeries, null); }
     return;
   }
-  ovMaReact = null; flipRaw = null;
+  ovMaReact = null; flipRaw = null; dotSeries = drawDots(ovChart, dotSeries, null);
   /* zone de tolérance du niveau (± « Précision des contacts ») : les contacts numérotés sont les sommets / creux tombés dans cette zone */
   if (sel.level.tol) {
     const t = sel.level.tol, c = sel.opts.color;
@@ -3008,7 +3027,7 @@ function applyHighlight() {
   (sel.level.hits || []).forEach((h, j) => {
     let t = byKey.get(keyOf(iv, h[0]));
     if (!t && iv === "D") t = (rows.find(r => r[0] >= h[0]) || [])[0];
-    if (t) marks.push({ time:t, price:h[1], type:"lvd" });
+    if (t) marks.push({ time:t, price:sel.level.price, type:"lvd" });     // posé sur le niveau, là où le contact a eu lieu
   });
   marks.sort((a, b) => a.time < b.time ? -1 : 1);
   /* contacts : petits points posés à l'endroit exact du sommet ou du creux (plus de flèches numérotées) */
@@ -3230,9 +3249,7 @@ function drawDetail(keep) {
   ovChart.priceScale("right").applyOptions({ scaleMargins:{ top:0.14, bottom:0.08 }, minimumWidth:72 });
   let declTimer = null;
   ovChart.timeScale().subscribeVisibleLogicalRangeChange(() => {
-    if (!flipRaw) return;
-    cancelAnimationFrame(declTimer);
-    declTimer = requestAnimationFrame(() => { if (flipRaw && ovCandles) ovCandles.setMarkers(declutter(ovChart, barsFor(ovData, prefs.iv || "D"), flipRaw)); });
+    return;   // les points de contact sont des séries posées sur les lignes : rien à recalculer en faisant défiler
   });
   ovChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
     if (!range || syncing || !rsiChart) return;
@@ -3252,7 +3269,7 @@ function drawDetail(keep) {
   ovCandles = c;
   ovLines = addDetailLevels(c, info);
   ovMa = [];
-  flipSeries = []; geoSeries = []; projSeries = []; ovGeo = []; ovFlips = [];     // séries de l'ancien graphique (supprimé)
+  flipSeries = []; geoSeries = []; projSeries = []; dotSeries = []; ovGeo = []; ovFlips = [];     // séries de l'ancien graphique (supprimé)
   drawMas();
   drawFlips();
   drawGeo();
