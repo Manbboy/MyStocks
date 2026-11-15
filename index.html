@@ -789,7 +789,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v173</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v174</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3718,9 +3718,9 @@ async function refreshDetailLive() {
 /* ----- Période « 1J » : la séance du jour en points de 5 minutes sur chaque carte ----- */
 const dayCache = {};            // sym -> { t, data }
 const dayCards = new Map();     // élément graphique -> { sym, series, chart }
-async function fetchDay(sym, force) {
+async function fetchDay(sym, force, keep) {
   const c = dayCache[sym];
-  if (c && !force && Date.now() - c.t < 55000) return c.data;
+  if (c && !force && (keep || Date.now() - c.t < 55000)) return c.data;       // keep : direct coupé, la séance chargée suffit
   try {
     const r = await fetch(LIVE_URL + "/chart?s=" + encodeURIComponent(sym) + "&range=5d&interval=5m");
     if (!r.ok) throw new Error(r.status);
@@ -3781,8 +3781,8 @@ function dayStyle(d) {
 }
 async function drawCardDay(el, info) {
   const sym = el.dataset.sym;
-  if (!liveOn()) { el.innerHTML = '<div class="msg">1J : active « Direct »</div>'; return; }
-  const d = await fetchDay(sym);
+  // direct coupé : la dernière séance est chargée une fois (pas de rafraîchissement) — le week-end, celle de vendredi
+  const d = await fetchDay(sym, false, !liveOn());
   if (!d || !d.pts.length) throw new Error("pas de séance");
   const small = prefs.cols >= 3;
   const chart = LW.createChart(el, Object.assign(baseOptions(small), {
