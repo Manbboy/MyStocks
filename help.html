@@ -313,13 +313,16 @@
 <details id="h-manu"><summary>13 bis. Manu (M) : les 3 zones d'intervention</summary>
 <h4>Principe</h4>
 <p>Le bouton <b>M</b> rassemble <b>tous les indicateurs</b>, même ceux qui ne sont pas affichés, et cherche les prix où plusieurs se rejoignent dans les prochaines séances. Les 3 zones les plus solides apparaissent en bandes roses <b>M1, M2, M3</b> (de la plus haute à la plus basse), avec leurs raisons sous le graphique.</p>
-<h4>Ce qui « vote » (et son poids)</h4>
-<table class="h-t"><tr><th>Indicateur</th><th>Poids</th></tr>
-<tr><td>Support / résistance J · S · M · T</td><td>1 · 1,6 · 2,2 · 2,6 ; ×(1 + 0,25 par contact au-delà de 2), au plus ×2</td></tr>
-<tr><td>Bascule R⇄S J · S · M</td><td>1,6 · 2,2 · 2,8 ; +0,3 par retest réussi</td></tr>
-<tr><td>Oblique intacte J · S</td><td>1,4 · 2 ; +0,15 par contact au-delà de 3 ; plage = sa valeur aujourd'hui → dans 20 séances (4 semaines)</td></tr>
-<tr><td>Bords d'un canal intact J · S</td><td>1,2 · 1,7 ; plage = aujourd'hui → dans 20 séances</td></tr>
-<tr><td>Moyennes mobiles</td><td>MM20 J 0,6 · MM50 J 1 · MM200 J 1,8 · MM50 S 1,4 · MM200 S 2 ; prolongées avec leur pente des 10 derniers chandeliers</td></tr>
+<h4>Ce qui « vote » (et son poids, ajusté d'après le backtest)</h4>
+<p>Chaque raison sous le graphique porte une pastille <b>J</b> (journalier), <b>S</b> (hebdomadaire), <b>M</b> (mensuel) ou <b>T</b> (trimestriel) : l'échelle de l'indicateur dont il s'agit.</p>
+<table class="h-t"><tr><th>Indicateur</th><th>Poids J · S · M · T</th></tr>
+<tr><td>Support / résistance</td><td>0,9 · 1,6 · 2,5 · 2,2 ; ×(1 + 0,25 par contact au-delà de 2), au plus ×2</td></tr>
+<tr><td>R→S (résistance devenue support)</td><td>1 · 2,6 · 3,5 ; +0,3 par retest réussi</td></tr>
+<tr><td>S→R (support devenu résistance)</td><td>poids R→S ×0,6 ; +0,3 par retest</td></tr>
+<tr><td>Oblique de support intacte</td><td>1 · 1,5 ; +0,15 par contact au-delà de 3 ; plage = sa valeur aujourd'hui → dans 20 séances (4 semaines)</td></tr>
+<tr><td>Oblique de résistance intacte</td><td>0,6 · 2</td></tr>
+<tr><td>Bas / haut d'un canal intact</td><td>bas 0,6 · 1,6 ; haut 1,2 · 1,6 ; plage = aujourd'hui → dans 20 séances</td></tr>
+<tr><td>Moyennes mobiles</td><td>MM20 J 1,2 · MM50 J 1 · MM200 J 1,3 · MM50 S 1,4 · MM200 S 1,7 ; prolongées avec leur pente des 10 derniers chandeliers</td></tr>
 <tr><td>Tino mensuel / hebdo</td><td>zone 2,5 / 1,8 (+0,5 si la MM200 y passe, +1 si confluence ★) ; oblique 2,5 / 1,8 ; seconde oblique ×0,8 ; oblique baissière 1,4 ; MM200 1,5 / 1,2</td></tr>
 </table>
 <p>Un niveau horizontal vote pour une plage de ± la moitié de la précision des contacts (±1 % par défaut).</p>
@@ -327,17 +330,27 @@
 <ol>
 <li>On garde les votes entre <b>−18 % et +10 %</b> du cours.</li>
 <li>Les votes qui se touchent (à 1 % du cours près) forment une zone, large de 4 % du cours au plus.</li>
-<li><b>Force</b> de la zone = somme des poids ; une 2e preuve de la même famille compte moitié. Familles : supports / résistances, R⇄S, obliques, canaux, moyennes, Tino.</li>
+<li><b>Confluence</b> de la zone = somme des poids ; une 2e preuve de la même famille compte moitié. Familles : supports / résistances, R⇄S, obliques, canaux, moyennes, Tino.</li>
 <li>Le cœur de la zone fait ±1,5 % autour du centre pondéré par les poids.</li>
 <li>Une zone doit réunir <b>au moins 2 indicateurs</b> et une force d'<b>au moins 3</b>. On garde les 3 plus fortes, sans chevauchement.</li>
 <li>★☆☆ force 3 à 5 · ★★☆ 5 à 7 · ★★★ 7 et plus.</li>
 </ol>
+<h4>Backtest (novembre 2026)</h4>
+<p>Le calcul a été rejoué sur l'historique, avec le code de l'appli et seulement les données connues à chaque date. Tino est exclu : ses zones actuelles connaissent l'avenir. Échantillon : 112 actions EU et US, une date toutes les 15 séances de 2021 à 2026, soit 7 106 dates.</p>
+<table class="h-t">
+<tr><th>Mesure</th><th>Zones Manu</th><th>Zones au hasard, même distance</th></tr>
+<tr><td>Zone d'achat touchée en 20 séances, puis +3 % au-dessus avant une clôture 2 % dessous (parmi celles qui ont tranché)</td><td>72 %</td><td>73 %</td></tr>
+<tr><td>Après une réaction (clôture repassée au-dessus) : +5 % avant −3 % sous la zone</td><td>46 % gagnants · 35 % perdants</td><td>47 % · 33 %</td></tr>
+<tr><td>Idem, cours au-dessus de la MM200 (MM50 > MM200)</td><td>48 % · 32 %</td><td>47 % · 31 %</td></tr>
+<tr><td>Idem, cours sous la MM200</td><td>45 % · 39 %</td><td>48 % · 34 %</td></tr>
+</table>
+<p><b>Conclusion</b> : la confluence d'indicateurs situe bien les niveaux où le marché regarde, mais elle ne prédit pas mieux le rebond qu'un niveau quelconque à la même distance. Une régression sur 7 463 zones touchées confirme que l'effet est très faible (AUC 0,53 sur des valeurs non vues). Les poids ont été ajustés vers ce qui tenait un peu mieux : R→S mensuel (77,5 % de rebonds) et hebdo (73 %), supports mensuels. Ce qui pèse le plus, c'est la profondeur du repli et la tendance de fond. Le contexte en tête du bloc Manu sert à cela.</p>
 <h4>Lecture</h4>
 <ul>
 <li><b>Zone sous le cours</b> : zone d'achat sur repli. Attendre une réaction dans la zone (mèche qui rejette, clôture qui repart) plutôt qu'acheter à l'aveugle.</li>
 <li><b>Zone au-dessus du cours</b> : résistance. Achat seulement si le cours clôture au-dessus ; sinon zone d'allègement.</li>
 <li>Le contexte en tête du bloc (tendance par rapport à la MM200, RSI 14, RSI Trends) dit s'il vaut mieux être prudent. Sous la MM200, les supports cèdent plus souvent.</li>
-<li>La force mesure combien d'indicateurs se rejoignent ; <b>ce n'est pas une probabilité de réussite</b>.</li>
+<li>La note de confluence mesure combien d'indicateurs se rejoignent ; <b>ce n'est pas une probabilité de réussite</b> (voir le backtest).</li>
 </ul>
 </details>
 

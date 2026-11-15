@@ -685,6 +685,9 @@
   .manu-d { color:var(--muted); } .manu-s { color:#d946ef; font-weight:700; margin-left:4px; white-space:nowrap; }
   .manu-w { font-size:12.5px; color:var(--muted); margin:2px 0; }
   .manu-z ul { margin:2px 0 0; padding-left:18px; font-size:12.5px; } .manu-z li { margin:1px 0; }
+  .manu-z ul { list-style:none; padding-left:2px; }
+  .manu-tf { display:inline-block; min-width:16px; text-align:center; font-size:10.5px; font-weight:700; color:#fff; background:#a21caf; border-radius:4px; padding:0 3px; margin-right:2px; }
+  .ivtag { font-size:11px; font-weight:700; color:var(--muted); border:1px solid var(--border); border-radius:4px; padding:0 4px; margin-left:4px; }
   .manu-foot { font-size:11.5px; color:var(--muted); margin-top:4px; }
   .al-auto-h { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:16px; }
   .al-auto-h .swb { font-weight:400; font-size:12.5px; text-transform:none; letter-spacing:0; }
@@ -798,7 +801,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v177</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v178</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -2086,8 +2089,13 @@ function drawGeo() {
   renderGeoList();
   drawProj();
 }
+/* unité du graphique, pour dire de quelle échelle parlent les listes (J, S, M, T) */
+const IV_NAME = { D:["J", "journalier"], W:["S", "hebdo"], M:["M", "mensuel"], Q:["T", "trimestriel"], I:["15'", "15 min"] };
+function ivTag() { const t = document.createElement("span"); t.className = "ivtag"; t.textContent = (IV_NAME[prefs.iv || "D"] || IV_NAME.D)[0]; return t; }
+function setBoxUnit(id, title) { const h = $(id) && $(id).querySelector("h3"); if (h) { const u = IV_NAME[prefs.iv || "D"] || IV_NAME.D; h.textContent = title + " · " + u[1] + " (" + u[0] + ")"; } }
 function renderGeoList() {
   const box = $("ovGeoList"); if (!box) return;
+  setBoxUnit("boxGeo", "Canaux et obliques");
   $("boxGeo").style.display = prefs.chan || prefs.tl ? "" : "none";
   box.innerHTML = "";
   if (!prefs.chan && !prefs.tl) return;
@@ -2102,13 +2110,13 @@ function renderGeoList() {
     const a = document.createElement("span"); a.style.color = col;
     const b = document.createElement("small");
     if (it.g === "chan") {
-      a.textContent = "Canal " + (it.dir === "up" ? "ascendant ↗" : "descendant ↘");
+      a.textContent = "Canal " + (it.dir === "up" ? "ascendant ↗" : "descendant ↘"); a.appendChild(ivTag());
       b.textContent = short(it.from) + " → " + (it.broken ? short(it.to) + " (sortie par le " + (it.broken === "up" ? "haut" : "bas") + ")" : "aujourd'hui") +
         " · " + it.upTimes.length + " contacts en haut, " + it.loTimes.length + " en bas" +
         (it.pos != null ? " · cours à " + Math.round(it.pos * 100) + " % de la hauteur du canal" : "");
     } else {
       const now = it.now;
-      a.textContent = (it.kind === "sup" ? "Oblique de support " : "Oblique de résistance ") + (it.m >= 0 ? "↗" : "↘");
+      a.textContent = (it.kind === "sup" ? "Oblique de support " : "Oblique de résistance ") + (it.m >= 0 ? "↗" : "↘"); a.appendChild(ivTag());
       b.textContent = it.touches.length + " contacts · depuis " + short(it.from) + (it.broken ? " · cassée " + short(it.to)
         : " · aujourd'hui à " + fmt(now, ovItem.currency) + " (cours " + fmtPct(Math.round((ovItem.last / now - 1) * 10000) / 100) + ")");
     }
@@ -2173,6 +2181,7 @@ function setFlipMarks(marks) {
 }
 function renderFlipList() {
   const box = $("ovFlipList"); if (!box) return;
+  setBoxUnit("boxFlip", "Bascules R⇄S");
   $("boxFlip").style.display = prefs.flip ? "" : "none";
   box.innerHTML = "";
   if (!prefs.flip) return;
@@ -2183,7 +2192,7 @@ function renderFlipList() {
     if (hiFlip === n) d.classList.add("sel");
     d.onclick = () => { hiFlip = hiFlip === n ? null : n; if (hiFlip != null) { hiKey = null; hiMa = null; drawMas(); renderLevelLists(ovItem); } applyHighlight(); renderFlipList(); };
     const a = document.createElement("span"); a.style.color = FLIP_COL[f.type];
-    a.textContent = fmt(f.price, ovItem.currency) + "  " + (f.type === "RS" ? "Résistance → Support" : "Support → Résistance");
+    a.textContent = fmt(f.price, ovItem.currency) + "  " + (f.type === "RS" ? "Résistance → Support" : "Support → Résistance"); a.appendChild(ivTag());
     const b = document.createElement("small");
     const dist = (f.price / ovItem.last - 1) * 100;
     b.textContent = (f.type === "RS" ? "sommet " : "creux ") + short(f.pivotTime) + " · cassé " + short(f.breakTime) + " · " +
@@ -3043,6 +3052,7 @@ function onLevelTap(info, tf, p, i, el) {
 }
 function renderMaList(info) {
   const box = $("ovMaList"); box.innerHTML = "";
+  setBoxUnit("boxMa", "Moyennes mobiles");
   const iv = prefs.iv || "D";
   const unit = { I:"chandeliers de 15 min", D:"jours", W:"semaines", M:"mois", Q:"trimestres" }[iv];
   MA_PERIODS.forEach(n => {
@@ -3060,7 +3070,7 @@ function renderMaList(info) {
     if (!pts.length) { a.textContent = "MM" + n; b.textContent = "historique insuffisant (" + n + " " + unit + ")"; }
     else {
       const v = pts[pts.length - 1].value, dist = (info.last / v - 1) * 100;
-      a.textContent = "MM" + n + "  " + fmt(v, info.currency);
+      a.textContent = "MM" + n + "  " + fmt(v, info.currency); a.appendChild(ivTag());
       const R = maReactions(ovData, iv, n, tolPct());
       const up = R.events.filter(e => e.type === "up").length, dn = R.events.length - up;
       b.textContent = "Cours " + fmtPct(Math.round(dist * 100) / 100) + (dist >= 0 ? " au-dessus" : " en dessous") +
@@ -5686,7 +5696,9 @@ function setTinoChip(card, info) {
    zones, obliques et MM200 de Tino. Les votes qui se superposent forment une zone ; sa note = somme des poids
    (une 2e preuve de la même famille compte moitié). On garde les 3 meilleures zones, sans chevauchement, entre −18 % et +10 % du cours. */
 const MANU_H = 20, MANU_COL = "#d946ef";
-const MANU_W = { sr:{ D:1, W:1.6, M:2.2, Q:2.6 }, flip:{ D:1.6, W:2.2, M:2.8, Q:3 }, tl:{ D:1.4, W:2 }, chan:{ D:1.2, W:1.7 } };
+/* poids ajustés d'après le backtest (2021-2026, 112 actions) : R→S mensuel et hebdo, supports mensuels un peu plus fiables ;
+   R→S journalier, bas de canal et oblique de résistance journaliers moins fiables */
+const MANU_W = { sr:{ D:0.9, W:1.6, M:2.5, Q:2.2 }, flip:{ D:1, W:2.6, M:3.5, Q:3.5 }, tl:{ D:1, W:1.5 }, tlres:{ D:0.6, W:2 }, chan:{ D:0.6, W:1.6 }, chanUp:{ D:1.2, W:1.6 } };
 let manuSeries = [], ovManu = null;
 function smaLast(rows, n, back) {                 // moyenne simple des n clôtures se terminant « back » chandeliers avant la fin
   const end = rows.length - back; if (end < n) return null;
@@ -5696,8 +5708,8 @@ function manuCompute(data, info, sym) {
   const day = barsFor(data, "D"); if (day.length < 60) return null;
   const C = day[day.length - 1][4], pct = tolPct(), tol = pct / 100;
   const cur = info && info.currency, F = v => fmt(v, cur);
-  const votes = [], add = (lo, hi, w, fam, txt) => { if (hi < lo) [lo, hi] = [hi, lo]; votes.push({ lo, hi, w, fam, txt, mid:(lo + hi) / 2 }); };
-  const flat = (p, w, fam, txt) => add(p * (1 - tol / 2), p * (1 + tol / 2), w, fam, txt);
+  const votes = [], add = (lo, hi, w, fam, txt, tf) => { if (hi < lo) [lo, hi] = [hi, lo]; votes.push({ lo, hi, w, fam, txt, tf, mid:(lo + hi) / 2 }); };
+  const flat = (p, w, fam, txt, tf) => add(p * (1 - tol / 2), p * (1 + tol / 2), w, fam, txt, tf);
   const TFN = { D:"jour", W:"hebdo", M:"mensuel", Q:"trimestriel" };
   // 1) supports et résistances de chaque échelle
   const lv = computeLevels(data, C, pct, false);
@@ -5705,38 +5717,39 @@ function manuCompute(data, info, sym) {
     L.supports.concat(L.resistances).forEach(l => { if (l.extreme) return;
       const sup = l.price < C;
       flat(l.price, MANU_W.sr[tf] * Math.min(1 + 0.25 * (l.touches - 2), 2), "sr",
-        (sup ? "Support " : "Résistance ") + TFN[tf] + " " + F(l.price) + " (" + l.touches + " contacts)"); }); });
+        (sup ? "Support " : "Résistance ") + TFN[tf] + " " + F(l.price) + " (" + l.touches + " contacts)", tf); }); });
   // 2) bascules de rôle
   ["D", "W", "M"].forEach(tf => { const rows = barsFor(data, tf); if (rows.length < 60) return;
-    flipLevels(rows, tf, pct).forEach(f => flat(f.price, MANU_W.flip[tf] + 0.3 * f.retests.length, "flip",
+    flipLevels(rows, tf, pct).forEach(f => flat(f.price, MANU_W.flip[tf] * (f.type === "RS" ? 1 : 0.6) + 0.3 * f.retests.length, "flip",
       (f.type === "RS" ? "Ancienne résistance devenue support (R→S) " : "Ancien support devenu résistance (S→R) ") + TFN[tf] + " " + F(f.price) +
-      (f.retests.length ? " · " + f.retests.length + " retest" + (f.retests.length > 1 ? "s" : "") + " réussi" + (f.retests.length > 1 ? "s" : "") : ""))); });
+      (f.retests.length ? " · " + f.retests.length + " retest" + (f.retests.length > 1 ? "s" : "") + " réussi" + (f.retests.length > 1 ? "s" : "") : ""), tf)); });
   // 3) obliques et canaux intacts, valeur aujourd'hui → dans 20 séances (4 semaines en hebdo)
   [["D", MANU_H], ["W", 4]].forEach(([tf, h]) => { const rows = barsFor(data, tf), n = rows.length; if (n < 60) return;
     trendLines(rows, tf, pct).forEach(t => { if (t.broken) return;
       const v0 = t.base + t.m * (n - 1 - t.a), v1 = t.base + t.m * (n - 1 + h - t.a); if (v0 <= 0) return;
       const nt = Array.isArray(t.touches) ? t.touches.length : (+t.touches || 3);
-      add(v0, v1, MANU_W.tl[tf] + 0.15 * Math.max(0, nt - 3), "tl",
-        "Oblique de " + (t.kind === "sup" ? "support" : "résistance") + " " + TFN[tf] + " (" + nt + " contacts) : " + F(v0) + " aujourd'hui → " + F(v1) + " dans " + (tf === "D" ? "20 séances" : "4 semaines")); });
+      add(v0, v1, (t.kind === "sup" ? MANU_W.tl : MANU_W.tlres)[tf] + 0.15 * Math.max(0, nt - 3), "tl",
+        "Oblique de " + (t.kind === "sup" ? "support" : "résistance") + " " + TFN[tf] + " (" + nt + " contacts) : " + F(v0) + " aujourd'hui → " + F(v1) + " dans " + (tf === "D" ? "20 séances" : "4 semaines"), tf); });
     channels(rows, tf, pct).forEach(c => { if (c.broken || !c.bars) return;
       const mU = (c.up1 - c.up0) / c.bars, mL = (c.lo1 - c.lo0) / c.bars;
-      add(c.lo1, c.lo1 + mL * h, MANU_W.chan[tf], "chan", "Bas du canal " + (c.dir === "up" ? "haussier" : "baissier") + " " + TFN[tf] + " : " + F(c.lo1) + " → " + F(c.lo1 + mL * h));
-      add(c.up1, c.up1 + mU * h, MANU_W.chan[tf], "chan", "Haut du canal " + (c.dir === "up" ? "haussier" : "baissier") + " " + TFN[tf] + " : " + F(c.up1) + " → " + F(c.up1 + mU * h)); }); });
+      add(c.lo1, c.lo1 + mL * h, MANU_W.chan[tf], "chan", "Bas du canal " + (c.dir === "up" ? "haussier" : "baissier") + " " + TFN[tf] + " : " + F(c.lo1) + " → " + F(c.lo1 + mL * h), tf);
+      add(c.up1, c.up1 + mU * h, MANU_W.chanUp[tf], "chan", "Haut du canal " + (c.dir === "up" ? "haussier" : "baissier") + " " + TFN[tf] + " : " + F(c.up1) + " → " + F(c.up1 + mU * h), tf); }); });
   // 4) moyennes mobiles (prolongées avec leur pente des 10 derniers chandeliers, sur la moitié de l'horizon)
   const wk = barsFor(data, "W");
-  [[day, 20, 0.6, "MM20 jour", 10], [day, 50, 1, "MM50 jour", 10], [day, 200, 1.8, "MM200 jour", 10], [wk, 50, 1.4, "MM50 hebdo", 2], [wk, 200, 2, "MM200 hebdo", 2]]
-    .forEach(([rows, n, w, name, h]) => { const v = smaLast(rows, n, 0), v10 = smaLast(rows, n, 10); if (v == null || v10 == null) return;
+  [[day, 20, 1.2, "MM20 jour (20 séances)", 10, "D"], [day, 50, 1, "MM50 jour (50 séances)", 10, "D"], [day, 200, 1.3, "MM200 jour (200 séances)", 10, "D"],
+   [wk, 50, 1.4, "MM50 hebdo (50 semaines)", 2, "W"], [wk, 200, 1.7, "MM200 hebdo (200 semaines)", 2, "W"]]
+    .forEach(([rows, n, w, name, h, tf]) => { const v = smaLast(rows, n, 0), v10 = smaLast(rows, n, 10); if (v == null || v10 == null) return;
       const v1 = v + (v - v10) / 10 * h;
-      add(v, v1, w, "ma", name + " " + F(v) + (Math.abs(v1 / v - 1) > 0.003 ? (v1 > v ? " (montante)" : " (descendante)") : "")); });
+      add(v, v1, w, "ma", name + " " + F(v) + (Math.abs(v1 / v - 1) > 0.003 ? (v1 > v ? ", montante" : ", descendante") : ""), tf); });
   // 5) Tino (mensuel et hebdo)
   const sm = sym && summary.symbols[sym];
-  [["tino", "mensuelle", 2.5, 2.5, 1.5], ["tinoW", "hebdo", 1.8, 1.8, 1.2]].forEach(([k, nm, wz, wo, wm]) => { const t = sm && sm[k]; if (!t) return;
+  [["tino", "mensuelle", 2.5, 2.5, 1.5, "M"], ["tinoW", "hebdo", 1.8, 1.8, 1.2, "W"]].forEach(([k, nm, wz, wo, wm, tf]) => { const t = sm && sm[k]; if (!t) return;
     (t.zones || []).concat(t.res || []).forEach(z => add(z.lo, z.hi, wz + (z.mm ? 0.5 : 0) + (k === "tinoW" && t.conf && t.conf.some(c => Math.abs(c.lo - z.lo) < 1e-6) ? 1 : 0), "tino",
-      "Zone Tino " + nm + " " + F(z.lo) + "–" + F(z.hi) + (z.n ? " (" + z.n + " contacts)" : "") + (z.mm ? ", la MM200 y passe" : "")));
-    if (t.obl) add(t.obl.now, t.obl.now, wo, "tino", "Oblique longue Tino " + nm + " " + F(t.obl.now) + " (" + t.obl.touches + " contacts)");
-    if (t.obl2) add(t.obl2.now, t.obl2.now, wo * 0.8, "tino", "Seconde oblique Tino " + nm + " " + F(t.obl2.now));
-    if (t.down && !t.down.broken) add(t.down.now, t.down.now, 1.4, "tino", "Oblique baissière Tino " + nm + " " + F(t.down.now) + " (à casser)");
-    if (t.mm) add(t.mm, t.mm, wm, "ma", "MM200 Tino (200 " + (k === "tino" ? "mois" : "semaines") + ") " + F(t.mm)); });
+      "Zone Tino " + nm + " " + F(z.lo) + "–" + F(z.hi) + (z.n ? " (" + z.n + " contacts)" : "") + (z.mm ? ", la MM200 y passe" : ""), tf));
+    if (t.obl) add(t.obl.now, t.obl.now, wo, "tino", "Oblique longue Tino " + nm + " " + F(t.obl.now) + " (" + t.obl.touches + " contacts)", tf);
+    if (t.obl2) add(t.obl2.now, t.obl2.now, wo * 0.8, "tino", "Seconde oblique Tino " + nm + " " + F(t.obl2.now), tf);
+    if (t.down && !t.down.broken) add(t.down.now, t.down.now, 1.4, "tino", "Oblique baissière Tino " + nm + " " + F(t.down.now) + " (à casser)", tf);
+    if (t.mm) add(t.mm, t.mm, wm, "ma", "MM200 Tino (200 " + (k === "tino" ? "mois" : "semaines") + ") " + F(t.mm), tf); });
   // regroupement : votes qui se touchent (à 1 % près), zone de 4 % au plus
   const V = votes.filter(v => v.mid > C * 0.82 && v.mid < C * 1.10).sort((a, b) => a.mid - b.mid), groups = [];
   V.forEach(v => { const g = groups[groups.length - 1];
@@ -5807,14 +5820,18 @@ function renderManuList() {
     const stars = z.score >= 7 ? "★★★" : z.score >= 5 ? "★★☆" : "★☆☆";
     const what = z.side === "buy" ? "zone d'achat sur repli" : "résistance : achat si clôture au-dessus, sinon allègement";
     el.innerHTML = '<div class="manu-h"><b class="manu-tag">M' + (i + 1) + "</b> <b>" + F(z.lo) + " – " + F(z.hi) + '</b> <span class="manu-d">' + pc((z.lo + z.hi) / 2) +
-      '</span> <span class="manu-s" title="force de la confluence">' + stars + " " + z.score.toFixed(1) + "</span></div>" +
+      '</span> <span class="manu-s">confluence ' + stars + " " + z.score.toFixed(1) + "</span></div>" +
       '<div class="manu-w">' + what + " · " + z.v.length + " indicateurs" + (z.fams > 1 ? ", " + z.fams + " familles" : "") + "</div>";
     const ul = document.createElement("ul");
-    z.v.slice().sort((a, b) => b.w - a.w).forEach(v => { const li = document.createElement("li"); li.textContent = v.txt; ul.appendChild(li); });
+    z.v.slice().sort((a, b) => b.w - a.w).forEach(v => { const li = document.createElement("li");
+      const tg = document.createElement("span"); tg.className = "manu-tf"; tg.textContent = ({ D:"J", W:"S", M:"M", Q:"T" })[v.tf] || "·";
+      li.append(tg, document.createTextNode(" " + v.txt)); ul.appendChild(li); });
     el.appendChild(ul); box.appendChild(el);
   });
-  box.insertAdjacentHTML("beforeend", '<div class="manu-foot">Force = somme des poids des indicateurs qui se rejoignent (une 2e preuve de la même famille compte moitié). ' +
-    "Ce n'est pas une probabilité : attendre une réaction du cours dans la zone (mèche, clôture au-dessus) avant d'intervenir. Détails dans Help.</div>");
+  box.insertAdjacentHTML("beforeend", '<div class="manu-foot"><b>Ce que dit le backtest</b> (2021-2026, 112 actions EU et US, sans Tino) : après une réaction dans une zone d\'achat Manu ' +
+    "(clôture repassée au-dessus), le cours a fait <b>+5 % avant −3 % sous la zone dans 46 % des cas</b>, contre 47 % pour une zone prise au hasard à la même distance. " +
+    "La confluence aide à situer les niveaux, <b>pas à prédire le rebond</b>. Ce qui compte vraiment : la <b>tendance de fond</b> (sous la MM200, 39 % de perdants contre 32 % au-dessus) et une <b>sortie prévue</b> sous la zone.<br>" +
+    "Confluence = somme des poids des indicateurs qui se rejoignent (une 2e preuve de la même famille compte moitié). J = journalier, S = hebdomadaire, M = mensuel, T = trimestriel. Détails dans Help.</div>");
 }
 $("manuBtn").onclick = () => { prefs.manu = !prefs.manu; savePrefs(); drawManu(); renderToggles();
   if (prefs.manu) setTimeout(() => { const b = $("boxManu"); if (b && b.scrollIntoView && innerWidth < 900) toast("Manu : les raisons sont sous le graphique.", 2200); }, 50); };
