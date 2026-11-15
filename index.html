@@ -696,7 +696,7 @@
   .myz-r.in-t .h.t { top:0; } .myz-r.in-b .h.b { bottom:0; } .myz-r.in-l .h.l { left:0; } .myz-r.in-r .h.r { right:0; }   /* au bord du graphique : barrette à l'intérieur */
   .myz-bar { position:absolute; display:flex; gap:6px; transform:translateX(-50%); pointer-events:auto; white-space:nowrap; }
   .myz-bar button { font:inherit; font-size:14px; padding:7px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); box-shadow:0 2px 6px rgba(0,0,0,.2); cursor:pointer; }
-  .myz-bar #myzDel { color:#dc2626; }
+  .myz-bar #myzDel { width:44px; height:44px; padding:0; border-radius:50%; background:#dc2626; border-color:#dc2626; color:#fff; font-size:24px; font-weight:700; line-height:1; }
   .myz-row.sel { background:rgba(250,204,21,.15); }
   .myz-in { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
   .myz-in label { font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:4px; }
@@ -842,7 +842,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v191</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v192</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -946,7 +946,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <div class="tags" id="tags"></div>
       <div class="rings" id="rings"></div>
       <div class="myz-ed" id="myzEd" hidden><div class="myz-r" id="myzR"><i class="h t" data-h="t"></i><i class="h b" data-h="b"></i><i class="h l" data-h="l"></i><i class="h r" data-h="r"></i></div>
-        <div class="myz-bar" id="myzBar"><button id="myzDel">🗑 Supprimer</button><button id="myzOk">✓ OK</button></div></div>
+        <div class="myz-bar" id="myzBar"><button id="myzDel" aria-label="Supprimer la zone">✕</button></div></div>
       <div class="quad" id="quad"></div>
     </div>
     <div class="quick" id="quick" role="toolbar" aria-label="Mettre en évidence un niveau ou une moyenne mobile"></div>
@@ -6217,7 +6217,7 @@ function myzPlace() {
   R.style.display = B.style.display = "";
   Object.assign(R.style, { left:p.x0 + "px", top:p.y0 + "px", width:(p.x1 - p.x0) + "px", height:(p.y1 - p.y0) + "px" });
   R.classList.toggle("in-t", p.y0 < 28); R.classList.toggle("in-b", p.y1 > H - 28); R.classList.toggle("in-l", p.x0 < 28); R.classList.toggle("in-r", p.x1 > W - 28);
-  const cx = Math.max(110, Math.min(W - 110, (Math.max(0, p.x0) + Math.min(W, p.x1)) / 2));
+  const cx = Math.max(30, Math.min(W - 30, (Math.max(0, p.x0) + Math.min(W, p.x1)) / 2));
   const by = p.y0 > 76 ? p.y0 - 72 : (p.y1 + 76 < H ? p.y1 + 32 : Math.max(4, p.y0 + 4));   // barre au-dessus de la zone (sinon dessous)
   Object.assign(B.style, { left:cx + "px", top:by + "px" });
 }
@@ -6270,7 +6270,6 @@ function myzEnd() {
   });
   const up = e => { if (myzDrag) { myzDrag = null; renderMyzList(); } };
   R.addEventListener("pointerup", up); R.addEventListener("pointercancel", up);
-  $("myzOk").onclick = e => { e.stopPropagation(); myzEnd(); };
   $("myzDel").onclick = e => {
     e.stopPropagation(); if (!myzEdit) return;
     const id = myzEdit.id; myzClose();
