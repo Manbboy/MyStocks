@@ -295,6 +295,9 @@
   .tnc { display:none; }
   .grid.compact .tbl.multi .tnc:not(:empty) { display:inline; font-size:10px; font-weight:700; color:#0284c7; white-space:nowrap; }
   [data-theme="dark"] .grid.compact .tbl.multi .tnc { color:#38bdf8; }
+  /* cases pâles du thème intermédiaire (🎨 2 et 3) : repère Tino et textes secondaires foncés, aussi lisibles qu'en palette 1 */
+  :root[data-dim] #grid.compact.paint-c1 .tnc, :root[data-dim] #grid.compact.paint-c2 .tnc { color:#0b3a8c; }
+  :root[data-dim] #grid.compact.paint-c1 .card, :root[data-dim] #grid.compact.paint-c2 .card { --muted:#1f252d; }
   #ovTinoList .it { cursor:default; }
   #ovTinoList .tn-h { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:8px 0 2px; }        /* groupe « indicateurs » : invisible sauf en compact multi-colonnes */
   .grid.compact .tbl.multi .card-head { grid-template-columns:auto minmax(0, 1fr) auto; column-gap:8px; row-gap:2px; padding:7px 10px; }
@@ -786,7 +789,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v172</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v173</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
