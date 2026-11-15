@@ -61,6 +61,36 @@
       "created": 1794635777338
     },
     {
+      "id": "zone-zmwhw66n6-h-2026-11-13",
+      "zone": "zmwhw66n6",
+      "sym": "SU.PA",
+      "name": "Schneider Electric",
+      "op": "below",
+      "price": 225.989,
+      "label": "entrée dans ma zone ▭ 220,49 – 225,99 (par le haut)",
+      "created": 1794751706424
+    },
+    {
+      "id": "zone-zmwhwkz38-h-2026-11-13",
+      "zone": "zmwhwkz38",
+      "sym": "AF.PA",
+      "name": "Air France-KLM",
+      "op": "below",
+      "price": 10.9908,
+      "label": "entrée dans ma zone ◯ 9,6967 – 10,99 (par le haut)",
+      "created": 1794751706425
+    },
+    {
+      "id": "zone-zmwhwrwh9-h-2026-11-13",
+      "zone": "zmwhwrwh9",
+      "sym": "AIR.PA",
+      "name": "Airbus",
+      "op": "below",
+      "price": 177.907,
+      "label": "entrée dans ma zone ◯ 163,23 – 177,91 (par le haut)",
+      "created": 1794751706425
+    },
+    {
       "sym": "FDJU.PA",
       "name": "FDJ United",
       "op": "above",
@@ -609,6 +639,171 @@
       "id": "auto-ATE.PA-D-RS-84-c-2026-11-13",
       "auto": true,
       "created": 1794695355784
+    },
+    {
+      "sym": "MT.AS",
+      "name": "ArcelorMittal",
+      "op": "above",
+      "price": 58.1532,
+      "label": "S→R jour 59,34 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-MT.AS-D-SR-59.34-a-2026-11-09",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "MT.AS",
+      "name": "ArcelorMittal",
+      "op": "above",
+      "price": 60.5268,
+      "label": "S→R jour 59,34 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-MT.AS-D-SR-59.34-b-2026-11-13",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "APAM.AS",
+      "name": "Aperam",
+      "op": "below",
+      "price": 33.15,
+      "label": "R→S hebdo 32,50 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-APAM.AS-W-RS-32.5-c-2026-10-26",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "APAM.AS",
+      "name": "Aperam",
+      "op": "above",
+      "price": 35.66,
+      "label": "R→S hebdo 32,50 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-APAM.AS-W-RS-32.5-r-2026-11-09",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "APAM.AS",
+      "name": "Aperam",
+      "op": "below",
+      "price": 33.8436,
+      "label": "R→S jour 33,18 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-APAM.AS-D-RS-33.18-c-2026-11-12",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "APAM.AS",
+      "name": "Aperam",
+      "op": "above",
+      "price": 34.72,
+      "label": "R→S jour 33,18 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-APAM.AS-D-RS-33.18-r-2026-11-13",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "APAM.AS",
+      "name": "Aperam",
+      "op": "above",
+      "price": 35.9464,
+      "label": "S→R jour 36,68 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-APAM.AS-D-SR-36.68-a-2026-11-13",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "APAM.AS",
+      "name": "Aperam",
+      "op": "above",
+      "price": 37.4136,
+      "label": "S→R jour 36,68 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-APAM.AS-D-SR-36.68-b-2026-11-13",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "below",
+      "price": 496.8012,
+      "label": "R→S hebdo 487,06 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-AMP-W-RS-487.06-c-2026-11-09",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 539.78,
+      "label": "R→S hebdo 487,06 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-AMP-W-RS-487.06-r-2026-11-02",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 530.4544,
+      "label": "S→R jour 541,28 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-AMP-D-SR-541.28-a-2026-11-13",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 552.1056,
+      "label": "S→R jour 541,28 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-AMP-D-SR-541.28-b-2026-11-13",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 277.7908,
+      "label": "S→R hebdo 283,46 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-MCD-W-SR-283.46-a-2026-10-26",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 289.1292,
+      "label": "S→R hebdo 283,46 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-MCD-W-SR-283.46-b-2026-11-09",
+      "auto": true,
+      "created": 1794751707068
+    },
+    {
+      "sym": "RCO.PA",
+      "name": "Rémy Cointreau",
+      "op": "below",
+      "price": 50.6124,
+      "label": "R→S jour 49,62 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-RCO.PA-D-RS-49.62-c-2026-11-13",
+      "auto": true,
+      "created": 1794751707068
     },
     {
       "sym": "SAN.PA",

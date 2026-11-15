@@ -408,6 +408,7 @@
   .tbs.two .tb-br { display:block; flex-basis:100%; height:0; }
   .tbs.two { flex-wrap:wrap; overflow-x:visible; row-gap:5px; mask-image:none; -webkit-mask-image:none; padding-right:0; }
   .tbs > * { flex:0 0 auto; }
+  .tb > #ivSeg { flex:0 0 auto; }      /* J S M T reste fixe, hors de la barre qui défile */
   .mmb.lay { padding:4px 5px; }
   .mmb.lay svg { display:block; }
   .mmb.lay small { font-size:9px; font-weight:700; margin-top:1px; }
@@ -841,7 +842,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v189</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v190</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -891,8 +892,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   <div class="ov-body">
     <div class="ov-main">
     <div class="tb">
-      <div class="tbs" id="tbs">
       <div class="seg" id="ivSeg"></div>
+      <div class="tbs" id="tbs">
       <button class="mmb lay" id="quadBtn" aria-pressed="false" title="Disposition : 1, 2 ou 4 graphiques"></button>
       <button class="mmb lay" id="qsyncBtn" aria-pressed="false" title="Synchroniser le zoom et le défilement des graphiques" hidden></button>
       <span class="tb-br" aria-hidden="true"></span>
@@ -2654,6 +2655,10 @@ function setInd(mode) {
 function applyTbRows() {
   const t = $("tbs"); if (!t) return;
   t.classList.toggle("two", prefs.tbRows === 2);
+  // une ligne : J S M T fixe à gauche, seuls les indicateurs défilent ; deux lignes (rien ne défile) : J S M T en tête de la 1re ligne
+  const iv = $("ivSeg");
+  if (prefs.tbRows === 2) { if (iv.parentNode !== t) t.insertBefore(iv, t.firstChild); }
+  else if (iv.parentNode === t) t.parentNode.insertBefore(iv, t);
   // hauteur de la 2e ligne retirée du graphique, pour garder les flèches ‹ › visibles sous le graphique
   requestAnimationFrame(() => {
     const b = t.querySelector(".mmb");
@@ -5993,7 +5998,31 @@ async function myzSave(mutate, msg) {
   try {
     const cur = await ghFile("zones.json", mutate, msg, { zones:[] });
     cur.zones.forEach(z => delete z.local); myzData = cur; myzKeep(myzData); drawMyz();
+    myzAlertSync().catch(e => toast("Alerte de zone non enregistrée : " + e.message, 3500));
   } catch (e) { toast("Zone gardée sur cet appareil ; synchronisation impossible : " + e.message, 4000); }
+}
+/* Alerte Telegram d'une zone (même fonction dans scripts/flip_alerts.mjs) : une zone encore « active » (sa fin est dans la
+   période en cours ou à venir) donne une alerte quand le cours y entre : par le haut si le cours est au-dessus,
+   par le bas s'il est en dessous. Cours déjà dans la zone : pas d'alerte (réarmée chaque soir s'il en est sorti). */
+function zoneAlertFor(z, last, lastDate, name) {
+  if (!z || !(last > 0) || !(z.hi > z.lo)) return null;
+  const iv = z.iv || "D";
+  if (!z.ext && keyOf(iv, z.t1) < keyOf(iv, lastDate)) return null;           // zone terminée : simple repère
+  if (last >= z.lo && last <= z.hi) return null;
+  const down = last > z.hi, P = down ? z.hi : z.lo;
+  const f = v => v.toLocaleString("de-DE", { minimumFractionDigits:2, maximumFractionDigits: v < 10 ? 4 : 2 });
+  return { id:"zone-" + z.id + "-" + (down ? "h" : "b") + "-" + lastDate, zone:z.id, sym:z.sym, name:name || z.sym, op:down ? "below" : "above", price:P,
+    label:"entrée dans ma zone " + (z.shape === "oval" ? "◯ " : "▭ ") + f(z.lo) + " – " + f(z.hi) + (down ? " (par le haut)" : " (par le bas)"), created:Date.now() };
+}
+/* recalcule les alertes Telegram des zones de la valeur affichée (alerts.json) après chaque création / modification / suppression */
+async function myzAlertSync() {
+  const sym = ovSym; if (!sym || !ovData) return;
+  const last = (ovItem && ovItem.last) || barsFor(ovData, "D").slice(-1)[0][4], lastDate = barsFor(ovData, "D").slice(-1)[0][0];
+  const want = myzData.zones.filter(z => z.sym === sym).map(z => zoneAlertFor(z, last, lastDate, ovItemName || sym)).filter(Boolean);
+  const cur = ((alertsData || {}).alerts || []).filter(a => a.zone && a.sym === sym);
+  if (alertsData && cur.length === want.length && cur.every(a => want.some(w => w.id === a.id && w.price === a.price))) return;   // rien à changer
+  await alertsSave(d => { d.alerts = (d.alerts || []).filter(a => !(a.zone && a.sym === sym)).concat(want); }, "alertes de zones " + sym);
+  if (want.length) toast("🔔 Alerte Telegram : " + want.map(a => (a.op === "below" ? "▼ " : "▲ ") + fmt(a.price)).join(", "), 2500);
 }
 /* axe des zones dans l'unité affichée : bougies existantes puis séances à venir (une zone peut déborder à droite) */
 const MYZ_FUT = { D:60, W:26, M:12, Q:6 };
@@ -6116,7 +6145,7 @@ function myzTap(param) {
   if (hi <= lo) return renderMyzList();                  // le mode dessin reste actif : on peut enchaîner les formes
   const nid = "z" + Date.now().toString(36);
   setTimeout(() => { const z = myzData && myzData.zones.find(x => x.id === nid); if (z) myzStart(z); }, 0);   // la zone créée s'ouvre en modification
-  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:nid, sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:false, shape:myzDraw === "oval" ? "oval" : "rect", created:Date.now() }); },
+  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:nid, sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:false, shape:myzDraw === "oval" ? "oval" : "rect", iv, created:Date.now() }); },
     "zone " + ovSym);
 }
 $("zoneBtn").onclick = async () => {
@@ -6181,7 +6210,7 @@ function myzPlace() {
 }
 function myzVals(st) {
   const A = myzAxis(st.iv);
-  return { lo:+st.lo.toPrecision(6), hi:+st.hi.toPrecision(6), t0:A.T(st.i0), t1:A.T(st.i1), ext:false };
+  return { lo:+st.lo.toPrecision(6), hi:+st.hi.toPrecision(6), t0:A.T(st.i0), t1:A.T(st.i1), ext:false, iv:st.iv };
 }
 function myzClose() {
   myzEdit = null; myzDrag = null; cancelAnimationFrame(myzLoop); $("myzEd").hidden = true; drawMyz();

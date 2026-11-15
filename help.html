@@ -88,7 +88,7 @@
 <li>Organisation des réglages :
   <ul><li>en haut, sur une même ligne quand la place suffit : S / R (afficher les supports, les résistances), les moyennes mobiles et l'indicateur du bas ;</li>
   <li>puis la précision des contacts ;</li>
-  <li>enfin, sous « Affichage », des interrupteurs (3 colonnes en portrait) : Volumes, Prix sur l'axe (prix des niveaux), Points ● (contacts : chaque point est posé sur la ligne elle-même, à sa valeur le jour du contact — oblique, bord de canal, bascule R⇄S ou niveau S / R sélectionné — et non au-dessus ou en dessous du chandelier ; un contact compte quand le sommet ou le creux passe à moins de la précision de la ligne), Projection ┈, Infos détail (listes sous ou à côté du graphique), Réticule aimanté (le réticule se colle au cours), Boutons 2 lignes (raccourcis du graphique sur deux lignes).</li></ul></li>
+  <li>enfin, sous « Affichage », des interrupteurs (3 colonnes en portrait) : Volumes, Prix sur l'axe (prix des niveaux), Points ● (contacts : chaque point est posé sur la ligne elle-même, à sa valeur le jour du contact — oblique, bord de canal, bascule R⇄S ou niveau S / R sélectionné — et non au-dessus ou en dessous du chandelier ; un contact compte quand le sommet ou le creux passe à moins de la précision de la ligne), Projection ┈, Infos détail (listes sous ou à côté du graphique), Réticule aimanté (le réticule se colle au cours), Boutons 2 lignes (raccourcis du graphique sur deux lignes ; sur une ligne, J S M T reste fixe à gauche et seuls les boutons d'indicateurs défilent).</li></ul></li>
 <li>Sur téléphone en portrait, la feuille des réglages prend juste la hauteur de son contenu (65 % de l'écran au plus).</li>
 <li><b>Précision des contacts</b> (0,3 à 6 %, <b>2 % par défaut</b>) : écart maximal entre deux contacts d'un même niveau. Elle sert aux supports / résistances, aux bascules R⇄S, aux obliques, aux canaux et aux réactions sur les moyennes.</li>
 <li><b>Pourquoi ça bouge</b> : explication de la variation du jour (§ 16).</li>
@@ -389,6 +389,7 @@
 <li>au-dessus de la zone, <b>🗑 Supprimer</b> l'efface aussitôt et <b>✓ OK</b> enregistre. Toucher ailleurs sur le graphique enregistre aussi.</li></ul>
 Pendant la modification, le graphique se fait toujours défiler et zoomer en dehors de la zone.</li>
 <li>Le bloc <b>Mes zones</b> sous le graphique liste les zones de la valeur : prix bas – prix haut, distance au cours (ou « cours dans la zone »), dates. ✕ puis « Supprimer ? » efface une zone.</li>
+<li><b>Alerte Telegram</b> : une zone encore active envoie un message 🟨 quand le cours y entre (§ 18).</li>
 <li><b>Mémoire</b> : chaque zone est gardée sur l'appareil et, si le jeton GitHub est enregistré, dans <code>zones.json</code> du dépôt. Elle se retrouve alors sur le téléphone comme sur la tablette. Le dépôt étant public, ces zones y sont visibles, comme les alertes.</li>
 </ul>
 </details>
@@ -509,7 +510,9 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
   <li><b>S→R · approche</b> : le cours monte à moins de 2 % sous la résistance.</li>
   <li><b>S→R · franchie</b> : le cours passe à plus de 2 % au-dessus (à confirmer à la clôture).</li>
   </ul>
-  Chaque alerte part une seule fois ; elle se réarme quand le cours s'est éloigné du niveau puis y revient. Au plus 30 valeurs, les plus proches de leur niveau (limite du relais gratuit). Même niveau en J et en S : l'hebdo est gardé. Elles ne comptent pas dans la pastille de l'onglet.</li>
+  Chaque alerte part une seule fois ; elle se réarme quand le cours s'est éloigné du niveau puis y revient. Au plus 30 valeurs, les plus proches de leur niveau, dans la place laissée par vos alertes et vos zones (limite du relais gratuit). Même niveau en J et en S : l'hebdo est gardé. Elles ne comptent pas dans la pastille de l'onglet.</li>
+<li><b>Alertes de mes zones</b> (🟨 sur Telegram) : chaque zone dessinée (§ 13 ter) encore active — sa fin tombe dans la période en cours ou plus tard — donne une alerte quand le cours y entre : par le <b>haut</b> (prix haut de la zone) si le cours est au-dessus, par le <b>bas</b> (prix bas) s'il est en dessous. Pour un cercle, ce sont les prix haut et bas du carré qui l'entoure. Cours déjà dans la zone, ou zone terminée : pas d'alerte. Elle est créée ou mise à jour dès que la zone est enregistrée (avec le jeton GitHub), supprimée avec la zone, et réarmée chaque soir avec le dernier cours.</li>
+<li><b>Combien ?</b> Pas de limite au nombre d'alertes, mais le relais gratuit ne peut vérifier qu'environ <b>45 valeurs</b> différentes toutes les 5 minutes (1 requête pour la liste, 1 par valeur, 1 par message). Ordre de priorité : <b>1)</b> vos alertes manuelles, <b>2)</b> les alertes de vos zones, <b>3)</b> les alertes R⇄S automatiques (au plus 30 valeurs, et seulement dans la place restante). Au-delà, les valeurs de moindre priorité attendent le tour suivant, et un message qui n'a plus de place part au tour suivant.</li>
 <li>Le fichier des alertes est dans le dépôt GitHub, qui est public : n'y mettez rien de confidentiel.</li>
 </ul>
 </details>

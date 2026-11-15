@@ -156,7 +156,16 @@ async function checkAlerts(env) {
   const todo = list.filter(a => a && a.id && !sent[a.id] && a.sym && a.price > 0);
   if (!todo.length) return;
   let changed = false;
-  for (const sym of [...new Set(todo.map(a => a.sym))]) {
+  // budget du plan gratuit : ~50 requêtes par vérification (1 pour la liste, 1 par valeur, 1 par message envoyé).
+  // Priorité : 1) alertes manuelles  2) alertes de mes zones  3) alertes R⇄S automatiques ; au-delà, vérifiées au tour suivant.
+  const rank = a => a.auto ? 2 : a.zone ? 1 : 0;
+  const best = {};
+  todo.forEach(a => { best[a.sym] = Math.min(best[a.sym] ?? 9, rank(a)); });
+  const syms = Object.keys(best).sort((x, y) => best[x] - best[y]);
+  let used = 1;                                       // lecture de alerts.json
+  for (const sym of syms) {
+    if (used >= 46) break;                            // garder de la place pour les messages Telegram
+    used++;
     const c = await chart(sym, "1d", "5m");
     if (c.error || !c.price) continue;
     for (const a of todo.filter(x => x.sym === sym)) {
@@ -166,10 +175,12 @@ async function checkAlerts(env) {
                                    : c.price <= a.price || after.some(b => b[3] <= a.price);
       if (!hit) continue;
       const chg = c.prevClose ? (c.price / c.prevClose - 1) * 100 : null;
-      const text = "🔔 " + (a.name || sym) + " (" + sym + ")\n" +
+      const text = (a.zone ? "🟨 " : "🔔 ") + (a.name || sym) + " (" + sym + ")\n" +
         (a.op === "above" ? "▲ a franchi " : "▼ est passé sous ") + fmtN(a.price, c.currency) + (a.label ? " — " + a.label : "") + "\n" +
         "Cours : " + fmtN(c.price, c.currency) + (chg != null ? " (" + (chg >= 0 ? "+" : "") + chg.toFixed(2).replace(".", ",") + " % aujourd'hui)" : "") +
         (a.note ? "\n📝 " + a.note : "") + "\n" + SITE + "#sym=" + encodeURIComponent(sym);
+      if (used >= 49) break;                          // plus de place : ce message partira au tour suivant
+      used++;
       const r = await tg(env, "sendMessage", { chat_id: chat, text, disable_web_page_preview: true });
       if (r.ok) { sent[a.id] = Date.now(); changed = true; }
     }

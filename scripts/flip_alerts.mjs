@@ -24,14 +24,17 @@ function grab(startToken) {                       // extrait une fonction ou une
 const src = [
   grab("function dOf("), grab("function keyOf("), grab("function aggregate("),
   grab("const FLIP_PARAMS = {"), "const FLIP_MAX = 6;", grab("function flipLevels("),
-  "return { aggregate, flipLevels };",
+  grab("function zoneAlertFor("),
+  "return { aggregate, flipLevels, zoneAlertFor };",
 ].join("\n");
-const { aggregate, flipLevels } = new Function(src)();
+const { aggregate, flipLevels, zoneAlertFor } = new Function(src)();
 
 const PCT = 2, TOL = PCT / 100;                    // précision des contacts par défaut de l'appli
 const NEAR = { D: 0.08, W: 0.12 };                 // niveau assez proche du cours pour être surveillé
 const REACT = { D: 5, W: 2 };                      // contact récent (chandeliers) pour l'alerte « réaction »
-const MAX_SYMS = 30;                               // le relais gratuit fait au plus ~50 requêtes par vérification
+const MAX_SYMS = 30;                               // alertes auto : au plus 30 valeurs…
+const MAX_TOTAL = 45;                              // …et 45 valeurs en tout (le relais gratuit fait au plus ~50 requêtes par vérification)
+// priorité dans ce budget : 1) vos alertes manuelles  2) les alertes de vos zones  3) les alertes R⇄S automatiques
 const TFN = { D: "jour", W: "hebdo" };
 
 const fmt = v => v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: v < 10 ? 4 : 2 });
@@ -39,8 +42,25 @@ const r4 = v => Math.round(v * 10000) / 10000;
 
 const alertsPath = "alerts.json";
 const file = fs.existsSync(alertsPath) ? JSON.parse(fs.readFileSync(alertsPath, "utf8")) : { alerts: [] };
-const manual = (file.alerts || []).filter(a => !a.auto);
+const manual = (file.alerts || []).filter(a => !a.auto && !a.zone);
 const enabled = !(file.autoFlips === false);
+
+// ---- alertes de mes zones (zones.json) : réarmées chaque soir avec le dernier cours ----
+const summary0 = JSON.parse(fs.readFileSync("data/summary.json", "utf8"));
+const names = new Map();
+JSON.parse(fs.readFileSync("portfolios.json", "utf8")).portfolios.forEach(p => p.items.forEach(it => { if (!names.has(it.yahoo)) names.set(it.yahoo, it.name || it.yahoo); }));
+const zonesFile = fs.existsSync("zones.json") ? JSON.parse(fs.readFileSync("zones.json", "utf8")) : { zones: [] };
+const prevZone = new Map((file.alerts || []).filter(a => a.zone).map(a => [a.id, a.created]));
+const zoneAl = [];
+for (const z of zonesFile.zones || []) {
+  const s = summary0.symbols[z.sym];
+  if (!s || !(s.last > 0)) continue;
+  const a = zoneAlertFor(z, s.last, s.date, names.get(z.sym) || z.sym);
+  if (!a) continue;
+  if (prevZone.has(a.id)) a.created = prevZone.get(a.id);
+  zoneAl.push(a);
+}
+const symsZone = new Set(zoneAl.map(a => a.sym));
 
 let cands = [];
 if (enabled) {
@@ -96,8 +116,8 @@ if (enabled) {
 }
 // les valeurs les plus proches de leur niveau d'abord, dans la limite du relais
 cands.sort((a, b) => a.dist - b.dist);
-const symsManual = new Set(manual.map(a => a.sym));
-const room = Math.max(0, MAX_SYMS - symsManual.size);
+const symsManual = new Set(manual.map(a => a.sym).concat([...symsZone]));
+const room = Math.max(0, Math.min(MAX_SYMS, MAX_TOTAL - symsManual.size));
 const auto = [];
 let used = 0;
 for (const c of cands) {
@@ -108,7 +128,8 @@ for (const c of cands) {
 const prev = new Map((file.alerts || []).filter(a => a.auto).map(a => [a.id, a.created]));
 auto.forEach(a => { if (prev.has(a.id)) a.created = prev.get(a.id); });
 
-file.alerts = manual.concat(auto);
+file.alerts = manual.concat(zoneAl, auto);          // ordre = priorité de vérification par le relais
 fs.writeFileSync(alertsPath, JSON.stringify(file, null, 2) + "\n");
+console.log(`alertes de zones : ${zoneAl.length} sur ${symsZone.size} valeurs`);
 console.log(`alertes R⇄S automatiques : ${auto.length} sur ${new Set(auto.map(a => a.sym)).size} valeurs` + (enabled ? "" : " (désactivées)"));
 auto.forEach(a => console.log("  ", a.sym, a.op, a.price, a.label));
