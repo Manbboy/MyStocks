@@ -29,6 +29,47 @@ P = {"M": {"k": 3, "win": 240, "span": 48, "ext": 36, "hor": 120, "wmax": 1.30, 
 
 
 def zones(rows, last, k=3, wmax=1.30):
+    """Zones de prix (lo, hi) : regroupement des extrêmes mensuels (plus hauts des sommets, plus bas des creux) qui se répètent.
+    Comme Tino, la zone se cale sur les mèches qui butent au même endroit, pas sur les corps des bougies."""
+    if len(rows) < 24:
+        return []
+    piv = _pivots(rows, k)
+    pts = [((rows[i][2] if t == "H" else rows[i][3]), rows[i][0], t) for i, t in piv]
+    if BODY:                                   # aussi le corps (haut du corps d'un sommet, bas du corps d'un creux)
+        pts += [((max(rows[i][1], rows[i][4]) if t == "H" else min(rows[i][1], rows[i][4])), rows[i][0], t) for i, t in piv]
+    pts.sort()
+    clusters = []
+    for x, d, t in pts:       # extrêmes à moins de GAP les uns des autres, zone pas plus large que wmax
+        c = clusters[-1] if clusters else None
+        if c and x <= c["px"][-1] * (1 + GAP) and x / c["px"][0] <= wmax:
+            c["px"].append(x); c["piv"].append((d, t, x))
+        else:
+            clusters.append({"px": [x], "piv": [(d, t, x)]})
+    out = []
+    for c in clusters:
+        n = len({p[0] for p in c["piv"]})          # contacts = pivots distincts
+        if n < 2:
+            continue
+        lo, hi = c["px"][0] * (1 - PAD), c["px"][-1] * (1 + PAD)
+        if hi / lo < 1 + MINW:                      # épaisseur minimale
+            m = (hi + lo) / 2
+            lo, hi = m / (1 + MINW / 2), m * (1 + MINW / 2)
+        dates = sorted(p[0] for p in c["piv"])
+        kinds = {p[1] for p in c["piv"]}
+        out.append({"lo": round(lo, 4), "hi": round(hi, 4), "n": n, "polar": len(kinds) == 2,
+                    "from": dates[0], "lastHit": dates[-1], "span": _months(dates[0], dates[-1]),
+                    "role": "sup" if hi < last else ("res" if lo > last else "in")})
+    return out
+
+
+def _months(a, b):
+    return (int(b[:4]) - int(a[:4])) * 12 + int(b[5:7]) - int(a[5:7])
+
+
+GAP, PAD, MINW, MINSPAN, MINSCORE, NSUP, NEAR_SCORE, BODY = 0.04, 0.02, 0.05, 12, 0, 3, 3.5, False
+
+
+def zones_body(rows, last, k=3, wmax=1.30):
     """Zones de prix (lo, hi) bâties sur les sommets et creux mensuels qui se regroupent."""
     if len(rows) < 24:
         return []
@@ -71,7 +112,7 @@ def zones(rows, last, k=3, wmax=1.30):
         first = min(p[0] for p in m["piv"])
         lastp = max(p[0] for p in m["piv"])
         out.append({"lo": round(lo, 4), "hi": round(hi, 4), "n": n, "polar": len(kinds) == 2,
-                    "from": first, "lastHit": lastp, "role": "sup" if hi < last else ("res" if lo > last else "in")})
+                    "from": first, "lastHit": lastp, "span": _months(first, lastp), "role": "sup" if hi < last else ("res" if lo > last else "in")})
     return out
 
 
@@ -186,26 +227,34 @@ def analyse(rows, unit="M"):
     last = rows[-1][4]
     p = P[unit]
     zs = zones(rows, last, p["k"], p["wmax"])
-    sup = sorted([z for z in zs if z["hi"] < last * 0.995 or z["role"] == "in"], key=lambda z: -z["hi"])
-    # zones de support : on garde les plus marquantes (au moins 2 contacts), en évitant les zones collées
+    # zones de soutien : les plus solides d'abord (contacts, changement de rôle, durée), sans chevauchement, puis triées par prix
+    cand = [z for z in zs if (z["hi"] < last * 0.995 or z["role"] == "in") and z["hi"] >= last * 0.25 and z["span"] >= MINSPAN
+            and (z["role"] != "in" or z["n"] >= 4)]
+    score = lambda z: z["n"] + (1.5 if z["polar"] else 0) + min(z["span"] / 60, 2)
     keep = []
-    for z in sup:
-        if z["hi"] < last * 0.25:                      # trop loin sous le cours : sans intérêt
+    near = [z for z in sorted(cand, key=lambda z: -z["hi"]) if score(z) >= NEAR_SCORE]
+    if near:
+        keep.append(near[0])                          # d'abord la zone solide la plus proche sous le cours
+    for z in sorted(cand, key=score, reverse=True):
+        if score(z) < MINSCORE:
             continue
-        if z["hi"] > last * 1.0 and z["role"] != "in":
-            continue
-        if z["role"] == "in" and z["n"] < 4:            # zone sous les pieds : seulement si elle est solide
-            continue
-        if keep and z["hi"] > keep[-1]["lo"] * 0.97:
-            continue
-        if z["n"] < 2 or (z["n"] < 3 and not z["polar"] and keep):
+        if any(z["lo"] < k["hi"] * 1.03 and z["hi"] > k["lo"] * 0.97 for k in keep):
             continue
         keep.append(z)
-        if len(keep) == 3:
+        if len(keep) == NSUP:
             break
+    if len(keep) < 2:          # trop peu de zones sur les mèches : on complète avec les zones bâties sur les corps (ancien calcul)
+        zb = zones_body(rows, last, p["k"], p["wmax"])
+        for z in sorted([z for z in zb if z["hi"] < last * 0.995 and z["hi"] >= last * 0.25 and z["span"] >= MINSPAN and z["n"] >= 2], key=score, reverse=True):
+            if any(z["lo"] < k["hi"] * 1.03 and z["hi"] > k["lo"] * 0.97 for k in keep):
+                continue
+            keep.append(z)
+            if len(keep) == 2:
+                break
+    keep.sort(key=lambda z: -z["hi"])
     res = []
     top = max([z["hi"] for z in keep], default=0)
-    for z in sorted([z for z in zs if z["hi"] > last * 1.005 and z["n"] >= 2 and z["role"] != "in"], key=lambda z: z["lo"]):
+    for z in sorted([z for z in zs if z["hi"] > last * 1.005 and z["n"] >= 2 and z["role"] != "in" and z["span"] >= MINSPAN], key=lambda z: z["lo"]):
         z = dict(z)
         if z["lo"] < top:                 # pas de chevauchement avec une zone de soutien
             z["lo"] = top
