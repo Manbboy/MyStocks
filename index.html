@@ -684,6 +684,20 @@
   .myz-row small { color:var(--muted); display:block; }
   .myz-row .myz-t { flex:1; min-width:0; }
   .myz-row button { background:none; border:1px solid var(--border); border-radius:8px; color:var(--text); font:inherit; padding:4px 10px; cursor:pointer; }
+  .myz-ed { position:absolute; overflow:hidden; z-index:3; pointer-events:none; }
+  .myz-r { position:absolute; background:rgba(250,204,21,.38); border:2px solid #ca8a04; box-sizing:border-box; touch-action:none; pointer-events:auto; cursor:move; }
+  .myz-r .h { position:absolute; touch-action:none; pointer-events:auto; }
+  .myz-r .h::after { content:""; position:absolute; left:50%; top:50%; background:#ca8a04; border-radius:3px; transform:translate(-50%,-50%); }
+  .myz-r .h.t, .myz-r .h.b { left:0; right:0; height:26px; cursor:ns-resize; } .myz-r .h.t { top:-27px; } .myz-r .h.b { bottom:-27px; }
+  .myz-r .h.l, .myz-r .h.r { top:0; bottom:0; width:26px; cursor:ew-resize; } .myz-r .h.l { left:-27px; } .myz-r .h.r { right:-27px; }
+  .myz-r .h.t::after, .myz-r .h.b::after { width:30px; height:6px; } .myz-r .h.l::after, .myz-r .h.r::after { width:6px; height:30px; }
+  .myz-bar { position:absolute; display:flex; gap:6px; transform:translateX(-50%); pointer-events:auto; white-space:nowrap; }
+  .myz-bar button { font:inherit; font-size:14px; padding:7px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); box-shadow:0 2px 6px rgba(0,0,0,.2); cursor:pointer; }
+  .myz-bar #myzDel { color:#dc2626; }
+  .myz-row.sel { background:rgba(250,204,21,.15); }
+  .myz-in { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .myz-in label { font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:4px; }
+  .myz-in input { width:96px; font:inherit; font-size:16px; padding:4px 6px; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); }
   #zoneBtn.drawing { background:#facc15; color:#1f2937; border-color:#ca8a04; }
   .mom-new { margin:4px 0 8px; padding:8px 10px; border-radius:10px; background:color-mix(in srgb, #16a34a 14%, var(--card)); font-size:13px; }
   .mom-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:0 16px; margin:4px 0; }
@@ -825,7 +839,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v184</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v185</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -928,6 +942,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <div class="ohlc" id="ohlc"></div>
       <div class="tags" id="tags"></div>
       <div class="rings" id="rings"></div>
+      <div class="myz-ed" id="myzEd" hidden><div class="myz-r" id="myzR"><i class="h t" data-h="t"></i><i class="h b" data-h="b"></i><i class="h l" data-h="l"></i><i class="h r" data-h="r"></i></div>
+        <div class="myz-bar" id="myzBar"><button id="myzDel">🗑 Supprimer</button><button id="myzOk">✓ OK</button></div></div>
       <div class="quad" id="quad"></div>
     </div>
     <div class="quick" id="quick" role="toolbar" aria-label="Mettre en évidence un niveau ou une moyenne mobile"></div>
@@ -2971,6 +2987,8 @@ function renderQuick() {
 /* Toucher une ligne directement sur le graphique : met en évidence le niveau ou la moyenne mobile la plus proche (12 px) */
 function onChartLineTap(param) {
   if (myzDraw) return myzTap(param);
+  if (myzEdit) { myzEnd(); return; }                     // zone en cours de modification : toucher ailleurs la valide
+  if (param && param.point && splitN() <= 1) { const z = myzHit(param.point); if (z) { myzStart(z); return; } }
   if (!param || !param.point || !ovCandles || splitN() > 1) return;
   const y = param.point.y;
   let best = null;
@@ -3286,7 +3304,7 @@ function drawDetail(keep) {
   drawGeo();
   tinoSeries = []; drawTino();
   manuSeries = []; drawManu();
-  myzSeries = []; drawMyz();
+  if (myzEdit) myzEnd(); myzSeries = []; drawMyz();
   applyHighlight();
   const bySeries = new Map(rows.map(r => [r[0], r]));
   const showOhlc = row => {
@@ -5973,7 +5991,7 @@ function drawMyz() {
   const iv = prefs.iv || "D";
   if (!myzData) { myzLoad().then(drawMyz); return; }
   if (!ovChart || !ovData || iv === "I") return;
-  const zs = myzData.zones.filter(z => z.sym === ovSym);
+  const zs = myzData.zones.filter(z => z.sym === ovSym && !(myzEdit && myzEdit.id === z.id));     // la zone modifiée est dessinée par l'éditeur
   if (!zs.length) return;
   const rows = barsFor(ovData, iv), n = rows.length, lastT = rows[n - 1][0];
   const fut = futureTimes(lastT, iv, { D:20, W:6, M:4, Q:2 }[iv] || 20);
@@ -6012,9 +6030,21 @@ function renderMyzList() {
     const dist = C ? (C >= z.lo && C <= z.hi ? "cours dans la zone" : fmtPct(Math.round(((C > z.hi ? z.hi : z.lo) / C - 1) * 1000) / 10)) : "";
     r.innerHTML = '<span class="sw-c"></span><div class="myz-t"><b>' + fmt(z.lo, cur) + " – " + fmt(z.hi, cur) + "</b> " + (dist ? '<span style="color:var(--muted)">' + dist + "</span>" : "") +
       "<small>" + short(z.t0) + " → " + (z.ext ? "prolongée" : short(z.t1)) + "</small></div>";
+    if (myzEdit && myzEdit.id === z.id) {
+      r.classList.add("sel");
+      const inp = document.createElement("div"); inp.className = "myz-in";
+      inp.innerHTML = '<label>Bas <input type="number" inputmode="decimal" step="any" id="myzLo"></label><label>Haut <input type="number" inputmode="decimal" step="any" id="myzHi"></label>';
+      r.querySelector(".myz-t").appendChild(inp);
+      const lo = inp.querySelector("#myzLo"), hi = inp.querySelector("#myzHi");
+      lo.value = +myzEdit.lo.toPrecision(6); hi.value = +myzEdit.hi.toPrecision(6);
+      const upd = () => { const a = parseFloat(lo.value), b = parseFloat(hi.value); if (!(a > 0 && b > 0) || a === b) return;
+        myzEdit.lo = Math.min(a, b); myzEdit.hi = Math.max(a, b); myzEdit.dirty = true; };
+      lo.onchange = upd; hi.onchange = upd;
+    } else r.querySelector(".myz-t").onclick = () => myzStart(z);
     const del = document.createElement("button"); del.textContent = "✕";
     del.onclick = () => {                     // deux touches : « ✕ » puis « Supprimer ? » (pas de boîte de dialogue)
       if (!del._arm) { del._arm = true; del.textContent = "Supprimer ?"; setTimeout(() => { del._arm = false; del.textContent = "✕"; }, 3000); return; }
+      if (myzEdit && myzEdit.id === z.id) myzClose();
       myzSave(d => { d.zones = d.zones.filter(x => x.id !== z.id); }, "zone supprimée " + z.sym); };
     r.appendChild(del); box.appendChild(r);
   });
@@ -6037,7 +6067,9 @@ function myzTap(param) {
   const [t0, t1] = f.t <= t ? [f.t, t] : [t, f.t];
   myzDraw = false; renderToggles();
   if (hi <= lo) return renderMyzList();
-  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:"z" + Date.now().toString(36), sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:ext || f.ext, created:Date.now() }); },
+  const nid = "z" + Date.now().toString(36);
+  setTimeout(() => { const z = myzData && myzData.zones.find(x => x.id === nid); if (z) myzStart(z); }, 0);   // la zone créée s'ouvre en modification
+  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:nid, sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:ext || f.ext, created:Date.now() }); },
     "zone " + ovSym);
 }
 $("zoneBtn").onclick = async () => {
@@ -6046,6 +6078,111 @@ $("zoneBtn").onclick = async () => {
   renderToggles(); await myzLoad(); drawMyz();
   if (myzDraw) toast("Touchez deux coins opposés de la zone sur le graphique.", 2800);
 };
+/* ---- Modification d'une zone au doigt : toucher la zone la sélectionne ; glisser au milieu la déplace, glisser une poignée
+   (barrette au-dessus, en dessous, à gauche, à droite) déplace ce bord ; « ✓ OK » ou toucher ailleurs enregistre ---- */
+var myzEdit = null, myzLoop = 0, myzDrag = null;
+function myzIdx(rows, iv, z) {
+  const a = myzTime(rows, iv, z.t0), b = z.ext ? null : myzTime(rows, iv, z.t1, true), n = rows.length;
+  const i0 = Math.max(0, rows.findIndex(r => r[0] === a));
+  const i1 = b == null ? n - 1 : Math.max(i0, rows.findIndex(r => r[0] === b));
+  return { i0, i1, ext: z.ext || b == null };
+}
+function myzPx(st) {                                       // rectangle de la zone en pixels du graphique
+  const ts = ovChart.timeScale(), n = barsFor(ovData, st.iv).length;
+  const x0 = ts.logicalToCoordinate(st.i0), x1 = st.ext ? ts.width() : ts.logicalToCoordinate(st.i1);
+  const y0 = ovCandles.priceToCoordinate(st.hi), y1 = ovCandles.priceToCoordinate(st.lo);
+  if ([x0, x1, y0, y1].some(v => v == null)) return null;
+  return { x0:Math.min(x0, x1), x1:Math.max(x0, x1, Math.min(x0, x1) + 4), y0:Math.min(y0, y1), y1:Math.max(y0, y1, Math.min(y0, y1) + 4), n };
+}
+function myzHit(pt) {
+  if (!myzData || !ovChart || !ovCandles || (prefs.iv || "D") === "I") return null;
+  const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
+  return myzData.zones.filter(z => z.sym === ovSym).reverse().find(z => {
+    const p = myzPx(Object.assign({ iv, lo:z.lo, hi:z.hi }, myzIdx(rows, iv, z)));
+    return p && pt.x >= p.x0 - 8 && pt.x <= p.x1 + 8 && pt.y >= p.y0 - 8 && pt.y <= p.y1 + 8;
+  }) || null;
+}
+function myzStart(z) {
+  if (myzEdit) myzEnd();
+  const iv = prefs.iv || "D";
+  if (!ovChart || iv === "I") return;
+  myzEdit = Object.assign({ id:z.id, iv, lo:z.lo, hi:z.hi, dirty:false }, myzIdx(barsFor(ovData, iv), iv, z));
+  $("myzEd").hidden = false;
+  drawMyz();
+  cancelAnimationFrame(myzLoop);
+  const loop = () => { if (!myzEdit) return; myzPlace(); myzLoop = requestAnimationFrame(loop); };   // suit le défilement et le zoom
+  loop();
+}
+function myzPlace() {
+  const ed = $("myzEd"), el = $("ovChart"), p = myzPx(myzEdit);
+  let H = el.clientHeight - 28; try { H = ovChart.paneSize().height; } catch (e) {}
+  const W = ovChart.timeScale().width();
+  Object.assign(ed.style, { left:(el.offsetLeft + el.clientLeft) + "px", top:(el.offsetTop + el.clientTop) + "px", width:W + "px", height:H + "px" });
+  const R = $("myzR"), B = $("myzBar");
+  if (!p) { R.style.display = B.style.display = "none"; return; }
+  R.style.display = B.style.display = "";
+  Object.assign(R.style, { left:p.x0 + "px", top:p.y0 + "px", width:(p.x1 - p.x0) + "px", height:(p.y1 - p.y0) + "px" });
+  R.querySelector(".h.r").style.display = myzEdit.ext ? "none" : "";
+  const cx = Math.max(110, Math.min(W - 110, (Math.max(0, p.x0) + Math.min(W, p.x1)) / 2));
+  const by = p.y0 > 76 ? p.y0 - 72 : (p.y1 + 76 < H ? p.y1 + 32 : Math.max(4, p.y0 + 4));   // barre au-dessus de la zone (sinon dessous)
+  Object.assign(B.style, { left:cx + "px", top:by + "px" });
+}
+function myzVals(st) {
+  const rows = barsFor(ovData, st.iv), n = rows.length, cl = i => rows[Math.max(0, Math.min(n - 1, i))][0];
+  return { lo:+st.lo.toPrecision(6), hi:+st.hi.toPrecision(6), t0:cl(st.i0), t1:cl(st.i1), ext:!!st.ext };
+}
+function myzClose() {
+  myzEdit = null; myzDrag = null; cancelAnimationFrame(myzLoop); $("myzEd").hidden = true; drawMyz();
+}
+function myzEnd() {
+  const st = myzEdit; if (!st) return;
+  const v = myzVals(st), id = st.id;
+  myzClose();
+  if (st.dirty) myzSave(d => { const z = (d.zones || []).find(x => x.id === id); if (z) Object.assign(z, v); }, "zone modifiée " + ovSym);
+}
+(function () {
+  const R = $("myzR");
+  const at = e => { const r = $("ovChart").getBoundingClientRect(), el = $("ovChart"); return { x:e.clientX - r.left - el.clientLeft, y:e.clientY - r.top - el.clientTop }; };
+  R.addEventListener("pointerdown", e => {
+    if (!myzEdit) return;
+    e.preventDefault(); e.stopPropagation();
+    R.setPointerCapture(e.pointerId);
+    myzDrag = { h:e.target.dataset.h || "move", p:at(e), st:Object.assign({}, myzEdit) };
+  });
+  R.addEventListener("pointermove", e => {
+    if (!myzDrag || !myzEdit) return;
+    e.preventDefault();
+    const ts = ovChart.timeScale(), q = at(e), d = myzDrag, s0 = d.st, n = barsFor(ovData, s0.iv).length;
+    const pr = y => ovCandles.coordinateToPrice(y), lg = x => ts.coordinateToLogical(x);
+    const st = myzEdit;
+    if (d.h === "move") {
+      const dp = pr(q.y) - pr(d.p.y), di = Math.round(lg(q.x) - lg(d.p.x));
+      if (!isFinite(dp) || !isFinite(di)) return;
+      st.lo = s0.lo + dp; st.hi = s0.hi + dp;
+      const w = s0.i1 - s0.i0;
+      st.i0 = Math.max(0, Math.min(n - 1, s0.i0 + di));
+      if (!s0.ext) st.i1 = Math.min(n - 1, st.i0 + w);
+    } else if (d.h === "t" || d.h === "b") {
+      const v = pr(q.y); if (!isFinite(v)) return;
+      if (d.h === "t") st.hi = v; else st.lo = v;
+      if (st.lo > st.hi) { const t = st.lo; st.lo = st.hi; st.hi = t; d.h = d.h === "t" ? "b" : "t"; d.st = Object.assign({}, st); }
+    } else {
+      const i = Math.round(lg(q.x)); if (!isFinite(i)) return;
+      if (d.h === "l") st.i0 = Math.max(0, Math.min(st.i1, i));
+      else { st.i1 = Math.max(st.i0, Math.min(n - 1, i)); st.ext = i >= n - 3; }
+    }
+    st.dirty = true;
+  });
+  const up = e => { if (myzDrag) { myzDrag = null; renderMyzList(); } };
+  R.addEventListener("pointerup", up); R.addEventListener("pointercancel", up);
+  $("myzOk").onclick = e => { e.stopPropagation(); myzEnd(); };
+  $("myzDel").onclick = e => {
+    e.stopPropagation(); if (!myzEdit) return;
+    const id = myzEdit.id; myzClose();
+    myzSave(d => { d.zones = (d.zones || []).filter(x => x.id !== id); }, "zone supprimée " + ovSym);
+    toast("Zone supprimée.", 1800);
+  };
+})();
 function renderManuList() {
   const box = $("ovManuList"); if (!box) return;
   $("boxManu").style.display = prefs.manu ? "" : "none";
