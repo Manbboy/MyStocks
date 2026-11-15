@@ -686,6 +686,7 @@
   .myz-row button { background:none; border:1px solid var(--border); border-radius:8px; color:var(--text); font:inherit; padding:4px 10px; cursor:pointer; }
   .myz-ed { position:absolute; overflow:hidden; z-index:3; pointer-events:none; }
   .myz-r { position:absolute; background:rgba(250,204,21,.38); border:2px solid #ca8a04; box-sizing:border-box; touch-action:none; pointer-events:auto; cursor:move; }
+  .myz-r.oval { border-radius:50%; } .myz-r.oval::before { content:""; position:absolute; inset:-2px; border:1px dashed #ca8a04; border-radius:0; pointer-events:none; }
   .myz-r .h { position:absolute; touch-action:none; pointer-events:auto; }
   .myz-r .h::after { content:""; position:absolute; left:50%; top:50%; background:#ca8a04; border-radius:3px; transform:translate(-50%,-50%); }
   .myz-r .h.t, .myz-r .h.b { left:0; right:0; height:26px; cursor:ns-resize; } .myz-r .h.t { top:-27px; } .myz-r .h.b { bottom:-27px; }
@@ -840,7 +841,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v187</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v188</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -900,7 +901,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="mmb" id="chanBtn" aria-pressed="false" title="Canaux : deux obliques parallèles qui encadrent le cours">Canal<span class="mmdots"><i style="background:#0891b2;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="tlBtn" aria-pressed="false" title="Obliques : lignes de tendance (supports et résistances en diagonale)">Obl.<span class="mmdots"><i style="background:#f97316;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="manuBtn" aria-pressed="false" title="Manu : les 3 zones d'intervention où le plus d'indicateurs se rejoignent">M<span class="mmdots"><i style="background:#d946ef;width:10px;height:10px;border-radius:50%"></i></span></button>
-      <button class="mmb" id="zoneBtn" aria-pressed="false" title="Mes zones : dessiner un rectangle jaune (touchez deux coins opposés)">▭<span class="mmdots"><i style="background:#facc15;width:12px;height:6px;border-radius:2px"></i></span></button>
+      <button class="mmb" id="zoneBtn" aria-pressed="false" title="Mes zones : 1 appui = rectangle, 2 = cercle, 3 = fin du dessin">▭<span class="mmdots"><i style="background:#facc15;width:12px;height:6px;border-radius:2px"></i></span></button>
       <button class="mmb" id="tinoBtn" aria-pressed="false" title="Tino : grandes zones de soutien et oblique longue, sur tout l'historique mensuel (d'après les analyses de Tino, Le Podcast de la Bourse)">Tino<span class="mmdots"><i style="background:#38bdf8;width:12px;height:5px;border-radius:2px"></i><i style="background:#facc15"></i></span></button>
       <button class="mmb" id="flipBtn" aria-pressed="false" title="Bascules de rôle : résistance devenue support (ou l'inverse)">R⇄S<span class="mmdots"><i style="background:var(--res)"></i><i style="background:var(--sup)"></i></span></button>
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
@@ -2518,6 +2519,7 @@ function renderToggles() {
   $("tlBtn").classList.toggle("on", !!prefs.tl); $("tlBtn").setAttribute("aria-pressed", prefs.tl ? "true" : "false");
   $("tinoBtn").classList.toggle("on", !!prefs.tino); $("tinoBtn").setAttribute("aria-pressed", prefs.tino ? "true" : "false");
   $("zoneBtn").classList.toggle("drawing", !!myzDraw); $("zoneBtn").setAttribute("aria-pressed", myzDraw ? "true" : "false");
+  $("zoneBtn").firstChild.nodeValue = myzDraw === "oval" ? "◯" : "▭";
   $("manuBtn").classList.toggle("on", !!prefs.manu); $("manuBtn").setAttribute("aria-pressed", prefs.manu ? "true" : "false");
   $("flipBtn").classList.toggle("on", !!prefs.flip); $("flipBtn").setAttribute("aria-pressed", prefs.flip ? "true" : "false");
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
@@ -2987,8 +2989,8 @@ function renderQuick() {
 }
 /* Toucher une ligne directement sur le graphique : met en évidence le niveau ou la moyenne mobile la plus proche (12 px) */
 function onChartLineTap(param) {
+  if (myzEdit) { myzEnd(); return; }                     // forme en cours de modification : toucher ailleurs la valide
   if (myzDraw) return myzTap(param);
-  if (myzEdit) { myzEnd(); return; }                     // zone en cours de modification : toucher ailleurs la valide
   if (param && param.point && splitN() <= 1) { const z = myzHit(param.point); if (z) { myzStart(z); return; } }
   if (!param || !param.point || !ovCandles || splitN() > 1) return;
   const y = param.point.y;
@@ -6014,6 +6016,18 @@ function drawMyz() {
     const [i0, i1] = span(z), times = [];
     for (let i = i0; i <= i1; i++) times.push(A.T(i));
     if (!times.length) return;
+    if (z.shape === "oval") {                           // ellipse : arc du haut et arc du bas, remplis jusqu'au milieu
+      const mid = (z.lo + z.hi) / 2, ry = (z.hi - z.lo) / 2, c = (i0 + i1) / 2, rx = Math.max(0.5, (i1 - i0) / 2);
+      const pts = sg => times.map((t, k) => { const u = (i0 + k - c) / rx; return { time:t, value:mid + sg * ry * Math.sqrt(Math.max(0, 1 - u * u)) }; });
+      [1, -1].forEach(sg => {
+        const arc = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:mid }, lineWidth:2,
+          topLineColor:MYZ_COL, topFillColor1:"rgba(250,204,21,.28)", topFillColor2:"rgba(250,204,21,.28)",
+          bottomLineColor:MYZ_COL, bottomFillColor1:"rgba(250,204,21,.28)", bottomFillColor2:"rgba(250,204,21,.28)",
+          priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+        arc.setData(pts(sg)); myzSeries.push(arc);
+      });
+      return;
+    }
     const band = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:z.lo }, lineWidth:2,
       topLineColor:MYZ_COL, topFillColor1:"rgba(250,204,21,.28)", topFillColor2:"rgba(250,204,21,.28)",
       bottomLineColor:"rgba(0,0,0,0)", bottomFillColor1:"rgba(0,0,0,0)", bottomFillColor2:"rgba(0,0,0,0)",
@@ -6030,14 +6044,16 @@ function renderMyzList() {
   $("boxMyz").style.display = zs.length || myzDraw ? "" : "none";
   box.innerHTML = "";
   if (myzDraw) { const d = document.createElement("div"); d.className = "sig-intro";
-    d.textContent = myzFirst ? "Touchez maintenant le coin opposé (à droite de la dernière bougie, la zone déborde dans les séances à venir)." : "Touchez un premier coin de la zone sur le graphique.";
+    const what = myzDraw === "oval" ? "du cercle (coin du carré qui l'entoure)" : "du rectangle";
+    d.textContent = (myzFirst ? "Touchez maintenant le coin opposé " + what + "." : "Touchez un premier coin " + what + " sur le graphique.") +
+      " Bouton jaune : 1 appui = rectangle, 2 = cercle, 3 = fin du dessin.";
     box.appendChild(d); }
   const C = ovItem && ovItem.last, cur = ovItem && ovItem.currency;
   const short = d => dOf(d).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric", timeZone:"UTC" });
   zs.forEach(z => {
     const r = document.createElement("div"); r.className = "myz-row";
     const dist = C ? (C >= z.lo && C <= z.hi ? "cours dans la zone" : fmtPct(Math.round(((C > z.hi ? z.hi : z.lo) / C - 1) * 1000) / 10)) : "";
-    r.innerHTML = '<span class="sw-c"></span><div class="myz-t"><b>' + fmt(z.lo, cur) + " – " + fmt(z.hi, cur) + "</b> " + (dist ? '<span style="color:var(--muted)">' + dist + "</span>" : "") +
+    r.innerHTML = '<span class="sw-c"' + (z.shape === "oval" ? ' style="border-radius:50%;width:12px;height:12px"' : "") + '></span><div class="myz-t"><b>' + fmt(z.lo, cur) + " – " + fmt(z.hi, cur) + "</b> " + (dist ? '<span style="color:var(--muted)">' + dist + "</span>" : "") +
       "<small>" + short(z.t0) + " → " + (z.ext ? "à venir" : short(z.t1)) + "</small></div>";
     if (myzEdit && myzEdit.id === z.id) {
       r.classList.add("sel");
@@ -6082,19 +6098,20 @@ function myzTap(param) {
   const f = myzFirst; myzFirst = null; myzClearTmp();
   const lo = Math.min(f.price, price), hi = Math.max(f.price, price);
   const [t0, t1] = f.t <= t ? [f.t, t] : [t, f.t];
-  myzDraw = false; renderToggles();
-  if (hi <= lo) return renderMyzList();
+  if (hi <= lo) return renderMyzList();                  // le mode dessin reste actif : on peut enchaîner les formes
   const nid = "z" + Date.now().toString(36);
   setTimeout(() => { const z = myzData && myzData.zones.find(x => x.id === nid); if (z) myzStart(z); }, 0);   // la zone créée s'ouvre en modification
-  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:nid, sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:false, created:Date.now() }); },
+  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:nid, sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:false, shape:myzDraw === "oval" ? "oval" : "rect", created:Date.now() }); },
     "zone " + ovSym);
 }
 $("zoneBtn").onclick = async () => {
   if ((prefs.iv || "D") === "I") { toast("Les zones se dessinent en J, S, M ou T.", 2500); return; }
-  myzDraw = !myzDraw; myzFirst = null; if (ovCandles) myzClearTmp();
+  if (myzEdit) myzEnd();
+  myzDraw = !myzDraw ? "rect" : myzDraw === "rect" ? "oval" : false;       // 1er appui : rectangle, 2e : cercle, 3e : fin
+  myzFirst = null; if (ovCandles) myzClearTmp();
   renderToggles(); await myzLoad(); drawMyz();
   if (myzDraw) myzRoom();
-  if (myzDraw) toast("Touchez deux coins opposés de la zone sur le graphique.", 2800);
+  toast(myzDraw === "rect" ? "▭ Rectangle : touchez deux coins opposés." : myzDraw === "oval" ? "◯ Cercle : touchez deux coins opposés du carré qui l'entoure." : "Dessin terminé.", 2600);
 };
 /* ---- Modification d'une zone au doigt : toucher la zone la sélectionne ; glisser au milieu la déplace, glisser une poignée
    (barrette au-dessus, en dessous, à gauche, à droite) déplace ce bord ; « ✓ OK » ou toucher ailleurs enregistre ---- */
@@ -6123,6 +6140,7 @@ function myzStart(z) {
   const iv = prefs.iv || "D";
   if (!ovChart || iv === "I") return;
   myzEdit = Object.assign({ id:z.id, iv, lo:z.lo, hi:z.hi, dirty:false }, myzIdx(iv, z));
+  $("myzR").classList.toggle("oval", z.shape === "oval");
   $("myzEd").hidden = false;
   drawMyz();
   myzRoom();
