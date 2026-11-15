@@ -691,6 +691,7 @@
   .myz-r .h.t, .myz-r .h.b { left:0; right:0; height:26px; cursor:ns-resize; } .myz-r .h.t { top:-27px; } .myz-r .h.b { bottom:-27px; }
   .myz-r .h.l, .myz-r .h.r { top:0; bottom:0; width:26px; cursor:ew-resize; } .myz-r .h.l { left:-27px; } .myz-r .h.r { right:-27px; }
   .myz-r .h.t::after, .myz-r .h.b::after { width:30px; height:6px; } .myz-r .h.l::after, .myz-r .h.r::after { width:6px; height:30px; }
+  .myz-r.in-t .h.t { top:0; } .myz-r.in-b .h.b { bottom:0; } .myz-r.in-l .h.l { left:0; } .myz-r.in-r .h.r { right:0; }   /* au bord du graphique : barrette à l'intérieur */
   .myz-bar { position:absolute; display:flex; gap:6px; transform:translateX(-50%); pointer-events:auto; white-space:nowrap; }
   .myz-bar button { font:inherit; font-size:14px; padding:7px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); box-shadow:0 2px 6px rgba(0,0,0,.2); cursor:pointer; }
   .myz-bar #myzDel { color:#dc2626; }
@@ -839,7 +840,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v185</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v186</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -894,7 +895,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="mmb lay" id="quadBtn" aria-pressed="false" title="Disposition : 1, 2 ou 4 graphiques"></button>
       <button class="mmb lay" id="qsyncBtn" aria-pressed="false" title="Synchroniser le zoom et le défilement des graphiques" hidden></button>
       <span class="tb-br" aria-hidden="true"></span>
-      <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#2563eb"></i><i style="background:#9333ea"></i><i style="background:#d97706"></i></span></button>
+      <button class="mmb" id="mmBtn" aria-pressed="false" title="Afficher / masquer les moyennes mobiles 20, 50 et 200">MM<span class="mmdots"><i style="background:#d97706"></i><i style="background:#9333ea"></i><i style="background:#2563eb"></i></span></button>
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
       <button class="mmb" id="chanBtn" aria-pressed="false" title="Canaux : deux obliques parallèles qui encadrent le cours">Canal<span class="mmdots"><i style="background:#0891b2;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="tlBtn" aria-pressed="false" title="Obliques : lignes de tendance (supports et résistances en diagonale)">Obl.<span class="mmdots"><i style="background:#f97316;width:12px;transform:rotate(-18deg)"></i></span></button>
@@ -2315,7 +2316,7 @@ let ovMaReact = null, lvRingState = null;
 
 /* ---------- Moyennes mobiles ---------- */
 const MA_PERIODS = [20, 50, 200];
-const MA_COL = { 20:"#2563eb", 50:"#9333ea", 200:"#d97706" };
+const MA_COL = { 20:"#d97706", 50:"#9333ea", 200:"#2563eb" };   // MM200 en bleu, MM20 en orange
 const RSI_COL = "#0ea5e9";
 /* Moyenne mobile de n chandeliers de l'échelle tf, projetée sur les chandeliers de l'échelle iv affichée */
 function maSeries(data, tf, n, iv) {
@@ -5977,13 +5978,18 @@ async function myzSave(mutate, msg) {
     cur.zones.forEach(z => delete z.local); myzData = cur; myzKeep(myzData); drawMyz();
   } catch (e) { toast("Zone gardée sur cet appareil ; synchronisation impossible : " + e.message, 4000); }
 }
-/* position d'une date enregistrée dans l'unité affichée */
-function myzTime(rows, iv, t, end) {
-  const k = keyOf(iv, t);
-  const hit = rows.find(r => keyOf(iv, r[0]) === k);
-  if (hit) return hit[0];
-  if (t > rows[rows.length - 1][0]) return null;                    // après la dernière bougie
-  const r = rows.find(r => r[0] >= t); return r ? r[0] : (end ? null : rows[0][0]);
+/* axe des zones dans l'unité affichée : bougies existantes puis séances à venir (une zone peut déborder à droite) */
+const MYZ_FUT = { D:60, W:26, M:12, Q:6 };
+function myzAxis(iv) {
+  const rows = barsFor(ovData, iv), n = rows.length, fut = futureTimes(rows[n - 1][0], iv, MYZ_FUT[iv] || 60), N = n + fut.length;
+  const T = i => { i = Math.max(0, Math.min(N - 1, i)); return i < n ? rows[i][0] : fut[i - n]; };
+  const I = t => {                                   // index du chandelier qui contient la date t
+    if (t > rows[n - 1][0]) { const k = fut.findIndex(x => x >= t); return n + (k < 0 ? fut.length - 1 : k); }
+    const key = keyOf(iv, t), k = rows.findIndex(r => keyOf(iv, r[0]) === key);
+    if (k >= 0) return k;
+    const j = rows.findIndex(r => r[0] >= t); return j < 0 ? n - 1 : j;
+  };
+  return { rows, n, fut, N, T, I };
 }
 function drawMyz() {
   myzSeries.forEach(s => { try { ovChart && ovChart.removeSeries(s); } catch (e) {} }); myzSeries = [];
@@ -5993,17 +5999,16 @@ function drawMyz() {
   if (!ovChart || !ovData || iv === "I") return;
   const zs = myzData.zones.filter(z => z.sym === ovSym && !(myzEdit && myzEdit.id === z.id));     // la zone modifiée est dessinée par l'éditeur
   if (!zs.length) return;
-  const rows = barsFor(ovData, iv), n = rows.length, lastT = rows[n - 1][0];
-  const fut = futureTimes(lastT, iv, { D:20, W:6, M:4, Q:2 }[iv] || 20);
-  if (zs.some(z => z.ext)) {
+  const A = myzAxis(iv);
+  const span = z => { const i0 = A.I(z.t0), i1 = z.ext ? A.n - 1 + 20 : A.I(z.t1); return [Math.min(i0, i1), Math.max(i0, i1)]; };
+  const far = Math.max(...zs.map(z => span(z)[1]));
+  if (far >= A.n) {                                    // séances à venir : de la place à droite pour les zones qui débordent
     const ws = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
-    ws.setData(fut.map(t => ({ time:t }))); myzSeries.push(ws);
+    ws.setData(A.fut.slice(0, far - A.n + 1).map(t => ({ time:t }))); myzSeries.push(ws);
   }
   zs.forEach(z => {
-    const a = myzTime(rows, iv, z.t0), b = z.ext ? null : myzTime(rows, iv, z.t1, true);
-    if (!a) return;
-    let times = rows.filter(r => r[0] >= a && (b == null || r[0] <= b)).map(r => r[0]);
-    if (z.ext || b == null) times = times.concat(fut);
+    const [i0, i1] = span(z), times = [];
+    for (let i = i0; i <= i1; i++) times.push(A.T(i));
     if (!times.length) return;
     const band = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:z.lo }, lineWidth:2,
       topLineColor:MYZ_COL, topFillColor1:"rgba(250,204,21,.28)", topFillColor2:"rgba(250,204,21,.28)",
@@ -6021,7 +6026,7 @@ function renderMyzList() {
   $("boxMyz").style.display = zs.length || myzDraw ? "" : "none";
   box.innerHTML = "";
   if (myzDraw) { const d = document.createElement("div"); d.className = "sig-intro";
-    d.textContent = myzFirst ? "Touchez maintenant le coin opposé. Sur les toutes dernières bougies ou au-delà, la zone se prolonge vers la droite." : "Touchez un premier coin de la zone sur le graphique.";
+    d.textContent = myzFirst ? "Touchez maintenant le coin opposé (à droite de la dernière bougie, la zone déborde dans les séances à venir)." : "Touchez un premier coin de la zone sur le graphique.";
     box.appendChild(d); }
   const C = ovItem && ovItem.last, cur = ovItem && ovItem.currency;
   const short = d => dOf(d).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric", timeZone:"UTC" });
@@ -6029,7 +6034,7 @@ function renderMyzList() {
     const r = document.createElement("div"); r.className = "myz-row";
     const dist = C ? (C >= z.lo && C <= z.hi ? "cours dans la zone" : fmtPct(Math.round(((C > z.hi ? z.hi : z.lo) / C - 1) * 1000) / 10)) : "";
     r.innerHTML = '<span class="sw-c"></span><div class="myz-t"><b>' + fmt(z.lo, cur) + " – " + fmt(z.hi, cur) + "</b> " + (dist ? '<span style="color:var(--muted)">' + dist + "</span>" : "") +
-      "<small>" + short(z.t0) + " → " + (z.ext ? "prolongée" : short(z.t1)) + "</small></div>";
+      "<small>" + short(z.t0) + " → " + (z.ext ? "à venir" : short(z.t1)) + "</small></div>";
     if (myzEdit && myzEdit.id === z.id) {
       r.classList.add("sel");
       const inp = document.createElement("div"); inp.className = "myz-in";
@@ -6052,13 +6057,13 @@ function renderMyzList() {
 function myzClearTmp() { myzTmp.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} }); myzTmp = []; }
 function myzTap(param) {
   if (!param || !param.point || !ovCandles) return;
-  const iv = prefs.iv || "D", rows = barsFor(ovData, iv), n = rows.length;
+  const iv = prefs.iv || "D", A = myzAxis(iv);
   const price = ovCandles.coordinateToPrice(param.point.y);
-  let lg = param.logical != null ? Math.round(param.logical) : (param.time != null ? rows.findIndex(r => r[0] === param.time) : null);
+  const lg = param.logical != null ? Math.round(param.logical) : (param.time != null ? A.I(param.time) : null);
   if (price == null || lg == null) return;
-  const ext = lg >= n - 3, t = rows[Math.max(0, Math.min(n - 1, lg))][0];
+  const t = A.T(lg);
   if (!myzFirst) {
-    myzFirst = { t, price, ext };
+    myzFirst = { t, price };
     myzTmp.push(ovCandles.createPriceLine({ price, color:"#ca8a04", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));
     renderMyzList(); return;
   }
@@ -6069,7 +6074,7 @@ function myzTap(param) {
   if (hi <= lo) return renderMyzList();
   const nid = "z" + Date.now().toString(36);
   setTimeout(() => { const z = myzData && myzData.zones.find(x => x.id === nid); if (z) myzStart(z); }, 0);   // la zone créée s'ouvre en modification
-  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:nid, sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:ext || f.ext, created:Date.now() }); },
+  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:nid, sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:false, created:Date.now() }); },
     "zone " + ovSym);
 }
 $("zoneBtn").onclick = async () => {
@@ -6081,24 +6086,22 @@ $("zoneBtn").onclick = async () => {
 /* ---- Modification d'une zone au doigt : toucher la zone la sélectionne ; glisser au milieu la déplace, glisser une poignée
    (barrette au-dessus, en dessous, à gauche, à droite) déplace ce bord ; « ✓ OK » ou toucher ailleurs enregistre ---- */
 var myzEdit = null, myzLoop = 0, myzDrag = null;
-function myzIdx(rows, iv, z) {
-  const a = myzTime(rows, iv, z.t0), b = z.ext ? null : myzTime(rows, iv, z.t1, true), n = rows.length;
-  const i0 = Math.max(0, rows.findIndex(r => r[0] === a));
-  const i1 = b == null ? n - 1 : Math.max(i0, rows.findIndex(r => r[0] === b));
-  return { i0, i1, ext: z.ext || b == null };
+function myzIdx(iv, z) {
+  const A = myzAxis(iv), i0 = A.I(z.t0), i1 = z.ext ? A.n - 1 + 20 : A.I(z.t1);
+  return { i0:Math.min(i0, i1), i1:Math.max(i0, i1) };
 }
 function myzPx(st) {                                       // rectangle de la zone en pixels du graphique
-  const ts = ovChart.timeScale(), n = barsFor(ovData, st.iv).length;
-  const x0 = ts.logicalToCoordinate(st.i0), x1 = st.ext ? ts.width() : ts.logicalToCoordinate(st.i1);
+  const ts = ovChart.timeScale();
+  const x0 = ts.logicalToCoordinate(st.i0), x1 = ts.logicalToCoordinate(st.i1);
   const y0 = ovCandles.priceToCoordinate(st.hi), y1 = ovCandles.priceToCoordinate(st.lo);
   if ([x0, x1, y0, y1].some(v => v == null)) return null;
-  return { x0:Math.min(x0, x1), x1:Math.max(x0, x1, Math.min(x0, x1) + 4), y0:Math.min(y0, y1), y1:Math.max(y0, y1, Math.min(y0, y1) + 4), n };
+  return { x0:Math.min(x0, x1), x1:Math.max(x0, x1, Math.min(x0, x1) + 4), y0:Math.min(y0, y1), y1:Math.max(y0, y1, Math.min(y0, y1) + 4) };
 }
 function myzHit(pt) {
   if (!myzData || !ovChart || !ovCandles || (prefs.iv || "D") === "I") return null;
-  const iv = prefs.iv || "D", rows = barsFor(ovData, iv);
+  const iv = prefs.iv || "D";
   return myzData.zones.filter(z => z.sym === ovSym).reverse().find(z => {
-    const p = myzPx(Object.assign({ iv, lo:z.lo, hi:z.hi }, myzIdx(rows, iv, z)));
+    const p = myzPx(Object.assign({ iv, lo:z.lo, hi:z.hi }, myzIdx(iv, z)));
     return p && pt.x >= p.x0 - 8 && pt.x <= p.x1 + 8 && pt.y >= p.y0 - 8 && pt.y <= p.y1 + 8;
   }) || null;
 }
@@ -6106,9 +6109,11 @@ function myzStart(z) {
   if (myzEdit) myzEnd();
   const iv = prefs.iv || "D";
   if (!ovChart || iv === "I") return;
-  myzEdit = Object.assign({ id:z.id, iv, lo:z.lo, hi:z.hi, dirty:false }, myzIdx(barsFor(ovData, iv), iv, z));
+  myzEdit = Object.assign({ id:z.id, iv, lo:z.lo, hi:z.hi, dirty:false }, myzIdx(iv, z));
   $("myzEd").hidden = false;
   drawMyz();
+  const ts = ovChart.timeScale(), r = ts.getVisibleLogicalRange();                 // zone qui déborde à droite : on la montre en entier
+  if (r && myzEdit.i1 + 2 > r.to) ts.setVisibleLogicalRange({ from:r.from + (myzEdit.i1 + 3 - r.to), to:myzEdit.i1 + 3 });
   cancelAnimationFrame(myzLoop);
   const loop = () => { if (!myzEdit) return; myzPlace(); myzLoop = requestAnimationFrame(loop); };   // suit le défilement et le zoom
   loop();
@@ -6122,14 +6127,14 @@ function myzPlace() {
   if (!p) { R.style.display = B.style.display = "none"; return; }
   R.style.display = B.style.display = "";
   Object.assign(R.style, { left:p.x0 + "px", top:p.y0 + "px", width:(p.x1 - p.x0) + "px", height:(p.y1 - p.y0) + "px" });
-  R.querySelector(".h.r").style.display = myzEdit.ext ? "none" : "";
+  R.classList.toggle("in-t", p.y0 < 28); R.classList.toggle("in-b", p.y1 > H - 28); R.classList.toggle("in-l", p.x0 < 28); R.classList.toggle("in-r", p.x1 > W - 28);
   const cx = Math.max(110, Math.min(W - 110, (Math.max(0, p.x0) + Math.min(W, p.x1)) / 2));
   const by = p.y0 > 76 ? p.y0 - 72 : (p.y1 + 76 < H ? p.y1 + 32 : Math.max(4, p.y0 + 4));   // barre au-dessus de la zone (sinon dessous)
   Object.assign(B.style, { left:cx + "px", top:by + "px" });
 }
 function myzVals(st) {
-  const rows = barsFor(ovData, st.iv), n = rows.length, cl = i => rows[Math.max(0, Math.min(n - 1, i))][0];
-  return { lo:+st.lo.toPrecision(6), hi:+st.hi.toPrecision(6), t0:cl(st.i0), t1:cl(st.i1), ext:!!st.ext };
+  const A = myzAxis(st.iv);
+  return { lo:+st.lo.toPrecision(6), hi:+st.hi.toPrecision(6), t0:A.T(st.i0), t1:A.T(st.i1), ext:false };
 }
 function myzClose() {
   myzEdit = null; myzDrag = null; cancelAnimationFrame(myzLoop); $("myzEd").hidden = true; drawMyz();
@@ -6152,7 +6157,7 @@ function myzEnd() {
   R.addEventListener("pointermove", e => {
     if (!myzDrag || !myzEdit) return;
     e.preventDefault();
-    const ts = ovChart.timeScale(), q = at(e), d = myzDrag, s0 = d.st, n = barsFor(ovData, s0.iv).length;
+    const ts = ovChart.timeScale(), q = at(e), d = myzDrag, s0 = d.st, N = myzAxis(s0.iv).N;
     const pr = y => ovCandles.coordinateToPrice(y), lg = x => ts.coordinateToLogical(x);
     const st = myzEdit;
     if (d.h === "move") {
@@ -6160,8 +6165,7 @@ function myzEnd() {
       if (!isFinite(dp) || !isFinite(di)) return;
       st.lo = s0.lo + dp; st.hi = s0.hi + dp;
       const w = s0.i1 - s0.i0;
-      st.i0 = Math.max(0, Math.min(n - 1, s0.i0 + di));
-      if (!s0.ext) st.i1 = Math.min(n - 1, st.i0 + w);
+      st.i0 = Math.max(0, Math.min(N - 1 - w, s0.i0 + di)); st.i1 = st.i0 + w;
     } else if (d.h === "t" || d.h === "b") {
       const v = pr(q.y); if (!isFinite(v)) return;
       if (d.h === "t") st.hi = v; else st.lo = v;
@@ -6169,9 +6173,11 @@ function myzEnd() {
     } else {
       const i = Math.round(lg(q.x)); if (!isFinite(i)) return;
       if (d.h === "l") st.i0 = Math.max(0, Math.min(st.i1, i));
-      else { st.i1 = Math.max(st.i0, Math.min(n - 1, i)); st.ext = i >= n - 3; }
+      else st.i1 = Math.max(st.i0, Math.min(N - 1, i));
     }
     st.dirty = true;
+    const W = ts.width(), r = ts.getVisibleLogicalRange();                       // doigt au bord droit : le graphique avance d'une séance
+    if (r && q.x > W - 24 && (d.h === "r" || d.h === "move")) ts.setVisibleLogicalRange({ from:r.from + 1, to:r.to + 1 });
   });
   const up = e => { if (myzDrag) { myzDrag = null; renderMyzList(); } };
   R.addEventListener("pointerup", up); R.addEventListener("pointercancel", up);
