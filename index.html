@@ -688,6 +688,7 @@
   .manu-z ul { list-style:none; padding-left:2px; }
   .manu-tf { display:inline-block; min-width:16px; text-align:center; font-size:10.5px; font-weight:700; color:#fff; background:#a21caf; border-radius:4px; padding:0 3px; margin-right:2px; }
   .ivtag { font-size:11px; font-weight:700; color:var(--muted); border:1px solid var(--border); border-radius:4px; padding:0 4px; margin-left:4px; }
+  .manu-ck { font-size:12.5px; margin:-2px 0 10px; padding:6px 8px; border-radius:8px; background:color-mix(in srgb, #d946ef 8%, transparent); }
   .manu-foot { font-size:11.5px; color:var(--muted); margin-top:4px; }
   .al-auto-h { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:16px; }
   .al-auto-h .swb { font-weight:400; font-size:12.5px; text-transform:none; letter-spacing:0; }
@@ -801,7 +802,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v178</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v179</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5814,6 +5815,12 @@ function renderManuList() {
   ctx.textContent = [trend, "RSI 14 : " + Math.round(M.rsi) + (M.rsi >= 70 ? " (suracheté)" : M.rsi <= 30 ? " (survendu)" : ""),
     "RSI Trends : " + (M.rt === 1 ? "vert" : M.rt === -1 ? "rouge" : "gris")].filter(Boolean).join(" · ");
   box.appendChild(ctx);
+  // checklist d'entrée : le seul filtre qui a un peu amélioré les résultats au backtest (pour des zones Manu comme au hasard)
+  const up = M.m200 != null && M.C > M.m200 && M.m50 > M.m200, r50 = M.rsi >= 50;
+  const ck = document.createElement("div"); ck.className = "manu-ck";
+  ck.innerHTML = "<b>Avant d'acheter dans une zone</b> : " + (up ? "✅" : "❌") + " tendance haussière (cours et MM50 au-dessus de la MM200) · " +
+    "attendre une clôture qui repasse au-dessus de la zone, avec " + (r50 ? "✅" : "⏳") + " RSI 14 ≥ 50 ce jour-là (aujourd'hui " + Math.round(M.rsi) + ")";
+  box.appendChild(ck);
   if (!M.zones.length) { box.insertAdjacentHTML("beforeend", '<div class="sig-none">Aucune zone où au moins deux indicateurs se rejoignent assez fort entre −18 % et +10 % du cours.</div>'); return; }
   M.zones.forEach((z, i) => {
     const el = document.createElement("div"); el.className = "manu-z";
@@ -5830,7 +5837,8 @@ function renderManuList() {
   });
   box.insertAdjacentHTML("beforeend", '<div class="manu-foot"><b>Ce que dit le backtest</b> (2021-2026, 112 actions EU et US, sans Tino) : après une réaction dans une zone d\'achat Manu ' +
     "(clôture repassée au-dessus), le cours a fait <b>+5 % avant −3 % sous la zone dans 46 % des cas</b>, contre 47 % pour une zone prise au hasard à la même distance. " +
-    "La confluence aide à situer les niveaux, <b>pas à prédire le rebond</b>. Ce qui compte vraiment : la <b>tendance de fond</b> (sous la MM200, 39 % de perdants contre 32 % au-dessus) et une <b>sortie prévue</b> sous la zone.<br>" +
+    "La confluence aide à situer les niveaux, <b>pas à prédire le rebond</b>. Le filtre « tendance haussière + RSI ≥ 50 à la réaction » a un peu amélioré le gain moyen " +
+    "(de 0 à environ +0,3 % par trade), pour les zones Manu comme pour des zones au hasard, sans être stable d'une période à l'autre. Prévoir toujours une <b>sortie</b> sous la zone.<br>" +
     "Confluence = somme des poids des indicateurs qui se rejoignent (une 2e preuve de la même famille compte moitié). J = journalier, S = hebdomadaire, M = mensuel, T = trimestriel. Détails dans Help.</div>");
 }
 $("manuBtn").onclick = () => { prefs.manu = !prefs.manu; savePrefs(); drawManu(); renderToggles();

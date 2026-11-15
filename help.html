@@ -345,6 +345,19 @@
 <tr><td>Idem, cours sous la MM200</td><td>45 % · 39 %</td><td>48 % · 34 %</td></tr>
 </table>
 <p><b>Conclusion</b> : la confluence d'indicateurs situe bien les niveaux où le marché regarde, mais elle ne prédit pas mieux le rebond qu'un niveau quelconque à la même distance. Une régression sur 7 463 zones touchées confirme que l'effet est très faible (AUC 0,53 sur des valeurs non vues). Les poids ont été ajustés vers ce qui tenait un peu mieux : R→S mensuel (77,5 % de rebonds) et hebdo (73 %), supports mensuels. Ce qui pèse le plus, c'est la profondeur du repli et la tendance de fond. Le contexte en tête du bloc Manu sert à cela.</p>
+<h4>Filtres d'entrée testés (novembre 2026)</h4>
+<p>Achat à la clôture qui repasse au-dessus de la zone (dans les 5 séances suivant le contact), seulement si le filtre est vrai ce jour-là. Objectif +5 % ; stop 3 % sous la zone ; sinon sortie après 20 séances.</p>
+<table class="h-t">
+<tr><th>Filtre</th><th>Manu : trades · gagnants · gain moyen</th><th>Hasard : gain moyen</th></tr>
+<tr><td>aucun</td><td>1 927 · 46 % · −0,12 %</td><td>+0,03 %</td></tr>
+<tr><td>tendance haussière (cours et MM50 &gt; MM200)</td><td>789 · 46 % · −0,02 %</td><td>+0,08 %</td></tr>
+<tr><td>RSI 14 ≥ 50</td><td>275 · 54 % · +0,44 %</td><td>+0,54 %</td></tr>
+<tr><td>RSI Trends vert (RSI ≥ 60)</td><td>47 · 51 % · −0,13 %</td><td>−0,06 %</td></tr>
+<tr><td>tendance + RSI ≥ 50</td><td>127 · 57,5 % · +0,78 %</td><td>+0,31 %</td></tr>
+<tr><td>bougie franche (clôture &gt; ouverture et &gt; plus haut de la veille)</td><td>376 · 48 % · +0,03 %</td><td>+0,17 %</td></tr>
+<tr><td>volume ≥ 1,3 × la moyenne de 20 séances</td><td>701 · 46 % · −0,22 %</td><td>−0,16 %</td></tr>
+</table>
+<p><b>Robustesse de « tendance + RSI ≥ 50 »</b> : +1,5 % par trade en 2021-2023 (53 trades), mais +0,25 % en 2024-2026 (74 trades), moins que le hasard (+0,31 %). Selon le groupe de valeurs, −0,65 % ou +1,94 %, le hasard suivant le même schéma. <b>Pas d'avantage stable</b> des zones Manu. Le filtre lui-même aide un peu, pour toutes les zones : environ +0,3 % par trade au lieu de 0. C'est ce que rappelle la ligne « Avant d'acheter dans une zone » du bloc Manu.</p>
 <h4>Lecture</h4>
 <ul>
 <li><b>Zone sous le cours</b> : zone d'achat sur repli. Attendre une réaction dans la zone (mèche qui rejette, clôture qui repart) plutôt qu'acheter à l'aveugle.</li>
