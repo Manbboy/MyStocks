@@ -20,17 +20,6 @@
       "ext": false,
       "shape": "oval",
       "created": 1794751296651
-    },
-    {
-      "id": "zmwhwresf",
-      "sym": "AIR.PA",
-      "lo": 136.462,
-      "hi": 138.122,
-      "t0": "2026-11-23",
-      "t1": "2027-02-22",
-      "ext": false,
-      "shape": "oval",
-      "created": 1794751596917
     }
   ]
 }
