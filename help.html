@@ -420,6 +420,15 @@
 <p>En moyenne, environ un tiers du portefeuille change chaque mois (3 ou 4 actions sur 10). Ajouter « au-dessus de la MM200 » n'apporte rien. Classer sur 12 mois (sans le dernier) ou sur le RSI hebdo fait moins bien.</p>
 <p><b>Limites</b> : vos listes sont celles d'aujourd'hui, et plusieurs actions y sont entrées parce qu'elles avaient monté (biais de sélection, qui flatte surtout le momentum). Les changes €/$ sont ignorés. 10 actions, c'est concentré. Ce sont des résultats passés, sans garantie.</p>
 <p><b>Ce qui n'a pas marché</b> (même échantillon) : les règles de timing sur une action (RSI Trends et variantes, croisement MM50/MM200, cours/MM200) battent « garder » sur moins d'une action sur trois. Gain médian +1 à +21 % contre +66 %.</p>
+<h4>Meilleures confluences Manu</h4>
+<p>Chaque soir, <code>scripts/manu_list.mjs</code> applique exactement le calcul de l'indicateur Manu (section 13 bis, Tino compris) à toutes les valeurs de vos listes (sauf Market) et écrit data/confluences.json. L'onglet affiche :</p>
+<ul>
+<li>les <b>15 zones d'achat</b> au score le plus élevé, situées sous le cours jusqu'à −15 % ;</li>
+<li>dans un volet repliable, les <b>10 résistances</b> les plus chargées au-dessus du cours.</li>
+</ul>
+<p>Chaque ligne donne la zone, sa distance au cours, le score (★★★ ≥ 7, ★★☆ ≥ 5, ★☆☆ sinon), la tendance (✅ au-dessus de la MM200 jour, ❌ en dessous), le RSI 14 jour, le nombre d'indicateurs qui votent, et les 4 raisons les plus lourdes avec leur unité (J, S, M, T). Toucher une ligne ouvre le graphique avec Manu activé.</p>
+<p><b>À garder en tête</b> : le backtest de Manu n'a pas montré qu'une zone plus chargée rebondit plus souvent. La liste sert à repérer où regarder ; la décision reste d'attendre une réaction dans la zone, de préférence en tendance haussière avec un RSI ≥ 50.</p>
+
 <h4>Bascules R⇄S</h4>
 <p>Calculées chaque soir avec le code même de l'appli (§ 7), en journalier et en hebdo, précision 2 %. On prend les niveaux connus <b>juste avant</b> la période récente (5 séances en J, 2 semaines en S), puis on regarde ce que le cours a fait depuis. Seul le niveau le plus proche de chaque côté compte.</p>
 <ul>

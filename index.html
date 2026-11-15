@@ -687,6 +687,12 @@
   .mom-tags { display:flex; gap:4px; flex-wrap:wrap; }
   .mom-pf { flex:0 0 auto; white-space:nowrap; font-size:13px; }
   .mom-tag { font-size:10.5px; font-weight:700; border-radius:6px; padding:1px 6px; white-space:nowrap; } .mom-tag.in { background:#16a34a; color:#fff; } .mom-tag.warn { background:#d97706; color:#fff; }
+  .conf-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:0 16px; margin:4px 0 14px; }
+  .conf-row { display:block; width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--border); padding:8px 2px; font:inherit; color:var(--text); cursor:pointer; }
+  .conf-h { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:14px; }
+  .conf-z { font-size:13px; } .conf-d { color:var(--muted); } .conf-s { margin-left:auto; color:#d946ef; font-weight:700; white-space:nowrap; }
+  .conf-w { font-size:12px; color:var(--muted); margin:2px 0; }
+  .conf-r { font-size:12px; line-height:1.5; }
   .mom-foot { font-size:12.5px; color:var(--muted); margin:4px 0 14px; }
   @media (min-width:700px) { #ovManuList { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:4px 16px; } .manu-ctx, .manu-foot { grid-column:1 / -1; } }
   .manu-ctx { font-size:12.5px; color:var(--muted); margin:2px 0 8px; }
@@ -812,7 +818,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v180</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v181</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4578,7 +4584,7 @@ setTimeout(() => { if (!pfState.loaded && pfPass()) pfLoad().then(() => {
 })();
 
 /* ===== Onglet « À regarder » : situations détectées chaque soir (data/signals.json, calculé par scripts/signals.py) ===== */
-let sigData = null, sigFlips = null, sigMom = null;
+let sigData = null, sigFlips = null, sigMom = null, sigConf = null;
 async function sigLoad(force) {
   if (sigData && !force) return sigData;
   try { sigData = await fetch("data/signals.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null); }
@@ -4588,6 +4594,8 @@ async function sigLoad(force) {
   catch (e) { sigFlips = null; }
   try { sigMom = await fetch("data/momentum.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null); }
   catch (e) { sigMom = null; }
+  try { sigConf = await fetch("data/confluences.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null); }
+  catch (e) { sigConf = null; }
   return sigData;
 }
 const SIG_BULL = new Set(["cassure", "rebond", "reprise", "vert"]);
@@ -4685,6 +4693,7 @@ async function renderSig() {
   if (!opp.length) box.insertAdjacentHTML("beforeend", '<div class="sig-none">Aucune situation ces 5 dernières séances.</div>');
   opp.forEach(e => box.appendChild(sigRow(e, SIG_BULL)));
   renderMomentum(box);
+  renderConfluences(box);
   // bascules R⇄S : confirmations (réaction sur R→S, S→R franchie) puis situations à surveiller (contact, test)
   const fl = (sigFlips && sigFlips.items) || [];
   const flPick = kinds => { const by = new Map(); fl.forEach(e => { if (!kinds.has(e.sig[0].k)) return; const b = by.get(e.sym); if (!b || e.age < b.age) by.set(e.sym, e); }); return [...by.values()].sort((a, b) => a.age - b.age); };
@@ -5583,6 +5592,37 @@ function renderMomentum(box) {
     ((M.nowIn && M.nowIn.length) ? "Si on reclassait au " + d(M.last) + " : entreraient " + M.nowIn.map(s => esc((nm(s) || {}).name || s)).join(", ") +
       (M.nowOut.length ? ", sortiraient " + M.nowOut.map(s => esc((nm(s) || {}).name || s)).join(", ") : "") + " (à confirmer à la fin du mois)." : "Au " + d(M.last) + ", le classement n'a pas changé.");
   box.appendChild(foot);
+}
+
+/* ===== Meilleures confluences Manu sur toutes les listes (data/confluences.json, calculé chaque soir par scripts/manu_list.mjs) ===== */
+function renderConfluences(box) {
+  const C = sigConf; if (!C || !C.zones) return;
+  const find = s => { for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === s); if (it) return it; } return null; };
+  const TF = { D:"J", W:"S", M:"M", Q:"T" };
+  const row = z => {
+    const r = document.createElement("button"); r.className = "conf-row";
+    const stars = z.score >= 7 ? "★★★" : z.score >= 5 ? "★★☆" : "★☆☆";
+    r.innerHTML = '<div class="conf-h"><b>' + esc(z.name) + '</b><span class="conf-z">' + fmt(z.lo, z.cur) + " – " + fmt(z.hi, z.cur) +
+      ' <span class="conf-d">' + fmtPct(Math.round(z.dist * 1000) / 10) + '</span></span><span class="conf-s">' + stars + " " + z.score.toFixed(1) + "</span></div>" +
+      '<div class="conf-w">' + (z.side === "buy" ? (z.trend ? "✅ tendance haussière" : "❌ sous la MM200") + " · RSI " + z.rsi : "résistance à franchir") +
+      " · " + z.n + " indicateurs</div>" +
+      '<div class="conf-r">' + z.why.map(([tf, t]) => '<span class="manu-tf">' + (TF[tf] || "·") + "</span> " + esc(t)).join("<br>") + "</div>";
+    const it = find(z.sym);
+    if (it) r.onclick = () => { prefs.manu = true; savePrefs(); openDetail(it, withLive(z.sym, summary.symbols[z.sym])); };
+    return r;
+  };
+  const buy = C.zones.filter(z => z.side === "buy" && z.dist > -0.15).slice(0, 15), res = C.zones.filter(z => z.side !== "buy").slice(0, 10);
+  const h = document.createElement("div"); h.className = "pf-sub"; h.textContent = "Meilleures confluences Manu (#" + buy.length + ")"; box.appendChild(h);
+  const intro = document.createElement("div"); intro.className = "sig-intro";
+  intro.innerHTML = "Zones d'achat sous le cours (jusqu'à −15 %) où le plus d'indicateurs se rejoignent, sur toutes vos listes, Tino compris. Toucher une ligne ouvre le graphique avec Manu. " +
+    "Rappel du backtest : la confluence situe les niveaux mais ne prédit pas le rebond ; attendre une réaction dans la zone, de préférence en tendance haussière avec un RSI ≥ 50.";
+  box.appendChild(intro);
+  const l = document.createElement("div"); l.className = "conf-list"; buy.forEach(z => l.appendChild(row(z))); box.appendChild(l);
+  if (res.length) {
+    const d = document.createElement("details"); d.className = "sig-more";
+    d.innerHTML = "<summary>Résistances les plus chargées (#" + res.length + ")</summary>";
+    const l2 = document.createElement("div"); l2.className = "conf-list"; res.forEach(z => l2.appendChild(row(z))); d.appendChild(l2); box.appendChild(d);
+  }
 }
 
 /* Onglet Alertes : la note passe sur une 2e ligne si elle ne tient pas à côté du nom */
