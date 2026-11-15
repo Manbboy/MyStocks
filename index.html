@@ -678,6 +678,13 @@
   .cfg-flow .seg { flex-wrap:nowrap; }
   .cfg-flow .seg button { padding:5px 7px; white-space:nowrap; }
   .manu-box { margin:10px 0 4px; }
+  .myz-box { margin:10px 0 4px; }
+  .myz-row { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
+  .myz-row .sw-c { width:14px; height:10px; border-radius:2px; background:#facc15; border:1px solid #ca8a04; flex:none; }
+  .myz-row small { color:var(--muted); display:block; }
+  .myz-row .myz-t { flex:1; min-width:0; }
+  .myz-row button { background:none; border:1px solid var(--border); border-radius:8px; color:var(--text); font:inherit; padding:4px 10px; cursor:pointer; }
+  #zoneBtn.drawing { background:#facc15; color:#1f2937; border-color:#ca8a04; }
   .mom-new { margin:4px 0 8px; padding:8px 10px; border-radius:10px; background:color-mix(in srgb, #16a34a 14%, var(--card)); font-size:13px; }
   .mom-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:0 16px; margin:4px 0; }
   .mom-row { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--border); padding:8px 2px; font:inherit; font-size:14px; color:var(--text); cursor:pointer; }
@@ -818,7 +825,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v183</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v184</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -878,6 +885,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="mmb" id="chanBtn" aria-pressed="false" title="Canaux : deux obliques parallèles qui encadrent le cours">Canal<span class="mmdots"><i style="background:#0891b2;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="tlBtn" aria-pressed="false" title="Obliques : lignes de tendance (supports et résistances en diagonale)">Obl.<span class="mmdots"><i style="background:#f97316;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="manuBtn" aria-pressed="false" title="Manu : les 3 zones d'intervention où le plus d'indicateurs se rejoignent">M<span class="mmdots"><i style="background:#d946ef;width:10px;height:10px;border-radius:50%"></i></span></button>
+      <button class="mmb" id="zoneBtn" aria-pressed="false" title="Mes zones : dessiner un rectangle jaune (touchez deux coins opposés)">▭<span class="mmdots"><i style="background:#facc15;width:12px;height:6px;border-radius:2px"></i></span></button>
       <button class="mmb" id="tinoBtn" aria-pressed="false" title="Tino : grandes zones de soutien et oblique longue, sur tout l'historique mensuel (d'après les analyses de Tino, Le Podcast de la Bourse)">Tino<span class="mmdots"><i style="background:#38bdf8;width:12px;height:5px;border-radius:2px"></i><i style="background:#facc15"></i></span></button>
       <button class="mmb" id="flipBtn" aria-pressed="false" title="Bascules de rôle : résistance devenue support (ou l'inverse)">R⇄S<span class="mmdots"><i style="background:var(--res)"></i><i style="background:var(--sup)"></i></span></button>
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
@@ -930,6 +938,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="fitbtn" id="sideBtn" title="Afficher ou cacher les informations détaillées (listes des niveaux, canaux, moyennes…)"></button>
       <button class="navsm" id="ovNext2" aria-label="Action suivante">›</button>
     </div>
+    <div class="lv myz-box" id="boxMyz" style="display:none"><h3 style="color:#ca8a04">Mes zones</h3><div id="ovMyzList"></div></div>
     <div class="lv manu-box" id="boxManu" style="display:none"><h3 style="color:#d946ef">Manu · zones d'intervention</h3><div id="ovManuList"></div></div>
     <div class="news" id="ovNews"></div>
     </div>
@@ -2491,6 +2500,7 @@ function renderToggles() {
   $("chanBtn").classList.toggle("on", !!prefs.chan); $("chanBtn").setAttribute("aria-pressed", prefs.chan ? "true" : "false");
   $("tlBtn").classList.toggle("on", !!prefs.tl); $("tlBtn").setAttribute("aria-pressed", prefs.tl ? "true" : "false");
   $("tinoBtn").classList.toggle("on", !!prefs.tino); $("tinoBtn").setAttribute("aria-pressed", prefs.tino ? "true" : "false");
+  $("zoneBtn").classList.toggle("drawing", !!myzDraw); $("zoneBtn").setAttribute("aria-pressed", myzDraw ? "true" : "false");
   $("manuBtn").classList.toggle("on", !!prefs.manu); $("manuBtn").setAttribute("aria-pressed", prefs.manu ? "true" : "false");
   $("flipBtn").classList.toggle("on", !!prefs.flip); $("flipBtn").setAttribute("aria-pressed", prefs.flip ? "true" : "false");
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
@@ -2960,6 +2970,7 @@ function renderQuick() {
 }
 /* Toucher une ligne directement sur le graphique : met en évidence le niveau ou la moyenne mobile la plus proche (12 px) */
 function onChartLineTap(param) {
+  if (myzDraw) return myzTap(param);
   if (!param || !param.point || !ovCandles || splitN() > 1) return;
   const y = param.point.y;
   let best = null;
@@ -3275,6 +3286,7 @@ function drawDetail(keep) {
   drawGeo();
   tinoSeries = []; drawTino();
   manuSeries = []; drawManu();
+  myzSeries = []; drawMyz();
   applyHighlight();
   const bySeries = new Map(rows.map(r => [r[0], r]));
   const showOhlc = row => {
@@ -5910,6 +5922,130 @@ function drawManu() {
   const ts = ovChart.timeScale(), r = ts.getVisibleLogicalRange();          // vue calée à droite : montrer les séances à venir
   if (r && r.to >= n - 2 && r.to < n - 1 + fut.length) ts.setVisibleLogicalRange({ from:r.from, to:n - 1 + fut.length + 1 });
 }
+/* ===== Mes zones : rectangles jaunes dessinés à la main (deux coins opposés), gardés dans zones.json (dépôt, synchronisé
+   entre appareils avec le jeton GitHub) et en copie locale sur l'appareil ===== */
+const MYZ_KEY = "mes-actions-zones-v1", MYZ_COL = "#facc15";
+var myzData = null, myzSeries = [], myzDraw = false, myzFirst = null, myzTmp = [];   // var : lus par renderToggles avant cette ligne
+function myzLocal() { try { return JSON.parse(localStorage.getItem(MYZ_KEY)) || null; } catch (e) { return null; } }
+function myzKeep(d) { try { localStorage.setItem(MYZ_KEY, JSON.stringify(d)); } catch (e) {} }
+async function myzLoad() {
+  if (myzData) return myzData;
+  myzData = myzLocal() || { zones:[] };
+  let got = null;
+  const tok = getTok();
+  try {
+    if (tok) {
+      const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/zones.json?ref=main&t=" + Date.now(),
+        { headers:{ Authorization:"Bearer " + tok, Accept:"application/vnd.github+json" }, cache:"no-store" });
+      if (r.ok) got = JSON.parse(b64dec((await r.json()).content));
+    } else {
+      const r = await fetch("zones.json?t=" + Date.now(), { cache:"no-store" });
+      if (r.ok) got = await r.json();
+    }
+  } catch (e) {}
+  if (got && got.zones) {
+    // zones créées ici sans jeton (pas encore dans le dépôt) : on les garde
+    const ids = new Set(got.zones.map(z => z.id));
+    myzData.zones.filter(z => z.local && !ids.has(z.id)).forEach(z => got.zones.push(z));
+    myzData = got; myzKeep(myzData);
+  }
+  return myzData;
+}
+async function myzSave(mutate, msg) {
+  mutate(myzData); myzKeep(myzData); drawMyz();
+  if (!getTok()) { myzData.zones.forEach(z => z.local = true); myzKeep(myzData); toast("Zone gardée sur cet appareil (sans jeton GitHub, elle n'est pas synchronisée).", 3500); return; }
+  try {
+    const cur = await ghFile("zones.json", mutate, msg, { zones:[] });
+    cur.zones.forEach(z => delete z.local); myzData = cur; myzKeep(myzData); drawMyz();
+  } catch (e) { toast("Zone gardée sur cet appareil ; synchronisation impossible : " + e.message, 4000); }
+}
+/* position d'une date enregistrée dans l'unité affichée */
+function myzTime(rows, iv, t, end) {
+  const k = keyOf(iv, t);
+  const hit = rows.find(r => keyOf(iv, r[0]) === k);
+  if (hit) return hit[0];
+  if (t > rows[rows.length - 1][0]) return null;                    // après la dernière bougie
+  const r = rows.find(r => r[0] >= t); return r ? r[0] : (end ? null : rows[0][0]);
+}
+function drawMyz() {
+  myzSeries.forEach(s => { try { ovChart && ovChart.removeSeries(s); } catch (e) {} }); myzSeries = [];
+  renderMyzList();
+  const iv = prefs.iv || "D";
+  if (!myzData) { myzLoad().then(drawMyz); return; }
+  if (!ovChart || !ovData || iv === "I") return;
+  const zs = myzData.zones.filter(z => z.sym === ovSym);
+  if (!zs.length) return;
+  const rows = barsFor(ovData, iv), n = rows.length, lastT = rows[n - 1][0];
+  const fut = futureTimes(lastT, iv, { D:20, W:6, M:4, Q:2 }[iv] || 20);
+  if (zs.some(z => z.ext)) {
+    const ws = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    ws.setData(fut.map(t => ({ time:t }))); myzSeries.push(ws);
+  }
+  zs.forEach(z => {
+    const a = myzTime(rows, iv, z.t0), b = z.ext ? null : myzTime(rows, iv, z.t1, true);
+    if (!a) return;
+    let times = rows.filter(r => r[0] >= a && (b == null || r[0] <= b)).map(r => r[0]);
+    if (z.ext || b == null) times = times.concat(fut);
+    if (!times.length) return;
+    const band = ovChart.addBaselineSeries({ baseValue:{ type:"price", price:z.lo }, lineWidth:2,
+      topLineColor:MYZ_COL, topFillColor1:"rgba(250,204,21,.28)", topFillColor2:"rgba(250,204,21,.28)",
+      bottomLineColor:"rgba(0,0,0,0)", bottomFillColor1:"rgba(0,0,0,0)", bottomFillColor2:"rgba(0,0,0,0)",
+      priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    band.setData(times.map(t => ({ time:t, value:z.hi })));
+    myzSeries.push(band);
+    const t0 = times[0], t1 = times[times.length - 1];
+    myzSeries.push(addSegment(ovChart, t0, z.lo, t1, z.lo, MYZ_COL, 2));                       // bord bas
+  });
+}
+function renderMyzList() {
+  const box = $("ovMyzList"); if (!box) return;
+  const zs = myzData ? myzData.zones.filter(z => z.sym === ovSym) : [];
+  $("boxMyz").style.display = zs.length || myzDraw ? "" : "none";
+  box.innerHTML = "";
+  if (myzDraw) { const d = document.createElement("div"); d.className = "sig-intro";
+    d.textContent = myzFirst ? "Touchez maintenant le coin opposé. Sur les toutes dernières bougies ou au-delà, la zone se prolonge vers la droite." : "Touchez un premier coin de la zone sur le graphique.";
+    box.appendChild(d); }
+  const C = ovItem && ovItem.last, cur = ovItem && ovItem.currency;
+  const short = d => dOf(d).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric", timeZone:"UTC" });
+  zs.forEach(z => {
+    const r = document.createElement("div"); r.className = "myz-row";
+    const dist = C ? (C >= z.lo && C <= z.hi ? "cours dans la zone" : fmtPct(Math.round(((C > z.hi ? z.hi : z.lo) / C - 1) * 1000) / 10)) : "";
+    r.innerHTML = '<span class="sw-c"></span><div class="myz-t"><b>' + fmt(z.lo, cur) + " – " + fmt(z.hi, cur) + "</b> " + (dist ? '<span style="color:var(--muted)">' + dist + "</span>" : "") +
+      "<small>" + short(z.t0) + " → " + (z.ext ? "prolongée" : short(z.t1)) + "</small></div>";
+    const del = document.createElement("button"); del.textContent = "✕";
+    del.onclick = () => {                     // deux touches : « ✕ » puis « Supprimer ? » (pas de boîte de dialogue)
+      if (!del._arm) { del._arm = true; del.textContent = "Supprimer ?"; setTimeout(() => { del._arm = false; del.textContent = "✕"; }, 3000); return; }
+      myzSave(d => { d.zones = d.zones.filter(x => x.id !== z.id); }, "zone supprimée " + z.sym); };
+    r.appendChild(del); box.appendChild(r);
+  });
+}
+function myzClearTmp() { myzTmp.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} }); myzTmp = []; }
+function myzTap(param) {
+  if (!param || !param.point || !ovCandles) return;
+  const iv = prefs.iv || "D", rows = barsFor(ovData, iv), n = rows.length;
+  const price = ovCandles.coordinateToPrice(param.point.y);
+  let lg = param.logical != null ? Math.round(param.logical) : (param.time != null ? rows.findIndex(r => r[0] === param.time) : null);
+  if (price == null || lg == null) return;
+  const ext = lg >= n - 3, t = rows[Math.max(0, Math.min(n - 1, lg))][0];
+  if (!myzFirst) {
+    myzFirst = { t, price, ext };
+    myzTmp.push(ovCandles.createPriceLine({ price, color:"#ca8a04", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));
+    renderMyzList(); return;
+  }
+  const f = myzFirst; myzFirst = null; myzClearTmp();
+  const lo = Math.min(f.price, price), hi = Math.max(f.price, price);
+  const [t0, t1] = f.t <= t ? [f.t, t] : [t, f.t];
+  myzDraw = false; renderToggles();
+  if (hi <= lo) return renderMyzList();
+  myzSave(d => { d.zones = d.zones || []; d.zones.push({ id:"z" + Date.now().toString(36), sym:ovSym, lo:+lo.toPrecision(6), hi:+hi.toPrecision(6), t0, t1, ext:ext || f.ext, created:Date.now() }); },
+    "zone " + ovSym);
+}
+$("zoneBtn").onclick = async () => {
+  if ((prefs.iv || "D") === "I") { toast("Les zones se dessinent en J, S, M ou T.", 2500); return; }
+  myzDraw = !myzDraw; myzFirst = null; if (ovCandles) myzClearTmp();
+  renderToggles(); await myzLoad(); drawMyz();
+  if (myzDraw) toast("Touchez deux coins opposés de la zone sur le graphique.", 2800);
+};
 function renderManuList() {
   const box = $("ovManuList"); if (!box) return;
   $("boxManu").style.display = prefs.manu ? "" : "none";

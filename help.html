@@ -8,7 +8,7 @@
   <a href="#h-data">1. Données</a><a href="#h-tabs">2. Onglets</a><a href="#h-list">3. Listes et vue compacte</a><a href="#h-chart">4. Graphique détaillé</a>
   <a href="#h-ma">5. Moyennes mobiles</a><a href="#h-sr">6. Supports / résistances</a><a href="#h-flip">7. Bascules R⇄S</a><a href="#h-tl">8. Obliques</a>
   <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a><a href="#h-proj">12 bis. Projection ┈</a>
-  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder (momentum)</a><a href="#h-why">16. Pourquoi ça bouge</a>
+  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-myz">13 ter. Mes zones (▭)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder (momentum)</a><a href="#h-why">16. Pourquoi ça bouge</a>
   <a href="#h-pf">17. Portfolio</a><a href="#h-al">18. Alertes</a><a href="#h-disp">19. Affichage</a><a href="#h-gl">20. Lexique</a>
 </nav>
 
@@ -365,6 +365,21 @@
 <li><b>Zone au-dessus du cours</b> : résistance. Achat seulement si le cours clôture au-dessus ; sinon zone d'allègement.</li>
 <li>Le contexte en tête du bloc (tendance par rapport à la MM200, RSI 14, RSI Trends) dit s'il vaut mieux être prudent. Sous la MM200, les supports cèdent plus souvent.</li>
 <li>La note de confluence mesure combien d'indicateurs se rejoignent ; <b>ce n'est pas une probabilité de réussite</b> (voir le backtest).</li>
+</ul>
+</details>
+
+<details id="h-myz"><summary>13 ter. Mes zones (▭) : vos propres zones d'intervention</summary>
+<p>Le bouton <b>▭</b> du graphique permet de dessiner vous-même une zone, sous forme de rectangle jaune.</p>
+<ol>
+<li>Touchez <b>▭</b> : le bouton passe en jaune (mode dessin).</li>
+<li>Touchez un premier coin sur le graphique : une ligne en tirets marque le prix choisi.</li>
+<li>Touchez le coin opposé : la zone est créée, entre les deux prix et les deux dates.</li>
+</ol>
+<ul>
+<li>Si l'un des deux coins est posé sur les 3 dernières bougies ou au-delà, la zone est <b>prolongée</b> vers la droite, dans les séances à venir.</li>
+<li>Une zone dessinée dans une unité (J, S, M, T) reste visible dans les autres : ses dates sont ramenées au chandelier qui les contient. Pas de zones en 15 min.</li>
+<li>Le bloc <b>Mes zones</b> sous le graphique liste les zones de la valeur : prix bas – prix haut, distance au cours (ou « cours dans la zone »), dates. ✕ puis « Supprimer ? » efface une zone.</li>
+<li><b>Mémoire</b> : chaque zone est gardée sur l'appareil et, si le jeton GitHub est enregistré, dans <code>zones.json</code> du dépôt. Elle se retrouve alors sur le téléphone comme sur la tablette. Le dépôt étant public, ces zones y sont visibles, comme les alertes.</li>
 </ul>
 </details>
 
