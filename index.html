@@ -840,7 +840,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v186</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v187</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5998,10 +5998,14 @@ function drawMyz() {
   if (!myzData) { myzLoad().then(drawMyz); return; }
   if (!ovChart || !ovData || iv === "I") return;
   const zs = myzData.zones.filter(z => z.sym === ovSym && !(myzEdit && myzEdit.id === z.id));     // la zone modifiée est dessinée par l'éditeur
-  if (!zs.length) return;
   const A = myzAxis(iv);
+  if (myzDraw || myzEdit) {                            // dessin ou modification : toutes les séances à venir sont disponibles à droite
+    const ws = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    ws.setData(A.fut.map(t => ({ time:t }))); myzSeries.push(ws);
+  }
+  if (!zs.length) return;
   const span = z => { const i0 = A.I(z.t0), i1 = z.ext ? A.n - 1 + 20 : A.I(z.t1); return [Math.min(i0, i1), Math.max(i0, i1)]; };
-  const far = Math.max(...zs.map(z => span(z)[1]));
+  const far = Math.max(...zs.map(z => span(z)[1]), myzEdit ? A.N - 1 : -1);
   if (far >= A.n) {                                    // séances à venir : de la place à droite pour les zones qui débordent
     const ws = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
     ws.setData(A.fut.slice(0, far - A.n + 1).map(t => ({ time:t }))); myzSeries.push(ws);
@@ -6054,6 +6058,14 @@ function renderMyzList() {
     r.appendChild(del); box.appendChild(r);
   });
 }
+/* laisse ~30 % de la largeur du graphique pour les séances à venir */
+function myzRoom() {
+  if (!ovChart || !ovData) return;
+  const A = myzAxis(prefs.iv || "D"), ts = ovChart.timeScale(), r = ts.getVisibleLogicalRange();
+  if (!r) return;
+  const want = A.n - 1 + Math.round((r.to - r.from) * 0.3);
+  if (r.to < want) ts.setVisibleLogicalRange({ from:r.from + (want - r.to), to:want });
+}
 function myzClearTmp() { myzTmp.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} }); myzTmp = []; }
 function myzTap(param) {
   if (!param || !param.point || !ovCandles) return;
@@ -6081,6 +6093,7 @@ $("zoneBtn").onclick = async () => {
   if ((prefs.iv || "D") === "I") { toast("Les zones se dessinent en J, S, M ou T.", 2500); return; }
   myzDraw = !myzDraw; myzFirst = null; if (ovCandles) myzClearTmp();
   renderToggles(); await myzLoad(); drawMyz();
+  if (myzDraw) myzRoom();
   if (myzDraw) toast("Touchez deux coins opposés de la zone sur le graphique.", 2800);
 };
 /* ---- Modification d'une zone au doigt : toucher la zone la sélectionne ; glisser au milieu la déplace, glisser une poignée
@@ -6112,6 +6125,7 @@ function myzStart(z) {
   myzEdit = Object.assign({ id:z.id, iv, lo:z.lo, hi:z.hi, dirty:false }, myzIdx(iv, z));
   $("myzEd").hidden = false;
   drawMyz();
+  myzRoom();
   const ts = ovChart.timeScale(), r = ts.getVisibleLogicalRange();                 // zone qui déborde à droite : on la montre en entier
   if (r && myzEdit.i1 + 2 > r.to) ts.setVisibleLogicalRange({ from:r.from + (myzEdit.i1 + 3 - r.to), to:myzEdit.i1 + 3 });
   cancelAnimationFrame(myzLoop);
