@@ -696,6 +696,9 @@
   .myz-r.in-t .h.t { top:0; } .myz-r.in-b .h.b { bottom:0; } .myz-r.in-l .h.l { left:0; } .myz-r.in-r .h.r { right:0; }   /* au bord du graphique : barrette à l'intérieur */
   .myz-bar { position:absolute; display:flex; gap:6px; transform:translateX(-50%); pointer-events:auto; white-space:nowrap; }
   .myz-bar button { font:inherit; font-size:14px; padding:7px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); box-shadow:0 2px 6px rgba(0,0,0,.2); cursor:pointer; }
+  .myz-bar #myzNoteBtn { width:44px; height:44px; padding:0; border-radius:50%; font-size:20px; line-height:1; }
+  .myz-in .myz-note { flex-basis:100%; } .myz-in .myz-note input { width:auto; flex:1; min-width:0; }
+  .myz-row .myz-nt { display:block; font-size:12.5px; margin-top:2px; }
   .myz-bar #myzDel { width:44px; height:44px; padding:0; border-radius:50%; background:#dc2626; border-color:#dc2626; color:#fff; font-size:24px; font-weight:700; line-height:1; }
   .myz-row.sel { background:rgba(250,204,21,.15); }
   .myz-in { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
@@ -842,7 +845,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v192</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v193</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -946,7 +949,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <div class="tags" id="tags"></div>
       <div class="rings" id="rings"></div>
       <div class="myz-ed" id="myzEd" hidden><div class="myz-r" id="myzR"><i class="h t" data-h="t"></i><i class="h b" data-h="b"></i><i class="h l" data-h="l"></i><i class="h r" data-h="r"></i></div>
-        <div class="myz-bar" id="myzBar"><button id="myzDel" aria-label="Supprimer la zone">✕</button></div></div>
+        <div class="myz-bar" id="myzBar"><button id="myzNoteBtn" aria-label="Écrire la raison de la zone">📝</button><button id="myzDel" aria-label="Supprimer la zone">✕</button></div></div>
       <div class="quad" id="quad"></div>
     </div>
     <div class="quick" id="quick" role="toolbar" aria-label="Mettre en évidence un niveau ou une moyenne mobile"></div>
@@ -6012,7 +6015,8 @@ function zoneAlertFor(z, last, lastDate, name) {
   const down = last > z.hi, P = down ? z.hi : z.lo;
   const f = v => v.toLocaleString("de-DE", { minimumFractionDigits:2, maximumFractionDigits: v < 10 ? 4 : 2 });
   return { id:"zone-" + z.id + "-" + (down ? "h" : "b") + "-" + lastDate, zone:z.id, sym:z.sym, name:name || z.sym, op:down ? "below" : "above", price:P,
-    label:"entrée dans ma zone " + (z.shape === "oval" ? "◯ " : "▭ ") + f(z.lo) + " – " + f(z.hi) + (down ? " (par le haut)" : " (par le bas)"), created:Date.now() };
+    label:"entrée dans ma zone " + (z.shape === "oval" ? "◯ " : "▭ ") + f(z.lo) + " – " + f(z.hi) + (down ? " (par le haut)" : " (par le bas)"),
+    note:z.note || "", created:Date.now() };
 }
 /* recalcule les alertes Telegram des zones de la valeur affichée (alerts.json) après chaque création / modification / suppression */
 async function myzAlertSync() {
@@ -6020,7 +6024,7 @@ async function myzAlertSync() {
   const last = (ovItem && ovItem.last) || barsFor(ovData, "D").slice(-1)[0][4], lastDate = barsFor(ovData, "D").slice(-1)[0][0];
   const want = myzData.zones.filter(z => z.sym === sym).map(z => zoneAlertFor(z, last, lastDate, ovItemName || sym)).filter(Boolean);
   const cur = ((alertsData || {}).alerts || []).filter(a => a.zone && a.sym === sym);
-  if (alertsData && cur.length === want.length && cur.every(a => want.some(w => w.id === a.id && w.price === a.price))) return;   // rien à changer
+  if (alertsData && cur.length === want.length && cur.every(a => want.some(w => w.id === a.id && w.price === a.price && (w.note || "") === (a.note || "")))) return;   // rien à changer
   await alertsSave(d => { d.alerts = (d.alerts || []).filter(a => !(a.zone && a.sym === sym)).concat(want); }, "alertes de zones " + sym);
   if (want.length) toast("🔔 Alerte Telegram : " + want.map(a => (a.op === "below" ? "▼ " : "▲ ") + fmt(a.price)).join(", "), 2500);
 }
@@ -6111,17 +6115,24 @@ function renderMyzList() {
     const r = document.createElement("div"); r.className = "myz-row";
     const dist = C ? (C >= z.lo && C <= z.hi ? "cours dans la zone" : fmtPct(Math.round(((C > z.hi ? z.hi : z.lo) / C - 1) * 1000) / 10)) : "";
     r.innerHTML = '<span class="sw-c"' + (z.shape === "oval" ? ' style="border-radius:50%;width:12px;height:12px"' : "") + '></span><div class="myz-t"><b>' + fmt(z.lo, cur) + " – " + fmt(z.hi, cur) + "</b> " + (dist ? '<span style="color:var(--muted)">' + dist + "</span>" : "") +
-      "<small>" + short(z.t0) + " → " + (z.ext ? "à venir" : short(z.t1)) + "</small></div>";
+      "<small>" + short(z.t0) + " → " + (z.ext ? "à venir" : short(z.t1)) + "</small>" +
+      (z.note && !(myzEdit && myzEdit.id === z.id) ? '<span class="myz-nt">📝 ' + esc(z.note) + "</span>" : "") + "</div>";
     if (myzEdit && myzEdit.id === z.id) {
       r.classList.add("sel");
       const inp = document.createElement("div"); inp.className = "myz-in";
-      inp.innerHTML = '<label>Bas <input type="number" inputmode="decimal" step="any" id="myzLo"></label><label>Haut <input type="number" inputmode="decimal" step="any" id="myzHi"></label>';
+      inp.innerHTML = '<label>Bas <input type="number" inputmode="decimal" step="any" id="myzLo"></label><label>Haut <input type="number" inputmode="decimal" step="any" id="myzHi"></label>' +
+        '<label class="myz-note">📝 <input type="text" id="myzNote" maxlength="160" enterkeyhint="done" placeholder="Raison : approche de la MM50, sous cassure…"></label>';
       r.querySelector(".myz-t").appendChild(inp);
       const lo = inp.querySelector("#myzLo"), hi = inp.querySelector("#myzHi");
       lo.value = +myzEdit.lo.toPrecision(6); hi.value = +myzEdit.hi.toPrecision(6);
       const upd = () => { const a = parseFloat(lo.value), b = parseFloat(hi.value); if (!(a > 0 && b > 0) || a === b) return;
         myzEdit.lo = Math.min(a, b); myzEdit.hi = Math.max(a, b); myzEdit.dirty = true; };
       lo.onchange = upd; hi.onchange = upd;
+      const nt = inp.querySelector("#myzNote"); nt.value = myzEdit.note || "";
+      // la raison est enregistrée dès qu'on quitte le champ (ou touche « OK » du clavier), la zone reste sélectionnée
+      const saveNote = () => { const v = nt.value.trim(), id = myzEdit && myzEdit.id; if (!id || v === (z.note || "")) return;
+        myzEdit.note = v; myzSave(d => { const x = (d.zones || []).find(q => q.id === id); if (x) x.note = v; }, "note de zone " + z.sym); };
+      nt.onchange = saveNote; nt.onkeydown = e => { if (e.key === "Enter") nt.blur(); };
     } else r.querySelector(".myz-t").onclick = () => myzShow(z);
     const del = document.createElement("button"); del.textContent = "✕";
     del.onclick = () => {                     // deux touches : « ✕ » puis « Supprimer ? » (pas de boîte de dialogue)
@@ -6196,7 +6207,7 @@ function myzStart(z) {
   if (myzEdit) myzEnd();
   const iv = prefs.iv || "D";
   if (!ovChart || iv === "I") return;
-  myzEdit = Object.assign({ id:z.id, iv, lo:z.lo, hi:z.hi, dirty:false }, myzIdx(iv, z));
+  myzEdit = Object.assign({ id:z.id, iv, lo:z.lo, hi:z.hi, note:z.note || "", dirty:false }, myzIdx(iv, z));
   $("myzR").classList.toggle("oval", z.shape === "oval");
   $("myzEd").hidden = false;
   drawMyz();
@@ -6217,7 +6228,7 @@ function myzPlace() {
   R.style.display = B.style.display = "";
   Object.assign(R.style, { left:p.x0 + "px", top:p.y0 + "px", width:(p.x1 - p.x0) + "px", height:(p.y1 - p.y0) + "px" });
   R.classList.toggle("in-t", p.y0 < 28); R.classList.toggle("in-b", p.y1 > H - 28); R.classList.toggle("in-l", p.x0 < 28); R.classList.toggle("in-r", p.x1 > W - 28);
-  const cx = Math.max(30, Math.min(W - 30, (Math.max(0, p.x0) + Math.min(W, p.x1)) / 2));
+  const cx = Math.max(52, Math.min(W - 52, (Math.max(0, p.x0) + Math.min(W, p.x1)) / 2));
   const by = p.y0 > 76 ? p.y0 - 72 : (p.y1 + 76 < H ? p.y1 + 32 : Math.max(4, p.y0 + 4));   // barre au-dessus de la zone (sinon dessous)
   Object.assign(B.style, { left:cx + "px", top:by + "px" });
 }
@@ -6270,6 +6281,11 @@ function myzEnd() {
   });
   const up = e => { if (myzDrag) { myzDrag = null; renderMyzList(); } };
   R.addEventListener("pointerup", up); R.addEventListener("pointercancel", up);
+  $("myzNoteBtn").onclick = e => {
+    e.stopPropagation();
+    const n = $("myzNote"); if (!n) return;
+    n.scrollIntoView({ behavior:"smooth", block:"center" }); n.focus();
+  };
   $("myzDel").onclick = e => {
     e.stopPropagation(); if (!myzEdit) return;
     const id = myzEdit.id; myzClose();
