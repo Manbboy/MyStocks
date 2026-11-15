@@ -8,7 +8,7 @@
   <a href="#h-data">1. Données</a><a href="#h-tabs">2. Onglets</a><a href="#h-list">3. Listes et vue compacte</a><a href="#h-chart">4. Graphique détaillé</a>
   <a href="#h-ma">5. Moyennes mobiles</a><a href="#h-sr">6. Supports / résistances</a><a href="#h-flip">7. Bascules R⇄S</a><a href="#h-tl">8. Obliques</a>
   <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a><a href="#h-proj">12 bis. Projection ┈</a>
-  <a href="#h-tino">13. Tino</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder</a><a href="#h-why">16. Pourquoi ça bouge</a>
+  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder</a><a href="#h-why">16. Pourquoi ça bouge</a>
   <a href="#h-pf">17. Portfolio</a><a href="#h-al">18. Alertes</a><a href="#h-disp">19. Affichage</a><a href="#h-gl">20. Lexique</a>
 </nav>
 
@@ -308,6 +308,37 @@
 <p>Zone Tino (mensuelle ou hebdomadaire) la plus proche, si le cours est dedans (« zone ») ou à moins de 8 % au-dessus de son haut (« −5 % »). ★ si c'est une confluence.</p>
 <h4>Limites connues</h4>
 <p>Tino trace à la main. Il peut choisir une oblique plus courte (moins de 4 ans) ou une droite qui coupe quelques mèches ; l'appli ne retrouve donc pas toujours exactement ses lignes. Les valeurs entrées en bourse récemment n'ont pas d'analyse mensuelle.</p>
+</details>
+
+<details id="h-manu"><summary>13 bis. Manu (M) : les 3 zones d'intervention</summary>
+<h4>Principe</h4>
+<p>Le bouton <b>M</b> rassemble <b>tous les indicateurs</b>, même ceux qui ne sont pas affichés, et cherche les prix où plusieurs se rejoignent dans les prochaines séances. Les 3 zones les plus solides apparaissent en bandes roses <b>M1, M2, M3</b> (de la plus haute à la plus basse), avec leurs raisons sous le graphique.</p>
+<h4>Ce qui « vote » (et son poids)</h4>
+<table class="h-t"><tr><th>Indicateur</th><th>Poids</th></tr>
+<tr><td>Support / résistance J · S · M · T</td><td>1 · 1,6 · 2,2 · 2,6 ; ×(1 + 0,25 par contact au-delà de 2), au plus ×2</td></tr>
+<tr><td>Bascule R⇄S J · S · M</td><td>1,6 · 2,2 · 2,8 ; +0,3 par retest réussi</td></tr>
+<tr><td>Oblique intacte J · S</td><td>1,4 · 2 ; +0,15 par contact au-delà de 3 ; plage = sa valeur aujourd'hui → dans 20 séances (4 semaines)</td></tr>
+<tr><td>Bords d'un canal intact J · S</td><td>1,2 · 1,7 ; plage = aujourd'hui → dans 20 séances</td></tr>
+<tr><td>Moyennes mobiles</td><td>MM20 J 0,6 · MM50 J 1 · MM200 J 1,8 · MM50 S 1,4 · MM200 S 2 ; prolongées avec leur pente des 10 derniers chandeliers</td></tr>
+<tr><td>Tino mensuel / hebdo</td><td>zone 2,5 / 1,8 (+0,5 si la MM200 y passe, +1 si confluence ★) ; oblique 2,5 / 1,8 ; seconde oblique ×0,8 ; oblique baissière 1,4 ; MM200 1,5 / 1,2</td></tr>
+</table>
+<p>Un niveau horizontal vote pour une plage de ± la moitié de la précision des contacts (±1 % par défaut).</p>
+<h4>Calcul des zones</h4>
+<ol>
+<li>On garde les votes entre <b>−18 % et +10 %</b> du cours.</li>
+<li>Les votes qui se touchent (à 1 % du cours près) forment une zone, large de 4 % du cours au plus.</li>
+<li><b>Force</b> de la zone = somme des poids ; une 2e preuve de la même famille compte moitié. Familles : supports / résistances, R⇄S, obliques, canaux, moyennes, Tino.</li>
+<li>Le cœur de la zone fait ±1,5 % autour du centre pondéré par les poids.</li>
+<li>Une zone doit réunir <b>au moins 2 indicateurs</b> et une force d'<b>au moins 3</b>. On garde les 3 plus fortes, sans chevauchement.</li>
+<li>★☆☆ force 3 à 5 · ★★☆ 5 à 7 · ★★★ 7 et plus.</li>
+</ol>
+<h4>Lecture</h4>
+<ul>
+<li><b>Zone sous le cours</b> : zone d'achat sur repli. Attendre une réaction dans la zone (mèche qui rejette, clôture qui repart) plutôt qu'acheter à l'aveugle.</li>
+<li><b>Zone au-dessus du cours</b> : résistance. Achat seulement si le cours clôture au-dessus ; sinon zone d'allègement.</li>
+<li>Le contexte en tête du bloc (tendance par rapport à la MM200, RSI 14, RSI Trends) dit s'il vaut mieux être prudent. Sous la MM200, les supports cèdent plus souvent.</li>
+<li>La force mesure combien d'indicateurs se rejoignent ; <b>ce n'est pas une probabilité de réussite</b>.</li>
+</ul>
 </details>
 
 <details id="h-bo"><summary>14. Cassures récentes (colonne Cass.)</summary>
