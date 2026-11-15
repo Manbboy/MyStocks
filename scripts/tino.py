@@ -66,6 +66,13 @@ def _months(a, b):
     return (int(b[:4]) - int(a[:4])) * 12 + int(b[5:7]) - int(a[5:7])
 
 
+PIERCE, PREFER = 0.10, "long"
+
+
+def _is_low(rows, i, k=2):
+    """creux local (plus bas des k mois de part et d'autre) : un contact = un creux qui vient sur la droite, pas chaque mois"""
+    lo = rows[i][3]
+    return all(rows[j][3] >= lo for j in range(max(0, i - k), min(len(rows), i + k + 1)))
 GAP, PAD, MINW, MINSPAN, MINSCORE, NSUP, NEAR_SCORE, BODY = 0.04, 0.02, 0.05, 12, 0, 3, 3.5, False
 
 
@@ -129,25 +136,45 @@ def oblique(rows, last_date, win=240, span=48, recent=120):
             hull.pop()
         hull.append(p)
     best = None
-    for a, b in zip(hull, hull[1:]):
+    # droites entre deux sommets de l'enveloppe (pas forcément voisins, comme Tino qui relie 2020, 2022 et 2026 d'un seul trait) :
+    # les creux intermédiaires peuvent la percer de PIERCE au plus
+    pairs = [(a, b) for x, a in enumerate(hull) for b in hull[x + 1:]]
+    allc = []
+    for a, b in pairs:
         if b[0] - a[0] < span or b[1] <= a[1]:        # assez longue, et montante
             continue
         m = (b[1] - a[1]) / (b[0] - a[0])
-        now = a[1] + m * (n - 1 - a[0])
+        line = lambda i: a[1] + m * (i - a[0])
+        if any(rows[i][3] < line(i) * (1 - PIERCE) for i in range(a[0], n)):
+            continue
+        now = line(n - 1)
         if now <= 0 or now < 0.2 * rows[-1][4]:      # trop loin sous le cours : sans intérêt
             continue
-        # contacts : creux mensuels à moins de 5 % au-dessus de la droite
-        touch = [i for i in range(max(a[0], n - recent), n) if rows[i][3] <= (a[1] + m * (i - a[0])) * 1.05]
-        cand = {"i1": a[0], "i2": b[0], "p1": a[1], "m": m, "touch": len(touch), "now": now}
-        # le plus de contacts (la droite « travaille » le plus longtemps), puis la plus récente
-        if best is None or (len(touch), b[0]) > (best["touch"], best["i2"]):
+        # contacts : creux mensuels à moins de 5 % au-dessus de la droite (ou qui la percent un peu)
+        touch = [i for i in range(max(a[0], n - recent), n) if rows[i][3] <= line(i) * 1.05 and _is_low(rows, i)]
+        # le plus de contacts, puis la plus longue (la droite qui « travaille » le plus longtemps)
+        full = sum(1 for i in range(a[0], n) if rows[i][3] <= line(i) * 1.05 and _is_low(rows, i))
+        cand = {"i1": a[0], "i2": b[0], "p1": a[1], "m": m, "touch": len(touch), "full": full, "now": now,
+                "key": (len(touch), b[0]) if PREFER == "recent" else (len(touch), b[0] - a[0])}
+        allc.append(cand)
+        if best is None or cand["key"] > best["key"]:
             best = cand
     if not best:
         return None
-    i1, m = best["i1"], best["m"]
-    val = lambda i: best["p1"] + m * (i - i1)
-    return {"t1": rows[i1][0], "p1": round(best["p1"], 4), "t2": rows[best["i2"]][0], "p2": round(val(best["i2"]), 4),
-            "now": round(val(n - 1), 4), "slope": m, "touches": best["touch"], "_n": n, "_i1": i1}
+    def pack(c):
+        i1, m = c["i1"], c["m"]
+        val = lambda i: c["p1"] + m * (i - i1)
+        return {"t1": rows[i1][0], "p1": round(c["p1"], 4), "t2": rows[c["i2"]][0], "p2": round(val(c["i2"]), 4),
+                "now": round(val(n - 1), 4), "slope": m, "touches": c["touch"], "_n": n, "_i1": i1}
+    out = pack(best)
+    # seconde oblique : une autre droite solide (≥ 3 contacts) qui passe nettement ailleurs aujourd'hui (comme les deux droites de Tino sur Vinci)
+    # (autre point de départ, à 3 ans au moins ; contacts comptés sur toute sa longueur)
+    alt = [c for c in allc if c["full"] >= 3 and abs(c["i1"] - best["i1"]) >= 36 and abs(c["now"] / best["now"] - 1) > 0.10
+           and c["now"] >= 0.3 * rows[-1][4]]
+    if alt:
+        a2 = max(alt, key=lambda c: (c["full"], c["i2"] - c["i1"]))
+        out["alt"] = pack(a2); out["alt"]["touches"] = a2["full"]
+    return out
 
 
 def channel(rows, ob, k=3):
@@ -269,6 +296,11 @@ def analyse(rows, unit="M"):
         o["end"] = _add(rows[-1][0], p["ext"], unit)
         o["pend"] = round(ob["p1"] + ob["slope"] * (ob["_n"] - 1 + p["ext"] - ob["_i1"]), 4)
         out["obl"] = o
+        if ob.get("alt"):                 # seconde oblique (plus fine sur le graphique)
+            a2 = ob["alt"]
+            out["obl2"] = {k: a2[k] for k in ("t1", "p1", "t2", "p2", "now", "touches")}
+            out["obl2"]["end"] = o["end"]
+            out["obl2"]["pend"] = round(a2["p1"] + a2["slope"] * (a2["_n"] - 1 + p["ext"] - a2["_i1"]), 4)
         # cible : premier mois (dans les 10 ans) où l'oblique entre dans une zone de support
         if ob["slope"] > 0:
             for z in keep:
