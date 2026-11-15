@@ -842,7 +842,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v190</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v191</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -6068,7 +6068,7 @@ function drawMyz() {
           topLineColor:MYZ_COL, topFillColor1:"rgba(250,204,21,.28)", topFillColor2:"rgba(250,204,21,.28)",
           bottomLineColor:MYZ_COL, bottomFillColor1:"rgba(250,204,21,.28)", bottomFillColor2:"rgba(250,204,21,.28)",
           priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
-        arc.setData(pts(sg)); myzSeries.push(arc);
+        arc.applyOptions({ autoscaleInfoProvider:zoneScale(z) }); arc.setData(pts(sg)); myzSeries.push(arc);
       });
       return;
     }
@@ -6076,11 +6076,24 @@ function drawMyz() {
       topLineColor:MYZ_COL, topFillColor1:"rgba(250,204,21,.28)", topFillColor2:"rgba(250,204,21,.28)",
       bottomLineColor:"rgba(0,0,0,0)", bottomFillColor1:"rgba(0,0,0,0)", bottomFillColor2:"rgba(0,0,0,0)",
       priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
+    band.applyOptions({ autoscaleInfoProvider:zoneScale(z) });
     band.setData(times.map(t => ({ time:t, value:z.hi })));
     myzSeries.push(band);
     const t0 = times[0], t1 = times[times.length - 1];
     myzSeries.push(addSegment(ovChart, t0, z.lo, t1, z.lo, MYZ_COL, 2));                       // bord bas
   });
+}
+/* une zone visible à l'écran est toujours entière en hauteur (l'échelle des prix l'englobe) */
+const zoneScale = z => orig => { const r = orig(); return r ? { priceRange:{ minValue:z.lo, maxValue:z.hi } } : null; };
+/* toucher une zone dans « Mes zones » : le graphique la montre (centrée, avec de la marge), sans la sélectionner */
+function myzShow(z) {
+  if (!ovChart || (prefs.iv || "D") === "I") return;
+  if (myzEdit) myzEnd();
+  const { i0, i1 } = myzIdx(prefs.iv || "D", z), w = Math.max(i1 - i0, 10), pad = Math.max(8, Math.round(w * 0.6));
+  ovChart.timeScale().setVisibleLogicalRange({ from:i0 - pad, to:i1 + pad });
+  const c = $("ovChart").getBoundingClientRect();
+  if (c.top < 0 || c.bottom > innerHeight) $("ovChart").scrollIntoView({ behavior:"smooth", block:"center" });
+  toast("Zone affichée. Pour la modifier, touchez-la sur le graphique.", 2200);
 }
 function renderMyzList() {
   const box = $("ovMyzList"); if (!box) return;
@@ -6109,7 +6122,7 @@ function renderMyzList() {
       const upd = () => { const a = parseFloat(lo.value), b = parseFloat(hi.value); if (!(a > 0 && b > 0) || a === b) return;
         myzEdit.lo = Math.min(a, b); myzEdit.hi = Math.max(a, b); myzEdit.dirty = true; };
       lo.onchange = upd; hi.onchange = upd;
-    } else r.querySelector(".myz-t").onclick = () => myzStart(z);
+    } else r.querySelector(".myz-t").onclick = () => myzShow(z);
     const del = document.createElement("button"); del.textContent = "✕";
     del.onclick = () => {                     // deux touches : « ✕ » puis « Supprimer ? » (pas de boîte de dialogue)
       if (!del._arm) { del._arm = true; del.textContent = "Supprimer ?"; setTimeout(() => { del._arm = false; del.textContent = "✕"; }, 3000); return; }
