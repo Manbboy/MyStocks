@@ -841,7 +841,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v188</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v189</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5507,6 +5507,21 @@ addEventListener("resize", () => { clearTimeout(ccT); ccT = setTimeout(() => { i
 
 /* Appli installable sur l'écran d'accueil (ouverture en plein écran, sans barre d'adresse) */
 try { if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}
+/* Mise à jour automatique : le navigateur (surtout l'appli posée sur l'écran d'accueil) peut garder une ancienne page en cache.
+   À l'ouverture et à chaque retour sur l'appli, on lit la version en ligne ; si elle est plus récente, on recharge. */
+async function checkUpdate() {
+  try {
+    const cur = +($("appVer").textContent.replace(/\D/g, "")) || 0;
+    const html = await (await fetch("index.html?t=" + Date.now(), { cache:"no-store" })).text();
+    const m = html.match(/id="appVer">v(\d+)</); const v = m ? +m[1] : 0;
+    if (v > cur && sessionStorage.getItem("upd-try") !== String(v)) {
+      sessionStorage.setItem("upd-try", String(v));            // une seule tentative par version (pas de boucle)
+      location.replace(location.pathname + "?v=" + v + location.hash);
+    }
+  } catch (e) {}
+}
+setTimeout(checkUpdate, 3000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !myzEdit && !myzDraw) checkUpdate(); });
 
 /* Vue graphiques sur une période (1M, 3M, 6M…) : la variation affichée sur la carte est celle de la période,
    comme la couleur de la courbe (en 1J et en vue compacte : variation du jour) */
