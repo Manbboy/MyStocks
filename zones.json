@@ -22,17 +22,6 @@
       "created": 1794751296651
     },
     {
-      "id": "zmwhwr9c6",
-      "sym": "AIR.PA",
-      "lo": 122.147,
-      "hi": 164.261,
-      "t0": "2026-03-02",
-      "t1": "2027-05-10",
-      "ext": false,
-      "shape": "rect",
-      "created": 1794751590210
-    },
-    {
       "id": "zmwhwresf",
       "sym": "AIR.PA",
       "lo": 136.462,
