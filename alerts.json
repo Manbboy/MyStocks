@@ -358,6 +358,50 @@
       "created": 1794937766809
     },
     {
+      "sym": "DIS",
+      "name": "Disney",
+      "op": "above",
+      "price": 125.8124,
+      "label": "S→R hebdo 128,38 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-DIS-W-SR-128.38-a-2026-11-16",
+      "auto": true,
+      "created": 1794954781986
+    },
+    {
+      "sym": "DIS",
+      "name": "Disney",
+      "op": "above",
+      "price": 130.9476,
+      "label": "S→R hebdo 128,38 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-DIS-W-SR-128.38-b-2026-11-16",
+      "auto": true,
+      "created": 1794954781986
+    },
+    {
+      "sym": "DIS",
+      "name": "Disney",
+      "op": "below",
+      "price": 112.6896,
+      "label": "R→S jour 110,48 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-DIS-D-RS-110.48-c-2026-11-17",
+      "auto": true,
+      "created": 1794954781986
+    },
+    {
+      "sym": "DIS",
+      "name": "Disney",
+      "op": "above",
+      "price": 121.2576,
+      "label": "S→R jour 118,88 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-DIS-D-SR-118.88-b-2026-11-16",
+      "auto": true,
+      "created": 1794954781986
+    },
+    {
       "sym": "AMP.MI",
       "name": "Amplifon",
       "op": "above",
@@ -413,70 +457,26 @@
       "created": 1794937766809
     },
     {
-      "sym": "MSFT",
-      "name": "Microsoft",
+      "sym": "TDG",
+      "name": "TransDigm",
       "op": "below",
-      "price": 499.494,
-      "label": "R→S jour 489,70 · contact",
+      "price": 1181.2008,
+      "label": "R→S jour 1.158,04 · contact",
       "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-MSFT-D-RS-489.7-c-2026-11-16",
+      "id": "auto-TDG-D-RS-1158.04-c-2026-11-16",
       "auto": true,
-      "created": 1794937766809
+      "created": 1794954781986
     },
     {
-      "sym": "MSFT",
-      "name": "Microsoft",
+      "sym": "TDG",
+      "name": "TransDigm",
       "op": "above",
-      "price": 515.64,
-      "label": "R→S jour 489,70 · réaction",
+      "price": 1215.0551,
+      "label": "R→S jour 1.158,04 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-MSFT-D-RS-489.7-r-2026-11-17",
+      "id": "auto-TDG-D-RS-1158.04-r-2026-11-17",
       "auto": true,
-      "created": 1794937766809
-    },
-    {
-      "sym": "MCD",
-      "name": "McDonald's",
-      "op": "above",
-      "price": 277.7908,
-      "label": "S→R hebdo 283,46 · approche",
-      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-MCD-W-SR-283.46-a-2026-10-26",
-      "auto": true,
-      "created": 1794751707068
-    },
-    {
-      "sym": "MCD",
-      "name": "McDonald's",
-      "op": "above",
-      "price": 289.1292,
-      "label": "S→R hebdo 283,46 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-MCD-W-SR-283.46-b-2026-11-16",
-      "auto": true,
-      "created": 1794851412964
-    },
-    {
-      "sym": "NVDA",
-      "name": "NVIDIA",
-      "op": "below",
-      "price": 152.7654,
-      "label": "R→S jour 149,77 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-NVDA-D-RS-149.77-c-2026-11-16",
-      "auto": true,
-      "created": 1794851412964
-    },
-    {
-      "sym": "NVDA",
-      "name": "NVIDIA",
-      "op": "above",
-      "price": 157.46,
-      "label": "R→S jour 149,77 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-NVDA-D-RS-149.77-r-2026-11-17",
-      "auto": true,
-      "created": 1794937766809
+      "created": 1794954781986
     },
     {
       "sym": "ETDD.PA",
@@ -556,26 +556,26 @@
       "created": 1794937766809
     },
     {
-      "sym": "FISV",
-      "name": "Fiserv",
+      "sym": "MCD",
+      "name": "McDonald's",
       "op": "above",
-      "price": 63.2198,
-      "label": "S→R jour 64,51 · approche",
+      "price": 277.7908,
+      "label": "S→R hebdo 283,46 · approche",
       "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-FISV-D-SR-64.51-a-2026-11-04",
+      "id": "auto-MCD-W-SR-283.46-a-2026-10-26",
       "auto": true,
-      "created": 1794937766809
+      "created": 1794751707068
     },
     {
-      "sym": "FISV",
-      "name": "Fiserv",
+      "sym": "MCD",
+      "name": "McDonald's",
       "op": "above",
-      "price": 65.8002,
-      "label": "S→R jour 64,51 · franchie",
+      "price": 289.1292,
+      "label": "S→R hebdo 283,46 · franchie",
       "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-FISV-D-SR-64.51-b-2026-11-17",
+      "id": "auto-MCD-W-SR-283.46-b-2026-11-16",
       "auto": true,
-      "created": 1794937766809
+      "created": 1794851412964
     },
     {
       "sym": "NRG.PA",
@@ -644,28 +644,6 @@
       "created": 1794937766809
     },
     {
-      "sym": "SPIE.PA",
-      "name": "SPIE",
-      "op": "above",
-      "price": 45.276,
-      "label": "S→R jour 46,20 · approche",
-      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-SPIE.PA-D-SR-46.2-a-2026-11-09",
-      "auto": true,
-      "created": 1794937766809
-    },
-    {
-      "sym": "SPIE.PA",
-      "name": "SPIE",
-      "op": "above",
-      "price": 47.124,
-      "label": "S→R jour 46,20 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-SPIE.PA-D-SR-46.2-b-2026-11-17",
-      "auto": true,
-      "created": 1794937766809
-    },
-    {
       "sym": "GE",
       "name": "GE Aerospace",
       "op": "above",
@@ -684,6 +662,28 @@
       "label": "S→R jour 336,53 · franchie",
       "note": "La résistance S→R est franchie : à confirmer à la clôture.",
       "id": "auto-GE-D-SR-336.53-b-2026-11-17",
+      "auto": true,
+      "created": 1794937766809
+    },
+    {
+      "sym": "SPIE.PA",
+      "name": "SPIE",
+      "op": "above",
+      "price": 45.276,
+      "label": "S→R jour 46,20 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-SPIE.PA-D-SR-46.2-a-2026-11-09",
+      "auto": true,
+      "created": 1794937766809
+    },
+    {
+      "sym": "SPIE.PA",
+      "name": "SPIE",
+      "op": "above",
+      "price": 47.124,
+      "label": "S→R jour 46,20 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-SPIE.PA-D-SR-46.2-b-2026-11-17",
       "auto": true,
       "created": 1794937766809
     },
@@ -798,35 +798,46 @@
       "created": 1794937766809
     },
     {
-      "sym": "TDG",
-      "name": "TransDigm",
+      "sym": "MSFT",
+      "name": "Microsoft",
       "op": "below",
-      "price": 1181.2008,
-      "label": "R→S jour 1.158,04 · contact",
+      "price": 499.494,
+      "label": "R→S jour 489,70 · contact",
       "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-TDG-D-RS-1158.04-c-2026-11-17",
+      "id": "auto-MSFT-D-RS-489.7-c-2026-11-16",
       "auto": true,
       "created": 1794937766809
     },
     {
-      "sym": "BZ=F",
-      "name": "Brent",
+      "sym": "MSFT",
+      "name": "Microsoft",
       "op": "above",
-      "price": 94.6288,
-      "label": "S→R jour 96,56 · approche",
+      "price": 515.64,
+      "label": "R→S jour 489,70 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-MSFT-D-RS-489.7-r-2026-11-17",
+      "auto": true,
+      "created": 1794937766809
+    },
+    {
+      "sym": "FISV",
+      "name": "Fiserv",
+      "op": "above",
+      "price": 63.2198,
+      "label": "S→R jour 64,51 · approche",
       "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-BZ=F-D-SR-96.56-a-2026-11-17",
+      "id": "auto-FISV-D-SR-64.51-a-2026-11-04",
       "auto": true,
       "created": 1794937766809
     },
     {
-      "sym": "BZ=F",
-      "name": "Brent",
+      "sym": "FISV",
+      "name": "Fiserv",
       "op": "above",
-      "price": 98.4912,
-      "label": "S→R jour 96,56 · franchie",
+      "price": 65.8002,
+      "label": "S→R jour 64,51 · franchie",
       "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-BZ=F-D-SR-96.56-b-2026-11-17",
+      "id": "auto-FISV-D-SR-64.51-b-2026-11-17",
       "auto": true,
       "created": 1794937766809
     },
@@ -853,59 +864,81 @@
       "created": 1794937766809
     },
     {
-      "sym": "GLE.PA",
-      "name": "Société Générale",
-      "op": "below",
-      "price": 60.6084,
-      "label": "R→S hebdo 59,42 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-GLE.PA-W-RS-59.42-c-2026-11-16",
-      "auto": true,
-      "created": 1794937766809
-    },
-    {
-      "sym": "GLE.PA",
-      "name": "Société Générale",
+      "sym": "BZ=F",
+      "name": "Brent",
       "op": "above",
-      "price": 67.1496,
-      "label": "S→R jour 68,52 · approche",
+      "price": 94.6288,
+      "label": "S→R jour 96,56 · approche",
       "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-GLE.PA-D-SR-68.52-a-2026-11-17",
+      "id": "auto-BZ=F-D-SR-96.56-a-2026-11-17",
       "auto": true,
       "created": 1794937766809
     },
     {
-      "sym": "GLE.PA",
-      "name": "Société Générale",
+      "sym": "BZ=F",
+      "name": "Brent",
       "op": "above",
-      "price": 69.8904,
-      "label": "S→R jour 68,52 · franchie",
+      "price": 98.4912,
+      "label": "S→R jour 96,56 · franchie",
       "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-GLE.PA-D-SR-68.52-b-2026-11-17",
+      "id": "auto-BZ=F-D-SR-96.56-b-2026-11-17",
       "auto": true,
       "created": 1794937766809
     },
     {
-      "sym": "CTSH",
-      "name": "Cognizant",
+      "sym": "NVDA",
+      "name": "NVIDIA",
       "op": "below",
-      "price": 58.803,
-      "label": "R→S hebdo 57,65 · contact",
+      "price": 152.7654,
+      "label": "R→S jour 149,77 · contact",
       "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-CTSH-W-RS-57.65-c-2026-11-16",
+      "id": "auto-NVDA-D-RS-149.77-c-2026-11-16",
+      "auto": true,
+      "created": 1794851412964
+    },
+    {
+      "sym": "NVDA",
+      "name": "NVIDIA",
+      "op": "above",
+      "price": 158.19,
+      "label": "R→S jour 149,77 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-NVDA-D-RS-149.77-r-2026-11-17",
       "auto": true,
       "created": 1794937766809
     },
     {
-      "sym": "SAN.PA",
-      "name": "Sanofi",
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
       "op": "below",
-      "price": 83.844,
-      "label": "R→S jour 82,20 · contact",
+      "price": 496.8012,
+      "label": "R→S hebdo 487,06 · contact",
       "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-SAN.PA-D-RS-82.2-c-2026-11-17",
+      "id": "auto-AMP-W-RS-487.06-c-2026-11-16",
       "auto": true,
-      "created": 1794937766809
+      "created": 1794954781986
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 530.4544,
+      "label": "S→R jour 541,28 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-AMP-D-SR-541.28-a-2026-11-17",
+      "auto": true,
+      "created": 1794954781986
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 552.1056,
+      "label": "S→R jour 541,28 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-AMP-D-SR-541.28-b-2026-11-17",
+      "auto": true,
+      "created": 1794954781986
     },
     {
       "sym": "AVGO",
@@ -928,6 +961,17 @@
       "id": "auto-AVGO-W-SR-356.43-b-2026-11-16",
       "auto": true,
       "created": 1794851412964
+    },
+    {
+      "sym": "SAN.PA",
+      "name": "Sanofi",
+      "op": "below",
+      "price": 83.844,
+      "label": "R→S jour 82,20 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-SAN.PA-D-RS-82.2-c-2026-11-17",
+      "auto": true,
+      "created": 1794937766809
     },
     {
       "sym": "SU.PA",
