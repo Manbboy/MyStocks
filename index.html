@@ -227,6 +227,9 @@
   .pf-list.paint.compact .pf-sub { border-radius:0; }
   .pf-list.paint:not(.compact) .pf-sub:first-child { padding-top:7px; }
   :root[data-theme="dark"] .pf-list.paint .pf-sub { background:#e2e8f0; color:#0f172a; }
+  /* thème sombre + cartes colorées : montants et % en vert / rouge très vifs pour ressortir sur le fond teinté */
+  :root[data-theme="dark"]:not([data-dim]) .pf-list.paint .pf-pos .up { color:#3dff7a; font-weight:700; }
+  :root[data-theme="dark"]:not([data-dim]) .pf-list.paint .pf-pos .down { color:#ff4d4d; font-weight:700; }
   :root[data-theme="dark"] .pf-list.paint .pf-sub span { color:#334155; }
   .pf-list.compact .cp { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:10px; row-gap:1px; align-items:baseline; }
   .pf-list.compact .cp .nm { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -862,7 +865,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v194</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v195</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
