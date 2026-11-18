@@ -175,10 +175,14 @@ async function checkAlerts(env) {
                                    : c.price <= a.price || after.some(b => b[3] <= a.price);
       if (!hit) continue;
       const chg = c.prevClose ? (c.price / c.prevClose - 1) * 100 : null;
-      const text = (a.zone ? "🟨 " : "🔔 ") + (a.name || sym) + " (" + sym + ")\n" +
-        (a.op === "above" ? "▲ a franchi " : "▼ est passé sous ") + fmtN(a.price, c.currency) + (a.label ? " — " + a.label : "") + "\n" +
-        "Cours : " + fmtN(c.price, c.currency) + (chg != null ? " (" + (chg >= 0 ? "+" : "") + chg.toFixed(2).replace(".", ",") + " % aujourd'hui)" : "") +
-        (a.note ? "\n📝 " + a.note : "") + "\n" + SITE + "#sym=" + encodeURIComponent(sym);
+      // une ligne vide entre chaque information : plus lisible sur le téléphone
+      const text = [
+        (a.zone ? "🟨 " : "🔔 ") + (a.name || sym) + " (" + sym + ")",
+        (a.op === "above" ? "▲ a franchi " : "▼ est passé sous ") + fmtN(a.price, c.currency) + (a.label ? " — " + a.label : ""),
+        "Cours : " + fmtN(c.price, c.currency) + (chg != null ? " (" + (chg >= 0 ? "+" : "") + chg.toFixed(2).replace(".", ",") + " % aujourd'hui)" : ""),
+        a.note ? "📝 " + a.note : null,
+        SITE + "#sym=" + encodeURIComponent(sym),
+      ].filter(Boolean).join("\n\n");
       if (used >= 49) break;                          // plus de place : ce message partira au tour suivant
       used++;
       const r = await tg(env, "sendMessage", { chat_id: chat, text, disable_web_page_preview: true });

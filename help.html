@@ -500,7 +500,7 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
   <li>si vous avez saisi le montant en € de l'avis d'opéré, c'est ce montant qui compte ;</li>
   <li>la valeur actuelle est convertie au taux du moment.</li></ul></li>
 <li>Catégories (Europe, USA, Trackers ETF, Cryptos…) ; tri par performance dans chaque catégorie (en % ou en €), lu colonne par colonne.</li>
-<li>🎨 couleurs des cartes : 1 = actuelle, 2 = cases teintées vert / rouge, 3 = teinte graduée selon le gain ou la perte ; en thème sombre et en thème intermédiaire, sur les cases teintées, montants et % passent en vert et rouge très vifs (un peu plus foncés en intermédiaire pour rester lisibles sur le gris).</li>
+<li>🎨 couleurs des cartes : 1 = actuelle, 2 = cases teintées vert / rouge, 3 = teinte graduée selon le gain ou la perte ; en thème sombre et en thème intermédiaire, sur les cases teintées, montants et % passent en vert et rouge très vifs (en thème intermédiaire : fond de case vert / rouge très pâle sur gris clair, texte vert foncé / rouge franc, dans tous les onglets).</li>
 <li>👁 floute les montants (pour une démonstration) ; ≡ / ▦ bascule entre une ligne par valeur et le détail des opérations.</li>
 </ul>
 </details>
@@ -510,6 +510,7 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
 <li>Créées depuis le graphique (🔔), au prix du réticule ou au cours actuel ; plusieurs alertes par valeur sont possibles.</li>
 <li>Le relais Cloudflare vérifie <b>toutes les 5 minutes</b>, du lundi au vendredi, de 7 h à 21 h (heure UTC, donc 8 h à 22 h à Bruxelles en hiver).</li>
 <li>Déclenchement : le dernier cours franchit le prix, ou une bougie de 5 minutes l'a touché depuis la création de l'alerte (mèche entre deux vérifications).</li>
+<li>Message Telegram aéré : une ligne vide sépare la valeur, le niveau franchi, le cours, la note 📝 et le lien.</li>
 <li>Message Telegram envoyé <b>une seule fois</b> ; l'alerte apparaît ensuite comme envoyée.</li>
 <li><b>Alertes R⇄S automatiques</b> (section en bas de l'onglet, interrupteur Activées / Coupées) : recalculées chaque soir par la mise à jour des cours, avec le code de l'appli (précision 2 %, J et S), pour le R→S le plus proche sous le cours et le S→R le plus proche au-dessus, s'ils sont à moins de 8 % (J) ou 12 % (S) du cours :
   <ul>
