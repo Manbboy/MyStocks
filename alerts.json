@@ -105,17 +105,6 @@
       "created": 1795023925756
     },
     {
-      "sym": "HPQ",
-      "name": "HP",
-      "op": "above",
-      "price": 29.44,
-      "label": "R→S hebdo 28,99 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-HPQ-W-RS-28.99-r-2026-11-16",
-      "auto": true,
-      "created": 1795023925756
-    },
-    {
       "sym": "DG.PA",
       "name": "Vinci",
       "op": "below",
@@ -134,6 +123,28 @@
       "label": "S→R hebdo 113,50 · franchie",
       "note": "La résistance S→R est franchie : à confirmer à la clôture.",
       "id": "auto-DG.PA-W-SR-113.5-b-2026-11-02",
+      "auto": true,
+      "created": 1795023925756
+    },
+    {
+      "sym": "CTSH",
+      "name": "Cognizant",
+      "op": "above",
+      "price": 64.47,
+      "label": "R→S hebdo 57,65 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-CTSH-W-RS-57.65-r-2026-11-16",
+      "auto": true,
+      "created": 1795023925756
+    },
+    {
+      "sym": "CTSH",
+      "name": "Cognizant",
+      "op": "above",
+      "price": 60.565,
+      "label": "R→S jour 57,65 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-CTSH-D-RS-57.65-r-2026-11-18",
       "auto": true,
       "created": 1795023925756
     },
@@ -182,6 +193,28 @@
       "created": 1795023925756
     },
     {
+      "sym": "AVGO",
+      "name": "Broadcom",
+      "op": "above",
+      "price": 363.5586,
+      "label": "S→R hebdo 356,43 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-AVGO-W-SR-356.43-b-2026-11-16",
+      "auto": true,
+      "created": 1794851412964
+    },
+    {
+      "sym": "NVDA",
+      "name": "NVIDIA",
+      "op": "above",
+      "price": 159.7,
+      "label": "R→S jour 149,77 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-NVDA-D-RS-149.77-r-2026-11-18",
+      "auto": true,
+      "created": 1795023925756
+    },
+    {
       "sym": "DSY.PA",
       "name": "Dassault Systèmes",
       "op": "above",
@@ -211,39 +244,6 @@
       "label": "R→S jour 23,18 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
       "id": "auto-DSY.PA-D-RS-23.18-r-2026-11-18",
-      "auto": true,
-      "created": 1795023925756
-    },
-    {
-      "sym": "CTSH",
-      "name": "Cognizant",
-      "op": "above",
-      "price": 64.47,
-      "label": "R→S hebdo 57,65 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-CTSH-W-RS-57.65-r-2026-11-16",
-      "auto": true,
-      "created": 1795023925756
-    },
-    {
-      "sym": "CTSH",
-      "name": "Cognizant",
-      "op": "above",
-      "price": 60.565,
-      "label": "R→S jour 57,65 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-CTSH-D-RS-57.65-r-2026-11-18",
-      "auto": true,
-      "created": 1795023925756
-    },
-    {
-      "sym": "UNH",
-      "name": "UnitedHealth",
-      "op": "above",
-      "price": 387.53,
-      "label": "R→S jour 352,61 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-UNH-D-RS-352.61-r-2026-11-18",
       "auto": true,
       "created": 1795023925756
     },
@@ -314,39 +314,6 @@
       "created": 1795023925756
     },
     {
-      "sym": "NVDA",
-      "name": "NVIDIA",
-      "op": "above",
-      "price": 159.7,
-      "label": "R→S jour 149,77 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-NVDA-D-RS-149.77-r-2026-11-18",
-      "auto": true,
-      "created": 1795023925756
-    },
-    {
-      "sym": "AVGO",
-      "name": "Broadcom",
-      "op": "above",
-      "price": 363.5586,
-      "label": "S→R hebdo 356,43 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-AVGO-W-SR-356.43-b-2026-11-16",
-      "auto": true,
-      "created": 1794851412964
-    },
-    {
-      "sym": "TDG",
-      "name": "TransDigm",
-      "op": "above",
-      "price": 1190.85,
-      "label": "R→S jour 1.158,04 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-TDG-D-RS-1158.04-r-2026-11-18",
-      "auto": true,
-      "created": 1795023925756
-    },
-    {
       "sym": "EL.PA",
       "name": "EssilorLuxottica",
       "op": "above",
@@ -376,6 +343,17 @@
       "label": "R→S jour 177,95 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
       "id": "auto-EL.PA-D-RS-177.95-r-2026-11-18",
+      "auto": true,
+      "created": 1795023925756
+    },
+    {
+      "sym": "TDG",
+      "name": "TransDigm",
+      "op": "above",
+      "price": 1190.85,
+      "label": "R→S jour 1.158,04 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-TDG-D-RS-1158.04-r-2026-11-18",
       "auto": true,
       "created": 1795023925756
     },
@@ -633,28 +611,6 @@
       "created": 1795023925756
     },
     {
-      "sym": "GE",
-      "name": "GE Aerospace",
-      "op": "above",
-      "price": 329.7994,
-      "label": "S→R jour 336,53 · approche",
-      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-GE-D-SR-336.53-a-2026-11-06",
-      "auto": true,
-      "created": 1794851412964
-    },
-    {
-      "sym": "GE",
-      "name": "GE Aerospace",
-      "op": "above",
-      "price": 343.2606,
-      "label": "S→R jour 336,53 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-GE-D-SR-336.53-b-2026-11-18",
-      "auto": true,
-      "created": 1795023925756
-    },
-    {
       "sym": "AMP.MI",
       "name": "Amplifon",
       "op": "above",
@@ -695,6 +651,28 @@
       "label": "R→S jour 11,18 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
       "id": "auto-AMP.MI-D-RS-11.18-r-2026-11-18",
+      "auto": true,
+      "created": 1795023925756
+    },
+    {
+      "sym": "GE",
+      "name": "GE Aerospace",
+      "op": "above",
+      "price": 329.7994,
+      "label": "S→R jour 336,53 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-GE-D-SR-336.53-a-2026-11-06",
+      "auto": true,
+      "created": 1794851412964
+    },
+    {
+      "sym": "GE",
+      "name": "GE Aerospace",
+      "op": "above",
+      "price": 343.2606,
+      "label": "S→R jour 336,53 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-GE-D-SR-336.53-b-2026-11-18",
       "auto": true,
       "created": 1795023925756
     },
@@ -776,6 +754,72 @@
       "created": 1795023925756
     },
     {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "below",
+      "price": 496.8012,
+      "label": "R→S hebdo 487,06 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-AMP-W-RS-487.06-c-2026-11-16",
+      "auto": true,
+      "created": 1795041026783
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 530.4544,
+      "label": "S→R jour 541,28 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-AMP-D-SR-541.28-a-2026-11-18",
+      "auto": true,
+      "created": 1795041026783
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 552.1056,
+      "label": "S→R jour 541,28 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-AMP-D-SR-541.28-b-2026-11-18",
+      "auto": true,
+      "created": 1795041026783
+    },
+    {
+      "sym": "TE.PA",
+      "name": "Technip Energies",
+      "op": "below",
+      "price": 33.5376,
+      "label": "R→S jour 32,88 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-TE.PA-D-RS-32.88-c-2026-11-18",
+      "auto": true,
+      "created": 1795023925756
+    },
+    {
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 277.7908,
+      "label": "S→R hebdo 283,46 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-MCD-W-SR-283.46-a-2026-10-26",
+      "auto": true,
+      "created": 1795041026783
+    },
+    {
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 289.1292,
+      "label": "S→R hebdo 283,46 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-MCD-W-SR-283.46-b-2026-11-16",
+      "auto": true,
+      "created": 1795041026783
+    },
+    {
       "sym": "MSFT",
       "name": "Microsoft",
       "op": "below",
@@ -796,17 +840,6 @@
       "id": "auto-MSFT-D-RS-489.7-r-2026-11-17",
       "auto": true,
       "created": 1794937766809
-    },
-    {
-      "sym": "TE.PA",
-      "name": "Technip Energies",
-      "op": "below",
-      "price": 33.5376,
-      "label": "R→S jour 32,88 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-TE.PA-D-RS-32.88-c-2026-11-18",
-      "auto": true,
-      "created": 1795023925756
     },
     {
       "sym": "SAN.PA",
