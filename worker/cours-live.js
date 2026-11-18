@@ -178,7 +178,8 @@ async function checkAlerts(env) {
       // une ligne vide entre chaque information : plus lisible sur le téléphone
       const text = [
         (a.zone ? "🟨 " : "🔔 ") + (a.name || sym) + " (" + sym + ")",
-        (a.op === "above" ? "▲ a franchi " : "▼ est passé sous ") + fmtN(a.price, c.currency) + (a.label ? " — " + a.label : ""),
+        (a.op === "above" ? "▲ a franchi " : "▼ est passé sous ") + fmtN(a.price, c.currency),
+        a.label || null,                                  // le motif (R→S, S→R, zone…) sur sa propre ligne
         "Cours : " + fmtN(c.price, c.currency) + (chg != null ? " (" + (chg >= 0 ? "+" : "") + chg.toFixed(2).replace(".", ",") + " % aujourd'hui)" : ""),
         a.note ? "📝 " + a.note : null,
         SITE + "#sym=" + encodeURIComponent(sym),
