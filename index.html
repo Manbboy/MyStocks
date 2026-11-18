@@ -166,6 +166,23 @@
   .pf-lock .row { display:flex; justify-content:flex-end; margin-top:10px; }
   .pf-lock .err { color:var(--down); font-size:12px; }
   .hint { font-size:12px; color:var(--muted); line-height:1.45; }
+  .pfk { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:8px; margin-bottom:10px; }
+  .pfk-b { background:var(--card); border:1px solid var(--border); border-left:5px solid var(--muted); border-radius:12px; padding:9px 11px; display:flex; flex-direction:column; gap:7px; min-width:0; }
+  .pfk-tot { border-left-color:#7c3aed; } .pfk-eur { border-left-color:#2563eb; } .pfk-usd { border-left-color:#0d9488; }
+  .pfk-h { display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .pfk-t { font-size:13px; font-weight:700; letter-spacing:.01em; }
+  .pfk-tot .pfk-t { color:#7c3aed; } .pfk-eur .pfk-t { color:#2563eb; } .pfk-usd .pfk-t { color:#0d9488; }
+  :root[data-theme="dark"] .pfk-tot .pfk-t { color:#a78bfa; } :root[data-theme="dark"] .pfk-eur .pfk-t { color:#60a5fa; } :root[data-theme="dark"] .pfk-usd .pfk-t { color:#2dd4bf; }
+  .pfk-vl { font-size:20px; font-weight:800; white-space:nowrap; }
+  .pfk-tot .pfk-vl { font-size:22px; }
+  .pfk-2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .pfk-p { border-radius:9px; padding:6px 8px; display:flex; flex-direction:column; gap:1px; min-width:0; background:rgba(22,163,74,.10); }
+  .pfk-p.down { background:rgba(220,38,38,.10); }
+  .pfk-p > span { font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pfk-p b { font-size:16px; color:var(--up); white-space:nowrap; } .pfk-p.down b { color:var(--down); }
+  .pfk-p i { font-style:normal; font-size:13px; font-weight:700; color:var(--up); } .pfk-p.down i { color:var(--down); }
+  .pfk-f { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12.5px; color:var(--muted); }
+  .pfk-f b { color:var(--text); font-weight:600; } .pfk-f b.up { color:var(--up); } .pfk-f b.down { color:var(--down); }
   .pf-sum { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; margin-bottom:12px; }
   .pf-sum > div { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
   .pf-sum span { font-size:12px; color:var(--muted); }
@@ -845,7 +862,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v193</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v194</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4050,6 +4067,9 @@ function pfPositions(tx) {
     if (now == null) p.noE = true;
     const valueE = now ? value / now : 0, latentE = p.qty > 0 && now ? valueE - p.costE : 0;
     Object.assign(p, { valueE, latentE, latentPctE: p.costE > 0 ? latentE / p.costE * 100 : null, realizedPctE: p.soldCostE > 0 ? p.realizedE / p.soldCostE * 100 : null });
+    // variation de la séance : quantité × (cours − clôture de la veille) ; en € au taux actuel (hors effet de change du jour)
+    const dayChg = p.qty > 0 && price != null && info.changePct != null ? value - value / (1 + info.changePct / 100) : 0;
+    Object.assign(p, { dayChg, dayChgE: now ? dayChg / now : 0, dayDate: info.date });
     return Object.assign(p, { name:it.name, item:it, cur:info.currency || "EUR", price, pru, value, latent,
       latentPct: p.cost > 0 ? latent / p.cost * 100 : null, dayPct:info.changePct,
       realizedPct: p.soldCost > 0 ? p.realized / p.soldCost * 100 : null });
@@ -4152,35 +4172,39 @@ async function renderPf() {
     box.insertAdjacentHTML("beforeend", '<div class="msg">Aucune opération pour ' + own + '. Touchez « + Opération » pour saisir un achat ou une vente.</div>');
     return;
   }
-  /* totaux par devise */
+  /* ===== En-tête du portefeuille : un bloc « Total en € » puis un bloc par devise, chacun avec la séance du jour ET le résultat
+     depuis l'achat côte à côte (lisible en portrait sur téléphone) ===== */
   const tot = {};
-  pos.forEach(p => { const t = tot[p.cur] = tot[p.cur] || { cost:0, value:0, latent:0, realized:0, soldCost:0 };
-    t.cost += p.cost; t.value += p.value; t.latent += p.latent; t.realized += p.realized; t.soldCost += p.soldCost; });
-  const sum = document.createElement("div"); sum.className = "pf-sum" + (prefs.pfCompact ? " compact" : "");
-  Object.entries(tot).forEach(([cur, t]) => {
-    const pct = t.cost > 0 ? t.latent / t.cost * 100 : null;
-    sum.insertAdjacentHTML("beforeend",
-      '<div><span>Investi</span><b>' + A(fmt(t.cost, cur)) + '</b></div>' +
-      '<div><span>Valeur</span><b>' + A(fmt(t.value, cur)) + '</b></div>' +
-      '<div><span>Plus-value latente</span><b class="' + (t.latent >= 0 ? "up" : "down") + '">' + A(money(t.latent, cur)) + (pct != null ? " (" + fmtPct(pct) + ")" : "") + '</b></div>' +
-      '<div><span>Réalisé (ventes)</span><b class="' + (t.realized >= 0 ? "up" : "down") + '">' + A(money(t.realized, cur)) + (t.soldCost > 0 ? " (" + fmtPct(t.realized / t.soldCost * 100) + ")" : "") + '</b></div>');
-  });
-  box.appendChild(sum);
-  // total en euros : tout converti, les achats et ventes en dollars au taux du jour de l'opération (ou au montant saisi)
-  if (Object.keys(tot).some(c => c !== "EUR")) {
-    const E = { cost:0, value:0, latent:0, realized:0, soldCost:0 }, miss = pos.some(p => p.noE);
-    pos.filter(p => !p.noE).forEach(p => { E.cost += p.costE; E.value += p.valueE; E.latent += p.latentE; E.realized += p.realizedE; E.soldCost += p.soldCostE; });
-    const pct = E.cost > 0 ? E.latent / E.cost * 100 : null, auto = pos.some(p => p.cur === "USD" && p.tx.some(t => !(+t.eur > 0)));
-    const tE = document.createElement("div"); tE.className = "pf-sum pf-tot" + (prefs.pfCompact ? " compact" : "");
-    tE.innerHTML =
-      '<div><span>Total investi en €</span><b>' + A(fmt(E.cost, "EUR")) + '</b></div>' +
-      '<div><span>Valeur totale en €</span><b>' + A(fmt(E.value, "EUR")) + '</b></div>' +
-      '<div><span>Plus-value latente en €</span><b class="' + (E.latent >= 0 ? "up" : "down") + '">' + A(money(E.latent, "EUR")) + (pct != null ? " (" + fmtPct(pct) + ")" : "") + '</b></div>' +
-      '<div><span>Réalisé en €</span><b class="' + (E.realized >= 0 ? "up" : "down") + '">' + A(money(E.realized, "EUR")) + (E.soldCost > 0 ? " (" + fmtPct(E.realized / E.soldCost * 100) + ")" : "") + '</b></div>';
-    box.appendChild(tE);
-    box.insertAdjacentHTML("beforeend", '<p class="hint pf-fxnote">Dollars convertis au taux EUR/USD du jour de chaque opération' + (fxNow() ? " (aujourd'hui 1 € = " + fxNow().toLocaleString(NUM_LOC, { minimumFractionDigits:4, maximumFractionDigits:4 }) + " $)" : "") +
-      (auto ? ". Pour un résultat exact au centime, indiquez le montant débité en € de l'avis d'opéré (✎ sur l'opération)." : ".") + (miss ? " Certaines valeurs d'une autre devise ne sont pas comptées." : "") + '</p>');
+  pos.forEach(p => { const t = tot[p.cur] = tot[p.cur] || { cost:0, value:0, latent:0, realized:0, soldCost:0, day:0 };
+    t.cost += p.cost; t.value += p.value; t.latent += p.latent; t.realized += p.realized; t.soldCost += p.soldCost; t.day += p.dayChg; });
+  const cls = v => v >= 0 ? "up" : "down";
+  const dayD = pos.filter(p => p.qty > 0 && p.dayDate).map(p => p.dayDate).sort().pop();
+  const dayLbl = dayD ? dOf(dayD).toLocaleDateString("fr-FR", { weekday:"short", day:"numeric", month:"short", timeZone:"UTC" }) : "";
+  const block = (kind, title, cur, t) => {
+    const lp = t.cost > 0 ? t.latent / t.cost * 100 : null, dp = t.value - t.day > 0 ? t.day / (t.value - t.day) * 100 : null;
+    const perf = (lbl, v, pc) => '<div class="pfk-p ' + cls(v) + '"><span>' + lbl + '</span><b>' + A(money(v, cur)) + '</b><i>' + (pc != null ? fmtPct(pc) : "") + "</i></div>";
+    return '<div class="pfk-b pfk-' + kind + '"><div class="pfk-h"><span class="pfk-t">' + title + '</span><span class="pfk-vl">' + A(fmt(t.value, cur)) + "</span></div>" +
+      '<div class="pfk-2">' + perf("Aujourd'hui" + (dayLbl ? " · " + dayLbl : ""), t.day, dp) + perf("Depuis l'achat", t.latent, lp) + "</div>" +
+      '<div class="pfk-f"><span>Investi <b>' + A(fmt(t.cost, cur)) + "</b></span>" +
+      (Math.abs(t.realized) > 0.005 ? '<span>Réalisé <b class="' + cls(t.realized) + '">' + A(money(t.realized, cur)) + "</b>" + (t.soldCost > 0 ? ' <b class="' + cls(t.realized) + '">' + fmtPct(t.realized / t.soldCost * 100) + "</b>" : "") + "</span>" : "") +
+      "</div></div>";
+  };
+  const sum = document.createElement("div"); sum.className = "pfk";
+  const multi = Object.keys(tot).some(c => c !== "EUR");
+  let auto = false, miss = false;
+  if (multi) {          // total en euros : dollars convertis au taux du jour de chaque opération (ou au montant saisi en €)
+    const E = { cost:0, value:0, latent:0, realized:0, soldCost:0, day:0 }; miss = pos.some(p => p.noE);
+    pos.filter(p => !p.noE).forEach(p => { E.cost += p.costE; E.value += p.valueE; E.latent += p.latentE; E.realized += p.realizedE; E.soldCost += p.soldCostE; E.day += p.dayChgE; });
+    auto = pos.some(p => p.cur === "USD" && p.tx.some(t => !(+t.eur > 0)));
+    sum.insertAdjacentHTML("beforeend", block("tot", "Total du portefeuille (en €)", "EUR", E));
   }
+  const CUR_T = { EUR:"€ · Actions en euros", USD:"$ · Actions en dollars" };
+  Object.entries(tot).sort((a, b) => (a[0] !== "EUR") - (b[0] !== "EUR")).forEach(([cur, t]) =>
+    sum.insertAdjacentHTML("beforeend", block(cur.toLowerCase(), CUR_T[cur] || cur, cur, t)));
+  box.appendChild(sum);
+  if (multi) box.insertAdjacentHTML("beforeend", '<p class="hint pf-fxnote">Total : dollars convertis au taux EUR/USD du jour de chaque opération' + (fxNow() ? " (aujourd'hui 1 € = " + fxNow().toLocaleString(NUM_LOC, { minimumFractionDigits:4, maximumFractionDigits:4 }) + " $)" : "") +
+      " ; « Aujourd'hui » en € au taux actuel (hors variation du dollar sur la journée)" +
+      (auto ? ". Pour un résultat exact au centime, indiquez le montant débité en € de l'avis d'opéré (✎ sur l'opération)." : ".") + (miss ? " Certaines valeurs d'une autre devise ne sont pas comptées." : "") + '</p>');
 
   // deux groupes : positions ouvertes, puis positions soldées (tout vendu)
   const openL = document.createElement("div"), closedL = document.createElement("div");

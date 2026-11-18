@@ -487,6 +487,11 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
 <details id="h-pf"><summary>17. Portfolio</summary>
 <ul>
 <li>Opérations (achat / vente) saisies dans l'appli, chiffrées avec votre mot de passe avant d'être enregistrées sur GitHub.</li>
+<li><b>En-tête</b> : un bloc <b>Total du portefeuille (en €)</b> (violet, si vous avez des valeurs en dollars), puis un bloc <b>€ · Actions en euros</b> (bleu) et un bloc <b>$ · Actions en dollars</b> (turquoise). Chaque bloc donne en gros la valeur actuelle, puis côte à côte :
+  <ul><li><b>Aujourd'hui</b> (avec la date de la séance) = somme des quantités × (cours − clôture de la veille), et ce gain en % de la valeur de la veille ;</li>
+  <li><b>Depuis l'achat</b> = +/− value latente (ci-dessous) ;</li>
+  <li>en dessous, le montant <b>investi</b> et le <b>réalisé</b> (ventes), s'il y en a.</li></ul>
+  Case verte = gain, rouge = perte. Dans le total en €, « Aujourd'hui » convertit les dollars au taux actuel (la variation du dollar sur la journée n'est pas comptée).</li>
 <li><b>PRU</b> (prix de revient unitaire) : moyenne pondérée des achats, <b>frais inclus</b>. Une vente ne change pas le PRU des titres restants.</li>
 <li><b>+/− value latente</b> = quantité × cours actuel − prix de revient des titres détenus ; en % du prix de revient.</li>
 <li><b>Réalisé</b> = produit des ventes (frais déduits) − PRU × quantité vendue ; en % du prix de revient des titres vendus.</li>
