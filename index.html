@@ -876,7 +876,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v199</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v200</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5134,7 +5134,7 @@ async function renderAlertsView() {
   if (prefs.view !== "alerts") return;
   box.innerHTML = "";
   const all = (alertsData.alerts || []).filter(a => !a.auto);
-  const autos = (alertsData.alerts || []).filter(a => a.auto);
+  const autos = (alertsData.alerts || []).filter(a => a.auto && !a.bia), bias = (alertsData.alerts || []).filter(a => a.bia);
   const intro = document.createElement("div"); intro.className = "sig-intro";
   intro.innerHTML = "<b>Mes alertes de prix</b> : vérifiées toutes les 5 minutes en semaine par le relais, message Telegram au franchissement (une seule fois). " +
     "Créez-en depuis le graphique d'une valeur avec le bouton 🔔.";
@@ -5182,6 +5182,26 @@ async function renderAlertsView() {
       catch (err) { b.disabled = false; toast(alertErr(err), 4000); }
     });
   });
+  // alertes Biarritz automatiques : cassure de la résistance déclencheur des valeurs « au repos » (calculées chaque soir)
+  const onB = alertsData.autoBia !== false;
+  const hb = document.createElement("div"); hb.className = "pf-sub al-auto-h";
+  hb.innerHTML = "<span>Biarritz automatiques (#" + bias.length + ")</span>";
+  const swb = document.createElement("div"); swb.id = "autoBiaSw"; swb.dataset.label = onB ? "Activées" : "Coupées"; swb.className = "swone"; hb.appendChild(swb); box.appendChild(hb);
+  renderSw("autoBiaSw", onB, async v => {
+    try {
+      await alertsSave(d => { d.autoBia = v; if (!v) d.alerts = (d.alerts || []).filter(a => !a.bia); }, v ? "Alertes Biarritz activées" : "Alertes Biarritz coupées");
+      toast(v ? "Activées : elles seront calculées à la prochaine mise à jour du soir." : "Alertes Biarritz coupées.", 3000); renderAlertsView();
+    } catch (err) { toast(alertErr(err), 4000); }
+  });
+  const exb = document.createElement("div"); exb.className = "sig-intro al-auto-ex";
+  exb.innerHTML = "Recalculées chaque soir : pour chaque valeur <b>au repos sous sa résistance</b> (indicateur Biarritz, journalier), une alerte 🏄 quand le cours <b>franchit la résistance déclencheur</b>. " +
+    "À confirmer à la clôture : au-dessus de la résistance <b>et</b> de la bande de Bollinger haute. Au plus 15 valeurs, les plus proches de leur résistance (à +8 % au plus), après vos alertes et vos zones.";
+  box.appendChild(exb);
+  const bb = document.createElement("div"); bb.className = "al-list"; box.appendChild(bb);
+  if (!onB) bb.innerHTML = '<span class="sig-none">Coupées.</span>';
+  else if (!bias.length) bb.innerHTML = '<span class="sig-none">Aucune pour l\'instant (calculées à la mise à jour du soir).</span>';
+  bias.slice().sort((x, y) => (alertsSent[x.id] ? 1 : 0) - (alertsSent[y.id] ? 1 : 0) ||
+    Math.abs(x.price / (lastOf(x.sym) || x.price) - 1) - Math.abs(y.price / (lastOf(y.sym) || y.price) - 1)).forEach(a => bb.appendChild(row(a)));
   // alertes R⇄S automatiques (recalculées chaque soir par la mise à jour des cours, envoyées par le relais comme les autres)
   const on = alertsData.autoFlips !== false;
   const h = document.createElement("div"); h.className = "pf-sub al-auto-h";
@@ -5189,7 +5209,7 @@ async function renderAlertsView() {
   const sw = document.createElement("div"); sw.id = "autoFlipSw"; sw.dataset.label = on ? "Activées" : "Coupées"; sw.className = "swone"; h.appendChild(sw); box.appendChild(h);
   renderSw("autoFlipSw", on, async v => {
     try {
-      await alertsSave(d => { d.autoFlips = v; if (!v) d.alerts = (d.alerts || []).filter(a => !a.auto); }, v ? "Alertes R⇄S automatiques activées" : "Alertes R⇄S automatiques coupées");
+      await alertsSave(d => { d.autoFlips = v; if (!v) d.alerts = (d.alerts || []).filter(a => !a.auto || a.bia); }, v ? "Alertes R⇄S automatiques activées" : "Alertes R⇄S automatiques coupées");
       toast(v ? "Activées : elles seront calculées à la prochaine mise à jour du soir." : "Alertes R⇄S automatiques coupées.", 3000); renderAlertsView();
     } catch (err) { toast(alertErr(err), 4000); }
   });

@@ -157,8 +157,8 @@ async function checkAlerts(env) {
   if (!todo.length) return;
   let changed = false;
   // budget du plan gratuit : ~50 requêtes par vérification (1 pour la liste, 1 par valeur, 1 par message envoyé).
-  // Priorité : 1) alertes manuelles  2) alertes de mes zones  3) alertes R⇄S automatiques ; au-delà, vérifiées au tour suivant.
-  const rank = a => a.auto ? 2 : a.zone ? 1 : 0;
+  // Priorité : 1) alertes manuelles  2) mes zones  3) Biarritz  4) R⇄S automatiques ; au-delà, vérifiées au tour suivant.
+  const rank = a => a.bia ? 2 : a.auto ? 3 : a.zone ? 1 : 0;   // 0 manuelles, 1 zones, 2 Biarritz, 3 R⇄S auto
   const best = {};
   todo.forEach(a => { best[a.sym] = Math.min(best[a.sym] ?? 9, rank(a)); });
   const syms = Object.keys(best).sort((x, y) => best[x] - best[y]);
@@ -177,7 +177,7 @@ async function checkAlerts(env) {
       const chg = c.prevClose ? (c.price / c.prevClose - 1) * 100 : null;
       // une ligne vide entre chaque information : plus lisible sur le téléphone
       const text = [
-        (a.zone ? "🟨 " : "🔔 ") + (a.name || sym) + " (" + sym + ")",
+        (a.zone ? "🟨 " : a.bia ? "🏄 " : "🔔 ") + (a.name || sym) + " (" + sym + ")",
         (a.op === "above" ? "▲ a franchi " : "▼ est passé sous ") + fmtN(a.price, c.currency),
         a.label || null,                                  // le motif (R→S, S→R, zone…) sur sa propre ligne
         "Cours : " + fmtN(c.price, c.currency) + (chg != null ? " (" + (chg >= 0 ? "+" : "") + chg.toFixed(2).replace(".", ",") + " % aujourd'hui)" : ""),

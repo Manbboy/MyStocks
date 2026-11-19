@@ -25,16 +25,18 @@ const src = [
   grab("function dOf("), grab("function keyOf("), grab("function aggregate("),
   grab("const FLIP_PARAMS = {"), "const FLIP_MAX = 6;", grab("function flipLevels("),
   grab("function zoneAlertFor("),
-  "return { aggregate, flipLevels, zoneAlertFor };",
+  grab("const BIA = {"), grab("function biaCompute("),
+  "return { aggregate, flipLevels, zoneAlertFor, biaCompute, BIA };",
 ].join("\n");
-const { aggregate, flipLevels, zoneAlertFor } = new Function(src)();
+const { aggregate, flipLevels, zoneAlertFor, biaCompute, BIA } = new Function(src)();
 
 const PCT = 2, TOL = PCT / 100;                    // précision des contacts par défaut de l'appli
 const NEAR = { D: 0.08, W: 0.12 };                 // niveau assez proche du cours pour être surveillé
 const REACT = { D: 5, W: 2 };                      // contact récent (chandeliers) pour l'alerte « réaction »
 const MAX_SYMS = 30;                               // alertes auto : au plus 30 valeurs…
 const MAX_TOTAL = 45;                              // …et 45 valeurs en tout (le relais gratuit fait au plus ~50 requêtes par vérification)
-// priorité dans ce budget : 1) vos alertes manuelles  2) les alertes de vos zones  3) les alertes R⇄S automatiques
+// priorité dans ce budget : 1) vos alertes manuelles  2) les alertes de vos zones  3) les alertes Biarritz  4) les alertes R⇄S automatiques
+const BIA_MAX = 15, BIA_NEAR = 0.08;               // Biarritz : au plus 15 valeurs, résistance à +8 % au plus
 const TFN = { D: "jour", W: "hebdo" };
 
 const fmt = v => v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: v < 10 ? 4 : 2 });
@@ -42,7 +44,7 @@ const r4 = v => Math.round(v * 10000) / 10000;
 
 const alertsPath = "alerts.json";
 const file = fs.existsSync(alertsPath) ? JSON.parse(fs.readFileSync(alertsPath, "utf8")) : { alerts: [] };
-const manual = (file.alerts || []).filter(a => !a.auto && !a.zone);
+const manual = (file.alerts || []).filter(a => !a.auto && !a.zone && !a.bia);
 const enabled = !(file.autoFlips === false);
 
 // ---- alertes de mes zones (zones.json) : réarmées chaque soir avec le dernier cours ----
@@ -61,6 +63,33 @@ for (const z of zonesFile.zones || []) {
   zoneAl.push(a);
 }
 const symsZone = new Set(zoneAl.map(a => a.sym));
+
+// ---- alertes Biarritz : valeurs « au repos » sous leur résistance déclencheur → alerte à la cassure (indicateur B, journalier) ----
+const biaOn = !(file.autoBia === false);
+const biaC = [];
+if (biaOn) {
+  const pf = JSON.parse(fs.readFileSync("portfolios.json", "utf8")).portfolios, seen = new Set();
+  pf.filter(p => !/market/i.test(p.name)).forEach(p => p.items.forEach(it => {
+    if (seen.has(it.yahoo)) return; seen.add(it.yahoo);
+    const s = summary0.symbols[it.yahoo]; if (!s || !s.file) return;
+    let rows; try { rows = JSON.parse(fs.readFileSync("data/" + s.file, "utf8")).rows || []; } catch (e) { return; }
+    const B = biaCompute(rows); if (!B || B.st.k !== "wait" || !B.R) return;
+    const R = B.R, dist = R.hi / B.C - 1; if (dist > BIA_NEAR) return;
+    const up = B.mid[B.n - 1] + BIA.K * B.sd[B.n - 1];
+    biaC.push({ sym: it.yahoo, dist, a: { sym: it.yahoo, name: it.name || it.yahoo, op: "above", price: r4(R.hi), bia: true, auto: true,
+      label: "Biarritz · résistance " + fmt(R.lo) + (R.hi > R.lo * 1.001 ? "–" + fmt(R.hi) : "") + " · " + R.n + " contacts",
+      note: "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (" + fmt(up) + "), sans élastique tendu.",
+      id: `bia-${it.yahoo}-${r4(R.hi)}-${rows[R.from][0]}` } });
+  }));
+}
+biaC.sort((a, b) => a.dist - b.dist);
+const symsFirst = new Set(manual.map(a => a.sym).concat([...symsZone]));
+let roomB = Math.max(0, Math.min(BIA_MAX, MAX_TOTAL - symsFirst.size));
+const biaAl = [];
+for (const c of biaC) { if (!symsFirst.has(c.sym)) { if (roomB <= 0) continue; roomB--; } biaAl.push(c.a); }
+const prevB = new Map((file.alerts || []).filter(a => a.bia).map(a => [a.id, a.created]));
+biaAl.forEach(a => { a.created = prevB.get(a.id) || Date.now(); });
+const symsBia = new Set(biaAl.map(a => a.sym));
 
 let cands = [];
 if (enabled) {
@@ -116,7 +145,7 @@ if (enabled) {
 }
 // les valeurs les plus proches de leur niveau d'abord, dans la limite du relais
 cands.sort((a, b) => a.dist - b.dist);
-const symsManual = new Set(manual.map(a => a.sym).concat([...symsZone]));
+const symsManual = new Set(manual.map(a => a.sym).concat([...symsZone], [...symsBia]));
 const room = Math.max(0, Math.min(MAX_SYMS, MAX_TOTAL - symsManual.size));
 const auto = [];
 let used = 0;
@@ -125,11 +154,13 @@ for (const c of cands) {
   c.list.forEach(a => auto.push(Object.assign(a, { auto: true, created: Date.now() })));
 }
 // garder la date de création des alertes déjà présentes
-const prev = new Map((file.alerts || []).filter(a => a.auto).map(a => [a.id, a.created]));
+const prev = new Map((file.alerts || []).filter(a => a.auto && !a.bia).map(a => [a.id, a.created]));
 auto.forEach(a => { if (prev.has(a.id)) a.created = prev.get(a.id); });
 
-file.alerts = manual.concat(zoneAl, auto);          // ordre = priorité de vérification par le relais
+file.alerts = manual.concat(zoneAl, biaAl, auto);  // ordre = priorité de vérification par le relais
 fs.writeFileSync(alertsPath, JSON.stringify(file, null, 2) + "\n");
 console.log(`alertes de zones : ${zoneAl.length} sur ${symsZone.size} valeurs`);
+console.log(`alertes Biarritz : ${biaAl.length}` + (biaOn ? "" : " (désactivées)"));
+biaAl.forEach(a => console.log("  ", a.sym, a.price, a.label));
 console.log(`alertes R⇄S automatiques : ${auto.length} sur ${new Set(auto.map(a => a.sym)).size} valeurs` + (enabled ? "" : " (désactivées)"));
 auto.forEach(a => console.log("  ", a.sym, a.op, a.price, a.label));

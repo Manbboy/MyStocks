@@ -94,6 +94,198 @@
       "created": 1795110211968
     },
     {
+      "sym": "ALVDM.PA",
+      "name": "ALVDM",
+      "op": "above",
+      "price": 180.5,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 180,00–180,50 · 23 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (179,64), sans élastique tendu.",
+      "id": "bia-ALVDM.PA-180.5-2026-08-19",
+      "created": 1795126681406
+    },
+    {
+      "sym": "AAPL",
+      "name": "Apple",
+      "op": "above",
+      "price": 355.38,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 351,43–355,38 · 3 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (348,82), sans élastique tendu.",
+      "id": "bia-AAPL-355.38-2026-10-23",
+      "created": 1795126681406
+    },
+    {
+      "sym": "PYPL",
+      "name": "PayPal",
+      "op": "above",
+      "price": 57.95,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 57,67–57,95 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (58,29), sans élastique tendu.",
+      "id": "bia-PYPL-57.95-2026-07-16",
+      "created": 1795126681406
+    },
+    {
+      "sym": "SW.PA",
+      "name": "Sodexo",
+      "op": "above",
+      "price": 60.65,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 60,60 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (59,98), sans élastique tendu.",
+      "id": "bia-SW.PA-60.65-2026-10-23",
+      "created": 1795126681406
+    },
+    {
+      "sym": "AIR.PA",
+      "name": "Airbus",
+      "op": "above",
+      "price": 202.15,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 199,60–202,15 · 3 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (201,00), sans élastique tendu.",
+      "id": "bia-AIR.PA-202.15-2026-09-04",
+      "created": 1795126681406
+    },
+    {
+      "sym": "DG.PA",
+      "name": "Vinci",
+      "op": "above",
+      "price": 114.5,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 113,30–114,50 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (112,80), sans élastique tendu.",
+      "id": "bia-DG.PA-114.5-2026-09-08",
+      "created": 1795126681406
+    },
+    {
+      "sym": "FDX",
+      "name": "FedEx",
+      "op": "above",
+      "price": 322.13,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 320,16–322,13 · 3 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (315,94), sans élastique tendu.",
+      "id": "bia-FDX-322.13-2026-07-09",
+      "created": 1795126681406
+    },
+    {
+      "sym": "RYA.IR",
+      "name": "Ryanair",
+      "op": "above",
+      "price": 25.6,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 25,39–25,60 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (24,90), sans élastique tendu.",
+      "id": "bia-RYA.IR-25.6-2026-07-27",
+      "created": 1795126681406
+    },
+    {
+      "sym": "TSLA",
+      "name": "Tesla",
+      "op": "above",
+      "price": 388.56,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 384,04–388,56 · 3 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (391,14), sans élastique tendu.",
+      "id": "bia-TSLA-388.56-2026-09-03",
+      "created": 1795126681406
+    },
+    {
+      "sym": "ABI.BR",
+      "name": "AB InBev",
+      "op": "above",
+      "price": 74.68,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 73,56–74,68 · 3 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (75,07), sans élastique tendu.",
+      "id": "bia-ABI.BR-74.68-2026-06-26",
+      "created": 1795126681406
+    },
+    {
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 278.7,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 273,42–278,70 · 5 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (267,92), sans élastique tendu.",
+      "id": "bia-MCD-278.7-2026-07-17",
+      "created": 1795126681406
+    },
+    {
+      "sym": "VIE.PA",
+      "name": "Veolia",
+      "op": "above",
+      "price": 35.05,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 34,59–35,05 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (33,60), sans élastique tendu.",
+      "id": "bia-VIE.PA-35.05-2026-08-21",
+      "created": 1795126681406
+    },
+    {
+      "sym": "TXN",
+      "name": "Texas Instruments",
+      "op": "above",
+      "price": 298.75,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 297,59–298,75 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (301,27), sans élastique tendu.",
+      "id": "bia-TXN-298.75-2026-07-21",
+      "created": 1795126681406
+    },
+    {
+      "sym": "RI.PA",
+      "name": "Pernod Ricard",
+      "op": "above",
+      "price": 73.56,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 72,50–73,56 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (69,96), sans élastique tendu.",
+      "id": "bia-RI.PA-73.56-2026-11-05",
+      "created": 1795126681406
+    },
+    {
+      "sym": "VETO.PA",
+      "name": "Vetoquinol",
+      "op": "above",
+      "price": 89.5,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 89,10–89,50 · 3 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (85,14), sans élastique tendu.",
+      "id": "bia-VETO.PA-89.5-2026-10-30",
+      "created": 1795126681406
+    },
+    {
+      "sym": "GILD",
+      "name": "Gilead Sciences",
+      "op": "above",
+      "price": 176.58,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 175,65–176,58 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (165,97), sans élastique tendu.",
+      "id": "bia-GILD-176.58-2026-10-30",
+      "created": 1795126681406
+    },
+    {
       "sym": "AMP.MI",
       "name": "Amplifon",
       "op": "above",
@@ -853,15 +1045,26 @@
       "created": 1794937766809
     },
     {
-      "sym": "AMG.AS",
-      "name": "AMG Critical Materials",
-      "op": "below",
-      "price": 21.2568,
-      "label": "R→S jour 20,84 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-AMG.AS-D-RS-20.84-c-2026-11-19",
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 277.7908,
+      "label": "S→R hebdo 283,46 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-MCD-W-SR-283.46-a-2026-10-26",
       "auto": true,
-      "created": 1795110212437
+      "created": 1795126681979
+    },
+    {
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 289.1292,
+      "label": "S→R hebdo 283,46 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-MCD-W-SR-283.46-b-2026-11-16",
+      "auto": true,
+      "created": 1795126681979
     },
     {
       "sym": "SU.PA",
@@ -895,6 +1098,39 @@
       "id": "auto-SU.PA-D-SR-253.05-b-2026-11-19",
       "auto": true,
       "created": 1795110212437
+    },
+    {
+      "sym": "TXN",
+      "name": "Texas Instruments",
+      "op": "below",
+      "price": 278.7966,
+      "label": "R→S jour 273,33 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-TXN-D-RS-273.33-c-2026-11-19",
+      "auto": true,
+      "created": 1795126681979
+    },
+    {
+      "sym": "VETO.PA",
+      "name": "Vetoquinol",
+      "op": "above",
+      "price": 90.748,
+      "label": "S→R hebdo 92,60 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-VETO.PA-W-SR-92.6-a-2026-11-16",
+      "auto": true,
+      "created": 1795126681979
+    },
+    {
+      "sym": "VETO.PA",
+      "name": "Vetoquinol",
+      "op": "above",
+      "price": 94.452,
+      "label": "S→R hebdo 92,60 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-VETO.PA-W-SR-92.6-b-2026-11-16",
+      "auto": true,
+      "created": 1795126681979
     }
   ]
 }
