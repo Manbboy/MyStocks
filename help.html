@@ -8,7 +8,7 @@
   <a href="#h-data">1. Données</a><a href="#h-tabs">2. Onglets</a><a href="#h-list">3. Listes et vue compacte</a><a href="#h-chart">4. Graphique détaillé</a>
   <a href="#h-ma">5. Moyennes mobiles</a><a href="#h-sr">6. Supports / résistances</a><a href="#h-flip">7. Bascules R⇄S</a><a href="#h-tl">8. Obliques</a>
   <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a><a href="#h-proj">12 bis. Projection ┈</a>
-  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-myz">13 ter. Mes zones (▭ / ◯)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder (momentum)</a><a href="#h-why">16. Pourquoi ça bouge</a>
+  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-myz">13 ter. Mes zones (▭ / ◯)</a><a href="#h-bia">13 quater. Biarritz (B)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder (momentum)</a><a href="#h-why">16. Pourquoi ça bouge</a>
   <a href="#h-pf">17. Portfolio</a><a href="#h-al">18. Alertes</a><a href="#h-disp">19. Affichage</a><a href="#h-gl">20. Lexique</a>
 </nav>
 
@@ -394,6 +394,30 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
 <li><b>Alerte Telegram</b> : une zone encore active envoie un message 🟨 quand le cours y entre (§ 18).</li>
 <li><b>Mémoire</b> : chaque zone est gardée sur l'appareil et, si le jeton GitHub est enregistré, dans <code>zones.json</code> du dépôt. Elle se retrouve alors sur le téléphone comme sur la tablette. Le dépôt étant public, ces zones y sont visibles, comme les alertes.</li>
 </ul>
+</details>
+
+<details id="h-bia"><summary>13 quater. Biarritz (B) : la zone d'achat idéale (InvestirZen)</summary>
+<p>Indicateur tiré de la stratégie « Biarritz » de Christophe (InvestirZen). Elle cherche le <b>point d'entrée</b> qui a le plus de chances de lancer rapidement une hausse dynamique, avec un risque de départ faible. Elle ne donne ni stop ni objectif. Bouton <b>B</b> du graphique. Méthode prévue en <b>journalier (J)</b> ; en S, M ou T, le même calcul est fait sur les bougies affichées.</p>
+<h4>Ce qui est tracé</h4>
+<ul>
+<li><b>Bandes de Bollinger 50 / 1</b> : moyenne mobile <b>simple 50</b> des clôtures (trait bleu canard) ± <b>1 écart-type</b> des 50 dernières clôtures (écart-type « population », comme TradingView et ProRealTime). La bande remplie est la <b>zone neutre</b> ; au-dessus, la <b>zone dynamique</b>.</li>
+<li><b>Résistance déclencheur</b> (zone verte) : résistance actuelle au-dessus du cours, tracée de son premier contact à aujourd'hui.</li>
+<li><b>Cassures Biarritz</b> passées : trait vert sur la résistance cassée et <b>● orange</b> sur la bougie de cassure.</li>
+</ul>
+<h4>Les 3 principes et leurs réglages</h4>
+<ol>
+<li><b>L'élastique</b> : on n'achète pas un cours étiré. « Élastique tendu » = clôture au-dessus de <b>MM50 + 3 écarts-types</b>. Sous la MM50 : rien à faire (erreur n° 1).</li>
+<li><b>Au repos</b> : la MM50 est plate ou se redresse doucement — pente sur <b>20 séances entre −3 % et +10 %</b> — et au moins <b>60 % des 30 dernières clôtures</b> sont dans la bande ou juste au-dessus (au plus MM50 + 2 écarts-types).</li>
+<li><b>L'étincelle</b> : la résistance est un groupe de <b>sommets locaux</b> (plus haut des 3 bougies de chaque côté) des <b>120 dernières séances</b>, à <b>±1,5 %</b> les uns des autres, touché <b>au moins 2 fois</b>, au-dessus du cours et à moins de <b>+15 %</b> ; on garde la plus proche. La <b>cassure</b> = première clôture au-dessus du haut de cette résistance <b>et</b> au-dessus de la bande haute, après un repos (veille), sans élastique tendu ce jour-là. Une cassure suivante n'est comptée qu'après 5 séances.</li>
+</ol>
+<h4>États affichés sous le graphique</h4>
+<ul>
+<li><b>Cassure Biarritz</b> (vert) : une cassure dans les <b>5 dernières séances</b> — entrée possible tant que l'élastique n'est pas tendu.</li>
+<li><b>Au repos sous une résistance</b> (bleu) : attendre la cassure.</li>
+<li><b>Sous la MM50</b> ou <b>élastique tendu</b> (rouge) : ne rien faire.</li>
+<li>Sinon (gris) : MM50 encore baissière, montant trop vite, ou cours pas assez au repos.</li>
+</ul>
+<p>Une check-list ✅ / ❌ reprend chaque condition avec ses valeurs, puis les 3 dernières cassures et leur évolution depuis. Exemples du PDF retrouvés : OVH le 15 avril 2026 (cassure à 9,79 € au-dessus de 9,70 €), ST Micro le 1er avril 2026 (29,93 € au-dessus de 29,79 €). Les réglages chiffrés (pente, repos, résistance, élastique tendu) ne sont pas donnés par la méthode : ce sont les nôtres.</p>
 </details>
 
 <details id="h-bo"><summary>14. Cassures récentes (colonne Cass.)</summary>

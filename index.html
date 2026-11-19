@@ -702,6 +702,14 @@
   .cfg-flow .seg { flex-wrap:nowrap; }
   .cfg-flow .seg button { padding:5px 7px; white-space:nowrap; }
   .manu-box { margin:10px 0 4px; }
+  .bia-box { margin:10px 0 4px; }
+  .bia-st { font-size:15px; font-weight:700; padding:8px 10px; border-radius:10px; margin:4px 0 8px; }
+  .bia-st.go { background:rgba(22,163,74,.14); color:var(--up); } .bia-st.wait { background:rgba(14,116,144,.13); color:#0e7490; }
+  .bia-st.no { background:rgba(220,38,38,.12); color:var(--down); } .bia-st.neu { background:rgba(100,116,139,.13); color:var(--text); }
+  :root[data-theme="dark"]:not([data-dim]) .bia-st.wait { color:#22d3ee; }
+  .bia-ck { list-style:none; padding:0; margin:0 0 8px; font-size:13.5px; line-height:1.6; }
+  .bia-sig { font-size:13px; color:var(--muted); margin:6px 0; }
+  .bia-foot { font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:8px; }
   .myz-box { margin:10px 0 4px; }
   .myz-row { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
   .myz-row .sw-c { width:14px; height:10px; border-radius:2px; background:#facc15; border:1px solid #ca8a04; flex:none; }
@@ -868,7 +876,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v198</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v199</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -927,6 +935,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="mmb" id="srBtn" aria-pressed="false" title="Afficher / masquer les supports et résistances">S/R<span class="mmdots"><i style="background:var(--sup)"></i><i style="background:var(--res)"></i></span></button>
       <button class="mmb" id="chanBtn" aria-pressed="false" title="Canaux : deux obliques parallèles qui encadrent le cours">Canal<span class="mmdots"><i style="background:#0891b2;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="tlBtn" aria-pressed="false" title="Obliques : lignes de tendance (supports et résistances en diagonale)">Obl.<span class="mmdots"><i style="background:#f97316;width:12px;transform:rotate(-18deg)"></i></span></button>
+      <button class="mmb" id="biaBtn" aria-pressed="false" title="Biarritz : bandes de Bollinger 50/1, résistance déclencheur et cassures">B<span class="mmdots"><i style="background:#0e7490;width:10px;height:10px;border-radius:50%"></i></span></button>
       <button class="mmb" id="manuBtn" aria-pressed="false" title="Manu : les 3 zones d'intervention où le plus d'indicateurs se rejoignent">M<span class="mmdots"><i style="background:#d946ef;width:10px;height:10px;border-radius:50%"></i></span></button>
       <button class="mmb" id="zoneBtn" aria-pressed="false" title="Mes zones : 1 appui = rectangle, 2 = cercle, 3 = fin du dessin">▭<span class="mmdots"><i style="background:#facc15;width:12px;height:6px;border-radius:2px"></i></span></button>
       <button class="mmb" id="tinoBtn" aria-pressed="false" title="Tino : grandes zones de soutien et oblique longue, sur tout l'historique mensuel (d'après les analyses de Tino, Le Podcast de la Bourse)">Tino<span class="mmdots"><i style="background:#38bdf8;width:12px;height:5px;border-radius:2px"></i><i style="background:#facc15"></i></span></button>
@@ -984,6 +993,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="navsm" id="ovNext2" aria-label="Action suivante">›</button>
     </div>
     <div class="lv myz-box" id="boxMyz" style="display:none"><h3 style="color:#ca8a04">Mes zones</h3><div id="ovMyzList"></div></div>
+    <div class="lv bia-box" id="boxBia" style="display:none"><h3 style="color:#0e7490">Biarritz · zone d'achat idéale</h3><div id="ovBiaList"></div></div>
     <div class="lv manu-box" id="boxManu" style="display:none"><h3 style="color:#d946ef">Manu · zones d'intervention</h3><div id="ovManuList"></div></div>
     <div class="news" id="ovNews"></div>
     </div>
@@ -2547,6 +2557,7 @@ function renderToggles() {
   $("tinoBtn").classList.toggle("on", !!prefs.tino); $("tinoBtn").setAttribute("aria-pressed", prefs.tino ? "true" : "false");
   $("zoneBtn").classList.toggle("drawing", !!myzDraw); $("zoneBtn").setAttribute("aria-pressed", myzDraw ? "true" : "false");
   $("zoneBtn").firstChild.nodeValue = myzDraw === "oval" ? "◯" : "▭";
+  $("biaBtn").classList.toggle("on", !!prefs.bia); $("biaBtn").setAttribute("aria-pressed", prefs.bia ? "true" : "false");
   $("manuBtn").classList.toggle("on", !!prefs.manu); $("manuBtn").setAttribute("aria-pressed", prefs.manu ? "true" : "false");
   $("flipBtn").classList.toggle("on", !!prefs.flip); $("flipBtn").setAttribute("aria-pressed", prefs.flip ? "true" : "false");
   const srOn = selectedKinds().length > 0 && selectedLv().length > 0;
@@ -3338,6 +3349,7 @@ function drawDetail(keep) {
   drawGeo();
   tinoSeries = []; drawTino();
   manuSeries = []; drawManu();
+  biaSeries = []; drawBia();
   if (myzEdit) myzEnd(); myzSeries = []; drawMyz();
   applyHighlight();
   const bySeries = new Map(rows.map(r => [r[0], r]));
@@ -5996,6 +6008,160 @@ function drawManu() {
   const ts = ovChart.timeScale(), r = ts.getVisibleLogicalRange();          // vue calée à droite : montrer les séances à venir
   if (r && r.to >= n - 2 && r.to < n - 1 + fut.length) ts.setVisibleLogicalRange({ from:r.from, to:n - 1 + fut.length + 1 });
 }
+/* ===== Biarritz (stratégie « zone d'achat idéale » d'InvestirZen) =====
+   1) l'élastique : on n'achète pas un cours étiré loin de sa MM50 ;
+   2) zone neutre / zone dynamique : bandes de Bollinger 50 périodes, 1 écart-type, sur les clôtures ; MM50 plate = au repos ;
+   3) l'étincelle : cassure de la résistance qui bloque les cours pendant le repos, par une clôture au-dessus d'elle ET de la bande haute. */
+const BIA = { P:50, K:1, SLOPE_N:20, S_MIN:-0.03, S_MAX:0.10, TENSE:3, REST_N:30, REST_IN:0.6, REST_UP:1, RES_LB:120, PIV:3, RES_TOL:0.015, RES_MIN:2, RES_MAX:0.15, RECENT:5 };
+const BIA_COL = "#0e7490";
+let biaSeries = [], ovBia = null;
+function biaCompute(rows) {
+  const n = rows.length, P = BIA.P;
+  if (n < P + BIA.SLOPE_N + 5) return null;
+  const C = rows.map(r => r[4]), H = rows.map(r => r[2]);
+  const mid = new Array(n).fill(null), sd = new Array(n).fill(null);
+  let sum = 0, sq = 0;
+  for (let i = 0; i < n; i++) {
+    sum += C[i]; sq += C[i] * C[i];
+    if (i >= P) { sum -= C[i - P]; sq -= C[i - P] * C[i - P]; }
+    if (i >= P - 1) { const m = sum / P; mid[i] = m; sd[i] = Math.sqrt(Math.max(0, sq / P - m * m)); }   // écart-type « population », comme TradingView
+  }
+  const up = i => mid[i] + BIA.K * sd[i], lo = i => mid[i] - BIA.K * sd[i];
+  const slope = i => i - BIA.SLOPE_N >= 0 && mid[i - BIA.SLOPE_N] ? mid[i] / mid[i - BIA.SLOPE_N] - 1 : null;
+  // sommets locaux (plus haut des 3 bougies de chaque côté), confirmés 3 bougies plus tard
+  const piv = [];
+  for (let i = BIA.PIV; i < n - BIA.PIV; i++) {
+    let ok = true; for (let k = 1; k <= BIA.PIV && ok; k++) ok = H[i] >= H[i - k] && H[i] >= H[i + k];
+    if (ok) piv.push(i);
+  }
+  // résistance au moment i : groupe de sommets (±1,5 %) touché au moins 2 fois sur ~6 mois, le plus proche au-dessus du cours
+  const resAt = i => {
+    const c = C[i], ps = piv.filter(j => j <= i - BIA.PIV && j >= i - BIA.RES_LB && H[j] > c && H[j] <= c * (1 + BIA.RES_MAX));
+    let best = null;
+    ps.forEach(j => {
+      const g = ps.filter(k => Math.abs(H[k] / H[j] - 1) <= BIA.RES_TOL);
+      if (g.length < BIA.RES_MIN) return;
+      const lo_ = Math.min(...g.map(k => H[k])), hi_ = Math.max(...g.map(k => H[k]));
+      if (!best || lo_ < best.lo) best = { lo:lo_, hi:hi_, n:g.length, from:Math.min(...g), to:Math.max(...g) };
+    });
+    return best;
+  };
+  // « au repos » : clôtures dans la bande ou juste au-dessus (au plus 1 écart-type de plus), pas étirées
+  const restAt = i => { let k = 0, m = 0; for (let j = Math.max(P - 1, i - BIA.REST_N + 1); j <= i; j++) { m++; if (C[j] >= lo(j) && C[j] <= mid[j] + (BIA.K + BIA.REST_UP) * sd[j]) k++; } return m ? k / m : 0; };
+  // cassures Biarritz sur tout l'historique affiché
+  const sig = [];
+  for (let i = P + BIA.SLOPE_N; i < n; i++) {
+    const s = slope(i - 1);
+    if (s == null || s < BIA.S_MIN || s > BIA.S_MAX) continue;                         // MM50 plate ou qui se redresse doucement
+    if (restAt(i - 1) < BIA.REST_IN) continue;                                           // cours au repos dans la bande
+    const R = resAt(i - 1); if (!R) continue;
+    if (!(C[i] > R.hi && C[i - 1] <= R.hi && C[i] > up(i) && C[i] > mid[i])) continue;   // l'étincelle
+    if (C[i] > mid[i] + BIA.TENSE * sd[i]) continue;                                      // déjà étiré le jour même
+    sig.push({ i, t:rows[i][0], price:C[i], R });
+    i += 5;                                                                              // une cassure = un signal
+  }
+  const i = n - 1, c = C[i], s = slope(i), rest = restAt(i), R = resAt(i);
+  const last = sig.length ? sig[sig.length - 1] : null, fresh = last && last.i >= n - BIA.RECENT;
+  const ck = {
+    above: c > mid[i], tense: c > mid[i] + BIA.TENSE * sd[i], flat: s != null && s >= BIA.S_MIN && s <= BIA.S_MAX,
+    rest, res: R, out: c > up(i),
+  };
+  let st;
+  if (fresh) st = { k:"go", t:"Cassure Biarritz le " + dOf(last.t).toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"UTC" }) + " : entrée possible tant que l'élastique n'est pas tendu" };
+  else if (!ck.above) st = { k:"no", t:"Sous la MM50 : rien à faire (erreur n° 1, « elle a assez baissé »)" };
+  else if (ck.tense) st = { k:"no", t:"Élastique tendu : trop loin de la MM50, attendre un retour au repos (erreur n° 2)" };
+  else if (ck.flat && rest >= BIA.REST_IN && R) st = { k:"wait", t:"Au repos sous une résistance : attendre la cassure (clôture au-dessus de la résistance et de la bande haute)" };
+  else if (ck.flat && rest >= BIA.REST_IN) st = { k:"neu", t:"Au repos, mais pas de résistance nette touchée 2 fois au-dessus du cours" };
+  else st = { k:"neu", t:s != null && s < BIA.S_MIN ? "MM50 encore orientée à la baisse : pas encore « au repos »" : s != null && s > BIA.S_MAX ? "MM50 qui monte trop vite : tendance déjà lancée, pas un repos" : "Cours pas assez souvent au repos dans la bande ces 30 dernières séances" };
+  return { mid, sd, sig, st, ck, slope:s, R, C:c, n };
+}
+/* bande de Bollinger remplie entre les deux bords (série personnalisée Lightweight Charts) */
+class BiaBandRenderer {
+  draw(target, p2c) {
+    const d = this._d; if (!d || !d.bars.length || !d.visibleRange) return;
+    target.useBitmapCoordinateSpace(sc => {
+      const ctx = sc.context, hr = sc.horizontalPixelRatio, vr = sc.verticalPixelRatio, o = this._o;
+      const pts = []; for (let k = d.visibleRange.from; k < d.visibleRange.to; k++) { const b = d.bars[k]; if (b && b.originalData.up != null) pts.push(b); }
+      if (pts.length < 2) return;
+      ctx.beginPath();
+      pts.forEach((b, k) => { const x = b.x * hr, y = p2c(b.originalData.up) * vr; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      for (let k = pts.length - 1; k >= 0; k--) ctx.lineTo(pts[k].x * hr, p2c(pts[k].originalData.lo) * vr);
+      ctx.closePath(); ctx.fillStyle = o.fill; ctx.fill();
+    });
+  }
+  update(d, o) { this._d = d; this._o = o; }
+}
+class BiaBandSeries {
+  constructor() { this._r = new BiaBandRenderer(); }
+  priceValueBuilder(d) { return [d.lo, d.up, (d.lo + d.up) / 2]; }
+  isWhitespace(d) { return d.up == null; }
+  renderer() { return this._r; }
+  update(d, o) { this._r.update(d, o); }
+  defaultOptions() { return Object.assign({}, LW.customSeriesDefaultOptions, { fill:"rgba(14,116,144,.14)", color:"rgba(0,0,0,0)" }); }
+}
+function drawBia() {
+  biaSeries.forEach(s => { try { ovChart && ovChart.removeSeries(s); } catch (e) {} }); biaSeries = []; ovBia = null;
+  const iv = prefs.iv || "D";
+  if (!prefs.bia || !ovChart || !ovData || iv === "I") { renderBiaList(); return; }
+  const rows = barsFor(ovData, iv);
+  ovBia = biaCompute(rows);
+  renderBiaList();
+  if (!ovBia) return;
+  const B = ovBia, P = BIA.P;
+  const opt = { priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null };
+  try {
+    const band = ovChart.addCustomSeries(new BiaBandSeries(), opt);
+    band.setData(rows.map((r, i) => B.mid[i] == null ? { time:r[0] } : { time:r[0], up:B.mid[i] + BIA.K * B.sd[i], lo:B.mid[i] - BIA.K * B.sd[i] }));
+    biaSeries.push(band);
+  } catch (e) {}
+  [1, -1].forEach(k => { const l = ovChart.addLineSeries(Object.assign({ color:"rgba(14,116,144,.45)", lineWidth:1 }, opt));
+    l.setData(rows.map((r, i) => B.mid[i] == null ? { time:r[0] } : { time:r[0], value:B.mid[i] + k * BIA.K * B.sd[i] })); biaSeries.push(l); });
+  const m = ovChart.addLineSeries(Object.assign({ color:BIA_COL, lineWidth:2 }, opt));
+  m.setData(rows.map((r, i) => B.mid[i] == null ? { time:r[0] } : { time:r[0], value:B.mid[i] })); biaSeries.push(m);
+  // résistance déclencheur actuelle (zone verte), de son 1er contact à aujourd'hui
+  const R = B.R;
+  if (R && B.st.k !== "go") {
+    const hi = Math.max(R.hi, R.lo * 1.004);
+    const z = ovChart.addBaselineSeries(Object.assign({ baseValue:{ type:"price", price:R.lo }, lineWidth:2,
+      topLineColor:"#16a34a", topFillColor1:"rgba(34,197,94,.35)", topFillColor2:"rgba(34,197,94,.35)",
+      bottomLineColor:"rgba(0,0,0,0)", bottomFillColor1:"rgba(0,0,0,0)", bottomFillColor2:"rgba(0,0,0,0)" }, opt));
+    z.setData(rows.slice(R.from).map(r => ({ time:r[0], value:hi }))); biaSeries.push(z);
+  }
+  // cassures passées : la résistance cassée (trait vert) et un rond sur la bougie de cassure
+  B.sig.forEach(g => {
+    biaSeries.push(addSegment(ovChart, rows[g.R.from][0], g.R.hi, g.t, g.R.hi, "#16a34a", 3));
+    const pt = ovChart.addLineSeries(Object.assign({ color:"#f59e0b", lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:6 }, opt));
+    pt.setData([{ time:g.t, value:g.price }]); biaSeries.push(pt);
+  });
+}
+function renderBiaList() {
+  const box = $("ovBiaList"); if (!box) return;
+  $("boxBia").style.display = prefs.bia ? "" : "none";
+  box.innerHTML = ""; if (!prefs.bia) return;
+  const B = ovBia, iv = prefs.iv || "D";
+  if (!B) { box.innerHTML = '<div class="sig-none">Pas assez d\'historique (il faut au moins 75 bougies).</div>'; return; }
+  const cur = ovItem && ovItem.currency, F = v => fmt(v, cur), pc = v => fmtPct(Math.round((v / B.C - 1) * 1000) / 10);
+  if (iv !== "D") box.insertAdjacentHTML("beforeend", '<div class="sig-intro">La méthode est prévue en <b>journalier (J)</b> ; ici elle est calculée sur les bougies affichées.</div>');
+  box.insertAdjacentHTML("beforeend", '<div class="bia-st ' + B.st.k + '">' + esc(B.st.t) + "</div>");
+  const c = B.ck, mid = B.mid[B.n - 1], w = B.sd[B.n - 1];
+  const li = (ok, t) => "<li>" + (ok === null ? "⏳" : ok ? "✅" : "❌") + " " + t + "</li>";
+  box.insertAdjacentHTML("beforeend", '<ul class="bia-ck">' +
+    li(c.above, "Cours au-dessus de la MM50 (MM50 à " + F(mid) + ", soit " + pc(mid) + " par rapport au cours)") +
+    li(!c.tense, "Élastique pas tendu : cours sous MM50 + 3 écarts-types (" + F(mid + BIA.TENSE * w) + ")") +
+    li(c.flat, "MM50 plate ou qui se redresse doucement : pente sur 20 séances " + (B.slope == null ? "—" : fmtPct(Math.round(B.slope * 1000) / 10)) + " (entre −3 % et +10 %)") +
+    li(c.rest >= BIA.REST_IN, "Cours au repos dans la bande ou juste au-dessus : " + Math.round(c.rest * 100) + " % des 30 dernières clôtures (60 % au moins)") +
+    li(!!c.res, c.res ? "Résistance déclencheur " + F(c.res.lo) + (c.res.hi > c.res.lo * 1.001 ? " – " + F(c.res.hi) : "") + " (" + pc(c.res.hi) + "), touchée " + c.res.n + " fois" : "Résistance déclencheur : aucun sommet touché 2 fois entre le cours et +15 %") +
+    li(B.st.k === "go" ? true : c.res ? null : false, "Cassure : clôture au-dessus de la résistance <b>et</b> de la bande haute (" + F(mid + BIA.K * w) + ")") + "</ul>");
+  const last = B.sig.slice(-3).reverse();
+  if (last.length) box.insertAdjacentHTML("beforeend", '<div class="bia-sig">Dernières cassures Biarritz (● orange sur le graphique) : ' +
+    last.map(g => dOf(g.t).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"2-digit", timeZone:"UTC" }) + " à " + F(g.price) +
+      " (" + fmtPct(Math.round((B.C / g.price - 1) * 1000) / 10) + " depuis)").join(" · ") + "</div>");
+  box.insertAdjacentHTML("beforeend", '<div class="bia-foot">Stratégie Biarritz (InvestirZen) : <b>1</b> on n\'achète pas un élastique tendu ; <b>2</b> on regarde une action quand sa MM50 est plate et le cours au repos dans la bande de Bollinger 50 / 1 (zone neutre) ; ' +
+    "<b>3</b> on attend l'étincelle : la cassure de la résistance qui bloquait les cours. La méthode ne donne ni stop ni objectif. Réglages et détails dans Help (13 quater).</div>");
+}
+$("biaBtn").onclick = () => { prefs.bia = !prefs.bia; savePrefs(); drawBia(); renderToggles();
+  if (prefs.bia) setTimeout(() => { if (innerWidth < 900) toast("Biarritz : l'état et la check-list sont sous le graphique.", 2200); }, 50); };
+
 /* ===== Mes zones : rectangles jaunes dessinés à la main (deux coins opposés), gardés dans zones.json (dépôt, synchronisé
    entre appareils avec le jeton GitHub) et en copie locale sur l'appareil ===== */
 const MYZ_KEY = "mes-actions-zones-v1", MYZ_COL = "#facc15";
