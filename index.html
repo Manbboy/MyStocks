@@ -238,6 +238,10 @@
   .pf-list.compact .cp .nm { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pf-list.compact .cp .pc { font-size:14px; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
   .pf-list.compact .cp .vl { font-size:11.5px; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .pf-spk { display:block; position:relative; height:26px; margin:5px 0 1px; color:var(--muted); }
+  .pf-spk .pru-off { position:absolute; left:0; font-size:9.5px; font-weight:700; line-height:1.1; font-style:normal; color:var(--muted); background:var(--card); padding:1px 3px; border-radius:4px; }
+  .pf-spk svg { width:100%; height:26px; display:block; overflow:visible; }
+  .pf-list.compact .cp .pf-spk { grid-column:1 / -1; height:22px; margin:3px 0 0; } .pf-list.compact .cp .pf-spk svg { height:22px; }
   .pf-list.compact .cp .eu { font-size:11.5px; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
   .pf-warn { background:rgba(234,179,8,.14); border:1px solid rgba(234,179,8,.45); color:var(--text); border-radius:10px; padding:8px 12px; font-size:12.5px; margin-bottom:10px; }
   .pf-tx .dup { font-size:10.5px; font-weight:700; color:#b45309; background:rgba(234,179,8,.18); border-radius:5px; padding:1px 5px; white-space:nowrap; }
@@ -871,12 +875,72 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     html, body { scrollbar-width:none; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; width:0; height:0; }
   }
+
+  /* ================= Nouvelle interface « Clarté » (html[data-ui="2"]) ================= */
+  :root[data-ui="2"] { --bg:#f3f5f9; --card:#ffffff; --text:#0f1b2d; --muted:#6b7a90; --border:#e4e8ef; --accent:#1d4ed8; --chip:#eef2f8;
+    --up:#059669; --down:#e11d48; --sup:#059669; --res:#e11d48; --grid:#eef1f5; --r2:18px; --sh2:0 1px 2px rgba(15,27,45,.04), 0 8px 24px rgba(15,27,45,.06); }
+  :root[data-ui="2"][data-theme="dark"] { --bg:#0c1220; --card:#141c2d; --text:#e8edf6; --muted:#8795ab; --border:#1f2a3d; --accent:#4f8bff; --chip:#1a2335;
+    --up:#34d399; --down:#fb7185; --sup:#34d399; --res:#fb7185; --grid:#1a2335; --sh2:none; }
+  :root[data-ui="2"] body { font-family:Inter, "Segoe UI", Roboto, system-ui, -apple-system, sans-serif; padding-bottom:calc(96px + env(safe-area-inset-bottom)); }
+  :root[data-ui="2"] header { padding:14px 56px 6px 0; }
+  :root[data-ui="2"] header h1 { font-size:28px; font-weight:800; letter-spacing:-.02em; }
+  :root[data-ui="2"] header h1 .ver { font-size:11px; font-weight:600; color:var(--muted); letter-spacing:0; }
+  :root[data-ui="2"] #themeBtn { display:none; }
+  :root[data-ui="2"] header .sub { font-size:12px; }
+  .ui2-me { position:absolute; right:0; top:14px; width:40px; height:40px; border-radius:50%; border:0; background:var(--accent); color:#fff; font:800 16px/1 inherit; cursor:pointer; box-shadow:0 4px 12px rgba(29,78,216,.3); }
+  .ui2-me.big { position:static; display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; font-size:22px; }
+  /* listes en pastilles */
+  :root[data-ui="2"] .tabs { gap:7px; padding:6px 0 8px; }
+  :root[data-ui="2"] .tabs[hidden] { display:none; }
+  :root[data-ui="2"] .tab { background:var(--card); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font-size:13.5px; color:var(--text); }
+  :root[data-ui="2"] .tab.active { background:var(--accent); border-color:transparent; color:#fff; }
+  :root[data-ui="2"] .tab .tab-n { font-size:11px; opacity:.7; font-weight:600; }
+  :root[data-ui="2"] .bar { border-bottom:0; padding:4px 0 10px; }
+  :root[data-ui="2"] body:not(.ui2-lists) .bar { display:none; }
+  :root[data-ui="2"] .btn { border-radius:999px; }
+  /* cartes */
+  :root[data-ui="2"] .card, :root[data-ui="2"] .pfk-b, :root[data-ui="2"] .lv { border-radius:var(--r2); box-shadow:var(--sh2); }
+  :root[data-ui="2"] .pf-list.compact { border-radius:var(--r2); box-shadow:var(--sh2); }
+  :root[data-ui="2"] .pfk-tot { background:linear-gradient(135deg,#1e3a8a,#2563eb 60%,#38bdf8); border:0; color:#fff; --text:#fff; --muted:rgba(255,255,255,.78); --up:#86efac; --down:#fecdd3; }
+  :root[data-ui="2"] .pfk-tot .pfk-t { color:#fff !important; } :root[data-ui="2"] .pfk-tot .pfk-p { background:rgba(255,255,255,.15); }
+  /* barre d'onglets du bas */
+  .tabbar { position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); height:64px; z-index:60; display:flex; justify-content:space-around; align-items:center;
+    border-radius:22px; background:color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--border); box-shadow:0 8px 30px rgba(15,27,45,.14); max-width:560px; margin:0 auto; }
+  .tabbar button { position:relative; flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; border:0; background:none; color:var(--muted); font:600 10.5px/1.1 inherit; cursor:pointer; padding:6px 0; }
+  .tabbar svg { width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .tabbar button.on { color:var(--accent); }
+  .tabbar .tb-n { position:absolute; top:0; left:calc(50% + 6px); min-width:17px; height:17px; padding:0 4px; border-radius:9px; background:var(--down); color:#fff; font:700 10px/17px inherit; font-style:normal; }
+  body:has(#ov.show) #tabbar, body:has(.dlg.show) #tabbar { display:none; }      /* graphique ou fenêtre ouverte : pas de barre du bas */
+  /* accueil */
+  .td-date { color:var(--muted); font-size:13.5px; margin:-2px 0 10px; text-transform:capitalize; }
+  .td-hero { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px 16px; border-radius:var(--r2, 18px); color:#fff; cursor:pointer;
+    background:linear-gradient(135deg,#1e3a8a,#2563eb 60%,#38bdf8); box-shadow:0 10px 24px rgba(37,99,235,.25); margin-bottom:6px; }
+  .td-hero small { display:block; font-size:12px; opacity:.8; } .td-hero b { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .td-hp { text-align:right; } .td-hp span { display:inline-block; font-weight:700; font-size:13px; padding:3px 8px; border-radius:8px; background:rgba(255,255,255,.18); }
+  .td-hp .up { color:#bbf7d0; } .td-hp .down { color:#fecdd3; }
+  .ui2-sec { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:18px 2px 8px; }
+  .td-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r2, 18px); box-shadow:var(--sh2); padding:14px; margin-bottom:12px; }
+  .td-top { display:flex; justify-content:space-between; align-items:center; } .td-top small { color:var(--muted); font-size:12px; }
+  .td-tag { font-size:11px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:3px 8px; border-radius:7px; }
+  .t-up { background:color-mix(in srgb, var(--up) 14%, transparent); color:var(--up); } .t-acc { background:color-mix(in srgb, var(--accent) 12%, transparent); color:var(--accent); }
+  .t-zone { background:#fef9c3; color:#a16207; }
+  .td-card > b { display:block; font-size:16.5px; margin:9px 0 3px; } .td-card p { margin:0; color:var(--muted); font-size:13.5px; line-height:1.45; }
+  .td-spk { height:64px; margin:10px 0 2px; border-radius:12px; background:var(--bg); padding:6px 4px; } .td-spk svg { width:100%; height:100%; display:block; }
+  .td-act { display:flex; gap:8px; margin-top:10px; } .td-act .btn { flex:1; justify-content:center; padding:10px; font-weight:700; }
+  .btn.on { background:var(--accent); color:#fff; border-color:transparent; }
+  /* profil */
+  .ui2-prof { margin-bottom:6px; } .ui2-who { display:flex; align-items:center; gap:12px; margin:4px 0 6px; } .ui2-who b { font-size:19px; display:block; } .ui2-who small { color:var(--muted); font-size:13px; }
+  .ui2-themes { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  .ui2-themes button { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 6px; font-size:20px; color:var(--text); cursor:pointer; }
+  .ui2-themes button span { display:block; font-size:13px; font-weight:600; margin-top:4px; } .ui2-themes button.on { border:2px solid var(--accent); }
+  .ui2-row { display:flex; align-items:center; gap:10px; padding:12px 14px; } .ui2-row > div { flex:1; } .ui2-row b { display:block; font-size:14.5px; } .ui2-row small { color:var(--muted); font-size:12.5px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v200</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v201</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1091,6 +1155,12 @@ const RANGES = [["1J","1J",1],["1M","1M",21],["3M","3M",63],["6M","6M",126],["1A
 let prefs = { active:0, cols:3, range:"6M", iv:"D", lvs:["D"], kinds:["S","R"], maP:[], axis:false, rsi:false, tol:2, theme:"auto", cross:"free", role:false, vol:true };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS)) || {}); } catch (e) {}
 const savePrefs = () => { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) {} };
+/* Nouvelle interface « Clarté » (essai) : …/MyStocks/?ui=2 pour l'activer, ?ui=1 pour revenir à l'interface classique */
+try { const u = new URLSearchParams(location.search).get("ui");
+  if (u === "2" && prefs.ui !== 2) { prefs.ui = 2; prefs.view = "today"; savePrefs(); } else if (u === "1" && prefs.ui) { delete prefs.ui; if (prefs.view === "today") prefs.view = ""; savePrefs(); } } catch (e) {}
+const UI2 = prefs.ui === 2;
+if (UI2) document.documentElement.dataset.ui = "2";
+else if (prefs.view === "today") prefs.view = "";
 
 let cfg = null, summary = null;
 const seriesCache = {};
@@ -1108,6 +1178,27 @@ function fmt(v, cur) {
 }
 function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }) + "\u202f%"; }
 
+/* Portefeuille : mini-graphique des 30 dernières séances par position ouverte, avec la ligne du prix de revient (PRU)
+   en pointillés et un point sur le jour du premier achat s'il tombe dans ces 30 séances */
+const PF_SPK_N = 30;
+async function pfSpark(card, p) {
+  const box = card.querySelector(".pf-spk"), info = summary.symbols[p.sym];
+  if (!box || !info || !info.file) return;
+  let rows; try { rows = (await getSeries(info)).rows.slice(-PF_SPK_N); } catch (e) { return; }
+  if (!rows || rows.length < 2) return;
+  // échelle sur les 30 clôtures seulement ; un PRU hors de cette plage est posé sur le bord, avec un repère « PRU ▲ / ▼ »
+  const W = 100, H = 26, cl = rows.map(r => r[4]), last = p.price != null ? p.price : cl[cl.length - 1];
+  let lo = Math.min(...cl), hi = Math.max(...cl); const pad = (hi - lo) * .08 || hi * .01; lo -= pad; hi += pad;
+  const k = (H - 4) / ((hi - lo) || 1), y = v => (H - 2 - (Math.max(lo, Math.min(hi, v)) - lo) * k).toFixed(1), x = i => (i * W / (rows.length - 1)).toFixed(1);
+  const col = last >= p.pru ? "var(--up)" : "var(--down)", out = p.pru > hi ? "▲" : p.pru < lo ? "▼" : "";
+  const buys = p.tx.filter(t => t.type === "A").map(t => t.date).sort(), first = buys[0];
+  const bi = first ? rows.findIndex(r => r[0] >= first) : -1;
+  box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-label="30 dernières séances, ligne du PRU">' +
+    '<line x1="0" x2="' + W + '" y1="' + y(p.pru) + '" y2="' + y(p.pru) + '" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2" vector-effect="non-scaling-stroke" opacity="' + (out ? ".35" : ".6") + '"/>' +
+    '<polyline fill="none" stroke="' + col + '" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + '"/>' +
+    (bi > 0 ? '<circle cx="' + x(bi) + '" cy="' + y(cl[bi]) + '" r="2.6" fill="' + col + '"/>' : "") + "</svg>" +
+    (out ? '<i class="pru-off" style="' + (out === "▲" ? "top:-6px" : "bottom:-6px") + '">PRU ' + out + "</i>" : "");
+}
 async function getSeries(info) {
   if (!seriesCache[info.file]) {
     // si le fichier n'est pas encore publié (juste après un ajout), on n'en garde pas l'échec en mémoire : on réessaiera
@@ -1243,6 +1334,18 @@ const io = new IntersectionObserver(entries => {
 
 function renderTabs() {
   const t = $("tabs"); t.innerHTML = "";
+  if (UI2) {                                    // nouvelle interface : les listes en pastilles, le reste dans la barre du bas
+    cfg.portfolios.forEach((p, i) => {
+      const b = document.createElement("button");
+      b.className = "tab" + (i === prefs.active && !prefs.view ? " active" : "");
+      b.innerHTML = esc(p.name) + ' <span class="tab-n">' + p.items.length + "</span>";
+      b.onclick = () => { prefs.active = i; prefs.view = ""; savePrefs(); render(); };
+      t.appendChild(b);
+    });
+    t.hidden = !!prefs.view;
+    renderTabbar();
+    return;
+  }
   const pb = document.createElement("button");                 // onglet « Portfolio » (achats / ventes de M et D), juste après Hold
   pb.className = "tab pf-tab" + (prefs.view === "pf" ? " active" : "");
   pb.textContent = "Portfolio";
@@ -1422,6 +1525,9 @@ function ensureHold() {
 function render() {
   ensureHold();
   renderTabs();
+  if (UI2) ui2Header();
+  if (UI2 && prefs.view === "today") { renderToday(); return; }
+  if (UI2 && prefs.view === "help") { renderHelp().then(ui2Profile); return; }
   if (prefs.view === "pf" && typeof renderPf === "function") { renderPf(); return; }
   if (prefs.view === "sig" && typeof renderSig === "function") { renderSig(); return; }
   if (prefs.view === "alerts" && typeof renderAlertsView === "function") { renderAlertsView(); return; }
@@ -4208,6 +4314,7 @@ async function renderPf() {
       "</div></div>";
   };
   const sum = document.createElement("div"); sum.className = "pfk";
+  pfLastTot = Object.assign({ cur:"EUR", date:dayLbl }, tot.EUR || {});
   const multi = Object.keys(tot).some(c => c !== "EUR");
   let auto = false, miss = false;
   if (multi) {          // total en euros : dollars convertis au taux du jour de chaque opération (ou au montant saisi en €)
@@ -4215,6 +4322,7 @@ async function renderPf() {
     pos.filter(p => !p.noE).forEach(p => { E.cost += p.costE; E.value += p.valueE; E.latent += p.latentE; E.realized += p.realizedE; E.soldCost += p.soldCostE; E.day += p.dayChgE; });
     auto = pos.some(p => p.cur === "USD" && p.tx.some(t => !(+t.eur > 0)));
     sum.insertAdjacentHTML("beforeend", block("tot", "Total du portefeuille (en €)", "EUR", E));
+    pfLastTot = Object.assign({ cur:"EUR", date:dayLbl }, E);
   }
   const CUR_T = { EUR:"€ · Actions en euros", USD:"$ · Actions en dollars" };
   Object.entries(tot).sort((a, b) => (a[0] !== "EUR") - (b[0] !== "EUR")).forEach(([cur, t]) =>
@@ -4243,10 +4351,12 @@ async function renderPf() {
       (p.cur !== "EUR" && !p.noE ? '<br>en € : ' + (open ? 'investi ' + A(fmt(p.costE, "EUR")) + ' → ' + A(fmt(p.valueE, "EUR")) + ' <span class="' + (p.latentE >= 0 ? "up" : "down") + '">' + A(money(p.latentE, "EUR")) + (p.latentPctE != null ? " (" + fmtPct(p.latentPctE) + ")" : "") + '</span>'
         : 'réalisé <span class="' + (p.realizedE >= 0 ? "up" : "down") + '">' + A(money(p.realizedE, "EUR")) + (p.realizedPctE != null ? " (" + fmtPct(p.realizedPctE) + ")" : "") + '</span>') : "") + '</div>';
     c.querySelector(".nm").textContent = p.name;
+    if (open) c.querySelector(".r1").insertAdjacentHTML("afterend", '<span class="pf-spk"></span>');
     if (prefs.pfCompact) {
       const v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct, cl = v >= 0 ? "up" : "down";
       c.innerHTML = '<div class="cp"><b class="nm"></b><b class="pc ' + cl + '">' + (pc != null ? fmtPct(pc) : "") + '</b>' +
-        '<span class="vl">' + (open ? A(fmt(p.value, p.cur)) : "soldée") + '</span><span class="eu ' + cl + '">' + A(money(v, p.cur)) + '</span></div>';
+        '<span class="vl">' + (open ? A(fmt(p.value, p.cur)) : "soldée") + '</span><span class="eu ' + cl + '">' + A(money(v, p.cur)) + '</span>' +
+        (open ? '<span class="pf-spk"></span>' : "") + '</div>';
       c.querySelector(".nm").textContent = (p.tx.some(t => t._dup) ? "⚠ " : "") + p.name;
     }
     const tl = document.createElement("div"); tl.className = "pf-tx";
@@ -4271,6 +4381,7 @@ async function renderPf() {
     c._perf = open ? p.latentPct : p.realizedPct;          // tri par performance dans chaque rubrique (en %)
     c._gain = open ? (p.noE ? p.latent : p.latentE) : (p.noE ? p.realized : p.realizedE);   // … ou en gain (en euros)
     c._cat = pfCat(p); list.push(c);
+    if (open) pfSpark(c, p);
   });
   const fill = (L, B) => PF_CATS.forEach(([k, lab]) => {
     const key = prefs.pfSort === "eur" ? "_gain" : "_perf";
@@ -6028,6 +6139,131 @@ function drawManu() {
   const ts = ovChart.timeScale(), r = ts.getVisibleLogicalRange();          // vue calée à droite : montrer les séances à venir
   if (r && r.to >= n - 2 && r.to < n - 1 + fut.length) ts.setVisibleLogicalRange({ from:r.from, to:n - 1 + fut.length + 1 });
 }
+/* =====================================================================================================
+   NOUVELLE INTERFACE « CLARTÉ » (prefs.ui = 2) : barre d'onglets en bas (Aujourd'hui · Listes · Portefeuille · Signaux · Alertes),
+   accueil « Aujourd'hui » en fil d'événements, profil (thème, retour à l'interface classique) en haut à droite.
+   Tout le reste (graphiques, indicateurs, portefeuille, alertes) est le même code que l'interface classique.
+   ===================================================================================================== */
+var pfLastTot = null, biaData = null;
+const UI2_TABS = [
+  ["today", "Aujourd'hui", '<path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>'],
+  ["", "Listes", '<path d="M4 6h16M4 12h16M4 18h10"/>'],
+  ["pf", "Portefeuille", '<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M8 6V4h8v2M3 12h18"/>'],
+  ["sig", "Signaux", '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'],
+  ["alerts", "Alertes", '<path d="M6 8a6 6 0 1112 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 004 0"/>'],
+];
+const UI2_TITLE = { today:"Aujourd'hui", "":"Listes", pf:"Portefeuille", sig:"Signaux", alerts:"Alertes", help:"Profil et aide" };
+function renderTabbar() {
+  let bar = $("tabbar");
+  if (!bar) { bar = document.createElement("nav"); bar.id = "tabbar"; bar.className = "tabbar"; document.body.appendChild(bar); }
+  const v = prefs.view || "";
+  let nSig = 0, nAl = 0;
+  try { nSig = sigData ? new Set((sigData.items || []).filter(e => e.age === 0 && e.sig.some(g => SIG_BULL.has(g.k))).map(e => e.sym)
+    .concat(((sigFlips && sigFlips.items) || []).filter(e => e.age === 0 && SIG_FLIP_OK.has(e.sig[0].k)).map(e => e.sym))).size : 0; } catch (e) {}
+  try { nAl = alertsData ? (alertsData.alerts || []).filter(a => !a.auto && !alertsSent[a.id]).length : 0; } catch (e) {}
+  bar.innerHTML = UI2_TABS.map(([k, l, ic]) => '<button data-v="' + k + '" class="' + (k === v ? "on" : "") + '"><svg viewBox="0 0 24 24">' + ic + "</svg>" +
+    (k === "sig" && nSig ? '<i class="tb-n">' + nSig + "</i>" : k === "alerts" && nAl ? '<i class="tb-n">' + nAl + "</i>" : "") + "<span>" + l + "</span></button>").join("");
+  bar.querySelectorAll("button").forEach(b => b.onclick = () => {
+    if ($("ov").classList.contains("show")) closeDetail();
+    prefs.view = b.dataset.v; savePrefs(); render(); scrollTo(0, 0);
+  });
+}
+function ui2Header() {
+  const h = document.querySelector("header h1"); if (!h) return;
+  h.firstChild.nodeValue = (UI2_TITLE[prefs.view || ""] || "Mes actions") + " ";
+  let a = $("ui2Me");
+  if (!a) { a = document.createElement("button"); a.id = "ui2Me"; a.className = "ui2-me"; a.textContent = "M"; a.title = "Profil, réglages et aide";
+    a.onclick = () => { prefs.view = "help"; savePrefs(); render(); scrollTo(0, 0); };
+    document.querySelector("header").appendChild(a); }
+  document.body.classList.toggle("ui2-lists", !prefs.view);
+}
+/* profil : apparence, interface classique — puis l'aide */
+function ui2Profile() {
+  const box = $("pfView"); if (!box) return;
+  const th = prefs.theme === "light" ? "light" : "dark";
+  const p = document.createElement("div"); p.className = "ui2-prof";
+  p.innerHTML = '<div class="ui2-who"><span class="ui2-me big">M</span><div><b>Manu</b><small>Mes actions · ' + esc($("appVer").textContent) + " · interface Clarté (essai)</small></div></div>" +
+    '<div class="ui2-sec">Apparence</div><div class="ui2-themes"><button data-t="light">☀️<span>Clair</span></button><button data-t="dark">🌙<span>Sombre</span></button><button data-t="auto">⚙️<span>Auto</span></button></div>' +
+    '<div class="ui2-sec">Interface</div><div class="card ui2-row"><div><b>Revenir à l\'interface classique (v200)</b><small>Vous pourrez revenir ici avec …/MyStocks/?ui=2</small></div><button class="btn" id="ui2Old">Classique</button></div>' +
+    '<div class="ui2-sec">Aide : comment lire chaque indicateur</div>';
+  box.prepend(p);
+  p.querySelectorAll(".ui2-themes button").forEach(b => { if (b.dataset.t === th) b.classList.add("on");
+    b.onclick = () => { if (b.dataset.t === "auto") { prefs.theme = "auto"; savePrefs(); applyTheme(); render(); } else setTheme(b.dataset.t); }; });
+  $("ui2Old").onclick = () => { location.href = location.pathname + "?ui=1"; };
+}
+/* mini-graphique des 30 dernières séances avec une ligne de niveau (résistance, zone, PRU…) */
+async function ui2Spark(el, sym, level) {
+  const info = summary.symbols[sym]; if (!el || !info || !info.file) return;
+  let rows; try { rows = (await getSeries(info)).rows.slice(-30); } catch (e) { return; }
+  const W = 100, H = 40, cl = rows.map(r => r[4]), lv = level || cl[cl.length - 1];
+  const lo = Math.min(...cl, lv), hi = Math.max(...cl, lv), k = (H - 6) / ((hi - lo) || 1), y = v => (H - 3 - (v - lo) * k).toFixed(1), x = i => (i * W / (cl.length - 1)).toFixed(1);
+  const col = cl[cl.length - 1] >= cl[0] ? "var(--up)" : "var(--down)";
+  el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none">' +
+    '<polygon fill="' + col + '" opacity=".10" points="0,' + H + " " + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + " " + W + "," + H + '"/>' +
+    (level ? '<line x1="0" x2="' + W + '" y1="' + y(level) + '" y2="' + y(level) + '" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>' : "") +
+    '<polyline fill="none" stroke="' + col + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + '"/></svg>';
+}
+const ui2Item = sym => { for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === sym); if (it) return it; } return null; };
+function ui2Open(sym, opt) {
+  const it = ui2Item(sym); if (!it || !summary.symbols[sym]) { toast("Valeur introuvable dans vos listes.", 2000); return; }
+  if (opt && opt.bia) { prefs.bia = true; savePrefs(); }
+  openDetail(it, withLive(sym, summary.symbols[sym]));
+}
+/* ===== Accueil « Aujourd'hui » : résumé du portefeuille + fil des événements du soir ===== */
+async function renderToday() {
+  document.body.classList.add("pf-mode");
+  const box = $("pfView"); box.hidden = false; $("grid").innerHTML = "";
+  box.innerHTML = '<div class="msg">Chargement…</div>';
+  const jobs = [];
+  if (!sigData) jobs.push(sigLoad().catch(() => {}));
+  if (!alertsData) jobs.push(alertsLoad().catch(() => {}));
+  if (!biaData) jobs.push(fetch("data/biarritz.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null).then(d => biaData = d).catch(() => {}));
+  await Promise.all(jobs);
+  if (prefs.view !== "today") return;
+  renderTabbar();
+  box.innerHTML = "";
+  const d = new Date(), days = summary && summary.updated ? summary.updated.slice(0, 10) : "";
+  box.insertAdjacentHTML("beforeend", '<div class="td-date">' + d.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" }) + "</div>");
+  // portefeuille
+  const T = pfLastTot;
+  const hero = document.createElement("div"); hero.className = "td-hero";
+  if (T && T.value) {
+    const dp = T.value - T.day > 0 ? T.day / (T.value - T.day) * 100 : null, lp = T.cost > 0 ? T.latent / T.cost * 100 : null;
+    hero.innerHTML = '<div><small>Mon portefeuille</small><b>' + A(fmt(T.value, "EUR")) + "</b></div>" +
+      '<div class="td-hp"><span class="' + (T.day >= 0 ? "up" : "down") + '">' + A(money(T.day, "EUR")) + (dp != null ? " · " + fmtPct(dp) : "") + "</span><small>" +
+      (T.date ? "séance " + esc(T.date) : "aujourd'hui") + (lp != null ? " · total " + fmtPct(lp) : "") + "</small></div>";
+  } else hero.innerHTML = '<div><small>Mon portefeuille</small><b>🔒 Verrouillé</b></div><div class="td-hp"><small>Touchez pour l\'ouvrir</small></div>';
+  hero.onclick = () => { prefs.view = "pf"; savePrefs(); render(); };
+  box.appendChild(hero);
+  // événements
+  const ev = [];
+  const last = sym => { const i = summary.symbols[sym]; return i ? i.last : null; };
+  (biaData && biaData.go || []).forEach(g => ev.push({ k:"bia", sym:g.sym, tag:"🏄 Cassure Biarritz", cls:"t-up", when:g.date, title:g.name + " casse sa résistance",
+    sub:"Clôture " + fmt(g.price, g.cur) + " au-dessus de " + fmt(g.res, g.cur) + " et de la bande haute — entrée possible tant que l'élastique n'est pas tendu", level:g.res, w:100 }));
+  (alertsData && alertsData.alerts || []).filter(a => a.zone && !alertsSent[a.id]).forEach(a => { const c = last(a.sym); if (!c) return; const dist = Math.abs(a.price / c - 1);
+    if (dist <= 0.03) ev.push({ k:"zone", sym:a.sym, tag:"🟨 Votre zone", cls:"t-zone", when:"", title:(a.name || a.sym) + " approche de votre zone", sub:"À " + fmtPct(Math.round(dist * 1000) / 10).replace("+", "") + (a.note ? " · « " + a.note + " »" : ""), level:a.price, w:90 - dist * 100 }); });
+  ((sigFlips && sigFlips.items) || []).filter(e => e.age === 0 && SIG_FLIP_OK.has(e.sig[0].k)).forEach(e => { const g = e.sig[0], it = ui2Item(e.sym), cur = (summary.symbols[e.sym] || {}).currency;
+    ev.push({ k:"flip", sym:e.sym, tag:"⇄ Bascule R⇄S confirmée", cls:"t-acc", when:e.date, title:(it ? it.name : e.sym) + " : " + (SIG_CHIP[g.k] || g.k),
+      sub:"Niveau " + (g.tf === "S" ? "hebdo" : "jour") + " " + fmt(g.lv, cur) + " · clôture " + fmt(e.close, cur), level:g.lv, w:70 }); });
+  (biaData && biaData.wait || []).filter(w => w.dist <= 0.015).forEach(w => ev.push({ k:"biaw", sym:w.sym, tag:"🏄 Juste sous la résistance", cls:"t-acc", when:"", title:w.name + " à " + fmtPct(Math.round(w.dist * 1000) / 10) + " de sa résistance",
+    sub:"Au repos sous " + fmt(w.lo, w.cur) + (w.hi > w.lo * 1.001 ? " – " + fmt(w.hi, w.cur) : "") + " (" + w.n + " contacts) : une alerte Telegram partira à la cassure", level:w.hi, w:60 - w.dist * 100 }));
+  if (sigMom && sigMom.top) { const m = sigMom, dd = (Date.now() - new Date((m.asof || "") + "T00:00:00Z")) / 864e5;
+    if (dd >= 0 && dd <= 7) ev.push({ k:"mom", tag:"⚡ Momentum", cls:"t-acc", when:"", title:"Nouveau Top 10 Momentum", sub:"Entrées : " + (m.in || []).slice(0, 4).map(x => x.name || x).join(", ") + ((m.out || []).length ? " · Sorties : " + m.out.slice(0, 3).map(x => x.name || x).join(", ") : ""), w:50 }); }
+  ev.sort((a, b) => b.w - a.w);
+  box.insertAdjacentHTML("beforeend", '<div class="ui2-sec">' + (ev.length ? ev.length + " événement" + (ev.length > 1 ? "s" : "") + " sur vos valeurs" : "Rien de particulier ce soir") + "</div>");
+  ev.slice(0, 12).forEach(e => {
+    const c = document.createElement("div"); c.className = "td-card";
+    c.innerHTML = '<div class="td-top"><span class="td-tag ' + e.cls + '">' + e.tag + '</span><small>' + (e.when ? dOf(e.when).toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"UTC" }) : "") + "</small></div>" +
+      "<b>" + esc(e.title) + "</b><p>" + esc(e.sub) + "</p>" + (e.sym ? '<div class="td-spk"></div>' : "") +
+      '<div class="td-act">' + (e.sym ? '<button class="btn on td-go">Voir le graphique</button>' : '<button class="btn on td-go">Voir</button>') + "</div>";
+    c.querySelector(".td-go").onclick = () => { if (e.sym) ui2Open(e.sym, { bia:e.k === "bia" || e.k === "biaw" }); else { prefs.view = "sig"; savePrefs(); render(); } };
+    box.appendChild(c);
+    if (e.sym) ui2Spark(c.querySelector(".td-spk"), e.sym, e.level);
+  });
+  if (!ev.length) box.insertAdjacentHTML("beforeend", '<div class="td-card"><p>Aucune cassure, bascule ou approche de zone ce soir. Les listes et les signaux restent accessibles en bas.</p></div>');
+  box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calculé après la clôture du ' + esc(days) + ". À vérifier sur le graphique — pas des conseils d'investissement.</div>");
+}
+
 /* ===== Biarritz (stratégie « zone d'achat idéale » d'InvestirZen) =====
    1) l'élastique : on n'achète pas un cours étiré loin de sa MM50 ;
    2) zone neutre / zone dynamique : bandes de Bollinger 50 périodes, 1 écart-type, sur les clôtures ; MM50 plate = au repos ;

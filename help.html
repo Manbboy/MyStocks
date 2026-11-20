@@ -8,7 +8,7 @@
   <a href="#h-data">1. Données</a><a href="#h-tabs">2. Onglets</a><a href="#h-list">3. Listes et vue compacte</a><a href="#h-chart">4. Graphique détaillé</a>
   <a href="#h-ma">5. Moyennes mobiles</a><a href="#h-sr">6. Supports / résistances</a><a href="#h-flip">7. Bascules R⇄S</a><a href="#h-tl">8. Obliques</a>
   <a href="#h-chan">9. Canaux</a><a href="#h-rsi">10. RSI</a><a href="#h-rt">11. RSI Trends</a><a href="#h-vol">12. Volumes</a><a href="#h-proj">12 bis. Projection ┈</a>
-  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-myz">13 ter. Mes zones (▭ / ◯)</a><a href="#h-bia">13 quater. Biarritz (B)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder (momentum)</a><a href="#h-why">16. Pourquoi ça bouge</a>
+  <a href="#h-tino">13. Tino</a><a href="#h-manu">13 bis. Manu (M)</a><a href="#h-myz">13 ter. Mes zones (▭ / ◯)</a><a href="#h-bia">13 quater. Biarritz (B)</a><a href="#h-ui2">Nouvelle interface (essai)</a><a href="#h-bo">14. Cassures (Cass.)</a><a href="#h-sig">15. À regarder (momentum)</a><a href="#h-why">16. Pourquoi ça bouge</a>
   <a href="#h-pf">17. Portfolio</a><a href="#h-al">18. Alertes</a><a href="#h-disp">19. Affichage</a><a href="#h-gl">20. Lexique</a>
 </nav>
 
@@ -421,6 +421,16 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
 <p><b>Alerte Telegram</b> : les valeurs « au repos sous une résistance » reçoivent chaque soir une alerte 🏄 au haut de leur résistance (§ 18).</p>
 </details>
 
+<details id="h-ui2"><summary>Nouvelle interface « Clarté » (essai)</summary>
+<p>Une nouvelle présentation, pensée comme une application pour téléphone, s'active avec l'adresse <b>…/MyStocks/?ui=2</b> (et se quitte avec <b>?ui=1</b>, ou dans Profil → « Classique »). Les calculs, indicateurs, alertes et le portefeuille sont exactement les mêmes.</p>
+<ul>
+<li><b>Barre d'onglets en bas</b> : Aujourd'hui · Listes · Portefeuille · Signaux · Alertes. Le rond <b>M</b> en haut à droite ouvre le profil (thème clair / sombre / auto, retour à l'interface classique) et cette aide.</li>
+<li><b>Aujourd'hui</b> : résumé du portefeuille (une fois ouvert avec son mot de passe), puis un fil des événements du soir, du plus important au moins important : cassures Biarritz (5 dernières séances), cours à moins de 3 % d'une de vos zones, bascules R⇄S confirmées du jour, valeurs Biarritz à moins de 1,5 % de leur résistance, nouveau Top 10 Momentum (7 jours après la fin du mois). Chaque carte montre les 30 dernières séances et le niveau en pointillés vert.</li>
+<li><b>Listes</b> : vos listes en pastilles (Market, EU, US…).</li>
+</ul>
+<p>Les listes Biarritz sont calculées chaque soir par <code>scripts/bia_list.mjs</code> (data/biarritz.json).</p>
+</details>
+
 <details id="h-bo"><summary>14. Cassures récentes (colonne Cass.)</summary>
 <p>Calculé dans l'appli sur les chandeliers journaliers, avec la précision choisie. Sorties des <b>5 dernières séances</b>, la plus récente d'abord :</p>
 <ul>
@@ -517,6 +527,7 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
   <li><b>Depuis l'achat</b> = +/− value latente (ci-dessous) ;</li>
   <li>en dessous, le montant <b>investi</b> et le <b>réalisé</b> (ventes), s'il y en a.</li></ul>
   Case verte = gain, rouge = perte. Dans le total en €, « Aujourd'hui » convertit les dollars au taux actuel (la variation du dollar sur la journée n'est pas comptée).</li>
+<li><b>Mini-graphique</b> de chaque position ouverte : clôtures des <b>30 dernières séances</b> (vert si le cours est au-dessus du PRU, rouge sinon), <b>ligne pointillée = PRU</b>, point = jour du premier achat s'il tombe dans ces 30 séances. Si le PRU est hors de la plage des 30 séances, la ligne est posée sur le bord avec le repère « PRU ▲ » (au-dessus) ou « PRU ▼ » (en dessous).</li>
 <li><b>PRU</b> (prix de revient unitaire) : moyenne pondérée des achats, <b>frais inclus</b>. Une vente ne change pas le PRU des titres restants.</li>
 <li><b>+/− value latente</b> = quantité × cours actuel − prix de revient des titres détenus ; en % du prix de revient.</li>
 <li><b>Réalisé</b> = produit des ventes (frais déduits) − PRU × quantité vendue ; en % du prix de revient des titres vendus.</li>
