@@ -933,7 +933,13 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] body.ui2-lists:not(.ui2-cards) .bar { display:none; }
   :root[data-ui="2"] #liveBtn, :root[data-ui="2"] #liveMenu,
   :root[data-ui="2"] .bar .legend, :root[data-ui="2"] #cmpBtn, :root[data-ui="2"] #paintBtn, :root[data-ui="2"] #editBtn, :root[data-ui="2"] #addBtn { display:none !important; }
-  .u2-t2 { justify-content:flex-start; margin-top:-2px; } .u2-t2 .btn { margin:0; }
+  .u2-tools #sortBtn { margin-left:auto; padding:8px 11px; font-size:13px; white-space:nowrap; }
+  .u2-tools #sortBtn[hidden] + .u2-edit, .u2-tools .u2-seg + .u2-edit { margin-left:auto; }
+  .u2-edit { width:38px; height:34px; padding:0 !important; display:inline-flex; align-items:center; justify-content:center; font-size:15px !important; }
+  .u2-seg button { padding:7px 10px; }
+  .u2-sep { height:0; border-top:2px solid color-mix(in srgb, var(--accent) 35%, var(--border)); margin:3px 0; border-radius:2px; }
+  .u2-map .u2-sep { grid-column:1 / -1; margin:2px 4px; }
+  .u2-list .u2-sep + .u2-row { border-top:0; }
   .u2-edit { border:1px solid var(--border); background:var(--card); color:var(--text); font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; }
   .u2-edit.on { background:var(--accent); color:#fff; border-color:transparent; }
   .u2-rm { flex:none; width:30px; height:30px; border-radius:50%; background:color-mix(in srgb, var(--down) 14%, transparent); color:var(--down); display:flex; align-items:center; justify-content:center; font-weight:800; font-style:normal; }
@@ -960,7 +966,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-p { text-align:right; min-width:74px; } .u2-p b { display:block; font-size:15px; font-weight:650; font-variant-numeric:tabular-nums; }
   .u2-p i { display:inline-block; font-style:normal; font-size:12px; font-weight:700; padding:2px 6px; border-radius:6px; margin-top:2px; font-variant-numeric:tabular-nums; }
   .u2-p i.up { background:color-mix(in srgb, var(--up) 13%, transparent); } .u2-p i.down { background:color-mix(in srgb, var(--down) 12%, transparent); }
-  .u2-map { display:grid; grid-template-columns:repeat(3, 1fr); grid-auto-rows:74px; gap:5px; }
+  .u2-map { display:grid; grid-template-columns:repeat(3, 1fr); grid-auto-rows:auto; gap:5px; } .u2-map .u2-tile { height:74px; }
   .u2-tile { border:0; border-radius:14px; padding:8px 9px; text-align:left; color:var(--text); font:inherit; cursor:pointer; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; }
   .u2-tile .u2-tb { display:flex; align-items:flex-end; justify-content:space-between; gap:4px; }
   .u2-tile .u2-spk { display:block; width:52px; height:26px; flex:none; } .u2-tile .u2-spk svg { display:block; }
@@ -1021,7 +1027,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v206</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v207</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3806,7 +3812,7 @@ $("lvClose").onclick = closeLevel;
   };
   document.addEventListener("click", e => { if (!e.target.closest("#liveMenu")) $("liveMenu").hidden = true; });
   const updSortBtn = () => { const m = SORTS.find(x => x[0] === (prefs.sort || "add"));
-    if (UI2) { $("sortBtn").textContent = "⇅ " + { add:"Défaut", perfDesc:"Meilleure var.", perfAsc:"Pire var.", name:"A → Z", nearS:"Proche support", nearR:"Proche résistance" }[prefs.sort || "add"];
+    if (UI2) { $("sortBtn").textContent = "⇅ " + { add:"Défaut", perfDesc:"Var. ↓", perfAsc:"Var. ↑", name:"A→Z", nearS:"Supp.", nearR:"Rés." }[prefs.sort || "add"];
       $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); return; }
     $("sortBtn").textContent = (prefs.sort || "add") === "add" ? "⇅" : "⇅ " + { perfDesc:"Var. ↓", perfAsc:"Var. ↑", name:"A→Z", nearS:"Supp.", nearR:"Rés." }[prefs.sort];
     $("sortBtn").title = "Tri : " + sortLabel(m[0], m[1]); $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); };
@@ -6326,9 +6332,10 @@ function ui2Tools() {
   let t = $("u2Tools");
   if (!t) {
     t = document.createElement("div"); t.id = "u2Tools";
-    t.innerHTML = '<div class="u2-tools"><div class="u2-seg"></div><button class="u2-edit" id="u2Edit">✎ Modifier</button></div><div class="u2-tools u2-t2"></div>';
+    t.innerHTML = '<div class="u2-tools"><div class="u2-seg"></div><span class="u2-sp"></span><button class="u2-edit" id="u2Edit" title="Modifier la liste">✎</button></div>';
     document.querySelector(".bar").before(t);
-    t.querySelector(".u2-t2").append($("sortBtn"), $("sortMenu"));          // le direct est permanent (5 s) : plus de choix Clôtures / Direct     // menus avec leurs boutons (la barre classique est masquée en Liste / Carte)
+    t.querySelector(".u2-sp").replaceWith($("sortBtn"));                   // tri sur la même ligne (le direct est permanent : 5 s)
+    t.appendChild($("sortMenu"));     // menus avec leurs boutons (la barre classique est masquée en Liste / Carte)
     $("u2Edit").onclick = () => { editing = !editing; render(); };
   }
   const mode = u2Mode();
@@ -6336,7 +6343,9 @@ function ui2Tools() {
   const seg = t.querySelector(".u2-seg");
   seg.innerHTML = [["list", "☰ Liste"], ["map", "▦ Carte"], ["cards", "📈 Graph."]].map(([k, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '">' + l + "</button>").join("");
   seg.querySelectorAll("button").forEach(b => b.onclick = () => { prefs.u2mode = b.dataset.m; delete prefs.u2map; savePrefs(); render(); });
-  const e = $("u2Edit"); e.classList.toggle("on", editing); e.textContent = editing ? "✓ Terminé" : "✎ Modifier";
+  const e = $("u2Edit"); e.classList.toggle("on", editing); e.textContent = editing ? "✓" : "✎";
+  const pfc = cfg.portfolios[prefs.active] || {};
+  $("sortBtn").hidden = pfc.name === "Market";                            // pas de tri dans Market (ordre fixe) — réaffiché partout ailleurs
   if (mode === "cards" && prefs.gridCompact) { prefs.gridCompact = false; savePrefs(); }      // « Graphiques » : rien que les graphiques
   document.body.classList.toggle("ui2-cards", mode === "cards" && !prefs.view);
 }
@@ -6391,9 +6400,14 @@ async function renderUi2List() {
     '<div class="u2-sum"><div><small>' + esc(pf.name) + " · " + items.length + " valeurs</small><b>" + up + " en hausse · " + (items.length - up) + " en baisse</b></div><div class=\"u2-bars" + (items.length > 30 ? " many" : "") + "\">" +
       items.slice().sort((a, b) => (b.info.changePct || 0) - (a.info.changePct || 0)).map(x => '<i style="height:' + Math.min(30, 4 + Math.abs(x.info.changePct || 0) * 6).toFixed(0) + "px;background:var(--" + ((x.info.changePct || 0) >= 0 ? "up" : "down") + ')"></i>').join("") + "</div></div>";
   const box = document.createElement("div");
+  const isMk = pf.name === "Market";
+  if (isMk) { const gi = it => MK_GROUPS.findIndex(g => g[0] === mkGroup(it.yahoo)); items = items.map((x, k) => [x, k]).sort((a, b) => gi(a[0].it) - gi(b[0].it) || a[1] - b[1]).map(x => x[0]); }
+  let lastG = null;
+  const sep = it => { if (!isMk) return; const g = mkGroup(it.yahoo); if (lastG !== null && g !== lastG) { const d = document.createElement("div"); d.className = "u2-sep"; box.appendChild(d); } lastG = g; };
   if (mode === "list") {
     box.className = "u2-list";
     items.forEach(({ it, i, info }) => {
+      sep(it);
       const r = document.createElement("button"); r.className = "u2-row";
       const ch = info.changePct, tag = bg.has(it.yahoo) ? '<em class="t-up">🏄 cassure</em>' : bw.has(it.yahoo) && bw.get(it.yahoo).dist <= 0.05 ? '<em class="t-acc">🏄 à ' + fmtPct(Math.round(bw.get(it.yahoo).dist * 1000) / 10) + "</em>" : "";
       r.innerHTML = ui2Logo(it.name, i) + '<span class="u2-n"><b>' + esc(it.name) + "</b><small>" + esc(it.yahoo.replace(/^\^/, "")) + (tag ? " · " + tag : "") + "</small></span>" +
@@ -6405,6 +6419,7 @@ async function renderUi2List() {
   } else {
     box.className = "u2-map";
     items.forEach(({ it, i, info }, k) => {
+      sep(it);
       const ch = info.changePct || 0, m = Math.min(1, Math.abs(ch) / 3), t = document.createElement("button");
       t.className = "u2-tile";
       t.style.background = "color-mix(in srgb, " + (ch >= 0 ? "var(--up)" : "var(--down)") + " " + (16 + m * 64).toFixed(0) + "%, var(--card))";
