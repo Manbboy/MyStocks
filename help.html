@@ -425,8 +425,12 @@ Pendant la modification, le graphique se fait toujours défiler et zoomer en deh
 <p>Une nouvelle présentation, pensée comme une application pour téléphone, s'active avec l'adresse <b>…/MyStocks/?ui=2</b> (et se quitte avec <b>?ui=1</b>, ou dans Profil → « Classique »). Les calculs, indicateurs, alertes et le portefeuille sont exactement les mêmes.</p>
 <ul>
 <li><b>Barre d'onglets en bas</b> : Aujourd'hui · Listes · Portefeuille · Signaux · Alertes. Le rond <b>M</b> en haut à droite ouvre le profil (thème clair / sombre / auto, retour à l'interface classique) et cette aide.</li>
-<li><b>Aujourd'hui</b> : résumé du portefeuille (une fois ouvert avec son mot de passe), puis un fil des événements du soir, du plus important au moins important : cassures Biarritz (5 dernières séances), cours à moins de 3 % d'une de vos zones, bascules R⇄S confirmées du jour, valeurs Biarritz à moins de 1,5 % de leur résistance, nouveau Top 10 Momentum (7 jours après la fin du mois). Chaque carte montre les 30 dernières séances et le niveau en pointillés vert.</li>
-<li><b>Listes</b> : vos listes en pastilles (Market, EU, US…).</li>
+<li><b>Aujourd'hui</b> : résumé du portefeuille (une fois ouvert avec son mot de passe), puis un fil des événements du soir, du plus important au moins important : cassures Biarritz (5 dernières séances), cours à moins de 3 % d'une de vos zones, bascules R⇄S confirmées du jour, valeurs Biarritz à moins de 1,5 % de leur résistance, nouveau Top 10 Momentum (7 jours après la fin du mois). Chaque carte montre les <b>45 dernières bougies</b> avec la bande de Bollinger 50 / 1 et la MM50 (bleu), et le niveau concerné en pointillés vert.</li>
+<li><b>Listes</b> : vos listes en pastilles (Market, EU, US…), un bandeau « x en hausse · y en baisse » avec une barre par valeur, puis :
+  <ul><li><b>☰ Liste</b> : une ligne par valeur — initiales, nom, ticker, repère 🏄 (cassure Biarritz récente, ou résistance Biarritz à 5 % au plus), mini-graphique des <b>30 dernières clôtures</b> (vert si en hausse sur 30 séances), cours et variation du jour ;</li>
+  <li><b>▦ Carte</b> : carte de chaleur, une tuile par valeur, couleur = variation du jour (pleine à ±3 %), les deux plus fortes variations en grand.</li>
+  <li>Tri (bouton à droite) : A → Z, variation du jour, ou ordre de la liste. Toucher une valeur ouvre son graphique.</li></ul>
+  Les 30 clôtures viennent de <code>data/sparks.json</code>, calculé chaque soir par <code>scripts/sparks.mjs</code>.</li>
 </ul>
 <p>Les listes Biarritz sont calculées chaque soir par <code>scripts/bia_list.mjs</code> (data/biarritz.json).</p>
 </details>

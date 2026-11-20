@@ -926,7 +926,33 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .t-up { background:color-mix(in srgb, var(--up) 14%, transparent); color:var(--up); } .t-acc { background:color-mix(in srgb, var(--accent) 12%, transparent); color:var(--accent); }
   .t-zone { background:#fef9c3; color:#a16207; }
   .td-card > b { display:block; font-size:16.5px; margin:9px 0 3px; } .td-card p { margin:0; color:var(--muted); font-size:13.5px; line-height:1.45; }
-  .td-spk { height:64px; margin:10px 0 2px; border-radius:12px; background:var(--bg); padding:6px 4px; } .td-spk svg { width:100%; height:100%; display:block; }
+  .td-spk { position:relative; height:130px; margin:10px 0 2px; border-radius:12px; background:var(--bg); padding:8px 6px 18px; } .td-spk svg { width:100%; height:100%; display:block; }
+  .td-leg { position:absolute; left:8px; bottom:3px; font-size:10.5px; color:var(--muted); } .td-leg i { font-style:normal; font-weight:700; }
+  /* listes */
+  :root[data-ui="2"] body.ui2-lists .bar { display:none; }
+  .u2-list-wrap { display:block !important; }
+  .u2-tools { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:2px 0 10px; }
+  .u2-seg { display:flex; background:var(--chip); border-radius:999px; padding:3px; } .u2-seg button { border:0; background:none; color:var(--muted); font:600 13px/1 inherit; padding:7px 12px; border-radius:999px; cursor:pointer; }
+  .u2-seg button.on { background:var(--card); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.12); }
+  .u2-sort { border:1px solid var(--border); background:var(--card); color:var(--accent); font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; cursor:pointer; }
+  .u2-sum { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:var(--r2); margin-bottom:10px; color:#fff; background:linear-gradient(135deg,#1e3a8a,#2563eb 60%,#38bdf8); }
+  .u2-sum > div:first-child { flex:1; } .u2-sum small { display:block; font-size:12px; opacity:.8; } .u2-sum b { font-size:15px; }
+  .u2-bars { display:flex; gap:2px; align-items:flex-end; height:30px; } .u2-bars i { width:4px; border-radius:2px; opacity:.95; }
+  .u2-sum { --up:#86efac; --down:#fecdd3; }
+  .u2-list { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); box-shadow:var(--sh2); padding:2px 14px; }
+  .u2-row { width:100%; display:flex; align-items:center; gap:10px; padding:10px 0; border:0; border-bottom:1px solid var(--border); background:none; color:var(--text); font:inherit; text-align:left; cursor:pointer; }
+  .u2-row:last-child { border-bottom:0; }
+  .u2-logo { width:36px; height:36px; border-radius:11px; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:12.5px; }
+  .u2-n { flex:1; min-width:0; } .u2-n b { display:block; font-size:15px; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .u2-n small { font-size:12px; color:var(--muted); white-space:nowrap; } .u2-n em { font-style:normal; font-weight:700; font-size:11px; padding:1px 5px; border-radius:5px; }
+  .u2-spk { flex:none; }
+  .u2-p { text-align:right; min-width:74px; } .u2-p b { display:block; font-size:15px; font-weight:650; font-variant-numeric:tabular-nums; }
+  .u2-p i { display:inline-block; font-style:normal; font-size:12px; font-weight:700; padding:2px 6px; border-radius:6px; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .u2-p i.up { background:color-mix(in srgb, var(--up) 13%, transparent); } .u2-p i.down { background:color-mix(in srgb, var(--down) 12%, transparent); }
+  .u2-map { display:grid; grid-template-columns:repeat(3, 1fr); grid-auto-rows:74px; gap:5px; }
+  .u2-tile { border:0; border-radius:14px; padding:8px 9px; text-align:left; color:var(--text); font:inherit; cursor:pointer; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; }
+  .u2-tile.big { grid-column:span 2; grid-row:span 2; } .u2-tile b { font-size:13px; line-height:1.15; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .u2-tile.big b { font-size:17px; } .u2-tile span { font-weight:800; font-size:13.5px; font-variant-numeric:tabular-nums; } .u2-tile.big span { font-size:20px; }
   .td-act { display:flex; gap:8px; margin-top:10px; } .td-act .btn { flex:1; justify-content:center; padding:10px; font-weight:700; }
   .btn.on { background:var(--accent); color:#fff; border-color:transparent; }
   /* profil */
@@ -940,7 +966,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v201</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v202</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1406,6 +1432,7 @@ function renderSeg(id, opts, cur, pick) {
 }
 
 function renderGrid() {
+  if (UI2 && !prefs.view) { renderUi2List(); return; }        // nouvelle interface : lignes / carte de chaleur
   io.disconnect();
   charts.splice(0).forEach(c => c.remove()); if (typeof dayCards !== "undefined") dayCards.clear();
   const g = $("grid"); g.innerHTML = "";
@@ -1528,6 +1555,7 @@ function render() {
   if (UI2) ui2Header();
   if (UI2 && prefs.view === "today") { renderToday(); return; }
   if (UI2 && prefs.view === "help") { renderHelp().then(ui2Profile); return; }
+  if (UI2 && !prefs.view) { document.body.classList.remove("pf-mode"); if ($("pfView")) $("pfView").hidden = true; renderUi2List(); return; }
   if (prefs.view === "pf" && typeof renderPf === "function") { renderPf(); return; }
   if (prefs.view === "sig" && typeof renderSig === "function") { renderSig(); return; }
   if (prefs.view === "alerts" && typeof renderAlertsView === "function") { renderAlertsView(); return; }
@@ -6209,6 +6237,81 @@ function ui2Open(sym, opt) {
   if (opt && opt.bia) { prefs.bia = true; savePrefs(); }
   openDetail(it, withLive(sym, summary.symbols[sym]));
 }
+/* ===== Listes (nouvelle interface) : lignes logo · nom · mini-graphique 30 séances · cours · variation, ou carte de chaleur ===== */
+var sparkData = null;
+const UI2_COL = ["#6366f1","#0ea5e9","#14b8a6","#f59e0b","#ef4444","#8b5cf6","#ec4899","#22c55e","#64748b","#f97316"];
+const ui2Logo = (name, i) => '<span class="u2-logo" style="background:' + UI2_COL[i % UI2_COL.length] + '">' + esc(String(name).replace(/[^A-Za-zÀ-ÿ0-9]/g, "").slice(0, 2).toUpperCase()) + "</span>";
+function ui2SparkSvg(arr, W = 64, H = 26) {
+  if (!arr || arr.length < 2) return '<svg width="' + W + '" height="' + H + '"></svg>';
+  const mn = Math.min(...arr), mx = Math.max(...arr), k = (H - 4) / ((mx - mn) || 1);
+  const pts = arr.map((v, i) => (i * W / (arr.length - 1)).toFixed(1) + "," + (H - 2 - (v - mn) * k).toFixed(1)).join(" ");
+  return '<svg width="' + W + '" height="' + H + '" class="u2-spk"><polyline fill="none" stroke="' + (arr[arr.length - 1] >= arr[0] ? "var(--up)" : "var(--down)") + '" stroke-width="1.8" stroke-linejoin="round" points="' + pts + '"/></svg>';
+}
+async function renderUi2List() {
+  const grid = $("grid"); grid.className = "grid u2-list-wrap"; grid.style.gridTemplateColumns = "";
+  if (!sparkData) { try { sparkData = (await (await fetch("data/sparks.json?v=" + encodeURIComponent(summary.updated || ""), { cache:"no-store" })).json()).s; } catch (e) { sparkData = {}; } }
+  if (!biaData) { try { biaData = await (await fetch("data/biarritz.json?t=" + Date.now(), { cache:"no-store" })).json(); } catch (e) {} }
+  if (prefs.view) return;
+  const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
+  const bw = new Map(((biaData && biaData.wait) || []).map(w => [w.sym, w])), bg = new Map(((biaData && biaData.go) || []).map(g => [g.sym, g]));
+  let items = pf.items.map((it, i) => ({ it, i, info:summary.symbols[it.yahoo] ? withLive(it.yahoo, summary.symbols[it.yahoo]) : null })).filter(x => x.info);
+  const mode = prefs.u2map ? "map" : "list", sort = prefs.u2sort || "az";
+  if (sort === "chg") items.sort((a, b) => (b.info.changePct ?? -99) - (a.info.changePct ?? -99));
+  else if (sort === "az") items.sort((a, b) => a.it.name.localeCompare(b.it.name, "fr"));
+  const up = items.filter(x => (x.info.changePct || 0) >= 0).length;
+  grid.innerHTML =
+    '<div class="u2-tools"><div class="u2-seg"><button data-m="list" class="' + (mode === "list" ? "on" : "") + '">☰ Liste</button><button data-m="map" class="' + (mode === "map" ? "on" : "") + '">▦ Carte</button></div>' +
+    '<button class="u2-sort">' + ({ az:"A → Z", chg:"Variation", none:"Ordre de la liste" }[sort]) + " ▾</button></div>" +
+    '<div class="u2-sum"><div><small>' + esc(pf.name) + " · " + items.length + " valeurs</small><b>" + up + " en hausse · " + (items.length - up) + " en baisse</b></div><div class=\"u2-bars\">" +
+      items.slice().sort((a, b) => (b.info.changePct || 0) - (a.info.changePct || 0)).map(x => '<i style="height:' + Math.min(30, 4 + Math.abs(x.info.changePct || 0) * 6).toFixed(0) + "px;background:var(--" + ((x.info.changePct || 0) >= 0 ? "up" : "down") + ')"></i>').join("") + "</div></div>";
+  const box = document.createElement("div");
+  if (mode === "list") {
+    box.className = "u2-list";
+    items.forEach(({ it, i, info }) => {
+      const r = document.createElement("button"); r.className = "u2-row";
+      const ch = info.changePct, tag = bg.has(it.yahoo) ? '<em class="t-up">🏄 cassure</em>' : bw.has(it.yahoo) && bw.get(it.yahoo).dist <= 0.05 ? '<em class="t-acc">🏄 à ' + fmtPct(Math.round(bw.get(it.yahoo).dist * 1000) / 10) + "</em>" : "";
+      r.innerHTML = ui2Logo(it.name, i) + '<span class="u2-n"><b>' + esc(it.name) + "</b><small>" + esc(it.yahoo.replace(/^\^/, "")) + (tag ? " · " + tag : "") + "</small></span>" +
+        ui2SparkSvg(sparkData[it.yahoo]) + '<span class="u2-p"><b>' + fmt(info.last, null) + '</b><i class="' + ((ch || 0) >= 0 ? "up" : "down") + '">' + (ch != null ? fmtPct(ch) : "—") + "</i></span>";
+      r.onclick = () => openDetail(it, info, { pi:prefs.active, idx:pf.items.indexOf(it) });
+      box.appendChild(r);
+    });
+  } else {
+    box.className = "u2-map";
+    items.slice().sort((a, b) => Math.abs(b.info.changePct || 0) - Math.abs(a.info.changePct || 0)).forEach(({ it, i, info }, k) => {
+      const ch = info.changePct || 0, m = Math.min(1, Math.abs(ch) / 3), t = document.createElement("button");
+      t.className = "u2-tile" + (k < 2 ? " big" : "");
+      t.style.background = "color-mix(in srgb, " + (ch >= 0 ? "var(--up)" : "var(--down)") + " " + (16 + m * 64).toFixed(0) + "%, var(--card))";
+      if (m > .5) t.style.color = "#fff";
+      t.innerHTML = "<b>" + esc(it.name) + "</b><span>" + fmtPct(ch) + "</span>";
+      t.onclick = () => openDetail(it, info, { pi:prefs.active, idx:pf.items.indexOf(it) });
+      box.appendChild(t);
+    });
+  }
+  grid.appendChild(box);
+  grid.querySelectorAll(".u2-seg button").forEach(b => b.onclick = () => { prefs.u2map = b.dataset.m === "map"; savePrefs(); renderUi2List(); });
+  grid.querySelector(".u2-sort").onclick = () => { prefs.u2sort = { az:"chg", chg:"none", none:"az" }[sort]; savePrefs(); renderUi2List(); };
+}
+/* graphique détaillé des cartes de l'accueil : 45 bougies, Bollinger 50/1 + MM50, niveau en pointillés vert */
+async function ui2Candles(el, sym, level) {
+  const info = summary.symbols[sym]; if (!el || !info || !info.file) return;
+  let R; try { R = (await getSeries(info)).rows; } catch (e) { return; }
+  const n = 45, vis = R.slice(-n), off = R.length - vis.length, W = 330, H = 110;
+  const C = R.map(r => r[4]), ma = i => { if (i < 49) return null; let t = 0; for (let k = i - 49; k <= i; k++) t += C[k]; return t / 50; };
+  const sd = i => { const m = ma(i); let t = 0; for (let k = i - 49; k <= i; k++) t += (C[k] - m) ** 2; return Math.sqrt(t / 50); };
+  let mn = Math.min(...vis.map(r => r[3])), mx = Math.max(...vis.map(r => r[2]));
+  if (level) { mn = Math.min(mn, level); mx = Math.max(mx, level); }
+  const pad = (mx - mn) * .06; mn -= pad; mx += pad;
+  const y = v => (H - (v - mn) / (mx - mn) * H).toFixed(1), bw = W / vis.length;
+  const pts = vis.map((r, k) => [k * bw + bw / 2, off + k]).filter(([, i]) => ma(i) != null);
+  let svg = "";
+  if (pts.length > 1) svg += '<path d="M' + pts.map(([x, i]) => x.toFixed(1) + "," + y(Math.min(mx, ma(i) + sd(i)))).join("L") + "L" + pts.slice().reverse().map(([x, i]) => x.toFixed(1) + "," + y(Math.max(mn, ma(i) - sd(i)))).join("L") + 'Z" fill="var(--accent)" opacity=".10"/>' +
+    '<path d="M' + pts.map(([x, i]) => x.toFixed(1) + "," + y(ma(i))).join("L") + '" fill="none" stroke="var(--accent)" stroke-width="1.6"/>';
+  if (level) svg += '<line x1="0" x2="' + W + '" y1="' + y(level) + '" y2="' + y(level) + '" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 3"/>';
+  svg += vis.map((r, k) => { const x = k * bw + bw / 2, c = r[4] >= r[1] ? "var(--up)" : "var(--down)";
+    return '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + y(r[2]) + '" y2="' + y(r[3]) + '" stroke="' + c + '"/><rect x="' + (x - bw * .33).toFixed(1) + '" y="' + y(Math.max(r[1], r[4])) + '" width="' + (bw * .66).toFixed(1) + '" height="' + Math.max(1, Math.abs(y(r[1]) - y(r[4]))).toFixed(1) + '" fill="' + c + '" rx=".6"/>'; }).join("");
+  el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none">' + svg + "</svg>" +
+    '<span class="td-leg">45 séances · Bollinger 50/1' + (level ? ' · <i style="color:#16a34a">┅ niveau ' + fmt(level, info.currency) + "</i>" : "") + "</span>";
+}
 /* ===== Accueil « Aujourd'hui » : résumé du portefeuille + fil des événements du soir ===== */
 async function renderToday() {
   document.body.classList.add("pf-mode");
@@ -6258,7 +6361,7 @@ async function renderToday() {
       '<div class="td-act">' + (e.sym ? '<button class="btn on td-go">Voir le graphique</button>' : '<button class="btn on td-go">Voir</button>') + "</div>";
     c.querySelector(".td-go").onclick = () => { if (e.sym) ui2Open(e.sym, { bia:e.k === "bia" || e.k === "biaw" }); else { prefs.view = "sig"; savePrefs(); render(); } };
     box.appendChild(c);
-    if (e.sym) ui2Spark(c.querySelector(".td-spk"), e.sym, e.level);
+    if (e.sym) ui2Candles(c.querySelector(".td-spk"), e.sym, e.level);
   });
   if (!ev.length) box.insertAdjacentHTML("beforeend", '<div class="td-card"><p>Aucune cassure, bascule ou approche de zone ce soir. Les listes et les signaux restent accessibles en bas.</p></div>');
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calculé après la clôture du ' + esc(days) + ". À vérifier sur le graphique — pas des conseils d'investissement.</div>");

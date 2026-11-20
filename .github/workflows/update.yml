@@ -45,6 +45,10 @@ jobs:
       - name: Biarritz
         run: node scripts/bia_list.mjs
 
+      # mini-graphiques des listes (nouvelle interface)
+      - name: Mini-graphiques
+        run: node scripts/sparks.mjs
+
       # bascules R⇄S pour l'onglet « À regarder » : calculées avec le code de l'appli (index.html)
       - name: Bascules R⇄S (À regarder)
         run: node scripts/flip_signals.mjs
