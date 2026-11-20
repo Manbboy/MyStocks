@@ -942,10 +942,23 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-list .u2-sep + .u2-row { border-top:0; }
   .u2-list .u2-row:has(+ .u2-sep) { border-bottom:0; }
   .u2-list .u2-sep { margin:0; }
-  .u2-step { display:inline-flex; align-items:center; gap:2px; border-radius:999px !important; padding:3px !important; }
-  .u2-step .u2-st-a { width:34px; height:30px; border-radius:50% !important; font-size:20px !important; line-height:1; color:var(--accent) !important; font-weight:700; }
-  .u2-step .u2-st-a:disabled { opacity:.25; }
-  .u2-step .u2-st-v { min-width:40px; text-align:center; font-weight:800; font-size:14px; color:var(--text); }
+  .u2-step { display:inline-flex; align-items:center; gap:0; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:3px; box-shadow:var(--sh2); touch-action:none; user-select:none; }
+  .u2-step .u2-st-a { width:34px; height:34px; border:0; border-radius:50%; background:none; font-size:20px; line-height:1; color:var(--accent); font-weight:700; cursor:pointer; }
+  .u2-step .u2-st-a:active { background:var(--chip); }
+  .u2-step .u2-st-ic { font-size:14px; color:var(--muted); margin-right:5px; }
+  .u2-step .u2-st-v { min-width:56px; padding:6px 2px; text-align:center; font-weight:800; font-size:14px; color:var(--text); cursor:ew-resize; border-radius:10px; }
+  .u2-step.drag { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .u2-step.drag .u2-st-v { color:var(--accent); }
+  :root[data-ui="2"] .bar .group > label { display:none; }
+  /* titres de groupe (Market, Hold) en vue Graphiques : légers, comme les titres de section de la nouvelle interface */
+  :root[data-ui="2"] .grid .tr-g.band { --g:var(--accent); background:none; border:0; border-radius:0; padding:14px 2px 6px; margin:4px 0 0; align-items:center; gap:10px; flex-wrap:nowrap; }
+  :root[data-ui="2"] .grid .tr-g.band[data-g="eu"] { --g:#2563eb; } :root[data-ui="2"] .grid .tr-g.band[data-g="us"] { --g:#7c3aed; }
+  :root[data-ui="2"] .grid .tr-g.band[data-g="fut"] { --g:#0d9488; } :root[data-ui="2"] .grid .tr-g.band[data-g="cry"] { --g:#f59e0b; }
+  :root[data-ui="2"] .grid .tr-g.band b { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:800; letter-spacing:.08em; color:var(--text); }
+  :root[data-ui="2"] .grid .tr-g.band b::before { content:""; width:9px; height:9px; border-radius:50%; background:var(--g); box-shadow:0 0 0 3px color-mix(in srgb, var(--g) 20%, transparent); }
+  :root[data-ui="2"] .grid .tr-g.band span { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  :root[data-ui="2"] .grid .tr-g.band::after { content:""; flex:1; height:1px; background:var(--border); min-width:12px; order:3; }
+  :root[data-ui="2"] .grid .tr-g.band span { order:4; }
   :root[data-ui="2"] .bar .bar-row { gap:10px; }
   .u2-edit { border:1px solid var(--border); background:var(--card); color:var(--text); font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; }
   .u2-edit.on { background:var(--accent); color:#fff; border-color:transparent; }
@@ -1034,7 +1047,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v208</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v209</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1504,12 +1517,27 @@ let fitTabsT = 0;
 addEventListener("resize", () => { clearTimeout(fitTabsT); fitTabsT = setTimeout(fitTabs, 120); });
 /* nouvelle interface : sélecteur compact « ‹ valeur › » (graphiques par ligne, période) au lieu de tous les boutons */
 function ui2Stepper(id, opts, cur, pick) {
-  const s = $(id); s.innerHTML = ""; s.className = "seg u2-step";
-  const ok = opts.filter(o => !(o[2] && o[2].off)), i = Math.max(0, ok.findIndex(o => o[0] === cur));
-  const mk = (txt, d) => { const b = document.createElement("button"); b.textContent = txt; b.className = "u2-st-a";
-    b.disabled = !ok[i + d]; b.onclick = () => ok[i + d] && pick(ok[i + d][0]); return b; };
-  const v = document.createElement("span"); v.className = "u2-st-v"; v.textContent = (ok[i] || opts[0])[1];
-  s.append(mk("‹", -1), v, mk("›", 1));
+  const s = $(id); s.innerHTML = ""; s.className = "u2-step";
+  const ok = opts.filter(o => !(o[2] && o[2].off));
+  let i = Math.max(0, ok.findIndex(o => o[0] === cur));
+  const lab = k => id === "colsSeg" ? ok[k][1] + " / ligne" : ok[k][1];
+  const ic = document.createElement("span"); ic.className = "u2-st-ic"; ic.textContent = id === "colsSeg" ? "▦" : "⏱";
+  const v = document.createElement("span"); v.className = "u2-st-v"; v.textContent = lab(i);
+  const wrap = k => (k % ok.length + ok.length) % ok.length;                    // roue infinie : après la dernière, la première
+  const tick = () => { try { navigator.vibrate && navigator.vibrate(6); } catch (e) {} };
+  const mk = (txt, d) => { const b = document.createElement("button"); b.textContent = txt; b.className = "u2-st-a"; b.type = "button";
+    b.onclick = () => { tick(); pick(ok[wrap(i + d)][0]); }; return b; };
+  // appui maintenu sur la valeur puis glisser : un cran (avec petite vibration) tous les 28 px ; appliqué au lâcher
+  let x0 = null, i0 = i, moved = false;
+  v.addEventListener("pointerdown", e => { x0 = e.clientX; i0 = i; moved = false; v.setPointerCapture(e.pointerId); s.classList.add("drag"); });
+  v.addEventListener("pointermove", e => {
+    if (x0 == null) return;
+    const k = wrap(i0 + Math.trunc((e.clientX - x0) / 28));
+    if (k !== i) { i = k; moved = true; v.textContent = lab(i); tick(); }
+  });
+  const end = () => { if (x0 == null) return; x0 = null; s.classList.remove("drag"); if (moved) pick(ok[i][0]); else { tick(); pick(ok[wrap(i + 1)][0]); } };
+  v.addEventListener("pointerup", end); v.addEventListener("pointercancel", () => { x0 = null; s.classList.remove("drag"); i = i0; v.textContent = lab(i); });
+  s.append(mk("‹", -1), ic, v, mk("›", 1));
 }
 function renderSeg(id, opts, cur, pick) {
   if (UI2 && (id === "colsSeg" || id === "rangeSeg")) return ui2Stepper(id, opts, cur, pick);
@@ -5595,7 +5623,7 @@ function mkState(syms) {
 function groupMarket(host) {
   const cards = [...host.querySelectorAll(".card[data-sym]")];
   host.querySelectorAll(".tr-g").forEach(e => e.remove());
-  if (host.id === "grid" && !editing) { flowMarket(host, cards); return; }
+  if (host.id === "grid" && !editing && !UI2) { flowMarket(host, cards); return; }   // nouvelle interface : un titre léger par groupe, sur toute la largeur
   MK_GROUPS.forEach(([k, label]) => {
     const list = cards.filter(c => mkGroup(c.dataset.sym) === k);
     if (!list.length) return;
