@@ -946,7 +946,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-sort { border:1px solid var(--border); background:var(--card); color:var(--accent); font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; cursor:pointer; }
   .u2-sum { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:var(--r2); margin-bottom:10px; color:#fff; background:linear-gradient(135deg,#1e3a8a,#2563eb 60%,#38bdf8); }
   .u2-sum > div:first-child { flex:1; } .u2-sum small { display:block; font-size:12px; opacity:.8; } .u2-sum b { font-size:15px; }
-  .u2-bars { display:flex; gap:2px; align-items:flex-end; height:30px; } .u2-bars i { width:4px; border-radius:2px; opacity:.95; }
+  .u2-bars { display:flex; gap:2px; align-items:flex-end; height:30px; width:min(46%, 170px); flex:none; justify-content:flex-end; } .u2-bars i { flex:1 1 0; min-width:1px; max-width:5px; border-radius:2px; opacity:.95; }
+  .u2-bars.many { gap:1px; } .u2-bars.many i { border-radius:1px; }
   .u2-sum { --up:#86efac; --down:#fecdd3; }
   .u2-list { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); box-shadow:var(--sh2); padding:2px 14px; }
   .u2-row { width:100%; display:flex; align-items:center; gap:10px; padding:10px 0; border:0; border-bottom:1px solid var(--border); background:none; color:var(--text); font:inherit; text-align:left; cursor:pointer; }
@@ -975,7 +976,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v204</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v205</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1370,14 +1371,26 @@ const io = new IntersectionObserver(entries => {
 function renderTabs() {
   const t = $("tabs"); t.innerHTML = "";
   if (UI2) {                                    // nouvelle interface : les listes en pastilles, le reste dans la barre du bas
+    const U2S = { Market:"MKT", Others:"OT", Crypto:"CRY", Hold:"HLD" };
     cfg.portfolios.forEach((p, i) => {
       const b = document.createElement("button");
       b.className = "tab" + (i === prefs.active && !prefs.view ? " active" : "");
-      b.innerHTML = esc(p.name) + ' <span class="tab-n">' + p.items.length + "</span>";
+      b.dataset.full = p.name; b.dataset.short = U2S[p.name] || TAB_SHORT[p.name] || p.name;
+      b.innerHTML = '<span class="tab-l">' + esc(p.name) + '</span> <span class="tab-n">' + p.items.length + "</span>";
       b.onclick = () => { prefs.active = i; prefs.view = ""; savePrefs(); render(); };
       t.appendChild(b);
     });
     t.hidden = !!prefs.view;
+    // pas assez de largeur (S24 : ~384 px) : libellés abrégés (MKT, EU, US, OT, CRY, HLD), puis sans les nombres
+    const fit = () => {
+      if (t.hidden) return;
+      t.querySelectorAll(".tab").forEach(b => { b.querySelector(".tab-l").textContent = b.dataset.full; b.querySelector(".tab-n").hidden = false; });
+      if (t.scrollWidth <= t.clientWidth + 1) return;
+      t.querySelectorAll(".tab").forEach(b => b.querySelector(".tab-l").textContent = b.dataset.short);
+      if (t.scrollWidth > t.clientWidth + 1) t.querySelectorAll(".tab .tab-n").forEach(n => n.hidden = true);
+    };
+    fit(); requestAnimationFrame(fit);
+    if (!t._ro) { t._ro = new ResizeObserver(() => fit()); t._ro.observe(t); }
     renderTabbar();
     return;
   }
@@ -3743,6 +3756,8 @@ $("lvClose").onclick = closeLevel;
   };
   document.addEventListener("click", e => { if (!e.target.closest("#liveMenu")) $("liveMenu").hidden = true; });
   const updSortBtn = () => { const m = SORTS.find(x => x[0] === (prefs.sort || "add"));
+    if (UI2) { $("sortBtn").textContent = "⇅ " + { add:"Défaut", perfDesc:"Meilleure var.", perfAsc:"Pire var.", name:"A → Z", nearS:"Proche support", nearR:"Proche résistance" }[prefs.sort || "add"];
+      $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); return; }
     $("sortBtn").textContent = (prefs.sort || "add") === "add" ? "⇅" : "⇅ " + { perfDesc:"Var. ↓", perfAsc:"Var. ↑", name:"A→Z", nearS:"Supp.", nearR:"Rés." }[prefs.sort];
     $("sortBtn").title = "Tri : " + sortLabel(m[0], m[1]); $("sortBtn").classList.toggle("on", (prefs.sort || "add") !== "add"); };
   updSortBtn();
@@ -3750,6 +3765,11 @@ $("lvClose").onclick = closeLevel;
     toast(prefs.gridCompact ? "Mode compact : sans graphiques" : "Graphiques affichés", 1300); };
   $("sortBtn").onclick = e => {
     e.stopPropagation();
+    if (UI2) {                                   // nouvelle interface : chaque appui passe au tri suivant, sans menu
+      const order = ["add", "perfDesc", "perfAsc", "name", "nearS", "nearR"];
+      prefs.sort = order[(order.indexOf(prefs.sort || "add") + 1) % order.length]; savePrefs(); updSortBtn(); render();
+      toast("Tri : " + sortLabel(prefs.sort, (SORTS.find(x => x[0] === prefs.sort) || [, ""])[1]), 1300); return;
+    }
     const m = $("sortMenu");
     if (!m.hidden) { m.hidden = true; return; }
     m.innerHTML = "";
@@ -3785,7 +3805,8 @@ function liveOn() { return prefs.live !== false; }
 function liveSec() { return [5, 15, 30, 60].includes(+prefs.liveSec) ? +prefs.liveSec : 60; }   // fréquence du mode Direct
 function updDayBtn() {
   const b = $("dayBtn"); if (!b) return;
-  b.hidden = !liveOn() || !!prefs.gridCompact;   // visible en direct (inutile en mode compact, sans graphiques) ; hors 1J, le toucher passe en 1J
+  prefs.dayFull = true;                          // 1J : toujours la séance complète, la courbe remplit le graphique au fil de la journée
+  b.hidden = true; return;   // visible en direct (inutile en mode compact, sans graphiques) ; hors 1J, le toucher passe en 1J
   b.classList.toggle("dim", prefs.range !== "1J"); b.title = prefs.range !== "1J" ? "Passer en période 1J (séance du jour)" : "1J : courbe étirée ou journée entière";
   b.innerHTML = prefs.dayFull ? "⇥<span class=\"lbl\"> Journée</span>" : "↔<span class=\"lbl\"> Ajusté</span>";   // texte masqué sur téléphone
 }
@@ -4040,7 +4061,7 @@ function localToEpoch(day, hhmm, tz) {        // « 2026-11-11 », « 09:00 » d
 }
 /* Points de la courbe 1J ; en mode « Journée », points vides jusqu'à la clôture pour réserver la place à droite */
 function dayPts(d) {
-  if (!prefs.dayFull || !d.pts.length) return d.pts;
+  if (!d.pts.length) return d.pts;              // toujours cadré sur la séance complète
   const sh = sessionHours(d); if (!sh) return d.pts;
   const lastT = d.pts[d.pts.length - 1].time, shiftB = t => t + tzShift(t, "Europe/Brussels");
   let day = d.day;
@@ -6315,7 +6336,7 @@ async function renderUi2List() {
   let items = sortedOrder(pi).map(i => ({ it:pf.items[i], i, info:summary.symbols[pf.items[i].yahoo] ? withLive(pf.items[i].yahoo, summary.symbols[pf.items[i].yahoo]) : null })).filter(x => x.info);
   const up = items.filter(x => (x.info.changePct || 0) >= 0).length;
   grid.innerHTML =
-    '<div class="u2-sum"><div><small>' + esc(pf.name) + " · " + items.length + " valeurs</small><b>" + up + " en hausse · " + (items.length - up) + " en baisse</b></div><div class=\"u2-bars\">" +
+    '<div class="u2-sum"><div><small>' + esc(pf.name) + " · " + items.length + " valeurs</small><b>" + up + " en hausse · " + (items.length - up) + " en baisse</b></div><div class=\"u2-bars" + (items.length > 30 ? " many" : "") + "\">" +
       items.slice().sort((a, b) => (b.info.changePct || 0) - (a.info.changePct || 0)).map(x => '<i style="height:' + Math.min(30, 4 + Math.abs(x.info.changePct || 0) * 6).toFixed(0) + "px;background:var(--" + ((x.info.changePct || 0) >= 0 ? "up" : "down") + ')"></i>').join("") + "</div></div>";
   const box = document.createElement("div");
   if (mode === "list") {
@@ -6333,7 +6354,7 @@ async function renderUi2List() {
     box.className = "u2-map";
     items.forEach(({ it, i, info }, k) => {
       const ch = info.changePct || 0, m = Math.min(1, Math.abs(ch) / 3), t = document.createElement("button");
-      t.className = "u2-tile" + (k < 2 ? " big" : "");
+      t.className = "u2-tile";
       t.style.background = "color-mix(in srgb, " + (ch >= 0 ? "var(--up)" : "var(--down)") + " " + (16 + m * 64).toFixed(0) + "%, var(--card))";
       if (m > .5) t.style.color = "#fff";
       t.innerHTML = "<b>" + esc(it.name) + "</b><span>" + fmtPct(ch) + "</span>" + (editing && !pf.virtual ? '<i class="u2-rm">✕</i>' : "");
