@@ -931,6 +931,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .td-leg { position:absolute; left:8px; bottom:3px; font-size:10.5px; color:var(--muted); } .td-leg i { font-style:normal; font-weight:700; }
   /* listes */
   :root[data-ui="2"] body.ui2-lists:not(.ui2-cards) .bar { display:none; }
+  :root[data-ui="2"] #liveBtn, :root[data-ui="2"] #liveMenu,
   :root[data-ui="2"] .bar .legend, :root[data-ui="2"] #cmpBtn, :root[data-ui="2"] #paintBtn, :root[data-ui="2"] #editBtn, :root[data-ui="2"] #addBtn { display:none !important; }
   .u2-t2 { justify-content:flex-start; margin-top:-2px; } .u2-t2 .btn { margin:0; }
   .u2-edit { border:1px solid var(--border); background:var(--card); color:var(--text); font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; }
@@ -961,7 +962,10 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-p i.up { background:color-mix(in srgb, var(--up) 13%, transparent); } .u2-p i.down { background:color-mix(in srgb, var(--down) 12%, transparent); }
   .u2-map { display:grid; grid-template-columns:repeat(3, 1fr); grid-auto-rows:74px; gap:5px; }
   .u2-tile { border:0; border-radius:14px; padding:8px 9px; text-align:left; color:var(--text); font:inherit; cursor:pointer; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; }
-  .u2-tile.big { grid-column:span 2; grid-row:span 2; } .u2-tile b { font-size:13px; line-height:1.15; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .u2-tile .u2-tb { display:flex; align-items:flex-end; justify-content:space-between; gap:4px; }
+  .u2-tile .u2-spk { display:block; width:52px; height:26px; flex:none; } .u2-tile .u2-spk svg { display:block; }
+  .u2-tile b { -webkit-line-clamp:1 !important; }
+  :root[data-ui="2"][data-theme="dark"] .u2-tile { --tile-dk:1; } .u2-tile b { font-size:13px; line-height:1.15; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
   .u2-tile.big b { font-size:17px; } .u2-tile span { font-weight:800; font-size:13.5px; font-variant-numeric:tabular-nums; } .u2-tile.big span { font-size:20px; }
   .td-act { display:flex; gap:8px; margin-top:10px; } .td-act .btn { flex:1; justify-content:center; padding:10px; font-weight:700; }
   .btn.on { background:var(--accent); color:#fff; border-color:transparent; }
@@ -971,12 +975,53 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .ui2-themes button { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 6px; font-size:20px; color:var(--text); cursor:pointer; }
   .ui2-themes button span { display:block; font-size:13px; font-weight:600; margin-top:4px; } .ui2-themes button.on { border:2px solid var(--accent); }
   .ui2-row { display:flex; align-items:center; gap:10px; padding:12px 14px; } .ui2-row > div { flex:1; } .ui2-row b { display:block; font-size:14.5px; } .ui2-row small { color:var(--muted); font-size:12.5px; }
+
+  /* ================= Fiche valeur — style « Clarté » ================= */
+  :root[data-ui="2"] #ov { background:var(--bg); }
+  :root[data-ui="2"] .ov-head { border-bottom:0; padding:12px 14px 6px; align-items:flex-start; }
+  :root[data-ui="2"] .ov-title { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; letter-spacing:-.01em; }
+  :root[data-ui="2"] .ov-title .u2-logo { width:34px; height:34px; border-radius:11px; font-size:12px; }
+  :root[data-ui="2"] .ov-sub { margin:6px 0 0 44px; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 8px; }
+  :root[data-ui="2"] .ov-sub .ov-dt { font-size:12px; color:var(--muted); }
+  :root[data-ui="2"] .ov-sub .ov-px { font-size:22px; font-weight:800; color:var(--text); font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  :root[data-ui="2"] .ov-sub .ov-pc { font-size:13px; font-weight:700; padding:2px 8px; border-radius:8px; }
+  :root[data-ui="2"] .ov-sub .ov-pc.up { background:color-mix(in srgb, var(--up) 13%, transparent); } :root[data-ui="2"] .ov-sub .ov-pc.down { background:color-mix(in srgb, var(--down) 12%, transparent); }
+  :root[data-ui="2"] .ov-nav { gap:6px; }
+  :root[data-ui="2"] .navb, :root[data-ui="2"] .close { width:38px; height:38px; border-radius:50%; padding:0; display:inline-flex; align-items:center; justify-content:center; box-shadow:var(--sh2); }
+  :root[data-ui="2"] .close .full { display:none; } :root[data-ui="2"] .close .short { display:inline; }
+  :root[data-ui="2"] #ovPos { font-size:12px; color:var(--muted); font-weight:600; }
+  :root[data-ui="2"] .tb { background:var(--bg); padding:6px 14px 8px; }
+  /* J S M T et réglages : pastilles arrondies, sélection en bleu */
+  :root[data-ui="2"] #ov .seg { border-radius:999px; padding:3px; background:var(--chip); }
+  :root[data-ui="2"] #ov .seg button { border-radius:999px; padding:6px 11px; font-weight:600; }
+  :root[data-ui="2"] #ov .seg button.on { background:var(--accent); color:#fff; box-shadow:0 2px 6px rgba(29,78,216,.28); }
+  :root[data-ui="2"] #ov .seg button.col.on { background:var(--c); }
+  /* boutons d'indicateurs : pastilles, actif = bleu plein */
+  :root[data-ui="2"] .mmb { border-radius:14px; height:40px; min-width:40px; padding:5px 9px 4px; background:var(--card); border-color:var(--border); box-shadow:var(--sh2); }
+  :root[data-ui="2"] .mmb.on { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 3px 10px rgba(29,78,216,.30); }
+  :root[data-ui="2"] .mmb.on .mmdots i { box-shadow:0 0 0 1px rgba(255,255,255,.85); }
+  :root[data-ui="2"] #zoneBtn.drawing { background:#facc15; border-color:#ca8a04; color:#1f2937; }
+  :root[data-ui="2"] .cfg-btn { border-radius:50%; width:40px; height:40px; justify-content:center; padding:0; box-shadow:var(--sh2); }
+  :root[data-ui="2"] .cfg-btn[aria-expanded="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+  /* graphique et blocs d'information : cartes blanches arrondies */
+  :root[data-ui="2"] .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); box-shadow:var(--sh2); padding:6px 4px 2px; overflow:hidden; }
+  :root[data-ui="2"] .ov-body { padding:12px 14px; }
+  :root[data-ui="2"] #ov .lv { border-radius:var(--r2); padding:14px 16px; margin-top:12px; }
+  :root[data-ui="2"] #ov .lv h3 { font-size:15px; font-weight:800; margin-bottom:10px; }
+  :root[data-ui="2"] .quick { gap:7px; padding:10px 2px 2px; }
+  :root[data-ui="2"] .quick > * { border-radius:999px !important; }
+  :root[data-ui="2"] .navrow { margin-top:6px; }
+  :root[data-ui="2"] .fitbtn, :root[data-ui="2"] .navsm { border-radius:999px; padding:8px 14px; font-size:13px; box-shadow:var(--sh2); }
+  :root[data-ui="2"] .fitbtn.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  :root[data-ui="2"] .bia-st { border-radius:14px; }
+  :root[data-ui="2"] .cfg { border-radius:22px 22px 0 0; }
+  :root[data-ui="2"] .ov-foot { font-size:12px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v205</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v206</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1973,6 +2018,11 @@ async function openDetail(item, info, pos) {
   dt.textContent = "  · " + new Date(info.date).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"numeric" });
   dt.title = "Clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
   $("ovSub").append(sub, ch, dt);
+  if (UI2) {                                       // nouvelle interface : initiales colorées et prix en grand
+    const n = cfg.portfolios.reduce((k, p, i) => k >= 0 ? k : p.items.indexOf(item) >= 0 ? p.items.indexOf(item) : -1, -1);
+    $("ovTitle").insertAdjacentHTML("afterbegin", ui2Logo(item.name, n < 0 ? 0 : n));
+    sub.className = "ov-px"; ch.className += " ov-pc"; dt.className = "ov-dt"; dt.textContent = dt.textContent.replace(/^\s*·\s*/, "");
+  }
 
   $("ovFoot").innerHTML = "";
   const t = document.createTextNode("Un support est formé de creux où le cours a rebondi vers le haut, une résistance de sommets où le cours a été rejeté vers le bas (au moins deux contacts, à l'écart près réglé avec « Précision des contacts »). Une résistance devenue support (ou l'inverse) est montrée par R⇄S. Périodes analysées : journaliers sur 1 an de séances, hebdomadaires sur 3 ans, mensuels et trimestriels sur 10 ans. Chaque échelle a sa couleur et son type de trait (voir la légende sous le graphique) ; plus l'échelle est longue, plus le trait est épais et foncé. Moyennes mobiles simples sur les clôtures, calculées dans l'unité des chandeliers affichés (en hebdomadaire, MM20 = 20 semaines). RSI 14 : au-dessus de 70 = surachat, sous 30 = survente. RSI Trends (d'après le script open source de zzzcrypto123 sur TradingView) : RSI 14 à 60 ou plus = tendance haussière (chandeliers verts), à 40 ou moins = tendance baissière (rouges), entre les deux = sans tendance (gris) ; longueur et seuils réglables ; à lire sur des chandeliers clôturés. Repère sur les cartes : cours à moins de 2 % du support ou de la résistance le plus proche (toutes échelles). Bascules R⇄S : un sommet ayant bloqué le cours est cassé à la clôture, puis retesté par le dessus avec un rebond (résistance devenue support) — ou l'inverse pour un creux ; la ligne part du sommet ou du creux d'origine (●) et un point (●) marque chaque retest réussi ; le prix du niveau est dans la liste. Canaux : deux obliques parallèles avec au moins deux contacts de chaque côté (●) et le cours contenu entre elles ; pointillés = milieu du canal. Obliques : lignes de tendance reliant au moins trois creux (support, orange) ou trois sommets (résistance, violet) sans clôture nette de l'autre côté. Indicatif, pas un conseil d'investissement. ");
@@ -3801,8 +3851,8 @@ $("lvClose").onclick = closeLevel;
 const LIVE_URL = "https://cours-live.manbboy.workers.dev";
 const liveQuotes = {};      // sym -> { price, prevClose, time, day, state }
 let liveTimer = null, liveLast = 0, liveDiag = "";
-function liveOn() { return prefs.live !== false; }
-function liveSec() { return [5, 15, 30, 60].includes(+prefs.liveSec) ? +prefs.liveSec : 60; }   // fréquence du mode Direct
+function liveOn() { return UI2 || prefs.live !== false; }                              // nouvelle interface : toujours en direct
+function liveSec() { return UI2 ? 5 : [5, 15, 30, 60].includes(+prefs.liveSec) ? +prefs.liveSec : 60; }   // … toutes les 5 s   // fréquence du mode Direct
 function updDayBtn() {
   const b = $("dayBtn"); if (!b) return;
   prefs.dayFull = true;                          // 1J : toujours la séance complète, la courbe remplit le graphique au fil de la journée
@@ -6278,7 +6328,7 @@ function ui2Tools() {
     t = document.createElement("div"); t.id = "u2Tools";
     t.innerHTML = '<div class="u2-tools"><div class="u2-seg"></div><button class="u2-edit" id="u2Edit">✎ Modifier</button></div><div class="u2-tools u2-t2"></div>';
     document.querySelector(".bar").before(t);
-    t.querySelector(".u2-t2").append($("liveBtn"), $("sortBtn"), $("liveMenu"), $("sortMenu"));     // menus avec leurs boutons (la barre classique est masquée en Liste / Carte)
+    t.querySelector(".u2-t2").append($("sortBtn"), $("sortMenu"));          // le direct est permanent (5 s) : plus de choix Clôtures / Direct     // menus avec leurs boutons (la barre classique est masquée en Liste / Carte)
     $("u2Edit").onclick = () => { editing = !editing; render(); };
   }
   const mode = u2Mode();
@@ -6308,16 +6358,18 @@ function ui2DaySparks(box) {
   const draw = async el => {
     const sym = el.dataset.sym, d = await fetchDay(sym, false, !liveOn());
     if (!d || !d.pts || d.pts.length < 2) {             // pas de séance : 30 clôtures, en gris (tendance, pas la journée)
+      if (el.dataset.mono) { el.innerHTML = ""; return; }
       el.innerHTML = ui2SparkSvg(sparkData && sparkData[sym]).replace(/stroke="var\(--(up|down)\)"/, 'stroke="var(--muted)"'); el.title = "30 dernières séances"; return; }
-    const W = 64, H = 26, pts = d.pts, prev = d.prev ?? pts[0].value, lastV = pts[pts.length - 1].value;
+    const W = +el.dataset.w || 64, H = +el.dataset.h || 26, mono = !!el.dataset.mono, pts = d.pts, prev = d.prev ?? pts[0].value, lastV = pts[pts.length - 1].value;
     let t0 = pts[0].time, t1 = pts[pts.length - 1].time;
     const sh = sessionHours(d);
     if (sh) { try { const o = localToEpoch(d.day, sh.open, sh.tz), c = localToEpoch(d.day, sh.close, sh.tz);
       t0 = o + tzShift(o, "Europe/Brussels"); t1 = Math.max(c + tzShift(c, "Europe/Brussels"), pts[pts.length - 1].time); } catch (e) {} }
     const vs = pts.map(p => p.value).concat([prev]), mn = Math.min(...vs), mx = Math.max(...vs), k = (H - 4) / ((mx - mn) || 1);
-    const X = t => ((t - t0) / ((t1 - t0) || 1) * W).toFixed(1), Y = v => (H - 2 - (v - mn) * k).toFixed(1), col = lastV >= prev ? "var(--up)" : "var(--down)";
+    // dans les tuiles de la carte : la couleur du texte de la tuile (blanc sur fond foncé, sombre sur fond clair) pour un bon contraste
+    const X = t => ((t - t0) / ((t1 - t0) || 1) * W).toFixed(1), Y = v => (H - 2 - (v - mn) * k).toFixed(1), col = mono ? "currentColor" : lastV >= prev ? "var(--up)" : "var(--down)";
     el.title = "Séance du " + d.day;
-    el.innerHTML = '<svg width="' + W + '" height="' + H + '"><line x1="0" x2="' + W + '" y1="' + Y(prev) + '" y2="' + Y(prev) + '" stroke="var(--muted)" stroke-dasharray="2 2" opacity=".6"/>' +
+    el.innerHTML = '<svg width="' + W + '" height="' + H + '"><line x1="0" x2="' + W + '" y1="' + Y(prev) + '" y2="' + Y(prev) + '" stroke="' + (mono ? "currentColor" : "var(--muted)") + '" stroke-dasharray="2 2" opacity="' + (mono ? ".45" : ".6") + '"/>' +
       '<polyline fill="none" stroke="' + col + '" stroke-width="1.6" stroke-linejoin="round" points="' + pts.map(p => X(p.time) + "," + Y(p.value)).join(" ") + '"/></svg>';
   };
   u2Obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { u2Obs.unobserve(e.target); draw(e.target); } }), { rootMargin:"200px" });
@@ -6356,8 +6408,9 @@ async function renderUi2List() {
       const ch = info.changePct || 0, m = Math.min(1, Math.abs(ch) / 3), t = document.createElement("button");
       t.className = "u2-tile";
       t.style.background = "color-mix(in srgb, " + (ch >= 0 ? "var(--up)" : "var(--down)") + " " + (16 + m * 64).toFixed(0) + "%, var(--card))";
-      if (m > .5) t.style.color = "#fff";
-      t.innerHTML = "<b>" + esc(it.name) + "</b><span>" + fmtPct(ch) + "</span>" + (editing && !pf.virtual ? '<i class="u2-rm">✕</i>' : "");
+      const dk = document.documentElement.dataset.theme === "dark";
+      t.style.color = m > .5 ? "#fff" : dk ? (ch >= 0 ? "#bbf7d0" : "#fecdd3") : (ch >= 0 ? "#064e3b" : "#7f1d1d");
+      t.innerHTML = "<b>" + esc(it.name) + '</b><div class="u2-tb"><span>' + fmtPct(ch) + '</span><span class="u2-spk" data-sym="' + esc(it.yahoo) + '" data-w="52" data-h="26" data-mono="1"></span></div>' + (editing && !pf.virtual ? '<i class="u2-rm">✕</i>' : "");
       t.onclick = ev => { if (ev.target.closest(".u2-rm")) { askRemove(pi, it); return; } openDetail(it, info, { pi, idx:pf.items.indexOf(it) }); };
       box.appendChild(t);
     });
@@ -6365,7 +6418,7 @@ async function renderUi2List() {
   if (editing && !pf.virtual) { const add = document.createElement("button"); add.className = "add-tile u2-add"; add.innerHTML = "<b>＋</b> Ajouter une valeur"; add.onclick = openAdd; grid.appendChild(add); }
   grid.appendChild(box);
   ui2Tools();
-  if (mode === "list") ui2DaySparks(box);
+  ui2DaySparks(box);
 }
 /* graphique détaillé des cartes de l'accueil : 45 bougies, Bollinger 50/1 + MM50, niveau en pointillés vert */
 async function ui2Candles(el, sym, level) {
