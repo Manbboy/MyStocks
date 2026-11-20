@@ -931,6 +931,13 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .td-leg { position:absolute; left:8px; bottom:3px; font-size:10.5px; color:var(--muted); } .td-leg i { font-style:normal; font-weight:700; }
   /* listes */
   :root[data-ui="2"] body.ui2-lists:not(.ui2-cards) .bar { display:none; }
+  :root[data-ui="2"] .bar .legend, :root[data-ui="2"] #cmpBtn, :root[data-ui="2"] #paintBtn, :root[data-ui="2"] #editBtn, :root[data-ui="2"] #addBtn { display:none !important; }
+  .u2-t2 { justify-content:flex-start; margin-top:-2px; } .u2-t2 .btn { margin:0; }
+  .u2-edit { border:1px solid var(--border); background:var(--card); color:var(--text); font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+  .u2-edit.on { background:var(--accent); color:#fff; border-color:transparent; }
+  .u2-rm { flex:none; width:30px; height:30px; border-radius:50%; background:color-mix(in srgb, var(--down) 14%, transparent); color:var(--down); display:flex; align-items:center; justify-content:center; font-weight:800; font-style:normal; }
+  .u2-tile { position:relative; } .u2-tile .u2-rm { position:absolute; top:5px; right:5px; width:24px; height:24px; background:rgba(255,255,255,.85); }
+  .u2-add { width:100%; margin-bottom:10px; }
   #u2Tools[hidden] { display:none; }
   .u2-list-wrap { display:block !important; }
   .u2-tools { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:2px 0 10px; }
@@ -968,7 +975,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v203</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v204</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5738,7 +5745,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 
 /* Vue graphiques sur une période (1M, 3M, 6M…) : la variation affichée sur la carte est celle de la période,
    comme la couleur de la courbe (en 1J et en vue compacte : variation du jour) */
-function periodMode() { return !prefs.view && prefs.range && prefs.range !== "1J"; }
+function periodMode() { return !prefs.view && prefs.range && prefs.range !== "1J" && !(UI2 && u2Mode() !== "cards"); }   // Liste / Carte de la nouvelle interface : toujours la séance du jour
 const periodFirst = {};                       // « symbole|période » -> cours de début de la période affichée
 function shownPct(sym, info) {
   const f = periodMode() && periodFirst[sym + "|" + prefs.range];
@@ -6242,18 +6249,24 @@ function ui2Open(sym, opt) {
   openDetail(it, withLive(sym, summary.symbols[sym]));
 }
 const u2Mode = () => prefs.u2mode || (prefs.u2map ? "map" : "list");
-/* barre d'outils des listes (Liste · Carte · Graphiques), au-dessus de la grille */
+/* barre d'outils des listes : Liste · Carte · Graphiques · ✎ (1re ligne), cours (clôtures / direct) et tri (2e ligne) —
+   les boutons direct et tri sont ceux de l'interface classique, déplacés ici : ils valent pour les 3 vues */
 function ui2Tools() {
   let t = $("u2Tools");
-  if (!t) { t = document.createElement("div"); t.id = "u2Tools"; document.querySelector(".bar").before(t); }   // au-dessus des réglages des graphiques
-  const mode = u2Mode(), sort = prefs.u2sort || "az";
+  if (!t) {
+    t = document.createElement("div"); t.id = "u2Tools";
+    t.innerHTML = '<div class="u2-tools"><div class="u2-seg"></div><button class="u2-edit" id="u2Edit">✎ Modifier</button></div><div class="u2-tools u2-t2"></div>';
+    document.querySelector(".bar").before(t);
+    t.querySelector(".u2-t2").append($("liveBtn"), $("sortBtn"), $("liveMenu"), $("sortMenu"));     // menus avec leurs boutons (la barre classique est masquée en Liste / Carte)
+    $("u2Edit").onclick = () => { editing = !editing; render(); };
+  }
+  const mode = u2Mode();
   t.hidden = !!prefs.view;
-  t.innerHTML = '<div class="u2-tools"><div class="u2-seg">' +
-    [["list", "☰ Liste"], ["map", "▦ Carte"], ["cards", "📈 Graphiques"]].map(([k, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '">' + l + "</button>").join("") + "</div>" +
-    (mode === "cards" ? "" : '<button class="u2-sort">' + ({ az:"A → Z", chg:"Variation", none:"Ordre" }[sort]) + " ▾</button>") + "</div>";
-  t.querySelectorAll(".u2-seg button").forEach(b => b.onclick = () => { prefs.u2mode = b.dataset.m; delete prefs.u2map; savePrefs(); render(); });
-  const so = t.querySelector(".u2-sort");
-  if (so) so.onclick = () => { prefs.u2sort = { az:"chg", chg:"none", none:"az" }[sort]; savePrefs(); renderUi2List(); };
+  const seg = t.querySelector(".u2-seg");
+  seg.innerHTML = [["list", "☰ Liste"], ["map", "▦ Carte"], ["cards", "📈 Graph."]].map(([k, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '">' + l + "</button>").join("");
+  seg.querySelectorAll("button").forEach(b => b.onclick = () => { prefs.u2mode = b.dataset.m; delete prefs.u2map; savePrefs(); render(); });
+  const e = $("u2Edit"); e.classList.toggle("on", editing); e.textContent = editing ? "✓ Terminé" : "✎ Modifier";
+  if (mode === "cards" && prefs.gridCompact) { prefs.gridCompact = false; savePrefs(); }      // « Graphiques » : rien que les graphiques
   document.body.classList.toggle("ui2-cards", mode === "cards" && !prefs.view);
 }
 /* ===== Listes (nouvelle interface) : lignes logo · nom · mini-graphique 30 séances · cours · variation, ou carte de chaleur ===== */
@@ -6266,6 +6279,29 @@ function ui2SparkSvg(arr, W = 64, H = 26) {
   const pts = arr.map((v, i) => (i * W / (arr.length - 1)).toFixed(1) + "," + (H - 2 - (v - mn) * k).toFixed(1)).join(" ");
   return '<svg width="' + W + '" height="' + H + '" class="u2-spk"><polyline fill="none" stroke="' + (arr[arr.length - 1] >= arr[0] ? "var(--up)" : "var(--down)") + '" stroke-width="1.8" stroke-linejoin="round" points="' + pts + '"/></svg>';
 }
+/* mini-graphique de la séance (en cours, sinon la dernière), cohérent avec la variation affichée à côté :
+   ligne pointillée = clôture de la veille, vert au-dessus / rouge en dessous ; pendant la séance la courbe avance de gauche à droite */
+let u2Obs = null;
+function ui2DaySparks(box) {
+  if (u2Obs) u2Obs.disconnect();
+  const draw = async el => {
+    const sym = el.dataset.sym, d = await fetchDay(sym, false, !liveOn());
+    if (!d || !d.pts || d.pts.length < 2) {             // pas de séance : 30 clôtures, en gris (tendance, pas la journée)
+      el.innerHTML = ui2SparkSvg(sparkData && sparkData[sym]).replace(/stroke="var\(--(up|down)\)"/, 'stroke="var(--muted)"'); el.title = "30 dernières séances"; return; }
+    const W = 64, H = 26, pts = d.pts, prev = d.prev ?? pts[0].value, lastV = pts[pts.length - 1].value;
+    let t0 = pts[0].time, t1 = pts[pts.length - 1].time;
+    const sh = sessionHours(d);
+    if (sh) { try { const o = localToEpoch(d.day, sh.open, sh.tz), c = localToEpoch(d.day, sh.close, sh.tz);
+      t0 = o + tzShift(o, "Europe/Brussels"); t1 = Math.max(c + tzShift(c, "Europe/Brussels"), pts[pts.length - 1].time); } catch (e) {} }
+    const vs = pts.map(p => p.value).concat([prev]), mn = Math.min(...vs), mx = Math.max(...vs), k = (H - 4) / ((mx - mn) || 1);
+    const X = t => ((t - t0) / ((t1 - t0) || 1) * W).toFixed(1), Y = v => (H - 2 - (v - mn) * k).toFixed(1), col = lastV >= prev ? "var(--up)" : "var(--down)";
+    el.title = "Séance du " + d.day;
+    el.innerHTML = '<svg width="' + W + '" height="' + H + '"><line x1="0" x2="' + W + '" y1="' + Y(prev) + '" y2="' + Y(prev) + '" stroke="var(--muted)" stroke-dasharray="2 2" opacity=".6"/>' +
+      '<polyline fill="none" stroke="' + col + '" stroke-width="1.6" stroke-linejoin="round" points="' + pts.map(p => X(p.time) + "," + Y(p.value)).join(" ") + '"/></svg>';
+  };
+  u2Obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { u2Obs.unobserve(e.target); draw(e.target); } }), { rootMargin:"200px" });
+  box.querySelectorAll(".u2-spk[data-sym]").forEach(el => u2Obs.observe(el));
+}
 async function renderUi2List() {
   const grid = $("grid"); grid.className = "grid u2-list-wrap"; grid.style.gridTemplateColumns = "";
   if (!sparkData) { try { sparkData = (await (await fetch("data/sparks.json?v=" + encodeURIComponent(summary.updated || ""), { cache:"no-store" })).json()).s; } catch (e) { sparkData = {}; } }
@@ -6273,11 +6309,10 @@ async function renderUi2List() {
   if (prefs.view) return;
   const pf = cfg.portfolios[prefs.active] || cfg.portfolios[0];
   const bw = new Map(((biaData && biaData.wait) || []).map(w => [w.sym, w])), bg = new Map(((biaData && biaData.go) || []).map(g => [g.sym, g]));
-  let items = pf.items.map((it, i) => ({ it, i, info:summary.symbols[it.yahoo] ? withLive(it.yahoo, summary.symbols[it.yahoo]) : null })).filter(x => x.info);
-  const mode = u2Mode(), sort = prefs.u2sort || "az";
+  const mode = u2Mode();
   if (mode === "cards") return;
-  if (sort === "chg") items.sort((a, b) => (b.info.changePct ?? -99) - (a.info.changePct ?? -99));
-  else if (sort === "az") items.sort((a, b) => a.it.name.localeCompare(b.it.name, "fr"));
+  const pi = cfg.portfolios.indexOf(pf);
+  let items = sortedOrder(pi).map(i => ({ it:pf.items[i], i, info:summary.symbols[pf.items[i].yahoo] ? withLive(pf.items[i].yahoo, summary.symbols[pf.items[i].yahoo]) : null })).filter(x => x.info);
   const up = items.filter(x => (x.info.changePct || 0) >= 0).length;
   grid.innerHTML =
     '<div class="u2-sum"><div><small>' + esc(pf.name) + " · " + items.length + " valeurs</small><b>" + up + " en hausse · " + (items.length - up) + " en baisse</b></div><div class=\"u2-bars\">" +
@@ -6289,24 +6324,27 @@ async function renderUi2List() {
       const r = document.createElement("button"); r.className = "u2-row";
       const ch = info.changePct, tag = bg.has(it.yahoo) ? '<em class="t-up">🏄 cassure</em>' : bw.has(it.yahoo) && bw.get(it.yahoo).dist <= 0.05 ? '<em class="t-acc">🏄 à ' + fmtPct(Math.round(bw.get(it.yahoo).dist * 1000) / 10) + "</em>" : "";
       r.innerHTML = ui2Logo(it.name, i) + '<span class="u2-n"><b>' + esc(it.name) + "</b><small>" + esc(it.yahoo.replace(/^\^/, "")) + (tag ? " · " + tag : "") + "</small></span>" +
-        ui2SparkSvg(sparkData[it.yahoo]) + '<span class="u2-p"><b>' + fmt(info.last, null) + '</b><i class="' + ((ch || 0) >= 0 ? "up" : "down") + '">' + (ch != null ? fmtPct(ch) : "—") + "</i></span>";
-      r.onclick = () => openDetail(it, info, { pi:prefs.active, idx:pf.items.indexOf(it) });
+        '<span class="u2-spk" data-sym="' + esc(it.yahoo) + '"><svg width="64" height="26"></svg></span><span class="u2-p"><b>' + fmt(info.last, null) + '</b><i class="' + ((ch || 0) >= 0 ? "up" : "down") + '">' + (ch != null ? fmtPct(ch) : "—") + "</i></span>" +
+        (editing && !pf.virtual ? '<span class="u2-rm" title="Retirer">✕</span>' : "");
+      r.onclick = ev => { if (ev.target.closest(".u2-rm")) { askRemove(pi, it); return; } openDetail(it, info, { pi, idx:pf.items.indexOf(it) }); };
       box.appendChild(r);
     });
   } else {
     box.className = "u2-map";
-    items.slice().sort((a, b) => Math.abs(b.info.changePct || 0) - Math.abs(a.info.changePct || 0)).forEach(({ it, i, info }, k) => {
+    items.forEach(({ it, i, info }, k) => {
       const ch = info.changePct || 0, m = Math.min(1, Math.abs(ch) / 3), t = document.createElement("button");
       t.className = "u2-tile" + (k < 2 ? " big" : "");
       t.style.background = "color-mix(in srgb, " + (ch >= 0 ? "var(--up)" : "var(--down)") + " " + (16 + m * 64).toFixed(0) + "%, var(--card))";
       if (m > .5) t.style.color = "#fff";
-      t.innerHTML = "<b>" + esc(it.name) + "</b><span>" + fmtPct(ch) + "</span>";
-      t.onclick = () => openDetail(it, info, { pi:prefs.active, idx:pf.items.indexOf(it) });
+      t.innerHTML = "<b>" + esc(it.name) + "</b><span>" + fmtPct(ch) + "</span>" + (editing && !pf.virtual ? '<i class="u2-rm">✕</i>' : "");
+      t.onclick = ev => { if (ev.target.closest(".u2-rm")) { askRemove(pi, it); return; } openDetail(it, info, { pi, idx:pf.items.indexOf(it) }); };
       box.appendChild(t);
     });
   }
+  if (editing && !pf.virtual) { const add = document.createElement("button"); add.className = "add-tile u2-add"; add.innerHTML = "<b>＋</b> Ajouter une valeur"; add.onclick = openAdd; grid.appendChild(add); }
   grid.appendChild(box);
   ui2Tools();
+  if (mode === "list") ui2DaySparks(box);
 }
 /* graphique détaillé des cartes de l'accueil : 45 bougies, Bollinger 50/1 + MM50, niveau en pointillés vert */
 async function ui2Candles(el, sym, level) {
