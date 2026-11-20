@@ -945,11 +945,16 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-step { display:inline-flex; align-items:center; gap:2px; height:36px; box-sizing:border-box; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:0 8px; box-shadow:var(--sh2); user-select:none; cursor:pointer; flex:none; font-size:13px; }
   .u2-step[hidden] { display:none; }
   .u2-step .u2-st-ud { font-size:10px; color:var(--accent); font-weight:800; opacity:.6; margin-left:-1px; }
+  #u2Combo[hidden] { display:none; } #u2Combo b { font-weight:800; font-size:13.5px; } #u2Combo i { font-style:normal; color:var(--muted); margin:0 1px; }
+  .u2-bub-2 { display:flex; gap:10px; } .u2-bub-col { flex:1; min-width:110px; } .u2-bub-col small { margin-bottom:2px; white-space:nowrap; }
+  .u2-bub-ok { margin-top:10px; width:100%; height:40px; border:0; border-radius:999px; background:var(--accent); color:#fff; font:700 15px/1 inherit; cursor:pointer; }
+  #u2Bub.menu { min-width:280px; }
+  .u2-bub-m button { font-weight:700; }
   /* téléphone en portrait : tout sur une ligne sans réduire les libellés (Liste, Carte, Graph.) */
   @media (max-width:420px) {
     body.ui2-cards .u2-tools { gap:4px; }
     body.ui2-cards .u2-seg button { padding:0 5px !important; font-size:12px !important; gap:2px; }
-    body.ui2-cards .u2-step { padding:0 7px; } body.ui2-cards #rangeSeg .u2-st-ic { display:none; } body.ui2-cards .u2-step .u2-st-ud { display:none; }
+    body.ui2-cards .u2-step { padding:0 7px; } body.ui2-cards #u2Combo .u2-st-ic { display:none; } body.ui2-cards .u2-step .u2-st-ud { display:none; }
     body.ui2-cards .u2-tools #sortBtn { padding:0 7px !important; font-size:12px !important; }
     body.ui2-cards .u2-seg { padding:2px !important; }
     body.ui2-cards .u2-tools .u2-edit { width:32px !important; } }
@@ -1125,7 +1130,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v213</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v214</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1595,30 +1600,36 @@ function fitTabs() {
 let fitTabsT = 0;
 addEventListener("resize", () => { clearTimeout(fitTabsT); fitTabsT = setTimeout(fitTabs, 120); });
 /* nouvelle interface : sélecteur compact « ‹ valeur › » (graphiques par ligne, période) au lieu de tous les boutons */
+/* nouvelle interface : un seul bouton « 3 / 1J » (graphiques par ligne / période) ; un toucher ouvre un menu flottant
+   à deux colonnes — à gauche le nombre de graphiques par ligne, à droite la période */
+const u2Sel = {};
 function ui2Stepper(id, opts, cur, pick) {
-  const s = $(id); s.innerHTML = ""; s.className = "u2-step";
-  const ok = opts.filter(o => !(o[2] && o[2].off));
-  let i = Math.max(0, ok.findIndex(o => o[0] === cur));
-  const lab = k => ok[k][1];
-  const wrap = k => (k % ok.length + ok.length) % ok.length;                    // roue infinie : après la dernière, la première
-  const tick = () => { try { navigator.vibrate && navigator.vibrate(6); } catch (e) {} };
-  const ic = document.createElement("span"); ic.className = "u2-st-ic"; ic.textContent = id === "colsSeg" ? "▦" : "⏱";
-  const v = document.createElement("span"); v.className = "u2-st-v"; v.textContent = lab(i);
-  const ar = document.createElement("span"); ar.className = "u2-st-ud"; ar.textContent = "▾";
-  s.append(ic, v, ar);
-  s.title = (id === "colsSeg" ? "Graphiques par ligne" : "Période") + " : toucher = suivant ; appui maintenu puis glisser vers le haut ou le bas";
-  // un toucher ouvre la fenêtre flottante en menu : on touche la valeur voulue (plus de glisser sur le bouton)
-  const title = id === "colsSeg" ? "Graphiques par ligne" : "Période";
-  s.onclick = () => {
-    let b = $("u2Bub"); if (!b) { b = document.createElement("div"); b.id = "u2Bub"; document.body.appendChild(b); }
-    b.className = "show menu";
-    b.innerHTML = "<small>" + title + '</small><div class="u2-bub-m">' + ok.map((o, k) => '<button data-k="' + k + '" class="' + (k === i ? "on" : "") + '">' + esc(o[1]) + "</button>").join("") + "</div>";
-    let bg = $("u2BubBg"); if (!bg) { bg = document.createElement("div"); bg.id = "u2BubBg"; document.body.appendChild(bg); }
-    bg.classList.add("show");
-    const close = () => { b.className = ""; bg.classList.remove("show"); };
-    bg.onclick = close;
-    b.querySelectorAll("button").forEach(x => x.onclick = () => { close(); tick(); if (+x.dataset.k !== i) pick(ok[+x.dataset.k][0]); });
-  };
+  u2Sel[id] = { ok:opts.filter(o => !(o[2] && o[2].off)), cur, pick };
+  $(id).innerHTML = ""; $(id).hidden = true;
+  ui2Combo();
+}
+function ui2Combo() {
+  const c = $("u2Combo"); if (!c) return;
+  const C = u2Sel.colsSeg, R = u2Sel.rangeSeg;
+  const lab = S => S ? ((S.ok.find(o => o[0] === S.cur) || S.ok[0] || [, ""])[1]) : "";
+  c.innerHTML = '<span class="u2-st-ic">▦</span><b>' + esc(lab(C)) + '</b><i>/</i><b>' + esc(lab(R)) + '</b><span class="u2-st-ud">▾</span>';
+}
+function ui2ComboMenu() {
+  let b = $("u2Bub"); if (!b) { b = document.createElement("div"); b.id = "u2Bub"; document.body.appendChild(b); }
+  let bg = $("u2BubBg"); if (!bg) { bg = document.createElement("div"); bg.id = "u2BubBg"; document.body.appendChild(bg); }
+  const col = (id, t) => { const S = u2Sel[id]; if (!S) return "";
+    return '<div class="u2-bub-col"><small>' + t + '</small><div class="u2-bub-m">' + S.ok.map(o => '<button data-id="' + id + '" data-v="' + esc(o[0]) + '" class="' + (String(o[0]) === String(S.cur) ? "on" : "") + '">' + esc(o[1]) + "</button>").join("") + "</div></div>"; };
+  b.className = "show menu";
+  b.innerHTML = '<div class="u2-bub-2">' + col("colsSeg", "Graphiques / ligne") + col("rangeSeg", "Période") + '</div><button class="u2-bub-ok">OK</button>';
+  bg.classList.add("show");
+  const close = () => { b.className = ""; bg.classList.remove("show"); };
+  bg.onclick = close; b.querySelector(".u2-bub-ok").onclick = close;
+  b.querySelectorAll(".u2-bub-m button").forEach(x => x.onclick = () => {
+    const S = u2Sel[x.dataset.id], o = S.ok.find(o => String(o[0]) === x.dataset.v);
+    try { navigator.vibrate && navigator.vibrate(6); } catch (e) {}
+    x.parentNode.querySelectorAll("button").forEach(y => y.classList.toggle("on", y === x));
+    if (o && String(o[0]) !== String(S.cur)) S.pick(o[0]);                  // appliqué tout de suite ; la fenêtre reste ouverte
+  });
 }
 function renderSeg(id, opts, cur, pick) {
   if (UI2 && (id === "colsSeg" || id === "rangeSeg")) return ui2Stepper(id, opts, cur, pick);
@@ -6460,7 +6471,9 @@ function ui2Tools() {
     t = document.createElement("div"); t.id = "u2Tools";
     t.innerHTML = '<div class="u2-tools"><div class="u2-seg"></div><span class="u2-sp"></span><button class="u2-edit" id="u2Edit" title="Modifier la liste">✎</button></div>';
     document.querySelector(".bar").before(t);
-    t.querySelector(".u2-sp").replaceWith($("colsSeg"), $("rangeSeg"), $("sortBtn"));   // vues · par ligne · période · tri · ✎ sur une seule ligne
+    const cb = document.createElement("button"); cb.id = "u2Combo"; cb.className = "u2-step"; cb.type = "button"; cb.title = "Graphiques par ligne / période";
+    cb.onclick = ui2ComboMenu;
+    t.querySelector(".u2-sp").replaceWith(cb, $("colsSeg"), $("rangeSeg"), $("sortBtn"));   // vues · « 3 / 1J » · tri · ✎ sur une seule ligne
     t.appendChild($("sortMenu"));     // menus avec leurs boutons (la barre classique est masquée en Liste / Carte)
     $("u2Edit").onclick = () => { editing = !editing; render(); };
   }
@@ -6468,8 +6481,8 @@ function ui2Tools() {
   t.hidden = !!prefs.view;
   const seg = t.querySelector(".u2-seg");
   // vue Graphiques : les vues en icônes seules, pour laisser la place aux sélecteurs « par ligne » et « période »
-  seg.innerHTML = [["list", "☰", " Liste"], ["map", "▦", " Carte"], ["cards", "📈", " Graph."]].map(([k, ic, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '" title="' + l.trim() + '">' + (mode === "cards" && innerWidth < 420 ? l.trim() : ic + l) + "</button>").join("");   // portrait + Graphiques : libellés sans icônes, pour tout garder sur une ligne
-  $("colsSeg").hidden = $("rangeSeg").hidden = mode !== "cards";
+  seg.innerHTML = [["list", "☰", " Liste"], ["map", "▦", " Carte"], ["cards", "📈", " Graph."]].map(([k, ic, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '" title="' + l.trim() + '">' + ic + l + "</button>").join("");   // portrait + Graphiques : libellés sans icônes, pour tout garder sur une ligne
+  $("colsSeg").hidden = $("rangeSeg").hidden = true; $("u2Combo").hidden = mode !== "cards"; ui2Combo();
   seg.querySelectorAll("button").forEach(b => b.onclick = () => { prefs.u2mode = b.dataset.m; delete prefs.u2map; savePrefs(); render(); });
   const e = $("u2Edit"); e.classList.toggle("on", editing); e.textContent = editing ? "✓" : "✎";
   const pfc = cfg.portfolios[prefs.active] || {};
