@@ -952,17 +952,15 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-bub-m button { font-weight:700; }
   /* téléphone en portrait : tout sur une ligne sans réduire les libellés (Liste, Carte, Graph.) */
   @media (max-width:420px) {
-    body.ui2-cards .u2-tools { gap:4px; }
-    body.ui2-cards .u2-seg button { padding:0 5px !important; font-size:12px !important; gap:2px; }
-    body.ui2-cards .u2-step { padding:0 7px; } body.ui2-cards #u2Combo .u2-st-ic { display:none; } body.ui2-cards .u2-step .u2-st-ud { display:none; }
-    body.ui2-cards .u2-tools #sortBtn { padding:0 7px !important; font-size:12px !important; }
-    body.ui2-cards .u2-seg { padding:2px !important; }
-    body.ui2-cards .u2-tools .u2-edit { width:32px !important; } }
+    /* mêmes tailles dans les 3 vues (Liste, Carte, Graph.) : rien ne bouge en changeant de vue */
+    :root[data-ui="2"] .u2-tools { gap:4px !important; }
+    :root[data-ui="2"] .u2-seg { padding:3px !important; }
+    :root[data-ui="2"] .u2-seg button { padding:0 6px !important; font-size:12.5px !important; gap:2px !important; }
+    #u2Combo { padding:0 8px !important; margin-left:0 !important; } #u2Combo .u2-st-ic, #u2Combo .u2-st-ud { display:none; }
+    :root[data-ui="2"] .u2-tools #sortBtn { padding:0 8px !important; font-size:12.5px !important; }
+    :root[data-ui="2"] .u2-tools .u2-edit { width:34px !important; } }
   :root[data-ui="2"] body.ui2-lists .bar { display:none !important; }
   .u2-tools { gap:5px; } .u2-tools .u2-seg { flex:none; } .u2-tools .u2-edit { flex:none; width:36px !important; }
-  body.ui2-cards .u2-seg button { padding:0 8px !important; }
-  body.ui2-cards .u2-tools #sortBtn { padding:0 9px; font-size:12.5px; flex:none; }
-  body.ui2-cards .u2-step { padding:0 8px; }
   .u2-step .u2-st-a { width:30px; height:30px; padding:0; border:0; border-radius:50%; background:none; font-size:20px; line-height:1; color:var(--accent); font-weight:700; cursor:pointer; }
   .u2-step .u2-st-a:active { background:var(--chip); }
   .u2-step .u2-st-ic { font-size:12px; color:var(--muted); }
@@ -1130,7 +1128,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v214</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v215</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
