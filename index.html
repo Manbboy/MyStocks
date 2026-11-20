@@ -1038,6 +1038,9 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-tile .u2-tb { display:flex; align-items:flex-end; justify-content:space-between; gap:4px; }
   .u2-tile .u2-spk { display:block; width:52px; height:26px; flex:none; } .u2-tile .u2-spk svg { display:block; }
   .u2-tile b { -webkit-line-clamp:1 !important; }
+  .u2-th { display:flex; align-items:baseline; gap:4px; min-width:0; }      /* nom coupé si besoin, cours en haut à droite */
+  .u2-th b { flex:1; min-width:0; display:block !important; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+  .u2-th em { flex:none; font-style:normal; font-size:11.5px; font-weight:700; opacity:.85; font-variant-numeric:tabular-nums; white-space:nowrap; }
   :root[data-ui="2"][data-theme="dark"] .u2-tile { --tile-dk:1; } .u2-tile b { font-size:13px; line-height:1.15; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
   .u2-tile.big b { font-size:17px; } .u2-tile span { font-weight:800; font-size:13.5px; font-variant-numeric:tabular-nums; } .u2-tile.big span { font-size:20px; }
   .td-act { display:flex; gap:8px; margin-top:10px; } .td-act .btn { flex:1; justify-content:center; padding:10px; font-weight:700; }
@@ -1129,7 +1132,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v217</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v218</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -6565,7 +6568,7 @@ async function renderUi2List() {
       t.style.background = "color-mix(in srgb, " + (ch >= 0 ? "var(--up)" : "var(--down)") + " " + (16 + m * 64).toFixed(0) + "%, var(--card))";
       const dk = document.documentElement.dataset.theme === "dark";
       t.style.color = m > .5 ? "#fff" : dk ? (ch >= 0 ? "#bbf7d0" : "#fecdd3") : (ch >= 0 ? "#064e3b" : "#7f1d1d");
-      t.innerHTML = "<b>" + esc(it.name) + '</b><div class="u2-tb"><span>' + fmtPct(ch) + '</span><span class="u2-spk" data-sym="' + esc(it.yahoo) + '" data-w="52" data-h="26" data-mono="1"></span></div>' + (editing && !pf.virtual ? '<i class="u2-rm">✕</i>' : "");
+      t.innerHTML = '<div class="u2-th"><b>' + esc(it.name) + '</b><em>' + fmt(info.last, info.currency) + '</em></div><div class="u2-tb"><span>' + fmtPct(ch) + '</span><span class="u2-spk" data-sym="' + esc(it.yahoo) + '" data-w="52" data-h="26" data-mono="1"></span></div>' + (editing && !pf.virtual ? '<i class="u2-rm">✕</i>' : "");
       t.onclick = ev => { if (ev.target.closest(".u2-rm")) { askRemove(pi, it); return; } openDetail(it, info, { pi, idx:pf.items.indexOf(it) }); };
       box.appendChild(t);
     });
