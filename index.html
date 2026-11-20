@@ -1063,6 +1063,9 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] .ov-sub .ov-pc { font-size:13px; font-weight:700; padding:2px 8px; border-radius:8px; }
   :root[data-ui="2"] .ov-sub .ov-pc.up { background:color-mix(in srgb, var(--up) 13%, transparent); } :root[data-ui="2"] .ov-sub .ov-pc.down { background:color-mix(in srgb, var(--down) 12%, transparent); }
   :root[data-ui="2"] .ov-nav { gap:6px; }
+  .ov-rt { flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+  .ov-ivslot:empty { display:none; }
+  :root[data-ui="2"] #ov .ov-ivslot .seg button { padding:5px 8px; min-width:0; }
   :root[data-ui="2"] .navb, :root[data-ui="2"] .close { width:38px; height:38px; border-radius:50%; padding:0; display:inline-flex; align-items:center; justify-content:center; box-shadow:var(--sh2); }
   :root[data-ui="2"] .close .full { display:none; } :root[data-ui="2"] .close .short { display:inline; }
   :root[data-ui="2"] #ovPos { font-size:12px; color:var(--muted); font-weight:600; }
@@ -1132,7 +1135,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v218</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v219</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1172,11 +1175,14 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <div class="ov-title" id="ovTitle" role="button" tabindex="0" title="Aller à une autre valeur du portefeuille"></div><div class="ov-sub" id="ovSub"></div><div class="ov-posinfo" id="ovPosInfo"></div>
       <div class="pick" id="ovPick" hidden></div>
     </div>
+    <div class="ov-rt">
     <div class="ov-nav">
       <button class="navb" id="ovPrev" aria-label="Action précédente">‹</button>
       <span id="ovPos"></span>
       <button class="navb" id="ovNext" aria-label="Action suivante">›</button>
       <button class="close" id="ovClose" aria-label="Fermer"><span class="full">Fermer</span><span class="short">✕</span></button>
+    </div>
+    <div class="ov-ivslot" id="ivSlot"></div>
     </div>
   </div>
   <div class="ov-body">
@@ -3046,9 +3052,14 @@ function applyTbRows() {
   const t = $("tbs"); if (!t) return;
   t.classList.toggle("two", prefs.tbRows === 2);
   // une ligne : J S M T fixe à gauche, seuls les indicateurs défilent ; deux lignes (rien ne défile) : J S M T en tête de la 1re ligne
-  const iv = $("ivSeg");
-  if (prefs.tbRows === 2) { if (iv.parentNode !== t) t.insertBefore(iv, t.firstChild); }
-  else if (iv.parentNode === t) t.parentNode.insertBefore(iv, t);
+  const iv = $("ivSeg"), slot = $("ivSlot");
+  // nouvelle interface en portrait : 15' J S M T passe sous les flèches ‹ › (en haut à droite), la barre ne garde que les indicateurs
+  if (slot && ivInHead()) { if (iv.parentNode !== slot) slot.appendChild(iv); }
+  else {
+    if (slot && iv.parentNode === slot) t.parentNode.insertBefore(iv, t);
+    if (prefs.tbRows === 2) { if (iv.parentNode !== t) t.insertBefore(iv, t.firstChild); }
+    else if (iv.parentNode === t) t.parentNode.insertBefore(iv, t);
+  }
   // hauteur de la 2e ligne retirée du graphique, pour garder les flèches ‹ › visibles sous le graphique
   requestAnimationFrame(() => {
     const b = t.querySelector(".mmb");
@@ -3056,7 +3067,9 @@ function applyTbRows() {
     $("ov").style.setProperty("--tbx", extra + "px");
   });
 }
-window.addEventListener("resize", () => { if (prefs.tbRows === 2) applyTbRows(); });
+function ivInHead() { return UI2 && innerHeight > innerWidth && innerWidth < 600; }
+let ivHeadWas = null;
+window.addEventListener("resize", () => { const h = ivInHead(); if (prefs.tbRows === 2 || h !== ivHeadWas) { ivHeadWas = h; applyTbRows(); } });
 applyTbRows();
 const trendOn = () => indMode() === "trend" && prefs.trendBars !== false;
 const paneOn = () => indMode() !== "none" && !(indMode() === "trend" && prefs.rtPane === false);   // graphique RSI sous les chandeliers
