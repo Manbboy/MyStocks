@@ -1059,7 +1059,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] .ov-title { min-width:0; } :root[data-ui="2"] .ov-title .ov-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   :root[data-ui="2"] .ov-title .caret { flex:none; }
   :root[data-ui="2"] .ov-title .u2-logo { width:34px; height:34px; border-radius:11px; font-size:12px; }
-  :root[data-ui="2"] .ov-sub { margin:6px 0 0 44px; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 8px; }
+  :root[data-ui="2"] .ov-sub { margin:6px 0 0 0; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 8px; }
   :root[data-ui="2"] .ov-sub .ov-dt { font-size:12px; color:var(--muted); }
   :root[data-ui="2"] .ov-sub .ov-px { font-size:22px; font-weight:800; color:var(--text); font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   :root[data-ui="2"] .ov-sub .ov-pc { font-size:13px; font-weight:700; padding:2px 8px; border-radius:8px; }
@@ -1139,7 +1139,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v220</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v221</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -2174,9 +2174,7 @@ async function openDetail(item, info, pos) {
   dt.textContent = "  · " + new Date(info.date).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"numeric" });
   dt.title = "Clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
   $("ovSub").append(sub, ch, dt);
-  if (UI2) {                                       // nouvelle interface : initiales colorées et prix en grand
-    const n = cfg.portfolios.reduce((k, p, i) => k >= 0 ? k : p.items.indexOf(item) >= 0 ? p.items.indexOf(item) : -1, -1);
-    $("ovTitle").insertAdjacentHTML("afterbegin", ui2Logo(item.name, n < 0 ? 0 : n));
+  if (UI2) {                                       // nouvelle interface : prix en grand (pas d'initiales : le nom a toute la place)
     sub.className = "ov-px"; ch.className += " ov-pc"; dt.className = "ov-dt"; dt.textContent = dt.textContent.replace(/^\s*·\s*/, "");
   }
 
