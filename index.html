@@ -942,11 +942,19 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-list .u2-sep + .u2-row { border-top:0; }
   .u2-list .u2-row:has(+ .u2-sep) { border-bottom:0; }
   .u2-list .u2-sep { margin:0; }
-  .u2-step { display:inline-flex; align-items:center; gap:0; height:36px; box-sizing:border-box; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:0 2px; box-shadow:var(--sh2); touch-action:none; user-select:none; }
+  .u2-step { display:inline-flex; align-items:center; gap:3px; height:36px; box-sizing:border-box; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:0 10px; box-shadow:var(--sh2); touch-action:none; user-select:none; cursor:ns-resize; flex:none; }
+  .u2-step[hidden] { display:none; }
+  .u2-step .u2-st-ud { font-size:10px; color:var(--accent); font-weight:800; opacity:.6; margin-left:-1px; }
+  @media (max-width:420px) { .u2-step .u2-st-ud { display:none; } }
+  :root[data-ui="2"] body.ui2-lists .bar { display:none !important; }
+  .u2-tools { gap:5px; } .u2-tools .u2-seg { flex:none; } .u2-tools .u2-edit { flex:none; width:36px !important; }
+  body.ui2-cards .u2-seg button { padding:0 8px !important; }
+  body.ui2-cards .u2-tools #sortBtn { padding:0 9px; font-size:12.5px; flex:none; }
+  body.ui2-cards .u2-step { padding:0 8px; }
   .u2-step .u2-st-a { width:30px; height:30px; padding:0; border:0; border-radius:50%; background:none; font-size:20px; line-height:1; color:var(--accent); font-weight:700; cursor:pointer; }
   .u2-step .u2-st-a:active { background:var(--chip); }
-  .u2-step .u2-st-ic { font-size:14px; color:var(--muted); margin-right:5px; }
-  .u2-step .u2-st-v { min-width:56px; padding:4px 2px; text-align:center; font-weight:800; font-size:14px; color:var(--text); cursor:ew-resize; border-radius:10px; }
+  .u2-step .u2-st-ic { font-size:12px; color:var(--muted); }
+  .u2-step .u2-st-v { min-width:22px; padding:0; text-align:center; font-weight:800; font-size:14px; color:var(--text); cursor:ew-resize; border-radius:10px; }
   /* même hauteur (36 px) pour toutes les commandes des listes : vues, tri, ✎, sélecteurs */
   :root[data-ui="2"] .u2-seg { height:36px; box-sizing:border-box; padding:3px; align-items:center; }
   :root[data-ui="2"] .u2-seg button { height:30px; padding:0 10px; min-height:0; white-space:nowrap; display:inline-flex; align-items:center; gap:4px; }
@@ -959,6 +967,9 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     border:1px solid var(--border); box-shadow:0 18px 50px rgba(15,27,45,.25); }
   #u2Bub.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
   #u2Bub small { display:block; font-size:12px; color:var(--muted); font-weight:600; }
+  .u2-bub-c { display:flex; flex-direction:column; align-items:center; gap:2px; margin:6px 0 4px; }
+  .u2-bub-c b { font-size:44px; font-weight:800; color:var(--accent); letter-spacing:-.02em; line-height:1.1; }
+  .u2-bub-c span { font-size:17px; font-weight:700; color:var(--muted); opacity:.6; }
   .u2-bub-r { display:flex; align-items:center; justify-content:center; gap:18px; margin:6px 0 4px; }
   .u2-bub-r b { font-size:40px; font-weight:800; color:var(--accent); min-width:70px; letter-spacing:-.02em; }
   .u2-bub-r span { font-size:18px; font-weight:700; color:var(--muted); opacity:.55; min-width:36px; }
@@ -1062,7 +1073,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v210</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v211</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1535,31 +1546,31 @@ function ui2Stepper(id, opts, cur, pick) {
   const s = $(id); s.innerHTML = ""; s.className = "u2-step";
   const ok = opts.filter(o => !(o[2] && o[2].off));
   let i = Math.max(0, ok.findIndex(o => o[0] === cur));
-  const lab = k => id === "colsSeg" ? ok[k][1] + " / ligne" : ok[k][1];
-  const ic = document.createElement("span"); ic.className = "u2-st-ic"; ic.textContent = id === "colsSeg" ? "▦" : "⏱";
-  const v = document.createElement("span"); v.className = "u2-st-v"; v.textContent = lab(i);
+  const lab = k => ok[k][1];
   const wrap = k => (k % ok.length + ok.length) % ok.length;                    // roue infinie : après la dernière, la première
   const tick = () => { try { navigator.vibrate && navigator.vibrate(6); } catch (e) {} };
-  const mk = (txt, d) => { const b = document.createElement("button"); b.textContent = txt; b.className = "u2-st-a"; b.type = "button";
-    b.onclick = () => { tick(); pick(ok[wrap(i + d)][0]); }; return b; };
-  // appui maintenu sur la valeur puis glisser : un cran (avec petite vibration) tous les 28 px ; appliqué au lâcher
-  let x0 = null, i0 = i, moved = false;
-  // bulle flottante au milieu de l'écran pendant le glissement : la valeur choisie en grand, avec ses voisines
+  const ic = document.createElement("span"); ic.className = "u2-st-ic"; ic.textContent = id === "colsSeg" ? "▦" : "⏱";
+  const v = document.createElement("span"); v.className = "u2-st-v"; v.textContent = lab(i);
+  const ar = document.createElement("span"); ar.className = "u2-st-ud"; ar.textContent = "↕";
+  s.append(ic, v, ar);
+  s.title = (id === "colsSeg" ? "Graphiques par ligne" : "Période") + " : toucher = suivant ; appui maintenu puis glisser vers le haut ou le bas";
+  // bulle flottante au milieu de l'écran : ▲ valeur supérieure, valeur choisie en grand, ▼ valeur inférieure
   const title = id === "colsSeg" ? "Graphiques par ligne" : "Période";
   const bub = () => { let b = $("u2Bub"); if (!b) { b = document.createElement("div"); b.id = "u2Bub"; document.body.appendChild(b); } return b; };
   const show = () => { const b = bub(), n = k => ok[wrap(k)][1];
-    b.innerHTML = "<small>" + title + '</small><div class="u2-bub-r"><span>' + esc(n(i - 1)) + "</span><b>" + esc(n(i)) + "</b><span>" + esc(n(i + 1)) + "</span></div><small>glisser ‹ › · lâcher pour choisir</small>";
+    b.innerHTML = "<small>" + title + '</small><div class="u2-bub-c"><span>▲ ' + esc(n(i + 1)) + "</span><b>" + esc(n(i)) + "</b><span>▼ " + esc(n(i - 1)) + "</span></div><small>glisser ↕ · lâcher pour choisir</small>";
     b.classList.add("show"); };
   const hide = () => { const b = $("u2Bub"); if (b) b.classList.remove("show"); };
-  v.addEventListener("pointerdown", e => { x0 = e.clientX; i0 = i; moved = false; v.setPointerCapture(e.pointerId); s.classList.add("drag"); show(); });
-  v.addEventListener("pointermove", e => {
-    if (x0 == null) return;
-    const k = wrap(i0 + Math.trunc((e.clientX - x0) / 28));
+  // appui maintenu puis glisser : vers le haut = valeur suivante, vers le bas = précédente, un cran tous les 26 px ; appliqué au lâcher
+  let y0 = null, i0 = i, moved = false;
+  s.addEventListener("pointerdown", e => { y0 = e.clientY; i0 = i; moved = false; s.setPointerCapture(e.pointerId); s.classList.add("drag"); show(); });
+  s.addEventListener("pointermove", e => {
+    if (y0 == null) return;
+    const k = wrap(i0 + Math.trunc((y0 - e.clientY) / 26));
     if (k !== i) { i = k; moved = true; v.textContent = lab(i); tick(); show(); }
   });
-  const end = () => { if (x0 == null) return; x0 = null; s.classList.remove("drag"); hide(); if (moved) pick(ok[i][0]); else { tick(); pick(ok[wrap(i + 1)][0]); } };
-  v.addEventListener("pointerup", end); v.addEventListener("pointercancel", () => { x0 = null; s.classList.remove("drag"); hide(); i = i0; v.textContent = lab(i); });
-  s.append(mk("‹", -1), ic, v, mk("›", 1));
+  s.addEventListener("pointerup", () => { if (y0 == null) return; y0 = null; s.classList.remove("drag"); hide(); if (moved) pick(ok[i][0]); else { tick(); pick(ok[wrap(i + 1)][0]); } });
+  s.addEventListener("pointercancel", () => { y0 = null; s.classList.remove("drag"); hide(); i = i0; v.textContent = lab(i); });
 }
 function renderSeg(id, opts, cur, pick) {
   if (UI2 && (id === "colsSeg" || id === "rangeSeg")) return ui2Stepper(id, opts, cur, pick);
@@ -6401,14 +6412,16 @@ function ui2Tools() {
     t = document.createElement("div"); t.id = "u2Tools";
     t.innerHTML = '<div class="u2-tools"><div class="u2-seg"></div><span class="u2-sp"></span><button class="u2-edit" id="u2Edit" title="Modifier la liste">✎</button></div>';
     document.querySelector(".bar").before(t);
-    t.querySelector(".u2-sp").replaceWith($("sortBtn"));                   // tri sur la même ligne (le direct est permanent : 5 s)
+    t.querySelector(".u2-sp").replaceWith($("colsSeg"), $("rangeSeg"), $("sortBtn"));   // vues · par ligne · période · tri · ✎ sur une seule ligne
     t.appendChild($("sortMenu"));     // menus avec leurs boutons (la barre classique est masquée en Liste / Carte)
     $("u2Edit").onclick = () => { editing = !editing; render(); };
   }
   const mode = u2Mode();
   t.hidden = !!prefs.view;
   const seg = t.querySelector(".u2-seg");
-  seg.innerHTML = [["list", "☰ Liste"], ["map", "▦ Carte"], ["cards", "📈 Graph."]].map(([k, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '">' + l + "</button>").join("");
+  // vue Graphiques : les vues en icônes seules, pour laisser la place aux sélecteurs « par ligne » et « période »
+  seg.innerHTML = [["list", "☰", " Liste"], ["map", "▦", " Carte"], ["cards", "📈", " Graph."]].map(([k, ic, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '" title="' + l.trim() + '">' + ic + (mode === "cards" ? "" : l) + "</button>").join("");
+  $("colsSeg").hidden = $("rangeSeg").hidden = mode !== "cards";
   seg.querySelectorAll("button").forEach(b => b.onclick = () => { prefs.u2mode = b.dataset.m; delete prefs.u2map; savePrefs(); render(); });
   const e = $("u2Edit"); e.classList.toggle("on", editing); e.textContent = editing ? "✓" : "✎";
   const pfc = cfg.portfolios[prefs.active] || {};
