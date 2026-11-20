@@ -942,11 +942,26 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-list .u2-sep + .u2-row { border-top:0; }
   .u2-list .u2-row:has(+ .u2-sep) { border-bottom:0; }
   .u2-list .u2-sep { margin:0; }
-  .u2-step { display:inline-flex; align-items:center; gap:0; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:3px; box-shadow:var(--sh2); touch-action:none; user-select:none; }
-  .u2-step .u2-st-a { width:34px; height:34px; border:0; border-radius:50%; background:none; font-size:20px; line-height:1; color:var(--accent); font-weight:700; cursor:pointer; }
+  .u2-step { display:inline-flex; align-items:center; gap:0; height:36px; box-sizing:border-box; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:0 2px; box-shadow:var(--sh2); touch-action:none; user-select:none; }
+  .u2-step .u2-st-a { width:30px; height:30px; padding:0; border:0; border-radius:50%; background:none; font-size:20px; line-height:1; color:var(--accent); font-weight:700; cursor:pointer; }
   .u2-step .u2-st-a:active { background:var(--chip); }
   .u2-step .u2-st-ic { font-size:14px; color:var(--muted); margin-right:5px; }
-  .u2-step .u2-st-v { min-width:56px; padding:6px 2px; text-align:center; font-weight:800; font-size:14px; color:var(--text); cursor:ew-resize; border-radius:10px; }
+  .u2-step .u2-st-v { min-width:56px; padding:4px 2px; text-align:center; font-weight:800; font-size:14px; color:var(--text); cursor:ew-resize; border-radius:10px; }
+  /* même hauteur (36 px) pour toutes les commandes des listes : vues, tri, ✎, sélecteurs */
+  :root[data-ui="2"] .u2-seg { height:36px; box-sizing:border-box; padding:3px; align-items:center; }
+  :root[data-ui="2"] .u2-seg button { height:30px; padding:0 10px; min-height:0; white-space:nowrap; display:inline-flex; align-items:center; gap:4px; }
+  :root[data-ui="2"] .u2-tools #sortBtn, :root[data-ui="2"] .u2-edit { height:36px; box-sizing:border-box; padding-top:0; padding-bottom:0; display:inline-flex; align-items:center; }
+  :root[data-ui="2"] .u2-edit { width:40px; justify-content:center; }
+  :root[data-ui="2"] .tabs .tab { height:34px; box-sizing:border-box; display:inline-flex; align-items:center; padding-top:0; padding-bottom:0; }
+  #u2Bub { position:fixed; left:50%; top:42%; transform:translate(-50%,-50%) scale(.92); z-index:90; pointer-events:none; opacity:0; transition:opacity .12s, transform .12s;
+    min-width:220px; padding:14px 20px 12px; border-radius:24px; text-align:center; color:var(--text);
+    background:color-mix(in srgb, var(--card) 78%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--border); box-shadow:0 18px 50px rgba(15,27,45,.25); }
+  #u2Bub.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  #u2Bub small { display:block; font-size:12px; color:var(--muted); font-weight:600; }
+  .u2-bub-r { display:flex; align-items:center; justify-content:center; gap:18px; margin:6px 0 4px; }
+  .u2-bub-r b { font-size:40px; font-weight:800; color:var(--accent); min-width:70px; letter-spacing:-.02em; }
+  .u2-bub-r span { font-size:18px; font-weight:700; color:var(--muted); opacity:.55; min-width:36px; }
   .u2-step.drag { border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
   .u2-step.drag .u2-st-v { color:var(--accent); }
   :root[data-ui="2"] .bar .group > label { display:none; }
@@ -1047,7 +1062,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v209</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v210</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1529,14 +1544,21 @@ function ui2Stepper(id, opts, cur, pick) {
     b.onclick = () => { tick(); pick(ok[wrap(i + d)][0]); }; return b; };
   // appui maintenu sur la valeur puis glisser : un cran (avec petite vibration) tous les 28 px ; appliqué au lâcher
   let x0 = null, i0 = i, moved = false;
-  v.addEventListener("pointerdown", e => { x0 = e.clientX; i0 = i; moved = false; v.setPointerCapture(e.pointerId); s.classList.add("drag"); });
+  // bulle flottante au milieu de l'écran pendant le glissement : la valeur choisie en grand, avec ses voisines
+  const title = id === "colsSeg" ? "Graphiques par ligne" : "Période";
+  const bub = () => { let b = $("u2Bub"); if (!b) { b = document.createElement("div"); b.id = "u2Bub"; document.body.appendChild(b); } return b; };
+  const show = () => { const b = bub(), n = k => ok[wrap(k)][1];
+    b.innerHTML = "<small>" + title + '</small><div class="u2-bub-r"><span>' + esc(n(i - 1)) + "</span><b>" + esc(n(i)) + "</b><span>" + esc(n(i + 1)) + "</span></div><small>glisser ‹ › · lâcher pour choisir</small>";
+    b.classList.add("show"); };
+  const hide = () => { const b = $("u2Bub"); if (b) b.classList.remove("show"); };
+  v.addEventListener("pointerdown", e => { x0 = e.clientX; i0 = i; moved = false; v.setPointerCapture(e.pointerId); s.classList.add("drag"); show(); });
   v.addEventListener("pointermove", e => {
     if (x0 == null) return;
     const k = wrap(i0 + Math.trunc((e.clientX - x0) / 28));
-    if (k !== i) { i = k; moved = true; v.textContent = lab(i); tick(); }
+    if (k !== i) { i = k; moved = true; v.textContent = lab(i); tick(); show(); }
   });
-  const end = () => { if (x0 == null) return; x0 = null; s.classList.remove("drag"); if (moved) pick(ok[i][0]); else { tick(); pick(ok[wrap(i + 1)][0]); } };
-  v.addEventListener("pointerup", end); v.addEventListener("pointercancel", () => { x0 = null; s.classList.remove("drag"); i = i0; v.textContent = lab(i); });
+  const end = () => { if (x0 == null) return; x0 = null; s.classList.remove("drag"); hide(); if (moved) pick(ok[i][0]); else { tick(); pick(ok[wrap(i + 1)][0]); } };
+  v.addEventListener("pointerup", end); v.addEventListener("pointercancel", () => { x0 = null; s.classList.remove("drag"); hide(); i = i0; v.textContent = lab(i); });
   s.append(mk("‹", -1), ic, v, mk("›", 1));
 }
 function renderSeg(id, opts, cur, pick) {
