@@ -942,10 +942,17 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2-list .u2-sep + .u2-row { border-top:0; }
   .u2-list .u2-row:has(+ .u2-sep) { border-bottom:0; }
   .u2-list .u2-sep { margin:0; }
-  .u2-step { display:inline-flex; align-items:center; gap:3px; height:36px; box-sizing:border-box; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:0 10px; box-shadow:var(--sh2); touch-action:none; user-select:none; cursor:ns-resize; flex:none; }
+  .u2-step { display:inline-flex; align-items:center; gap:2px; height:36px; box-sizing:border-box; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:0 8px; box-shadow:var(--sh2); user-select:none; cursor:pointer; flex:none; font-size:13px; }
   .u2-step[hidden] { display:none; }
   .u2-step .u2-st-ud { font-size:10px; color:var(--accent); font-weight:800; opacity:.6; margin-left:-1px; }
-  @media (max-width:420px) { .u2-step .u2-st-ud { display:none; } }
+  /* téléphone en portrait : tout sur une ligne sans réduire les libellés (Liste, Carte, Graph.) */
+  @media (max-width:420px) {
+    body.ui2-cards .u2-tools { gap:4px; }
+    body.ui2-cards .u2-seg button { padding:0 5px !important; font-size:12px !important; gap:2px; }
+    body.ui2-cards .u2-step { padding:0 7px; } body.ui2-cards #rangeSeg .u2-st-ic { display:none; } body.ui2-cards .u2-step .u2-st-ud { display:none; }
+    body.ui2-cards .u2-tools #sortBtn { padding:0 7px !important; font-size:12px !important; }
+    body.ui2-cards .u2-seg { padding:2px !important; }
+    body.ui2-cards .u2-tools .u2-edit { width:32px !important; } }
   :root[data-ui="2"] body.ui2-lists .bar { display:none !important; }
   .u2-tools { gap:5px; } .u2-tools .u2-seg { flex:none; } .u2-tools .u2-edit { flex:none; width:36px !important; }
   body.ui2-cards .u2-seg button { padding:0 8px !important; }
@@ -1118,7 +1125,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v212</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v213</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1597,38 +1604,21 @@ function ui2Stepper(id, opts, cur, pick) {
   const tick = () => { try { navigator.vibrate && navigator.vibrate(6); } catch (e) {} };
   const ic = document.createElement("span"); ic.className = "u2-st-ic"; ic.textContent = id === "colsSeg" ? "▦" : "⏱";
   const v = document.createElement("span"); v.className = "u2-st-v"; v.textContent = lab(i);
-  const ar = document.createElement("span"); ar.className = "u2-st-ud"; ar.textContent = "↕";
+  const ar = document.createElement("span"); ar.className = "u2-st-ud"; ar.textContent = "▾";
   s.append(ic, v, ar);
   s.title = (id === "colsSeg" ? "Graphiques par ligne" : "Période") + " : toucher = suivant ; appui maintenu puis glisser vers le haut ou le bas";
-  // bulle flottante au milieu de l'écran : ▲ valeur supérieure, valeur choisie en grand, ▼ valeur inférieure
+  // un toucher ouvre la fenêtre flottante en menu : on touche la valeur voulue (plus de glisser sur le bouton)
   const title = id === "colsSeg" ? "Graphiques par ligne" : "Période";
-  const bub = () => { let b = $("u2Bub"); if (!b) { b = document.createElement("div"); b.id = "u2Bub"; document.body.appendChild(b); } return b; };
-  const show = () => { const b = bub(), n = k => ok[wrap(k)][1];
-    b.innerHTML = "<small>" + title + '</small><div class="u2-bub-c"><span>▲ ' + esc(n(i + 1)) + "</span><b>" + esc(n(i)) + "</b><span>▼ " + esc(n(i - 1)) + "</span></div><small>glisser ↕ · lâcher pour choisir</small>";
-    b.classList.add("show"); };
-  const hide = () => { const b = $("u2Bub"); if (b && !b.classList.contains("menu")) b.classList.remove("show"); };
-  // appui maintenu puis glisser : vers le haut = valeur suivante, vers le bas = précédente, un cran tous les 26 px ; appliqué au lâcher
-  let y0 = null, i0 = i, moved = false;
-  let hold = 0;
-  s.addEventListener("pointerdown", e => { y0 = e.clientY; i0 = i; moved = false; s.setPointerCapture(e.pointerId);
-    clearTimeout(hold); hold = setTimeout(() => { if (y0 != null) { s.classList.add("drag"); show(); tick(); } }, 220); });   // appui maintenu : la bulle apparaît
-  s.addEventListener("pointermove", e => {
-    if (y0 == null) return;
-    const k = wrap(i0 + Math.trunc((y0 - e.clientY) / 26));
-    if (k !== i) { i = k; moved = true; clearTimeout(hold); s.classList.add("drag"); v.textContent = lab(i); tick(); show(); }
-  });
-  // toucher simple (sans glisser) : la fenêtre flottante s'ouvre en menu, on touche la valeur voulue
-  const menu = () => {
-    const b = bub(); b.classList.add("show", "menu");
+  s.onclick = () => {
+    let b = $("u2Bub"); if (!b) { b = document.createElement("div"); b.id = "u2Bub"; document.body.appendChild(b); }
+    b.className = "show menu";
     b.innerHTML = "<small>" + title + '</small><div class="u2-bub-m">' + ok.map((o, k) => '<button data-k="' + k + '" class="' + (k === i ? "on" : "") + '">' + esc(o[1]) + "</button>").join("") + "</div>";
     let bg = $("u2BubBg"); if (!bg) { bg = document.createElement("div"); bg.id = "u2BubBg"; document.body.appendChild(bg); }
     bg.classList.add("show");
-    const close = () => { b.classList.remove("show", "menu"); bg.classList.remove("show"); };
+    const close = () => { b.className = ""; bg.classList.remove("show"); };
     bg.onclick = close;
-    b.querySelectorAll("button").forEach(x => x.onclick = () => { close(); tick(); pick(ok[+x.dataset.k][0]); });
+    b.querySelectorAll("button").forEach(x => x.onclick = () => { close(); tick(); if (+x.dataset.k !== i) pick(ok[+x.dataset.k][0]); });
   };
-  s.addEventListener("pointerup", () => { if (y0 == null) return; y0 = null; s.classList.remove("drag"); hide(); if (moved) pick(ok[i][0]); else menu(); });
-  s.addEventListener("pointercancel", () => { clearTimeout(hold); y0 = null; s.classList.remove("drag"); hide(); i = i0; v.textContent = lab(i); });
 }
 function renderSeg(id, opts, cur, pick) {
   if (UI2 && (id === "colsSeg" || id === "rangeSeg")) return ui2Stepper(id, opts, cur, pick);
@@ -6478,7 +6468,7 @@ function ui2Tools() {
   t.hidden = !!prefs.view;
   const seg = t.querySelector(".u2-seg");
   // vue Graphiques : les vues en icônes seules, pour laisser la place aux sélecteurs « par ligne » et « période »
-  seg.innerHTML = [["list", "☰", " Liste"], ["map", "▦", " Carte"], ["cards", "📈", " Graph."]].map(([k, ic, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '" title="' + l.trim() + '">' + ic + (mode === "cards" && innerWidth < 600 ? "" : l) + "</button>").join("");
+  seg.innerHTML = [["list", "☰", " Liste"], ["map", "▦", " Carte"], ["cards", "📈", " Graph."]].map(([k, ic, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '" title="' + l.trim() + '">' + (mode === "cards" && innerWidth < 420 ? l.trim() : ic + l) + "</button>").join("");   // portrait + Graphiques : libellés sans icônes, pour tout garder sur une ligne
   $("colsSeg").hidden = $("rangeSeg").hidden = mode !== "cards";
   seg.querySelectorAll("button").forEach(b => b.onclick = () => { prefs.u2mode = b.dataset.m; delete prefs.u2map; savePrefs(); render(); });
   const e = $("u2Edit"); e.classList.toggle("on", editing); e.textContent = editing ? "✓" : "✎";
