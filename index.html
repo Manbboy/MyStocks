@@ -961,11 +961,21 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] .u2-tools #sortBtn, :root[data-ui="2"] .u2-edit { height:36px; box-sizing:border-box; padding-top:0; padding-bottom:0; display:inline-flex; align-items:center; }
   :root[data-ui="2"] .u2-edit { width:40px; justify-content:center; }
   :root[data-ui="2"] .tabs .tab { height:34px; box-sizing:border-box; display:inline-flex; align-items:center; padding-top:0; padding-bottom:0; }
-  #u2Bub { position:fixed; left:50%; top:42%; transform:translate(-50%,-50%) scale(.92); z-index:90; pointer-events:none; opacity:0; transition:opacity .12s, transform .12s;
+  #u2Bub { position:fixed; left:50%; top:60%; transform:translate(-50%,-50%) scale(.92); z-index:90; pointer-events:none; opacity:0; transition:opacity .12s, transform .12s;
     min-width:220px; padding:14px 20px 12px; border-radius:24px; text-align:center; color:var(--text);
     background:color-mix(in srgb, var(--card) 78%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
     border:1px solid var(--border); box-shadow:0 18px 50px rgba(15,27,45,.25); }
   #u2Bub.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  #u2Bub.menu { pointer-events:auto; padding-bottom:14px; }
+  .u2-bub-m { display:flex; flex-direction:column; gap:4px; margin-top:8px; max-height:52vh; overflow:auto; }
+  .u2-bub-m button { border:0; background:none; font:700 18px/1 inherit; color:var(--text); padding:10px 24px; border-radius:14px; cursor:pointer; }
+  .u2-bub-m button.on { background:var(--accent); color:#fff; }
+  #u2BubBg { position:fixed; inset:0; z-index:89; display:none; background:rgba(15,27,45,.18); }
+  #u2BubBg.show { display:block; }
+  #colsSeg[hidden], #rangeSeg[hidden] { display:none !important; }
+  :root[data-ui="2"] .tabs .tab .tab-n { margin-left:4px; }
+  /* largeur (paysage, tablette) : tout groupé à gauche avec les libellés, ✎ à droite */
+  @media (min-width:600px) { .u2-tools #sortBtn { margin-left:0 !important; } .u2-tools .u2-edit { margin-left:auto !important; } }
   #u2Bub small { display:block; font-size:12px; color:var(--muted); font-weight:600; }
   .u2-bub-c { display:flex; flex-direction:column; align-items:center; gap:2px; margin:6px 0 4px; }
   .u2-bub-c b { font-size:44px; font-weight:800; color:var(--accent); letter-spacing:-.02em; line-height:1.1; }
@@ -1068,12 +1078,47 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] .bia-st { border-radius:14px; }
   :root[data-ui="2"] .cfg { border-radius:22px 22px 0 0; }
   :root[data-ui="2"] .ov-foot { font-size:12px; }
+
+  /* ================= Signaux / Alertes — style Clarté ================= */
+  .u2-sv { display:block !important; }
+  .u2-sv-head { margin-bottom:6px; }
+  .u2-chips { display:flex; gap:7px; overflow-x:auto; scrollbar-width:none; padding:8px 0 4px; }
+  .u2-chips::-webkit-scrollbar { display:none; }
+  .u2-chips button { flex:none; height:34px; padding:0 13px; border-radius:999px; border:1px solid var(--border); background:var(--card); color:var(--text); font:600 13px/1 inherit; cursor:pointer; white-space:nowrap; }
+  .u2-chips button i { font-style:normal; font-size:11px; opacity:.65; margin-left:2px; }
+  .u2-chips button.on { background:var(--accent); color:#fff; border-color:transparent; }
+  .u2-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); box-shadow:var(--sh2); padding:12px 14px; margin:12px 0; }
+  .u2-card[hidden], .u2-hero[hidden] { display:none !important; }
+  .u2-ch { display:flex; align-items:center; gap:8px; margin-bottom:6px; } .u2-ch b { font-size:15.5px; font-weight:800; }
+  .u2-cn { font-size:12px; font-weight:700; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); padding:2px 8px; border-radius:999px; }
+  .u2-ch .u2-csp, .u2-ch .swone { margin-left:auto; }
+  .u2-info { margin:0 0 6px; } .u2-info summary { font-size:12.5px; color:var(--accent); font-weight:600; cursor:pointer; list-style:none; }
+  .u2-info summary::-webkit-details-marker { display:none; } .u2-info .sig-intro { margin-top:6px; }
+  .u2-ginfo { margin:0 2px 2px; }
+  .u2-sv .sig-row { background:none; border:0; border-bottom:1px solid var(--border); border-radius:0; margin:0; padding:10px 0; }
+  .u2-sv .sig-row:last-of-type { border-bottom:0; }
+  .u2-sv .al-row { border:0; border-bottom:1px solid var(--border); border-radius:0; background:none; padding:9px 0; }
+  .u2-sv .al-list { gap:0; }
+  .u2-sv .u2-more { display:none !important; } .u2-sv .open .u2-more { display:flex !important; } .u2-sv .open .sig-row.u2-more, .u2-sv .open .conf-row.u2-more { display:block !important; }
+  .u2-all { display:block; width:100%; margin-top:8px; height:36px; border-radius:999px; border:1px solid var(--border); background:var(--bg); color:var(--accent); font:700 13px/1 inherit; cursor:pointer; }
+  .u2-sv .sig-more { margin-top:6px; } .u2-sv .sig-more > summary { font-weight:700; color:var(--accent); font-size:13px; }
+  .u2-tg { display:flex; align-items:center; gap:10px; margin-top:4px; } .u2-tgi { font-size:22px; } .u2-tg > div { flex:1; min-width:0; }
+  .u2-tg b { display:block; font-size:14px; } .u2-tg .al-tg { margin:0; font-size:12px; color:var(--muted); } .u2-tg small { color:var(--muted); font-size:12px; } .u2-tg em, .u2-brow em { font-style:normal; font-size:11px; font-weight:800; padding:3px 8px; border-radius:7px; }
+  .u2-hero { display:block; width:100%; text-align:left; border:0; color:#fff; cursor:pointer; font:inherit; border-radius:var(--r2); padding:14px 16px; margin:12px 0 0;
+    background:linear-gradient(135deg,#065f46,#059669 60%,#34d399); box-shadow:0 10px 24px rgba(5,150,105,.25); }
+  .u2-hero .u2-ht { display:flex; justify-content:space-between; font-size:11px; font-weight:800; letter-spacing:.05em; opacity:.9; }
+  .u2-hero b { display:block; font-size:19px; margin:6px 0 2px; } .u2-hero > small { font-size:12.5px; opacity:.85; }
+  .u2-blist { display:flex; flex-direction:column; }
+  .u2-brow { display:flex; align-items:center; gap:10px; padding:10px 0; border:0; border-bottom:1px solid var(--border); background:none; color:var(--text); font:inherit; text-align:left; cursor:pointer; }
+  .u2-brow:last-child { border-bottom:0; } .u2-brow .u2-n small { display:block; }
+  .u2-bar { width:64px; height:6px; border-radius:3px; background:var(--chip); flex:none; overflow:hidden; } .u2-bar i { display:block; height:100%; background:var(--accent); border-radius:3px; }
+  .u2-bd { width:54px; text-align:right; font-size:13px; color:var(--accent); font-variant-numeric:tabular-nums; flex:none; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v211</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v212</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1488,6 +1533,7 @@ function renderTabs() {
     };
     fit(); requestAnimationFrame(fit);
     if (!t._ro) { t._ro = new ResizeObserver(() => fit()); t._ro.observe(t); }
+    if (!window._u2rs) { window._u2rs = 1; let w = innerWidth; addEventListener("resize", () => { if ((w < 600) !== (innerWidth < 600)) { w = innerWidth; if (!prefs.view) ui2Tools(); } else w = innerWidth; }); }
     renderTabbar();
     return;
   }
@@ -1560,17 +1606,29 @@ function ui2Stepper(id, opts, cur, pick) {
   const show = () => { const b = bub(), n = k => ok[wrap(k)][1];
     b.innerHTML = "<small>" + title + '</small><div class="u2-bub-c"><span>▲ ' + esc(n(i + 1)) + "</span><b>" + esc(n(i)) + "</b><span>▼ " + esc(n(i - 1)) + "</span></div><small>glisser ↕ · lâcher pour choisir</small>";
     b.classList.add("show"); };
-  const hide = () => { const b = $("u2Bub"); if (b) b.classList.remove("show"); };
+  const hide = () => { const b = $("u2Bub"); if (b && !b.classList.contains("menu")) b.classList.remove("show"); };
   // appui maintenu puis glisser : vers le haut = valeur suivante, vers le bas = précédente, un cran tous les 26 px ; appliqué au lâcher
   let y0 = null, i0 = i, moved = false;
-  s.addEventListener("pointerdown", e => { y0 = e.clientY; i0 = i; moved = false; s.setPointerCapture(e.pointerId); s.classList.add("drag"); show(); });
+  let hold = 0;
+  s.addEventListener("pointerdown", e => { y0 = e.clientY; i0 = i; moved = false; s.setPointerCapture(e.pointerId);
+    clearTimeout(hold); hold = setTimeout(() => { if (y0 != null) { s.classList.add("drag"); show(); tick(); } }, 220); });   // appui maintenu : la bulle apparaît
   s.addEventListener("pointermove", e => {
     if (y0 == null) return;
     const k = wrap(i0 + Math.trunc((y0 - e.clientY) / 26));
-    if (k !== i) { i = k; moved = true; v.textContent = lab(i); tick(); show(); }
+    if (k !== i) { i = k; moved = true; clearTimeout(hold); s.classList.add("drag"); v.textContent = lab(i); tick(); show(); }
   });
-  s.addEventListener("pointerup", () => { if (y0 == null) return; y0 = null; s.classList.remove("drag"); hide(); if (moved) pick(ok[i][0]); else { tick(); pick(ok[wrap(i + 1)][0]); } });
-  s.addEventListener("pointercancel", () => { y0 = null; s.classList.remove("drag"); hide(); i = i0; v.textContent = lab(i); });
+  // toucher simple (sans glisser) : la fenêtre flottante s'ouvre en menu, on touche la valeur voulue
+  const menu = () => {
+    const b = bub(); b.classList.add("show", "menu");
+    b.innerHTML = "<small>" + title + '</small><div class="u2-bub-m">' + ok.map((o, k) => '<button data-k="' + k + '" class="' + (k === i ? "on" : "") + '">' + esc(o[1]) + "</button>").join("") + "</div>";
+    let bg = $("u2BubBg"); if (!bg) { bg = document.createElement("div"); bg.id = "u2BubBg"; document.body.appendChild(bg); }
+    bg.classList.add("show");
+    const close = () => { b.classList.remove("show", "menu"); bg.classList.remove("show"); };
+    bg.onclick = close;
+    b.querySelectorAll("button").forEach(x => x.onclick = () => { close(); tick(); pick(ok[+x.dataset.k][0]); });
+  };
+  s.addEventListener("pointerup", () => { if (y0 == null) return; y0 = null; s.classList.remove("drag"); hide(); if (moved) pick(ok[i][0]); else menu(); });
+  s.addEventListener("pointercancel", () => { clearTimeout(hold); y0 = null; s.classList.remove("drag"); hide(); i = i0; v.textContent = lab(i); });
 }
 function renderSeg(id, opts, cur, pick) {
   if (UI2 && (id === "colsSeg" || id === "rangeSeg")) return ui2Stepper(id, opts, cur, pick);
@@ -6420,7 +6478,7 @@ function ui2Tools() {
   t.hidden = !!prefs.view;
   const seg = t.querySelector(".u2-seg");
   // vue Graphiques : les vues en icônes seules, pour laisser la place aux sélecteurs « par ligne » et « période »
-  seg.innerHTML = [["list", "☰", " Liste"], ["map", "▦", " Carte"], ["cards", "📈", " Graph."]].map(([k, ic, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '" title="' + l.trim() + '">' + ic + (mode === "cards" ? "" : l) + "</button>").join("");
+  seg.innerHTML = [["list", "☰", " Liste"], ["map", "▦", " Carte"], ["cards", "📈", " Graph."]].map(([k, ic, l]) => '<button data-m="' + k + '" class="' + (mode === k ? "on" : "") + '" title="' + l.trim() + '">' + ic + (mode === "cards" && innerWidth < 600 ? "" : l) + "</button>").join("");
   $("colsSeg").hidden = $("rangeSeg").hidden = mode !== "cards";
   seg.querySelectorAll("button").forEach(b => b.onclick = () => { prefs.u2mode = b.dataset.m; delete prefs.u2map; savePrefs(); render(); });
   const e = $("u2Edit"); e.classList.toggle("on", editing); e.textContent = editing ? "✓" : "✎";
@@ -6535,6 +6593,100 @@ async function ui2Candles(el, sym, level) {
     return '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + y(r[2]) + '" y2="' + y(r[3]) + '" stroke="' + c + '"/><rect x="' + (x - bw * .33).toFixed(1) + '" y="' + y(Math.max(r[1], r[4])) + '" width="' + (bw * .66).toFixed(1) + '" height="' + Math.max(1, Math.abs(y(r[1]) - y(r[4]))).toFixed(1) + '" fill="' + c + '" rx=".6"/>'; }).join("");
   el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none">' + svg + "</svg>" +
     '<span class="td-leg">45 séances · Bollinger 50/1' + (level ? ' · <i style="color:#16a34a">┅ niveau ' + fmt(level, info.currency) + "</i>" : "") + "</span>";
+}
+/* ===== Signaux et Alertes (nouvelle interface) : mêmes données, mise en page Clarté —
+   pastilles de filtre en haut, une carte par section (titre, nombre, ⓘ explication repliée), 5 lignes puis « Voir tout » ===== */
+const U2_SEC = [
+  [/^opportunit/i, "opp", "✨ Opportunités"], [/^biarritz automatiques/i, "bia", "🏄 Biarritz"], [/^biarritz/i, "bia", "🏄 Biarritz"],
+  [/^momentum/i, "mom", "⚡ Momentum"], [/^meilleures confluences/i, "conf", "🎯 Confluences"],
+  [/^bascules r⇄s|^r⇄s/i, "flip", "⇄ R⇄S"], [/^alertes sur mes positions/i, "pos", "💼 Mes positions"],
+  [/^en attente/i, "mine", "🔔 Mes alertes"], [/^déclenchées/i, "done", "✓ Déclenchées"],
+];
+function ui2SigBia(box) {          // section Biarritz de Signaux : cassures récentes et valeurs au repos sous leur résistance
+  const B = biaData; if (!B) return;
+  const h = document.createElement("div"); h.className = "pf-sub"; h.textContent = "Biarritz (#" + ((B.go || []).length + (B.wait || []).length) + ")";
+  const i = document.createElement("div"); i.className = "sig-intro";
+  i.textContent = "Cassures Biarritz des 5 dernières séances, puis les valeurs au repos sous leur résistance déclencheur, de la plus proche à la plus lointaine (indicateur B, journalier).";
+  const l = document.createElement("div"); l.className = "u2-blist";
+  (B.go || []).forEach(g => l.insertAdjacentHTML("beforeend", '<button class="u2-brow" data-sym="' + esc(g.sym) + '"><span class="u2-n"><b>' + esc(g.name) + '</b><small>cassure le ' + dOf(g.date).toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"UTC" }) + " à " + fmt(g.price, g.cur) + '</small></span><em class="t-up">CASSURE</em></button>'));
+  (B.wait || []).forEach(w => l.insertAdjacentHTML("beforeend", '<button class="u2-brow" data-sym="' + esc(w.sym) + '"><span class="u2-n"><b>' + esc(w.name) + "</b><small>résistance " + fmt(w.hi, w.cur) + " · " + w.n + ' contacts</small></span><span class="u2-bar"><i style="width:' + Math.max(6, 100 - w.dist / 0.15 * 100).toFixed(0) + '%"></i></span><b class="u2-bd">' + fmtPct(Math.round(w.dist * 1000) / 10) + "</b></button>"));
+  l.querySelectorAll("button").forEach(b => b.onclick = () => ui2Open(b.dataset.sym, { bia:true }));
+  const first = box.querySelector(".pf-sub");
+  [h, i, l].forEach(e => first ? box.insertBefore(e, first) : box.appendChild(e));
+}
+function ui2Sections(kind) {
+  const box = $("pfView"); if (!box || box.dataset.u2 === kind) return;
+  box.dataset.u2 = kind; box.classList.add("u2-sv");
+  const kids = [...box.children];
+  const head = document.createElement("div"); head.className = "u2-sv-head";
+  const cards = []; let cur = null; const intro = [];
+  kids.forEach(e => {
+    if (e.classList.contains("pf-sub")) {
+      const t = e.textContent.replace(/\s+/g, " ").trim(), m = t.match(/\(#(\d+)\)/), title = t.replace(/\s*\(#\d+\).*$/, "").replace(/(Activées|Coupées)$/, "").trim();
+      const def = U2_SEC.find(d => d[0].test(title)) || [null, "x" + cards.length, title];
+      cur = { key:def[1], chip:def[2], title, n:m ? +m[1] : null, el:document.createElement("section"), sw:e.querySelector(".swone") };
+      cur.el.className = "u2-card"; cur.el.dataset.k = cur.key;
+      cur.el.innerHTML = '<div class="u2-ch"><b>' + esc(title) + "</b>" + (cur.n != null ? '<span class="u2-cn">' + cur.n + "</span>" : "") + '<span class="u2-csp"></span></div>';
+      if (cur.sw) cur.el.querySelector(".u2-csp").replaceWith(cur.sw);
+      cards.push(cur); e.remove(); return;
+    }
+    if (!cur) { if (e.classList.contains("al-tg")) intro.push(e); else intro.push(e); return; }
+    if (e.classList.contains("sig-intro") || e.classList.contains("al-auto-ex")) {         // explication repliée derrière ⓘ
+      const d = document.createElement("details"); d.className = "u2-info"; d.innerHTML = "<summary>ⓘ Comment c'est calculé</summary>"; d.appendChild(e); cur.el.appendChild(d); return;
+    }
+    cur.el.appendChild(e);
+  });
+  if (!cards.length) return;
+  // en-tête : explication générale repliée + état de Telegram
+  box.innerHTML = "";
+  const tg = intro.find(e => e.classList.contains("al-tg"));
+  if (kind === "alerts") {
+    const c = document.createElement("div"); c.className = "u2-card u2-tg";
+    c.innerHTML = '<span class="u2-tgi">✈️</span><div><b>Telegram</b><small class="u2-tgs"></small></div>';
+    if (tg) { tg.classList.remove("hint"); c.querySelector(".u2-tgs").appendChild(tg); }            // le texte d'état reste vivant (mis à jour par le relais)
+    else c.querySelector(".u2-tgs").textContent = "Vérifié toutes les 5 min · 45 valeurs au plus";
+    head.appendChild(c);
+  }
+  const gen = intro.filter(e => e !== tg);
+  if (gen.length) { const d = document.createElement("details"); d.className = "u2-info u2-ginfo"; d.innerHTML = "<summary>ⓘ À propos de cet onglet</summary>"; gen.forEach(e => d.appendChild(e)); head.appendChild(d); }
+  // pastilles de filtre
+  const keys = []; cards.forEach(c => { if (!keys.find(k => k[0] === c.key)) keys.push([c.key, c.chip, 0]); const k = keys.find(k => k[0] === c.key); k[2] += c.n || 0; });
+  const f = prefs["u2f_" + kind] && keys.find(k => k[0] === prefs["u2f_" + kind]) ? prefs["u2f_" + kind] : "";
+  const chips = document.createElement("div"); chips.className = "u2-chips";
+  chips.innerHTML = '<button data-k="" class="' + (f ? "" : "on") + '">Tout</button>' + keys.map(([k, l, n]) => '<button data-k="' + k + '" class="' + (f === k ? "on" : "") + '">' + l + (n ? ' <i>' + n + "</i>" : "") + "</button>").join("");
+  head.appendChild(chips);
+  box.appendChild(head);
+  // vedette (Signaux) : la cassure Biarritz la plus récente
+  if (kind === "sig" && biaData && biaData.go && biaData.go.length) {
+    const g = biaData.go[0], hero = document.createElement("button"); hero.className = "u2-hero"; hero.dataset.k = "bia";
+    hero.innerHTML = '<div class="u2-ht"><span>🏄 CASSURE BIARRITZ</span><small>' + dOf(g.date).toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"UTC" }) + "</small></div><b>" + esc(g.name) + "</b><small>Clôture " + fmt(g.price, g.cur) + " au-dessus de la résistance " + fmt(g.res, g.cur) + " et de la bande haute</small>";
+    hero.onclick = () => ui2Open(g.sym, { bia:true });
+    box.appendChild(hero);
+  }
+  cards.forEach(c => {
+    box.appendChild(c.el);
+    // listes longues : 5 lignes, puis « Voir tout »
+    const rows = [...c.el.querySelectorAll(":scope > .sig-row, :scope > .al-list > .al-row, :scope > .al-list > .al-big, :scope > .u2-blist > .u2-brow, :scope > .conf-list > .conf-row, :scope > .mom-list > *")];
+    if (rows.length > 6) {
+      rows.slice(5).forEach(r => r.classList.add("u2-more"));
+      const b = document.createElement("button"); b.className = "u2-all"; b.textContent = "Voir les " + rows.length;
+      b.onclick = () => { const o = c.el.classList.toggle("open"); b.textContent = o ? "Réduire" : "Voir les " + rows.length; };
+      c.el.appendChild(b);
+    }
+  });
+  const foot = kids.find(e => e.classList && e.classList.contains("sig-foot")); if (foot) box.appendChild(foot);
+  const apply = k => { box.querySelectorAll(".u2-card[data-k], .u2-hero").forEach(c => c.hidden = !!k && c.dataset.k !== k);
+    chips.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.k === k)); };
+  chips.querySelectorAll("button").forEach(b => b.onclick = () => { prefs["u2f_" + kind] = b.dataset.k; savePrefs(); apply(b.dataset.k); });
+  apply(f);
+}
+if (UI2) {
+  const _rs = renderSig, _ra = renderAlertsView;
+  renderSig = async function () { const b = $("pfView"); if (b) delete b.dataset.u2; await _rs.apply(this, arguments);
+    if (prefs.view !== "sig") return;
+    if (!biaData) { try { biaData = await (await fetch("data/biarritz.json?t=" + Date.now(), { cache:"no-store" })).json(); } catch (e) {} }
+    ui2SigBia($("pfView")); ui2Sections("sig"); };
+  renderAlertsView = async function () { const b = $("pfView"); if (b) delete b.dataset.u2; await _ra.apply(this, arguments); if (prefs.view === "alerts") ui2Sections("alerts"); };
 }
 /* ===== Accueil « Aujourd'hui » : résumé du portefeuille + fil des événements du soir ===== */
 async function renderToday() {
