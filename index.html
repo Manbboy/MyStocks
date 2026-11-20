@@ -1056,6 +1056,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] #ov { background:var(--bg); }
   :root[data-ui="2"] .ov-head { border-bottom:0; padding:12px 14px 6px; align-items:flex-start; }
   :root[data-ui="2"] .ov-title { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; letter-spacing:-.01em; }
+  :root[data-ui="2"] .ov-title { min-width:0; } :root[data-ui="2"] .ov-title .ov-nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  :root[data-ui="2"] .ov-title .caret { flex:none; }
   :root[data-ui="2"] .ov-title .u2-logo { width:34px; height:34px; border-radius:11px; font-size:12px; }
   :root[data-ui="2"] .ov-sub { margin:6px 0 0 44px; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 8px; }
   :root[data-ui="2"] .ov-sub .ov-dt { font-size:12px; color:var(--muted); }
@@ -1065,6 +1067,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] .ov-nav { gap:6px; }
   .ov-rt { flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
   .ov-ivslot:empty { display:none; }
+  .ov-ivslot { display:flex; align-items:center; gap:6px; }
+  #ov.split-on #ivSeg { opacity:.35; pointer-events:none; filter:grayscale(1); }
   :root[data-ui="2"] #ov .ov-ivslot .seg button { padding:5px 8px; min-width:0; }
   :root[data-ui="2"] .navb, :root[data-ui="2"] .close { width:38px; height:38px; border-radius:50%; padding:0; display:inline-flex; align-items:center; justify-content:center; box-shadow:var(--sh2); }
   :root[data-ui="2"] .close .full { display:none; } :root[data-ui="2"] .close .short { display:inline; }
@@ -1135,7 +1139,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v219</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v220</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -2021,6 +2025,7 @@ function applyQuad() {
   const wrap = document.querySelector("#ov .chart-wrap");
   const multi = splitN() > 1;
   wrap.classList.toggle("quad-on", multi);
+  $("ov").classList.toggle("split-on", multi);          // 2 ou 4 graphiques : unités imposées, 15' J S M T grisé
   $("quad").classList.toggle("two", splitN() === 2);
   $("quadBtn").classList.toggle("on", multi); $("quadBtn").setAttribute("aria-pressed", multi ? "true" : "false");
   layoutIcon();
@@ -2157,7 +2162,7 @@ async function openDetail(item, info, pos) {
   $("ov").classList.add("show");
   applyTbRows();
   document.body.style.overflow = "hidden";
-  $("ovTitle").innerHTML = ""; $("ovTitle").append(item.name); $("ovTitle").insertAdjacentHTML("beforeend", ' <span class="caret">▾</span>'); closePick();
+  $("ovTitle").innerHTML = ""; { const nm = document.createElement("span"); nm.className = "ov-nm"; nm.textContent = item.name; $("ovTitle").append(nm); } $("ovTitle").insertAdjacentHTML("beforeend", ' <span class="caret">▾</span>'); closePick();
   ovItemName = item.name;
   const pct = info.changePct;
   $("ovSub").innerHTML = "";
@@ -3054,9 +3059,10 @@ function applyTbRows() {
   // une ligne : J S M T fixe à gauche, seuls les indicateurs défilent ; deux lignes (rien ne défile) : J S M T en tête de la 1re ligne
   const iv = $("ivSeg"), slot = $("ivSlot");
   // nouvelle interface en portrait : 15' J S M T passe sous les flèches ‹ › (en haut à droite), la barre ne garde que les indicateurs
-  if (slot && ivInHead()) { if (iv.parentNode !== slot) slot.appendChild(iv); }
+  const qb = [$("quadBtn"), $("qsyncBtn")];                // … suivi du choix 1 / 2 / 4 graphiques (et de la synchro), qui en dépend
+  if (slot && ivInHead()) { if (iv.parentNode !== slot) slot.append(iv, ...qb); }
   else {
-    if (slot && iv.parentNode === slot) t.parentNode.insertBefore(iv, t);
+    if (slot && iv.parentNode === slot) { t.prepend(...qb); t.parentNode.insertBefore(iv, t); }
     if (prefs.tbRows === 2) { if (iv.parentNode !== t) t.insertBefore(iv, t.firstChild); }
     else if (iv.parentNode === t) t.parentNode.insertBefore(iv, t);
   }
