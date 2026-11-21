@@ -1150,7 +1150,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v223</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v224</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -2193,6 +2193,7 @@ async function openDetail(item, info, pos) {
   dt.textContent = "  · " + new Date(info.date).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"numeric" });
   dt.title = "Clôture du " + new Date(info.date).toLocaleDateString("fr-FR");
   $("ovSub").append(sub, ch, dt);
+  if (typeof alignHeadRows === "function") requestAnimationFrame(alignHeadRows);
   if (UI2) {                                       // nouvelle interface : prix en grand (pas d'initiales : le nom a toute la place)
     sub.className = "ov-px"; ch.className += " ov-pc"; dt.className = "ov-dt"; dt.textContent = dt.textContent.replace(/^\s*·\s*/, "");
   }
@@ -3109,6 +3110,20 @@ function placeHeadInds() {
     if (used + w > avail) break;
     used += w + 5; box.append(b);
   }
+  alignHeadRows();
+}
+/* La rangée d'indicateurs sous le prix et 15' J S M T (à droite) sur la même ligne */
+function alignHeadRows() {
+  const a = $("indSlot"), iv = $("ivSlot"); if (!a || !iv) return;
+  a.style.marginTop = ""; iv.style.marginTop = "";
+  if (!a.children.length || !ivInHead()) return;
+  const above = [...$("ovSub").children, ...$("ovPosInfo").children, $("ovTitle")].filter(e => e.offsetHeight);
+  const contentBottom = Math.max(...above.map(e => e.getBoundingClientRect().bottom));
+  const base = a.getBoundingClientRect().top - parseFloat(getComputedStyle(a).marginTop);
+  const ivTop = iv.getBoundingClientRect().top;
+  const want = Math.max(contentBottom + 6, ivTop);
+  a.style.marginTop = (want - base) + "px";
+  if (want > ivTop) iv.style.marginTop = (want - ivTop) + "px";   // prix sur deux lignes : c'est J S M T qui descend
 }
 function ivInHead() { return UI2 && innerHeight > innerWidth && innerWidth < 600; }
 let ivHeadWas = null;
