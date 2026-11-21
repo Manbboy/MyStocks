@@ -1158,7 +1158,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v226</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v227</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -6502,12 +6502,15 @@ function renderTabbar() {
     prefs.view = b.dataset.v; savePrefs(); render(); scrollTo(0, 0);
   });
 }
+let ui2MeBack = null;
 function ui2Header() {
   const h = document.querySelector("header h1"); if (!h) return;
   h.firstChild.nodeValue = (UI2_TITLE[prefs.view || ""] || "Mes actions") + " ";
   let a = $("ui2Me");
   if (!a) { a = document.createElement("button"); a.id = "ui2Me"; a.className = "ui2-me"; a.textContent = "M"; a.title = "Profil, réglages et aide";
-    a.onclick = () => { prefs.view = "help"; savePrefs(); render(); scrollTo(0, 0); };
+    a.onclick = () => {                            // 2e appui sur « M » : retour à l'écran d'avant, à la même position
+      if (prefs.view === "help") { const b = ui2MeBack || { view:"", y:0 }; ui2MeBack = null; prefs.view = b.view; savePrefs(); render(); requestAnimationFrame(() => scrollTo(0, b.y)); return; }
+      ui2MeBack = { view:prefs.view || "", y:scrollY }; prefs.view = "help"; savePrefs(); render(); scrollTo(0, 0); };
     document.querySelector("header").appendChild(a); }
   document.body.classList.toggle("ui2-lists", !prefs.view);
 }
