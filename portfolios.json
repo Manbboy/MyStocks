@@ -397,6 +397,11 @@
           "yahoo": "OVH.PA",
           "tv": "EURONEXT:OVH",
           "name": "OVH Groupe S.A."
+        },
+        {
+          "yahoo": "LOTB.BR",
+          "tv": "EURONEXT:LOTB",
+          "name": "Lotus Bakeries"
         }
       ]
     },
