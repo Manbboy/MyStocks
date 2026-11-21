@@ -1161,7 +1161,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v231</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v232</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5405,7 +5405,7 @@ function rtBacktest(rows) {
 }
 function renderRtBt() {
   const box = $("rtBt"); if (!box) return;
-  if (!ovData || !trendOn() || splitN() !== 1) { box.hidden = true; return; }
+  if (UI2 || !ovData || !trendOn() || splitN() !== 1) { box.hidden = true; return; }   // nouvelle interface : pas de bilan sur le graphique
   const rows = barsFor(ovData, prefs.iv || "D");
   if (rows.length < 60) { box.hidden = true; return; }
   const b = rtBacktest(rows), T = b.trades, p = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(0) + " %";
