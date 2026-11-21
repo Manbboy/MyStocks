@@ -61,17 +61,6 @@
       "created": 1794635777338
     },
     {
-      "id": "zone-zmwhw66n6-h-2026-11-20",
-      "zone": "zmwhw66n6",
-      "sym": "SU.PA",
-      "name": "Schneider Electric",
-      "op": "below",
-      "price": 225.989,
-      "label": "entrée dans ma zone ▭ 220,49 – 225,99 (par le haut)",
-      "note": "",
-      "created": 1795196705657
-    },
-    {
       "id": "zone-zmwhwkz38-h-2026-11-20",
       "zone": "zmwhwkz38",
       "sym": "AF.PA",
@@ -1031,6 +1020,17 @@
       "id": "auto-VETO.PA-W-SR-92.6-b-2026-11-16",
       "auto": true,
       "created": 1795126681979
+    },
+    {
+      "id": "zone-zmwhw66n6-h-2026-11-20",
+      "zone": "zmwhw66n6",
+      "sym": "SU.PA",
+      "name": "Schneider Electric",
+      "op": "below",
+      "price": 222.329,
+      "label": "entrée dans ma zone ▭ 216,83 – 222,33 (par le haut)",
+      "note": "",
+      "created": 1795245001155
     }
   ]
 }
