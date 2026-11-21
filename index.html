@@ -1110,6 +1110,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] #ov .ov-indslot { margin-top:8px; }
   :root[data-ui="2"] .cfg-btn[aria-expanded="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
   /* graphique et blocs d'information : cartes blanches arrondies */
+  :root[data-ui="2"] #ov .chart-wrap { flex-shrink:0; }   /* paysage : la carte du graphique ne se fait plus écraser (elle défile avec les actualités) */
   :root[data-ui="2"] .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); box-shadow:var(--sh2); padding:6px 4px 2px; overflow:hidden; }
   :root[data-ui="2"] .ov-body { padding:12px 14px; }
   :root[data-ui="2"] #ov .lv { border-radius:var(--r2); padding:14px 16px; margin-top:12px; }
@@ -1162,7 +1163,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v235</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v236</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
