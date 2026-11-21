@@ -32,6 +32,7 @@ BULL = {"rebond", "cassure", "reprise", "vert"}
 LABEL = {
     "cassure": "Cassure avec volume", "rebond": "Rebond sur support", "reprise": "Reprise de tendance", "vert": "RSI Trends passe au vert",
     "sup_casse": "Support cassé", "sous_mm200": "Passage sous la MM200", "rt_rouge": "RSI Trends au rouge",
+    "sur_mm200": "Passage au-dessus de la MM200",
 }
 
 
@@ -192,6 +193,9 @@ class Series:
             out.append({"k": "sup_casse", "lv": round(x[0], 4), "tf": x[2], "n": x[1]})
         if c < ma200 and self.c[t - 1] >= self.ma200[t - 1]:
             out.append({"k": "sous_mm200", "lv": round(float(ma200), 4)})
+        # information (page Aujourd'hui) : le cours repasse au-dessus de la MM200
+        if c > ma200 and self.c[t - 1] <= self.ma200[t - 1]:
+            out.append({"k": "sur_mm200", "lv": round(float(ma200), 4)})
         if self.rt[t] == -1 and self.rt[t - 1] != -1:
             out.append({"k": "rt_rouge"})
         return out

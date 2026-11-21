@@ -949,6 +949,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .td-tag { font-size:11px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:3px 8px; border-radius:7px; }
   .t-up { background:color-mix(in srgb, var(--up) 14%, transparent); color:var(--up); } .t-acc { background:color-mix(in srgb, var(--accent) 12%, transparent); color:var(--accent); }
   .t-zone { background:#fef9c3; color:#a16207; }
+  .t-dn { background:color-mix(in srgb, var(--down) 14%, transparent); color:var(--down); }
   .td-card > b { display:block; font-size:16.5px; margin:9px 0 3px; } .td-card p { margin:0; color:var(--muted); font-size:13.5px; line-height:1.45; }
   .td-spk { position:relative; height:130px; margin:10px 0 2px; border-radius:12px; background:var(--bg); padding:8px 6px 18px; } .td-spk svg { width:100%; height:100%; display:block; }
   .td-leg { position:absolute; left:8px; bottom:3px; font-size:10.5px; color:var(--muted); } .td-leg i { font-style:normal; font-weight:700; }
@@ -1195,7 +1196,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v242</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v243</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5220,6 +5221,7 @@ function sigText(g) {
     case "vert":       return "Le RSI Trends journalier passe au vert, cours au-dessus de la MM200 — à garder jusqu'au premier jour rouge";
     case "sup_casse":  return "Clôture sous le support " + (SIG_TF[g.tf] || "") + " " + lv + " (" + g.n + " contacts)";
     case "sous_mm200": return "Le cours repasse sous la MM200 (" + lv + ")";
+    case "sur_mm200":  return "Le cours repasse au-dessus de la MM200 (" + lv + ")";
     case "rt_rouge":   return "Le RSI Trends journalier passe au rouge";
     case "rs_contact":  return "Au contact du support R→S " + (SIG_TF[g.tf] || "") + " " + lv + " (ancienne résistance, " + g.n + " retest" + (g.n > 1 ? "s" : "") + ") : réaction à surveiller";
     case "rs_reaction": return "Réaction sur le support R→S " + (SIG_TF[g.tf] || "") + " " + lv + " : clôture au-dessus du plus haut de la bougie de contact (" + fmt(g.hi) + ")";
@@ -5229,7 +5231,7 @@ function sigText(g) {
   return g.k;
 }
 const SIG_FLIP = new Set(["rs_contact", "rs_reaction", "sr_test", "sr_franchie"]), SIG_FLIP_OK = new Set(["rs_reaction", "sr_franchie"]);
-const SIG_CHIP = { rs_contact:"R→S contact", rs_reaction:"R→S réaction ✓", sr_test:"S→R test", sr_franchie:"S→R franchie ✓", cassure:"Cassure", rebond:"Rebond", reprise:"Reprise", vert:"RT vert", sup_casse:"Support cassé", sous_mm200:"Sous MM200", rt_rouge:"RT rouge" };
+const SIG_CHIP = { rs_contact:"R→S contact", rs_reaction:"R→S réaction ✓", sr_test:"S→R test", sr_franchie:"S→R franchie ✓", cassure:"Cassure", rebond:"Rebond", reprise:"Reprise", vert:"RT vert", sup_casse:"Support cassé", sous_mm200:"Sous MM200", sur_mm200:"Sur MM200", rt_rouge:"RT rouge" };
 function sigRow(e, kinds) {
   const it = sigItem(e.sym), info = summary.symbols[e.sym] || {};
   const sig = e.sig.filter(g => kinds.has(g.k));
@@ -6669,6 +6671,10 @@ function ui2Open(sym, opt) {
   const it = ui2Item(sym); if (!it) { toast("Valeur introuvable dans vos listes.", 2000); return; }
   if (!summary.symbols[sym] || summary.symbols[sym].pending) { toast("Cours et graphiques de " + it.name + " en préparation : ils arrivent 2 à 3 minutes après l'ajout.", 4000); startPolling(); return; }
   if (opt && opt.bia) { prefs.bia = true; savePrefs(); }
+  if (opt && opt.ma200) { const m = selMaP(); if (!m.includes(200)) prefs.maP = m.concat(200); savePrefs(); }
+  if (opt && opt.rt) { prefs.ind = "trend"; prefs.rsi = true; prefs.indLast = "trend"; savePrefs(); }
+  if (opt && opt.sr) { prefs.kinds = ["S", "R"]; savePrefs(); }
+  if (opt && opt.flip) { prefs.flip = true; savePrefs(); }
   openDetail(it, withLive(sym, summary.symbols[sym]));
 }
 const u2Mode = () => prefs.u2mode || (prefs.u2map ? "map" : "list");
@@ -6795,26 +6801,46 @@ async function renderUi2List() {
   ui2Tools();
   ui2DaySparks(box);
 }
-/* graphique détaillé des cartes de l'accueil : 45 bougies, Bollinger 50/1 + MM50, niveau en pointillés vert */
-async function ui2Candles(el, sym, level) {
+/* graphique des cartes d'Aujourd'hui : 45 bougies + ce qui motive la carte
+   o.boll : Bollinger 50/1 + MM50 (Biarritz) · o.level/o.col/o.solid : niveau (support vert, résistance rouge, R⇄S orange)
+   o.zone : [bas, haut] de votre zone (jaune) · o.ma200 : MM200 bleue · o.rt : chandeliers colorés RSI Trends · o.lab : légende */
+async function ui2Candles(el, sym, o) {
+  if (typeof o !== "object" || o === null) o = { boll:true, level:o, col:"#16a34a", lab:"niveau" };
   const info = summary.symbols[sym]; if (!el || !info || !info.file) return;
   let R; try { R = (await getSeries(info)).rows; } catch (e) { return; }
   const n = 45, vis = R.slice(-n), off = R.length - vis.length, W = 330, H = 110;
-  const C = R.map(r => r[4]), ma = i => { if (i < 49) return null; let t = 0; for (let k = i - 49; k <= i; k++) t += C[k]; return t / 50; };
-  const sd = i => { const m = ma(i); let t = 0; for (let k = i - 49; k <= i; k++) t += (C[k] - m) ** 2; return Math.sqrt(t / 50); };
+  const C = R.map(r => r[4]), sma = (p, i) => { if (i < p - 1) return null; let t = 0; for (let k = i - p + 1; k <= i; k++) t += C[k]; return t / p; };
+  const sd = i => { const m = sma(50, i); let t = 0; for (let k = i - 49; k <= i; k++) t += (C[k] - m) ** 2; return Math.sqrt(t / 50); };
   let mn = Math.min(...vis.map(r => r[3])), mx = Math.max(...vis.map(r => r[2]));
-  if (level) { mn = Math.min(mn, level); mx = Math.max(mx, level); }
+  const lv = [o.level, ...(o.zone || [])].filter(v => v != null);
+  if (o.ma200) vis.forEach((_, k) => { const m = sma(200, off + k); if (m != null) lv.push(m); });
+  lv.forEach(v => { mn = Math.min(mn, v); mx = Math.max(mx, v); });
   const pad = (mx - mn) * .06; mn -= pad; mx += pad;
-  const y = v => (H - (v - mn) / (mx - mn) * H).toFixed(1), bw = W / vis.length;
-  const pts = vis.map((r, k) => [k * bw + bw / 2, off + k]).filter(([, i]) => ma(i) != null);
+  const y = v => (H - (v - mn) / (mx - mn) * H).toFixed(1), bw = W / vis.length, X = k => k * bw + bw / 2;
   let svg = "";
-  if (pts.length > 1) svg += '<path d="M' + pts.map(([x, i]) => x.toFixed(1) + "," + y(Math.min(mx, ma(i) + sd(i)))).join("L") + "L" + pts.slice().reverse().map(([x, i]) => x.toFixed(1) + "," + y(Math.max(mn, ma(i) - sd(i)))).join("L") + 'Z" fill="var(--accent)" opacity=".10"/>' +
-    '<path d="M' + pts.map(([x, i]) => x.toFixed(1) + "," + y(ma(i))).join("L") + '" fill="none" stroke="var(--accent)" stroke-width="1.6"/>';
-  if (level) svg += '<line x1="0" x2="' + W + '" y1="' + y(level) + '" y2="' + y(level) + '" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 3"/>';
-  svg += vis.map((r, k) => { const x = k * bw + bw / 2, c = r[4] >= r[1] ? "var(--up)" : "var(--down)";
-    return '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + y(r[2]) + '" y2="' + y(r[3]) + '" stroke="' + c + '"/><rect x="' + (x - bw * .33).toFixed(1) + '" y="' + y(Math.max(r[1], r[4])) + '" width="' + (bw * .66).toFixed(1) + '" height="' + Math.max(1, Math.abs(y(r[1]) - y(r[4]))).toFixed(1) + '" fill="' + c + '" rx=".6"/>'; }).join("");
-  el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none">' + svg + "</svg>" +
-    '<span class="td-leg">45 séances · Bollinger 50/1' + (level ? ' · <i style="color:#16a34a">┅ niveau ' + fmt(level, info.currency) + "</i>" : "") + "</span>";
+  if (o.boll) { const pts = vis.map((r, k) => [X(k), off + k]).filter(([, i]) => sma(50, i) != null);
+    if (pts.length > 1) svg += '<path d="M' + pts.map(([x, i]) => x.toFixed(1) + "," + y(Math.min(mx, sma(50, i) + sd(i)))).join("L") + "L" + pts.slice().reverse().map(([x, i]) => x.toFixed(1) + "," + y(Math.max(mn, sma(50, i) - sd(i)))).join("L") + 'Z" fill="var(--accent)" opacity=".10"/>' +
+      '<path d="M' + pts.map(([x, i]) => x.toFixed(1) + "," + y(sma(50, i))).join("L") + '" fill="none" stroke="var(--accent)" stroke-width="1.6"/>'; }
+  if (o.zone) svg += '<rect x="0" width="' + W + '" y="' + y(o.zone[1]) + '" height="' + Math.max(2, y(o.zone[0]) - y(o.zone[1])) + '" fill="#facc15" opacity=".28"/><line x1="0" x2="' + W + '" y1="' + y(o.zone[1]) + '" y2="' + y(o.zone[1]) + '" stroke="#eab308" stroke-width="1.6"/><line x1="0" x2="' + W + '" y1="' + y(o.zone[0]) + '" y2="' + y(o.zone[0]) + '" stroke="#eab308" stroke-width="1.6"/>';
+  if (o.ma200) { const pts = vis.map((_, k) => [X(k), sma(200, off + k)]).filter(p => p[1] != null);
+    if (pts.length > 1) svg += '<path d="M' + pts.map(([x, v]) => x.toFixed(1) + "," + y(v)).join("L") + '" fill="none" stroke="#2563eb" stroke-width="2"/>'; }
+  if (o.level != null) svg += '<line x1="0" x2="' + W + '" y1="' + y(o.level) + '" y2="' + y(o.level) + '" stroke="' + (o.col || "#16a34a") + '" stroke-width="1.8"' + (o.solid ? "" : ' stroke-dasharray="5 3"') + "/>";
+  // RSI Trends : RSI 14 (Wilder) sur les clôtures, chandeliers verts / gris / rouges selon les seuils
+  let rtc = null;
+  if (o.rt) { const N = TREND.len, st = new Array(C.length).fill(0); let g = 0, l = 0;
+    for (let i = 1; i < C.length; i++) { const d = C[i] - C[i - 1];
+      if (i <= N) { g += Math.max(d, 0) / N; l += Math.max(-d, 0) / N; } else { g = (g * (N - 1) + Math.max(d, 0)) / N; l = (l * (N - 1) + Math.max(-d, 0)) / N; }
+      if (i >= N) { const r = l === 0 ? 100 : 100 - 100 / (1 + g / l); st[i] = r >= TREND.ob ? 1 : r <= TREND.os ? -1 : 0; } }
+    rtc = k => ({ 1:"#00c853", 0:"#9ca3af", "-1":"#FF5252" })[st[off + k]]; }
+  svg += vis.map((r, k) => { const x = X(k), c = rtc ? rtc(k) : r[4] >= r[1] ? "var(--up)" : "var(--down)";
+    return '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + y(r[2]) + '" y2="' + y(r[3]) + '" stroke="' + c + '"/><rect x="' + (x - bw * .33).toFixed(1) + '" y="' + y(Math.max(r[1], r[4])) + '" width="' + (bw * .66).toFixed(1) + '" height="' + Math.max(1, Math.abs(y(r[1]) - y(r[4]))).toFixed(1) + '" fill="' + c + '"/>'; }).join("");
+  const leg = ["45 séances"];
+  if (o.boll) leg.push("Bollinger 50/1");
+  if (o.ma200) leg.push('<i style="color:#2563eb">━ MM200</i>');
+  if (o.rt) leg.push('<i style="color:#00c853">■</i> vert <i style="color:#9ca3af">■</i> neutre <i style="color:#FF5252">■</i> rouge (RSI Trends)');
+  if (o.zone) leg.push('<i style="color:#ca8a04">▭ ' + esc(o.lab || "zone") + " " + fmt(o.zone[0], info.currency) + " – " + fmt(o.zone[1], info.currency) + "</i>");
+  if (o.level != null) leg.push('<i style="color:' + (o.col || "#16a34a") + '">' + (o.solid ? "━" : "┅") + " " + esc(o.lab || "niveau") + " " + fmt(o.level, info.currency) + "</i>");
+  el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none">' + svg + "</svg>" + '<span class="td-leg">' + leg.join(" · ") + "</span>";
 }
 /* ===== Signaux et Alertes (nouvelle interface) : mêmes données, mise en page Clarté —
    pastilles de filtre en haut, une carte par section (titre, nombre, ⓘ explication repliée), 5 lignes puis « Voir tout » ===== */
@@ -6918,6 +6944,7 @@ async function renderToday() {
   const jobs = [];
   if (!sigData) jobs.push(sigLoad().catch(() => {}));
   if (!alertsData) jobs.push(alertsLoad().catch(() => {}));
+  if (typeof myzLoad === "function") jobs.push(myzLoad().catch(() => {}));
   if (!biaData) jobs.push(fetch("data/biarritz.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null).then(d => biaData = d).catch(() => {}));
   await Promise.all(jobs);
   if (prefs.view !== "today") return;
@@ -6940,26 +6967,59 @@ async function renderToday() {
   const ev = [];
   const last = sym => { const i = summary.symbols[sym]; return i ? i.last : null; };
   (biaData && biaData.go || []).forEach(g => ev.push({ k:"bia", sym:g.sym, tag:"🏄 Cassure Biarritz", cls:"t-up", when:g.date, title:g.name + " casse sa résistance",
-    sub:"Clôture " + fmt(g.price, g.cur) + " au-dessus de " + fmt(g.res, g.cur) + " et de la bande haute — entrée possible tant que l'élastique n'est pas tendu", level:g.res, w:100 }));
+    sub:"Clôture " + fmt(g.price, g.cur) + " au-dessus de " + fmt(g.res, g.cur) + " et de la bande haute — entrée possible tant que l'élastique n'est pas tendu", level:g.res, w:100,
+    pv:{ boll:true, level:g.res, col:"#16a34a", lab:"résistance cassée" } }));
   (alertsData && alertsData.alerts || []).filter(a => a.zone && !alertsSent[a.id]).forEach(a => { const c = last(a.sym); if (!c) return; const dist = Math.abs(a.price / c - 1);
-    if (dist <= 0.03) ev.push({ k:"zone", sym:a.sym, tag:"🟨 Votre zone", cls:"t-zone", when:"", title:(a.name || a.sym) + " approche de votre zone", sub:"À " + fmtPct(Math.round(dist * 1000) / 10).replace("+", "") + (a.note ? " · « " + a.note + " »" : ""), level:a.price, w:90 - dist * 100 }); });
+    if (dist <= 0.03) ev.push({ k:"zone", sym:a.sym, tag:"🟨 Votre zone", cls:"t-zone", when:"", title:(a.name || a.sym) + " approche de votre zone", sub:"À " + fmtPct(Math.round(dist * 1000) / 10).replace("+", "") + (a.note ? " · « " + a.note + " »" : ""), level:a.price, w:90 - dist * 100,
+      pv:{ zone:(() => { const z = myzData && (myzData.zones || []).find(z => z.id === a.zone); return z ? [z.lo, z.hi] : [a.price * 0.99, a.price]; })(), lab:"votre zone" } }); });
   ((sigFlips && sigFlips.items) || []).filter(e => e.age === 0 && SIG_FLIP_OK.has(e.sig[0].k)).forEach(e => { const g = e.sig[0], it = ui2Item(e.sym), cur = (summary.symbols[e.sym] || {}).currency;
     ev.push({ k:"flip", sym:e.sym, tag:"⇄ Bascule R⇄S confirmée", cls:"t-acc", when:e.date, title:(it ? it.name : e.sym) + " : " + (SIG_CHIP[g.k] || g.k),
-      sub:"Niveau " + (g.tf === "S" ? "hebdo" : "jour") + " " + fmt(g.lv, cur) + " · clôture " + fmt(e.close, cur), level:g.lv, w:70 }); });
+      sub:"Niveau " + (g.tf === "S" ? "hebdo" : "jour") + " " + fmt(g.lv, cur) + " · clôture " + fmt(e.close, cur), level:g.lv, w:70,
+      pv:{ level:g.lv, col:"#ea580c", solid:true, lab:g.k[0] === "r" ? "ancienne résistance devenue support" : "ancien support devenu résistance" } }); });
+  // bascule R⇄S en approche : au contact d'une ancienne résistance (support à tester) ou sous un ancien support (résistance à passer)
+  ((sigFlips && sigFlips.items) || []).filter(e => e.age === 0 && ui2Item(e.sym) && (e.sig[0].k === "rs_contact" || e.sig[0].k === "sr_test")).forEach(e => { const g = e.sig[0], it = ui2Item(e.sym), cur = (summary.symbols[e.sym] || {}).currency;
+    ev.push({ k:"flipw", sym:e.sym, tag:"⇄ R⇄S à surveiller", cls:"t-acc", when:e.date, title:(it ? it.name : e.sym) + (g.k === "rs_contact" ? " teste une ancienne résistance par le dessus" : " bute sur un ancien support"),
+      sub:sigText(g), level:g.lv, w:48, pv:{ level:g.lv, col:"#ea580c", solid:true, lab:g.k === "rs_contact" ? "ancienne résistance (support ?)" : "ancien support (résistance ?)" } }); });
+  // situations du jour du script des signaux : RSI Trends au vert, MM200 franchie, rebond sur support, cassure de résistance
+  ((sigData && sigData.items) || []).filter(e => e.age === 0 && ui2Item(e.sym)).forEach(e => { const it = ui2Item(e.sym), nm = it ? it.name : e.sym, cur = (summary.symbols[e.sym] || {}).currency;
+    e.sig.forEach(g => {
+      const base = { sym:e.sym, when:e.date };
+      if (g.k === "vert") ev.push(Object.assign(base, { k:"rt", tag:"🟢 RSI Trends au vert", cls:"t-up", title:nm + " : RSI Trends repasse au vert", sub:"RSI 14 journalier au-dessus de " + TREND.ob + ", cours au-dessus de la MM200 — à garder jusqu'au premier jour rouge", w:66, pv:{ rt:true, lab:"RSI Trends" } }));
+      if (g.k === "sur_mm200" || g.k === "sous_mm200") { const upx = g.k === "sur_mm200";
+        ev.push(Object.assign(base, { k:"mm200", tag:upx ? "📈 Au-dessus de la MM200" : "📉 Sous la MM200", cls:upx ? "t-up" : "t-dn", title:nm + (upx ? " repasse au-dessus de sa MM200" : " repasse sous sa MM200"), sub:"MM200 " + fmt(g.lv, cur) + " · clôture " + fmt(e.close, cur), w:upx ? 62 : 46, pv:{ ma200:true, lab:"MM200" } })); }
+      if (g.k === "rebond") ev.push(Object.assign(base, { k:"sr", tag:"🛟 Sur un support", cls:"t-up", title:nm + " revient sur un support", sub:sigText(g), level:g.lv, w:58, pv:{ level:g.lv, col:"#16a34a", lab:"support (" + g.n + " contacts)" } }));
+      if (g.k === "cassure") ev.push(Object.assign(base, { k:"brk", tag:"🚀 Cassure de résistance", cls:"t-up", title:nm + " casse une résistance", sub:sigText(g), level:g.lv, w:72, pv:{ level:g.lv, col:"#dc2626", lab:"résistance cassée" } }));
+    }); });
+  // proche d'un support ou d'une résistance journaliers (au moins 2 contacts, à 1,5 % ou moins), sans autre événement sur la valeur
+  { const seen = new Set(ev.map(e => e.sym)), near = [];
+    cfg.portfolios.filter(p => p.name !== "Market").forEach(p => p.items.forEach(it => { const info = summary.symbols[it.yahoo];
+      if (!info || info.pending || seen.has(it.yahoo) || !info.levels || !info.levels.D) return; seen.add(it.yahoo);
+      const c = info.last, L = info.levels.D;
+      (L.supports || []).filter(x => x.touches >= 2 && x.price < c && c / x.price - 1 <= 0.015).slice(0, 1).forEach(x => near.push({ k:"srn", sym:it.yahoo, tag:"🎯 Proche d'un support", cls:"t-acc", when:"",
+        title:it.name + " à " + fmtPct(Math.round((c / x.price - 1) * 1000) / 10).replace("+", "") + " d'un support", sub:"Support journalier " + fmt(x.price, info.currency) + " (" + x.touches + " contacts) : contact possible bientôt", level:x.price, w:44 - (c / x.price - 1) * 100,
+        pv:{ level:x.price, col:"#16a34a", lab:"support (" + x.touches + " contacts)" } }));
+      (L.resistances || []).filter(x => x.touches >= 2 && x.price > c && x.price / c - 1 <= 0.015).slice(0, 1).forEach(x => near.push({ k:"srn", sym:it.yahoo, tag:"🎯 Proche d'une résistance", cls:"t-acc", when:"",
+        title:it.name + " à " + fmtPct(Math.round((x.price / c - 1) * 1000) / 10).replace("+", "") + " d'une résistance", sub:"Résistance journalière " + fmt(x.price, info.currency) + " (" + x.touches + " contacts) : test possible bientôt", level:x.price, w:42 - (x.price / c - 1) * 100,
+        pv:{ level:x.price, col:"#dc2626", lab:"résistance (" + x.touches + " contacts)" } }));
+    }));
+    near.sort((a, b) => b.w - a.w).slice(0, 4).forEach(e => ev.push(e)); }
   (biaData && biaData.wait || []).filter(w => w.dist <= 0.015).forEach(w => ev.push({ k:"biaw", sym:w.sym, tag:"🏄 Juste sous la résistance", cls:"t-acc", when:"", title:w.name + " à " + fmtPct(Math.round(w.dist * 1000) / 10) + " de sa résistance",
-    sub:"Au repos sous " + fmt(w.lo, w.cur) + (w.hi > w.lo * 1.001 ? " – " + fmt(w.hi, w.cur) : "") + " (" + w.n + " contacts) : une alerte Telegram partira à la cassure", level:w.hi, w:60 - w.dist * 100 }));
+    sub:"Au repos sous " + fmt(w.lo, w.cur) + (w.hi > w.lo * 1.001 ? " – " + fmt(w.hi, w.cur) : "") + " (" + w.n + " contacts) : une alerte Telegram partira à la cassure", level:w.hi, w:60 - w.dist * 100,
+    pv:{ boll:true, level:w.hi, col:"#16a34a", lab:"résistance déclencheur" } }));
   if (sigMom && sigMom.top) { const m = sigMom, dd = (Date.now() - new Date((m.asof || "") + "T00:00:00Z")) / 864e5;
     if (dd >= 0 && dd <= 7) ev.push({ k:"mom", tag:"⚡ Momentum", cls:"t-acc", when:"", title:"Nouveau Top 10 Momentum", sub:"Entrées : " + (m.in || []).slice(0, 4).map(x => x.name || x).join(", ") + ((m.out || []).length ? " · Sorties : " + m.out.slice(0, 3).map(x => x.name || x).join(", ") : ""), w:50 }); }
   ev.sort((a, b) => b.w - a.w);
+  { const one = new Set(); for (let i = 0; i < ev.length; i++) { if (!ev[i].sym) continue; if (one.has(ev[i].sym)) ev.splice(i--, 1); else one.add(ev[i].sym); } }   // une carte par valeur (la plus importante)
+  { const cnt = {}; for (let i = 0; i < ev.length; i++) { const k = ev[i].k + (ev[i].cls === "t-dn" ? "-" : ""); cnt[k] = (cnt[k] || 0) + 1; if (cnt[k] > 4 && !["bia", "zone"].includes(ev[i].k)) ev.splice(i--, 1); } }   // au plus 4 cartes du même genre
   box.insertAdjacentHTML("beforeend", '<div class="ui2-sec">' + (ev.length ? ev.length + " événement" + (ev.length > 1 ? "s" : "") + " sur vos valeurs" : "Rien de particulier ce soir") + "</div>");
   ev.slice(0, 12).forEach(e => {
     const c = document.createElement("div"); c.className = "td-card";
     c.innerHTML = '<div class="td-top"><span class="td-tag ' + e.cls + '">' + e.tag + '</span><small>' + (e.when ? dOf(e.when).toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"UTC" }) : "") + "</small></div>" +
       "<b>" + esc(e.title) + "</b><p>" + esc(e.sub) + "</p>" + (e.sym ? '<div class="td-spk"></div>' : "") +
       '<div class="td-act">' + (e.sym ? '<button class="btn on td-go">Voir le graphique</button>' : '<button class="btn on td-go">Voir</button>') + "</div>";
-    c.querySelector(".td-go").onclick = () => { if (e.sym) ui2Open(e.sym, { bia:e.k === "bia" || e.k === "biaw" }); else { prefs.view = "sig"; savePrefs(); render(); } };
+    c.querySelector(".td-go").onclick = () => { if (e.sym) ui2Open(e.sym, { bia:e.k === "bia" || e.k === "biaw", ma200:e.k === "mm200", rt:e.k === "rt", sr:["sr", "srn", "brk"].includes(e.k), flip:e.k === "flip" || e.k === "flipw" }); else { prefs.view = "sig"; savePrefs(); render(); } };
     box.appendChild(c);
-    if (e.sym) ui2Candles(c.querySelector(".td-spk"), e.sym, e.level);
+    if (e.sym) ui2Candles(c.querySelector(".td-spk"), e.sym, e.pv || { boll:true, level:e.level, col:"#16a34a", lab:"niveau" });
   });
   if (!ev.length) box.insertAdjacentHTML("beforeend", '<div class="td-card"><p>Aucune cassure, bascule ou approche de zone ce soir. Les listes et les signaux restent accessibles en bas.</p></div>');
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calculé après la clôture du ' + esc(days) + ". À vérifier sur le graphique — pas des conseils d'investissement.</div>");
