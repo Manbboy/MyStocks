@@ -1093,6 +1093,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   }
   /* en-tête de la fiche aligné à gauche sur la barre d'indicateurs du dessous (même retrait) */
   :root[data-ui="2"] #ov .ov-head { padding-left:16px; }
+  :root[data-ui="2"] #ov .tbs, :root[data-ui="2"] #ov .ov-indslot { gap:6px; }   /* même écart entre bulles sur les deux rangées */
   /* fiche valeur : sous le graphique, seulement « Mes zones » et les actualités (plus de listes, légende ni textes d'aide) */
   :root[data-ui="2"] #ov .ov-side, :root[data-ui="2"] #sideBtn, :root[data-ui="2"] #sideSeg,
   :root[data-ui="2"] #boxBia, :root[data-ui="2"] #boxManu { display:none !important; }
@@ -1160,7 +1161,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v230</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v231</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3129,7 +3130,7 @@ function placeHeadInds() {
     const b = $(id); if (!b || b.hidden) continue;
     const w = b.offsetWidth; if (!w) break;
     if (used + w > avail) break;
-    used += w + 5; box.append(b);
+    used += w + 6; box.append(b);
   }
   alignHeadRows();
 }
