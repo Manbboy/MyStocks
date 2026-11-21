@@ -908,6 +908,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .u2f-p { flex:none; display:flex; flex-direction:column; align-items:flex-end; font-weight:700; font-size:14px; font-variant-numeric:tabular-nums; }
   .u2f-p em { font-style:normal; font-size:12.5px; margin-top:2px; }
   .u2f-p em.up { color:var(--up); } .u2f-p em.down { color:var(--down); }
+  .u2-pend { opacity:.6; }
   .u2f-add { flex:none; border:0; border-radius:18px; background:var(--accent); color:#fff; font:inherit; font-weight:700; font-size:13.5px; padding:8px 14px; cursor:pointer; }
   html:not([data-ui="2"]) .ui2-find { display:none; }
   .ui2-me.big { position:static; display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; font-size:22px; }
@@ -1194,7 +1195,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v241</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v242</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -6592,9 +6593,9 @@ function ui2FindOpen() {
 }
 function ui2FindClose() { const w = $("u2Find"); if (w) w.classList.remove("show"); document.body.classList.remove("u2-finding"); clearTimeout(u2FindTimer); }
 function ui2FindRow(it, listName) {
-  const info = withLive(it.yahoo, summary.symbols[it.yahoo] || {}), pct = info.changePct;
+  const info = withLive(it.yahoo, summary.symbols[it.yahoo] || {}), pct = info.changePct, pend = !summary.symbols[it.yahoo] || summary.symbols[it.yahoo].pending;
   const b = document.createElement("button"); b.type = "button"; b.className = "u2f-row";
-  b.innerHTML = '<span class="u2f-n"><b>' + esc(it.name) + '</b><small>' + esc(it.yahoo) + (listName ? " · " + esc(listName) : "") + '</small></span>' +
+  b.innerHTML = '<span class="u2f-n"><b>' + esc(it.name) + '</b><small>' + esc(it.yahoo) + (listName ? " · " + esc(listName) : "") + (pend ? " · ⏳ en préparation" : "") + '</small></span>' +
     '<span class="u2f-p">' + (info.last != null ? fmt(info.last, info.currency) : "") + (pct != null ? '<em class="' + (pct >= 0 ? "up" : "down") + '">' + fmtPct(pct) + "</em>" : "") + "</span>";
   b.onclick = () => { ui2FindClose(); ui2Remember(it.yahoo); ui2Open(it.yahoo); };
   return b;
@@ -6665,7 +6666,8 @@ async function ui2Spark(el, sym, level) {
 }
 const ui2Item = sym => { for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === sym); if (it) return it; } return null; };
 function ui2Open(sym, opt) {
-  const it = ui2Item(sym); if (!it || !summary.symbols[sym]) { toast("Valeur introuvable dans vos listes.", 2000); return; }
+  const it = ui2Item(sym); if (!it) { toast("Valeur introuvable dans vos listes.", 2000); return; }
+  if (!summary.symbols[sym] || summary.symbols[sym].pending) { toast("Cours et graphiques de " + it.name + " en préparation : ils arrivent 2 à 3 minutes après l'ajout.", 4000); startPolling(); return; }
   if (opt && opt.bia) { prefs.bia = true; savePrefs(); }
   openDetail(it, withLive(sym, summary.symbols[sym]));
 }
@@ -6778,6 +6780,16 @@ async function renderUi2List() {
       box.appendChild(t);
     });
   }
+  /* valeurs ajoutées dont les cours ne sont pas encore calculés (2 à 3 minutes) : visibles quand même, avec une mention */
+  const pend = pf.items.filter(it => !summary.symbols[it.yahoo] || summary.symbols[it.yahoo].pending);
+  pend.forEach(it => {
+    const r = document.createElement("button"); r.className = mode === "list" ? "u2-row u2-pend" : "u2-tile u2-pend";
+    r.innerHTML = mode === "list" ? ui2Logo(it.name, 0) + '<span class="u2-n"><b>' + esc(it.name) + "</b><small>" + esc(it.yahoo) + " · ⏳ données en préparation</small></span>" + (editing && !pf.virtual ? '<span class="u2-rm" title="Retirer">✕</span>' : "")
+      : '<div class="u2-th"><b>' + esc(it.name) + '</b></div><div class="u2-tb"><span>⏳ en préparation</span></div>' + (editing && !pf.virtual ? '<span class="u2-rm" title="Retirer">✕</span>' : "");
+    r.onclick = ev => { if (ev.target.closest(".u2-rm")) { askRemove(pi, it); return; } toast("Cours et graphiques de " + it.name + " en préparation : ils arrivent 2 à 3 minutes après l'ajout (la page se met à jour seule).", 4000); };
+    box.appendChild(r);
+  });
+  if (pend.length) startPolling();
   if (editing && !pf.virtual) { const add = document.createElement("button"); add.className = "add-tile u2-add"; add.innerHTML = "<b>＋</b> Ajouter une valeur"; add.onclick = openAdd; grid.appendChild(add); }
   grid.appendChild(box);
   ui2Tools();
