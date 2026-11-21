@@ -647,6 +647,11 @@
           "yahoo": "SWKS",
           "tv": "NASDAQ:SWKS",
           "name": "Skyworks"
+        },
+        {
+          "yahoo": "BRK-B",
+          "tv": "BRK-B",
+          "name": "Berkshire Hathaway"
         }
       ]
     },
