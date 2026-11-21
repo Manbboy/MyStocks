@@ -5,6 +5,7 @@
 //   /chart?s=MC.PA&range=1d&interval=5m   -> bougies intraday d'un symbole
 //   /tg/status | /tg/link | /tg/test      -> alertes Telegram : état, liaison avec votre conversation, message d'essai
 //   /alerts/sent                          -> alertes déjà envoyées (pour les afficher dans la page)
+//   /find?q=airbus                        -> recherche de valeurs par nom ou ticker (moteur de Yahoo Finance)
 //   /news?q=Renault&s=RNO.PA              -> actualités des 3 derniers jours : Google Actualités en français, puis Yahoo Finance (anglais)
 //
 // Alertes de prix : toutes les 5 minutes en semaine (déclencheur « crons » de wrangler.toml), le relais lit
@@ -31,6 +32,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/tg/") || url.pathname === "/alerts/sent") return json(await tgRoute(url.pathname, env), 200, cors);
     if (url.pathname === "/news") return news(url, ctx, cors);
+    if (url.pathname === "/find") return find(url, ctx, cors);
     const syms = (url.searchParams.get("s") || "").split(",").map(s => s.trim()).filter(Boolean).slice(0, 60);
     if (!syms.length) return json({ error: "paramètre s manquant" }, 400, cors);
 
@@ -61,6 +63,27 @@ export default {
     ctx.waitUntil(checkAlerts(env));
   },
 };
+
+/* ===== Recherche de valeurs (moteur de Yahoo Finance) ===== */
+async function find(url, ctx, cors) {
+  const q = (url.searchParams.get("q") || "").trim().slice(0, 60);
+  if (q.length < 2) return json({ quotes: [] }, 200, cors);
+  const cache = caches.default, key = new Request("https://find.local/?q=" + encodeURIComponent(q.toLowerCase()));
+  const hit = await cache.match(key);
+  if (hit) { const r = new Response(hit.body, hit); Object.entries(cors).forEach(([k, v]) => r.headers.set(k, v)); return r; }
+  let quotes = [];
+  try {
+    const r = await fetch("https://query2.finance.yahoo.com/v1/finance/search?q=" + encodeURIComponent(q) + "&quotesCount=12&newsCount=0&enableFuzzyQuery=true&lang=fr-FR&region=FR", { headers: UA });
+    if (r.ok) {
+      const j = await r.json();
+      quotes = (j.quotes || []).filter(x => x.symbol && ["EQUITY", "ETF", "INDEX", "CRYPTOCURRENCY", "FUTURE", "MUTUALFUND"].includes(x.quoteType))
+        .map(x => ({ s: x.symbol, n: x.longname || x.shortname || x.symbol, x: x.exchDisp || x.exchange || "", t: x.typeDisp || x.quoteType || "" }));
+    }
+  } catch (e) {}
+  const res = json({ quotes }, 200, Object.assign({ "Cache-Control": "public, max-age=3600" }, cors));
+  if (quotes.length) ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
+}
 
 /* ===== Actualités d'une valeur ===== */
 const UA = { "User-Agent": "Mozilla/5.0 (compatible; MyStocks/1.0)" };
