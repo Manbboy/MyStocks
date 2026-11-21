@@ -1161,7 +1161,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v233</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v234</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3139,17 +3139,17 @@ function alignHeadRows() {
   const a = $("indSlot"), iv = $("ivSlot"); if (!a || !iv) return;
   a.style.marginTop = ""; iv.style.marginTop = "";
   if (!a.children.length || !ivInHead()) return;
-  const above = [...$("ovSub").children, ...$("ovPosInfo").children, $("ovTitle")].filter(e => e.offsetHeight);
+  const above = [...$("ovSub").children, $("ovPosInfo"), $("ovTitle")].filter(e => e.offsetHeight);   // ligne « M 30 × PRU … » (Pos.) comprise
   const contentBottom = Math.max(...above.map(e => e.getBoundingClientRect().bottom));
   const base = a.getBoundingClientRect().top - parseFloat(getComputedStyle(a).marginTop);
   const ivTop = iv.getBoundingClientRect().top;
-  const want = Math.max(contentBottom + 6, ivTop);
+  const want = Math.max(contentBottom + 8, ivTop);
   a.style.marginTop = (want - base) + "px";
   if (want > ivTop) iv.style.marginTop = (want - ivTop) + "px";   // prix sur deux lignes : c'est J S M T qui descend
 }
 if (window.ResizeObserver) {                         // le prix ou la date changent de largeur (cours en direct, autre valeur) : réaligner
   const ro = new ResizeObserver(() => requestAnimationFrame(alignHeadRows));
-  ["ovSub", "ovTitle", "ivSlot"].forEach(id => $(id) && ro.observe($(id)));
+  ["ovSub", "ovTitle", "ovPosInfo", "ivSlot"].forEach(id => $(id) && ro.observe($(id)));
 }
 function ivInHead() { return UI2 && innerHeight > innerWidth && innerWidth < 600; }
 let ivHeadWas = null;
