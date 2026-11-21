@@ -1068,7 +1068,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .ov-rt { flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
   .ov-ivslot:empty, .ov-indslot:empty { display:none; }
   .ov-indslot { display:flex; gap:5px; margin-top:10px; }
-  .ov-ivslot { display:flex; align-items:center; gap:6px; }
+  .ov-ivslot { display:flex; align-items:center; gap:6px; width:0; justify-content:flex-end; }   /* largeur nulle : J S M T, 1/2/4 et Sync débordent vers la gauche sans rétrécir le nom, le prix et la date */
+  .ov-ivslot > * { flex:none; }
   #ov.split-on #ivSeg { opacity:.35; pointer-events:none; filter:grayscale(1); }
   :root[data-ui="2"] #ov .ov-ivslot .seg button { padding:5px 8px; min-width:0; }
   :root[data-ui="2"] .navb, :root[data-ui="2"] .close { width:38px; height:38px; border-radius:50%; padding:0; display:inline-flex; align-items:center; justify-content:center; box-shadow:var(--sh2); }
@@ -1161,7 +1162,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v234</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v235</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3124,7 +3125,8 @@ function placeHeadInds() {
   if (box.children.length) t.querySelector(".tb-br").after(...box.children);   // tout remettre dans la barre, dans l'ordre
   if (!ivInHead() || !$("ov").classList.contains("show")) return;
   const head = document.querySelector("#ov .ov-head"), cs = getComputedStyle(head);
-  const avail = head.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - document.querySelector("#ov .ov-rt").offsetWidth - 12;
+  const slotW = [...$("ivSlot").children].filter(e => e.offsetWidth).reduce((w, e) => w + e.offsetWidth + 6, 0);
+  const avail = head.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - Math.max(slotW, document.querySelector("#ov .ov-rt").offsetWidth) - 12;
   let used = 0;
   for (const id of HEAD_INDS) {
     const b = $(id); if (!b || b.hidden) continue;
