@@ -1163,7 +1163,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v236</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v237</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1509,8 +1509,19 @@ function baseOptions(small) {
     rightPriceScale:{ borderVisible:false },
     timeScale:{ borderVisible:false, timeVisible:true, secondsVisible:false },   // heures visibles en 15 min (sans effet sur les jours)
     localization:{ locale:"fr-FR", timeFormatter:crossTime, priceFormatter:axisPrice },
+    handleScroll:scrollOpt(),
   };
 }
+/* nouvelle interface en paysage : glisser verticalement sur un graphique fait défiler la page (actualités dessous)
+   au lieu de déplacer l'échelle ; le glissement horizontal (dans le temps) et le pincement restent */
+const landTouch = () => UI2 && innerWidth > innerHeight;
+const scrollOpt = () => ({ mouseWheel:true, pressedMouseMove:true, horzTouchDrag:true, vertTouchDrag:!landTouch() });
+let landWas = null;
+addEventListener("resize", () => {
+  const l = landTouch(); if (l === landWas) return; landWas = l;
+  const o = { handleScroll:scrollOpt() };
+  [typeof ovChart !== "undefined" && ovChart, typeof rsiChart !== "undefined" && rsiChart, ...(typeof quadCharts !== "undefined" ? quadCharts : [])].forEach(c => { try { c && c.applyOptions(o); } catch (e) {} });
+});
 
 async function drawCard(el, info) {
   if (prefs.range === "1J") return drawCardDay(el, info);
