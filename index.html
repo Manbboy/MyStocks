@@ -1067,7 +1067,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] .ov-nav { gap:6px; }
   .ov-rt { flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
   .ov-ivslot:empty, .ov-indslot:empty { display:none; }
-  .ov-indslot { display:flex; gap:6px; margin-top:10px; }
+  .ov-indslot { display:flex; gap:5px; margin-top:10px; }
   .ov-ivslot { display:flex; align-items:center; gap:6px; }
   #ov.split-on #ivSeg { opacity:.35; pointer-events:none; filter:grayscale(1); }
   :root[data-ui="2"] #ov .ov-ivslot .seg button { padding:5px 8px; min-width:0; }
@@ -1086,6 +1086,16 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] .mmb.on .mmdots i { box-shadow:0 0 0 1px rgba(255,255,255,.85); }
   :root[data-ui="2"] #zoneBtn.drawing { background:#facc15; border-color:#ca8a04; color:#1f2937; }
   :root[data-ui="2"] .cfg-btn { border-radius:50%; width:40px; height:40px; justify-content:center; padding:0; box-shadow:var(--sh2); }
+  /* fiche valeur : boutons d'indicateurs en texte seul, même hauteur (34 px) que 15' J S M T */
+  :root[data-ui="2"] #ov .mmb { height:34px; min-width:34px; border-radius:999px; padding:0 8px; font-size:12px; font-weight:600; box-sizing:border-box; }
+  :root[data-ui="2"] #ov .mmb .mmdots { display:none; }
+  :root[data-ui="2"] #ov .mmb.lay { padding:1px 9px; gap:0; }
+  :root[data-ui="2"] #ov .mmb.lay svg { width:17px; height:13px; }
+  :root[data-ui="2"] #ov .mmb.lay small { font-size:9.5px; line-height:1; }
+  :root[data-ui="2"] #ov #ivSeg { height:34px; box-sizing:border-box; align-items:center; }
+  :root[data-ui="2"] #ov #ivSeg button { height:28px; padding-top:0; padding-bottom:0; }
+  :root[data-ui="2"] #ov .cfg-btn { width:34px; height:34px; }
+  :root[data-ui="2"] #ov .ov-indslot { margin-top:8px; }
   :root[data-ui="2"] .cfg-btn[aria-expanded="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
   /* graphique et blocs d'information : cartes blanches arrondies */
   :root[data-ui="2"] .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); box-shadow:var(--sh2); padding:6px 4px 2px; overflow:hidden; }
@@ -1140,7 +1150,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v222</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v223</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3097,7 +3107,7 @@ function placeHeadInds() {
     const b = $(id); if (!b || b.hidden) continue;
     const w = b.offsetWidth; if (!w) break;
     if (used + w > avail) break;
-    used += w + 6; box.append(b);
+    used += w + 5; box.append(b);
   }
 }
 function ivInHead() { return UI2 && innerHeight > innerWidth && innerWidth < 600; }
