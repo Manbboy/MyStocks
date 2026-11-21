@@ -1095,7 +1095,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   :root[data-ui="2"] #ov .ov-side, :root[data-ui="2"] #sideBtn, :root[data-ui="2"] #sideSeg,
   :root[data-ui="2"] #boxBia, :root[data-ui="2"] #boxManu { display:none !important; }
   /* fiche valeur : boutons d'indicateurs en texte seul, même hauteur (34 px) que 15' J S M T */
-  :root[data-ui="2"] #ov .mmb { height:34px; min-width:34px; border-radius:999px; padding:0 8px; font-size:12px; font-weight:600; box-sizing:border-box; }
+  :root[data-ui="2"] #ov .mmb { height:34px; min-width:34px; border-radius:999px; padding:0 6px; font-size:12px; font-weight:600; box-sizing:border-box; }
   :root[data-ui="2"] #ov .mmb .mmdots { display:none; }
   :root[data-ui="2"] #ov .mmb.lay { padding:1px 9px; gap:0; }
   :root[data-ui="2"] #ov .mmb.lay svg { width:17px; height:13px; }
@@ -1158,7 +1158,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v228</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v229</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3107,8 +3107,17 @@ function applyTbRows() {
 }
 /* Portrait (nouvelle interface) : autant de premiers indicateurs que la place libre sous le prix en permet ; les autres restent dans la barre */
 const HEAD_INDS = ["mmBtn", "srBtn", "chanBtn", "tlBtn", "biaBtn", "manuBtn", "zoneBtn"];
+/* nouvelle interface : toutes les bulles d'indicateurs à la largeur de la plus large (« Canal », « Tino »…) */
+function equalizeInds() {
+  if (!UI2) return;
+  const bs = [...document.querySelectorAll("#ov .mmb:not(.lay)")].filter(b => !b.hidden);
+  bs.forEach(b => b.style.width = "");
+  const w = Math.max(0, ...bs.map(b => b.offsetWidth));
+  if (w) bs.forEach(b => b.style.width = w + "px");
+}
 function placeHeadInds() {
   const box = $("indSlot"), t = $("tbs"); if (!box || !t) return;
+  equalizeInds();
   if (box.children.length) t.querySelector(".tb-br").after(...box.children);   // tout remettre dans la barre, dans l'ordre
   if (!ivInHead() || !$("ov").classList.contains("show")) return;
   const head = document.querySelector("#ov .ov-head"), cs = getComputedStyle(head);
@@ -3134,6 +3143,10 @@ function alignHeadRows() {
   const want = Math.max(contentBottom + 6, ivTop);
   a.style.marginTop = (want - base) + "px";
   if (want > ivTop) iv.style.marginTop = (want - ivTop) + "px";   // prix sur deux lignes : c'est J S M T qui descend
+}
+if (window.ResizeObserver) {                         // le prix ou la date changent de largeur (cours en direct, autre valeur) : réaligner
+  const ro = new ResizeObserver(() => requestAnimationFrame(alignHeadRows));
+  ["ovSub", "ovTitle", "ivSlot"].forEach(id => $(id) && ro.observe($(id)));
 }
 function ivInHead() { return UI2 && innerHeight > innerWidth && innerWidth < 600; }
 let ivHeadWas = null;
