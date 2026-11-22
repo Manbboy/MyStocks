@@ -53,6 +53,10 @@ jobs:
       - name: Bascules R⇄S (À regarder)
         run: node scripts/flip_signals.mjs
 
+      # journal des approches (zones, supports / résistances, Biarritz) : 10 séances d'historique pour la page Aujourd'hui
+      - name: Journal des approches (Aujourd'hui)
+        run: node scripts/approach_log.mjs
+
       - name: Enregistrer les nouvelles données
         run: |
           git config user.name "github-actions[bot]"

@@ -960,6 +960,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .td-tap:active { transform:scale(.99); }
   .td-top { flex-wrap:wrap; gap:6px; justify-content:flex-start; }
   .td-r { margin:6px 0 0; }
+  .td-when { font-size:12.5px; color:var(--muted); margin:6px 0 2px; font-weight:600; }
+  .td-since.up { color:var(--up); } .td-since.down { color:var(--down); }
   .td-r i { font-style:normal; font-weight:700; color:var(--text); }
   .td-day { margin:22px 4px 8px; font-size:13px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px; }
   .td-day::first-letter { text-transform:uppercase; }
@@ -1211,7 +1213,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v248</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v249</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -6834,6 +6836,9 @@ async function ui2Candles(el, sym, o) {
   const info = summary.symbols[sym]; if (!el || !info || !info.file) return;
   let R; try { R = (await getSeries(info)).rows; } catch (e) { return; }
   const n = 45, vis = R.slice(-n), off = R.length - vis.length, W = 330, H = 110;
+  const mk = o.mark ? vis.findIndex(r => r[0] === o.mark) : -1;     // séance de l'événement
+  if (o.sinceEl && o.mark) { const j = R.findIndex(r => r[0] === o.mark); const last = (withLive(sym, info) || info).last || R[R.length - 1][4];
+    if (j >= 0 && R[j][4]) { const v = (last / R[j][4] - 1) * 100; o.sinceEl.textContent = " · depuis : " + fmtPct(Math.round(v * 10) / 10); o.sinceEl.className = "td-since " + (v >= 0 ? "up" : "down"); } }
   const C = R.map(r => r[4]), sma = (p, i) => { if (i < p - 1) return null; let t = 0; for (let k = i - p + 1; k <= i; k++) t += C[k]; return t / p; };
   const sd = i => { const m = sma(50, i); let t = 0; for (let k = i - 49; k <= i; k++) t += (C[k] - m) ** 2; return Math.sqrt(t / 50); };
   let mn = Math.min(...vis.map(r => r[3])), mx = Math.max(...vis.map(r => r[2]));
@@ -6859,7 +6864,10 @@ async function ui2Candles(el, sym, o) {
     rtc = k => ({ 1:"#00c853", 0:"#9ca3af", "-1":"#FF5252" })[st[off + k]]; }
   svg += vis.map((r, k) => { const x = X(k), c = rtc ? rtc(k) : r[4] >= r[1] ? "var(--up)" : "var(--down)";
     return '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + y(r[2]) + '" y2="' + y(r[3]) + '" stroke="' + c + '"/><rect x="' + (x - bw * .33).toFixed(1) + '" y="' + y(Math.max(r[1], r[4])) + '" width="' + (bw * .66).toFixed(1) + '" height="' + Math.max(1, Math.abs(y(r[1]) - y(r[4]))).toFixed(1) + '" fill="' + c + '"/>'; }).join("");
-  const leg = ["45 séances"];
+  if (mk >= 0) { const x = X(mk), yl = Math.min(H - 1, +y(vis[mk][3]) + 4);
+    svg = '<rect x="' + (x - bw / 2).toFixed(1) + '" y="0" width="' + bw.toFixed(1) + '" height="' + H + '" fill="var(--accent)" opacity=".10"/>' + svg +
+      '<path d="M' + x.toFixed(1) + "," + yl.toFixed(1) + "l-4,7h8z" + '" fill="var(--accent)"/>'; }
+  const leg = ["45 séances" + (mk >= 0 ? ' · <i style="color:var(--accent)">▲ jour de l\'événement</i>' : "")];
   if (o.boll) leg.push("Bollinger 50/1");
   if (o.ma200) leg.push('<i style="color:#2563eb">━ MM200</i>');
   if (o.rt) leg.push('<i style="color:#00c853">■</i> vert <i style="color:#9ca3af">■</i> neutre <i style="color:#FF5252">■</i> rouge (RSI Trends)');
@@ -6962,6 +6970,7 @@ if (UI2) {
   renderAlertsView = async function () { const b = $("pfView"); if (b) delete b.dataset.u2; await _ra.apply(this, arguments); if (prefs.view === "alerts") ui2Sections("alerts"); };
 }
 /* ===== Accueil « Aujourd'hui » : résumé du portefeuille + fil des événements du soir ===== */
+let apprData = null;   // journal des approches des séances précédentes (scripts/approach_log.mjs)
 async function renderToday() {
   document.body.classList.add("pf-mode");
   const box = $("pfView"); box.hidden = false; $("grid").innerHTML = "";
@@ -6971,6 +6980,7 @@ async function renderToday() {
   if (!alertsData) jobs.push(alertsLoad().catch(() => {}));
   if (typeof myzLoad === "function") jobs.push(myzLoad().catch(() => {}));
   if (!biaData) jobs.push(fetch("data/biarritz.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null).then(d => biaData = d).catch(() => {}));
+  jobs.push(fetch("data/approaches.json?t=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.json() : null).then(d => apprData = d).catch(() => {}));
   await Promise.all(jobs);
   if (prefs.view !== "today") return;
   renderTabbar();
@@ -7033,6 +7043,18 @@ async function renderToday() {
     pv:{ boll:true, level:w.hi, col:"#16a34a", lab:"résistance déclencheur" } }));
   if (sigMom && sigMom.top) { const m = sigMom, dd = (Date.now() - new Date((m.asof || "") + "T00:00:00Z")) / 864e5;
     if (dd >= 0 && dd <= 7) ev.push({ k:"mom", tag:"⚡ Momentum", cls:"t-acc", when:"", title:"Nouveau Top 10 Momentum", sub:"Entrées : " + (m.in || []).slice(0, 4).map(x => x.name || x).join(", ") + ((m.out || []).length ? " · Sorties : " + m.out.slice(0, 3).map(x => x.name || x).join(", ") : ""), w:50 }); }
+  /* approches des séances précédentes (la dernière séance est recalculée ci-dessus avec les données du moment) */
+  { const ld = (() => { const ds = Object.values(summary.symbols || {}).filter(v => v && v.date && v.type !== "CRYPTOCURRENCY").map(v => v.date).sort(); return ds[ds.length - 1]; })();
+    ((apprData && apprData.items) || []).filter(x => x.date !== ld && ui2Item(x.sym)).forEach(x => { const pc = v => fmtPct(Math.round(v * 1000) / 10).replace("+", "");
+      if (x.k === "zone") ev.push({ k:"zone", sym:x.sym, when:x.date, tag:"🟨 Votre zone", cls:"t-zone", title:x.name + " approche de votre zone", sub:"À " + pc(x.dist) + (x.note ? " · « " + x.note + " »" : ""), level:x.lv, w:90 - x.dist * 100,
+        pv:{ zone:[x.lo, x.hi], lab:"votre zone" } });
+      if (x.k === "srn") ev.push({ k:"srn", sym:x.sym, when:x.date, tag:x.side === "S" ? "🎯 Proche d'un support" : "🎯 Proche d'une résistance", cls:"t-acc",
+        title:x.name + " à " + pc(x.dist) + (x.side === "S" ? " d'un support" : " d'une résistance"), sub:(x.side === "S" ? "Support" : "Résistance") + " journalier " + fmt(x.lv, x.cur) + " (" + x.n + " contacts)", level:x.lv, w:43 - x.dist * 100,
+        pv:{ level:x.lv, col:x.side === "S" ? "#16a34a" : "#dc2626", lab:(x.side === "S" ? "support (" : "résistance (") + x.n + " contacts)" } });
+      if (x.k === "biaw") ev.push({ k:"biaw", sym:x.sym, when:x.date, tag:"🏄 Juste sous la résistance", cls:"t-acc", title:x.name + " à " + pc(x.dist) + " de sa résistance",
+        sub:"Au repos sous " + fmt(x.lo, x.cur) + (x.lv > x.lo * 1.001 ? " – " + fmt(x.lv, x.cur) : "") + " (" + x.n + " contacts)", level:x.lv, w:60 - x.dist * 100,
+        pv:{ boll:true, level:x.lv, col:"#16a34a", lab:"résistance déclencheur" } });
+    }); }
   /* fil sur 10 séances : un bloc par jour, une carte par valeur qui regroupe toutes ses raisons ; aperçu avec tous les niveaux concernés */
   const lastDay = (() => { const ds = Object.values(summary.symbols || {}).filter(v => v && v.date && v.type !== "CRYPTOCURRENCY").map(v => v.date).sort(); return ds[ds.length - 1] || days; })();
   ev.forEach(e => { if (!e.when) e.when = lastDay; });
@@ -7050,6 +7072,7 @@ async function renderToday() {
       const c = document.createElement("div"); c.className = "td-card td-tap";
       const strip = t => nm && t.startsWith(nm) ? t.slice(nm.length).replace(/^\s*:?\s*/, "") : t;
       c.innerHTML = '<div class="td-top">' + [...new Set(g.evs.map(e => '<span class="td-tag ' + e.cls + '">' + e.tag + "</span>"))].join("") + "</div>" +
+        '<div class="td-when">' + dOf(day).toLocaleDateString("fr-FR", { weekday:"short", day:"numeric", month:"short", timeZone:"UTC" }) + (day === lastDay ? " · dernière séance" : "") + '<span class="td-since"></span></div>' +
         "<b>" + esc(nm || e0.title) + "</b>" +
         g.evs.map(e => '<p class="td-r">' + (nm ? "<i>" + esc(strip(e.title).replace(/^./, x => x.toUpperCase())) + "</i> — " : "") + esc(e.sub) + "</p>").join("") +
         (g.sym ? '<div class="td-spk"></div>' : "");
@@ -7057,7 +7080,7 @@ async function renderToday() {
       c.onclick = () => { if (g.sym) ui2Open(g.sym, { bia:has(["bia", "biaw"]), ma200:has(["mm200"]), rt:has(["rt"]), sr:has(["sr", "srn", "brk"]), flip:has(["flip", "flipw"]) }); else { prefs.view = "sig"; savePrefs(); render(); } };
       box.appendChild(c);
       if (g.sym) {                                       // aperçu : toutes les raisons de la carte, chacune dans sa couleur
-        const pvs = g.evs.map(e => e.pv || { boll:true, level:e.level, col:"#16a34a", lab:"niveau" }), o = { levels:[] };
+        const pvs = g.evs.map(e => e.pv || { boll:true, level:e.level, col:"#16a34a", lab:"niveau" }), o = { levels:[], mark:day, sinceEl:day !== lastDay ? c.querySelector(".td-since") : null };
         pvs.forEach(p => { if (p.boll) o.boll = true; if (p.ma200) o.ma200 = true; if (p.rt) o.rt = true; if (p.zone && !o.zone) { o.zone = p.zone; o.zlab = p.lab; }
           if (p.level != null && !o.levels.some(l => Math.abs(l.level / p.level - 1) < 0.002)) o.levels.push({ level:p.level, col:p.col, solid:p.solid, lab:p.lab }); });
         const sp = c.querySelector(".td-spk");
