@@ -1201,7 +1201,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v244</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v245</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -7273,6 +7273,12 @@ function drawMyz() {
   if (myzDraw || myzEdit) {                            // dessin ou modification : toutes les séances à venir sont disponibles à droite
     const ws = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
     ws.setData(A.fut.map(t => ({ time:t }))); myzSeries.push(ws);
+    if (myzEdit) {                                     // la zone en modification reste dans l'échelle des prix (sinon elle sortait de l'écran au toucher)
+      const t0 = A.T(myzEdit.i0), t1 = A.T(myzEdit.i1), lo = myzEdit.lo, hi = myzEdit.hi;
+      const ks = ovChart.addLineSeries({ lineVisible:false, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false,
+        autoscaleInfoProvider:() => ({ priceRange:{ minValue:lo, maxValue:hi } }) });
+      ks.setData(t0 < t1 ? [{ time:t0, value:lo }, { time:t1, value:hi }] : [{ time:t0, value:lo }]); myzSeries.push(ks);
+    }
   }
   if (!zs.length) return;
   const span = z => { const i0 = A.I(z.t0), i1 = z.ext ? A.n - 1 + 20 : A.I(z.t1); return [Math.min(i0, i1), Math.max(i0, i1)]; };
