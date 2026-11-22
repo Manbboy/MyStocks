@@ -890,28 +890,6 @@
       "created": 1795196706985
     },
     {
-      "sym": "BZ=F",
-      "name": "Brent",
-      "op": "above",
-      "price": 94.6288,
-      "label": "S→R jour 96,56 · approche",
-      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-BZ=F-D-SR-96.56-a-2026-11-20",
-      "auto": true,
-      "created": 1795265020164
-    },
-    {
-      "sym": "BZ=F",
-      "name": "Brent",
-      "op": "above",
-      "price": 98.4912,
-      "label": "S→R jour 96,56 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-BZ=F-D-SR-96.56-b-2026-11-20",
-      "auto": true,
-      "created": 1795265020164
-    },
-    {
       "sym": "C",
       "name": "Citigroup",
       "op": "below",
@@ -987,6 +965,17 @@
       "id": "auto-VK.PA-D-RS-14.73-c-2026-11-20",
       "auto": true,
       "created": 1795196706985
+    },
+    {
+      "sym": "DECK",
+      "name": "Deckers Outdoor",
+      "op": "below",
+      "price": 75.5616,
+      "label": "R→S hebdo 74,08 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-DECK-W-RS-74.08-c-2026-11-16",
+      "auto": true,
+      "created": 1795332473017
     },
     {
       "sym": "ABBV",
