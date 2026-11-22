@@ -1213,7 +1213,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v249</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v250</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3908,6 +3908,7 @@ function drawDetail(keep) {
 }
 function closeDetail() {
   toggleCfg(false);
+  if (typeof ui2Restore !== "undefined" && ui2Restore) { Object.assign(prefs, ui2Restore); ui2Restore = null; savePrefs(); }   // retour à vos indicateurs habituels
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
   if (rsiChart) { rsiChart.remove(); rsiChart = null; }
@@ -6693,9 +6694,18 @@ async function ui2Spark(el, sym, level) {
     '<polyline fill="none" stroke="' + col + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + '"/></svg>';
 }
 const ui2Item = sym => { for (const p of cfg.portfolios) { const it = p.items.find(i => i.yahoo === sym); if (it) return it; } return null; };
+const UI2_IND_KEYS = ["maP", "kinds", "chan", "tl", "bia", "manu", "tino", "flip", "ind", "rsi", "indLast", "rtPane"];
+let ui2Restore = null;
 function ui2Open(sym, opt) {
   const it = ui2Item(sym); if (!it) { toast("Valeur introuvable dans vos listes.", 2000); return; }
   if (!summary.symbols[sym] || summary.symbols[sym].pending) { toast("Cours et graphiques de " + it.name + " en préparation : ils arrivent 2 à 3 minutes après l'ajout.", 4000); startPolling(); return; }
+  if (opt && opt.only) {                               // depuis une carte d'Aujourd'hui : seulement les indicateurs de la carte (vos réglages reviennent à la fermeture)
+    if (!ui2Restore) ui2Restore = Object.fromEntries(UI2_IND_KEYS.map(k => [k, prefs[k]]));
+    Object.assign(prefs, { maP:[], kinds:[], chan:false, tl:false, bia:false, manu:false, tino:false, flip:false, ind:"none" });
+    if (opt.ma200) prefs.maP = [200];
+    if (opt.rt) { prefs.rtPane = true; }
+    savePrefs();
+  }
   if (opt && opt.bia) { prefs.bia = true; savePrefs(); }
   if (opt && opt.ma200) { const m = selMaP(); if (!m.includes(200)) prefs.maP = m.concat(200); savePrefs(); }
   if (opt && opt.rt) { prefs.ind = "trend"; prefs.rsi = true; prefs.indLast = "trend"; savePrefs(); }
@@ -7077,7 +7087,7 @@ async function renderToday() {
         g.evs.map(e => '<p class="td-r">' + (nm ? "<i>" + esc(strip(e.title).replace(/^./, x => x.toUpperCase())) + "</i> — " : "") + esc(e.sub) + "</p>").join("") +
         (g.sym ? '<div class="td-spk"></div>' : "");
       const has = k => g.evs.some(e => k.includes(e.k));
-      c.onclick = () => { if (g.sym) ui2Open(g.sym, { bia:has(["bia", "biaw"]), ma200:has(["mm200"]), rt:has(["rt"]), sr:has(["sr", "srn", "brk"]), flip:has(["flip", "flipw"]) }); else { prefs.view = "sig"; savePrefs(); render(); } };
+      c.onclick = () => { if (g.sym) ui2Open(g.sym, { only:true, bia:has(["bia", "biaw"]), ma200:has(["mm200"]), rt:has(["rt"]), sr:has(["sr", "srn", "brk"]), flip:has(["flip", "flipw"]) }); else { prefs.view = "sig"; savePrefs(); render(); } };
       box.appendChild(c);
       if (g.sym) {                                       // aperçu : toutes les raisons de la carte, chacune dans sa couleur
         const pvs = g.evs.map(e => e.pv || { boll:true, level:e.level, col:"#16a34a", lab:"niveau" }), o = { levels:[], mark:day, sinceEl:day !== lastDay ? c.querySelector(".td-since") : null };
