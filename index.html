@@ -890,7 +890,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .ui2-me { position:absolute; right:0; top:14px; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--card); color:var(--text); font:800 16px/1 inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
   .ui2-me.on { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 4px 12px rgba(29,78,216,.3); }
   .ui2-find { position:absolute; right:96px; top:14px; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--card); color:var(--text); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; }
-  :root[data-ui="2"] header h1 { padding-right:88px; margin-bottom:4px; min-height:44px; }
+  :root[data-ui="2"] header h1 { padding-right:88px; }
+  :root[data-ui="2"] #liveStatus { display:block; margin-left:0; }   /* « Clôtures du … » puis l'état du direct, l'une sous l'autre */
   :root[data-ui="2"] header:has(.rot-btn[hidden]) h1 { padding-right:40px; }   /* la ligne « Clôtures… » passe sous les boutons ronds, en entier */
   :root[data-ui="2"] .rot-btn { right:48px; top:14px; width:40px; height:40px; min-width:0; border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); background:var(--card); color:var(--text); }
   :root[data-ui="2"] .rot-btn[hidden] { display:none; }
@@ -1202,7 +1203,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v246</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v247</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -7454,8 +7455,8 @@ function myzStart(z) {
 }
 function myzPlace() {
   const ed = $("myzEd"), el = $("ovChart"), p = myzPx(myzEdit);
-  let H = el.clientHeight - 28; try { H = ovChart.paneSize().height; } catch (e) {}
-  const W = ovChart.timeScale().width();
+  let H = el.clientHeight - 28, W = ovChart.timeScale().width();
+  try { const ps = ovChart.paneSize(); H = ps.height; W = ps.width || W; } catch (e) {}   // avec le RSI dessous, l'axe du temps est masqué (largeur 0) : on prend la zone du graphique
   Object.assign(ed.style, { left:(el.offsetLeft + el.clientLeft) + "px", top:(el.offsetTop + el.clientTop) + "px", width:W + "px", height:H + "px" });
   const R = $("myzR"), B = $("myzBar");
   if (!p) { R.style.display = B.style.display = "none"; return; }
@@ -7510,7 +7511,8 @@ function myzEnd() {
       else st.i1 = Math.max(st.i0, Math.min(N - 1, i));
     }
     st.dirty = true;
-    const W = ts.width(), r = ts.getVisibleLogicalRange();                       // doigt au bord droit : le graphique avance d'une séance
+    let W = ts.width(); try { W = ovChart.paneSize().width || W; } catch (e) {}
+    const r = ts.getVisibleLogicalRange();                       // doigt au bord droit : le graphique avance d'une séance
     if (r && q.x > W - 24 && (d.h === "r" || d.h === "move")) ts.setVisibleLogicalRange({ from:r.from + 1, to:r.to + 1 });
   });
   const up = e => { if (myzDrag) { myzDrag = null; renderMyzList(); } };
