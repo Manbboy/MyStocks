@@ -27,7 +27,7 @@ const { aggregate, flipLevels } = new Function([
 
 const PCT = 2, TOL = PCT / 100;                    // précision des contacts par défaut de l'appli
 const WIN = { D: 5, W: 2 };                        // fenêtre récente (chandeliers)
-const MAX_AGE = { rs_reaction: 4, sr_franchie: 4, rs_contact: 1, sr_test: 1 };   // confirmations : 5 séances ; à surveiller : 2
+const MAX_AGE = { rs_reaction: 9, sr_franchie: 9, rs_contact: 1, sr_test: 1 };   // confirmations : 10 séances (Signaux en montre 5, Aujourd'hui 10) ; à surveiller : 2
 const r4 = v => Math.round(v * 10000) / 10000;
 
 const summary = JSON.parse(fs.readFileSync("data/summary.json", "utf8"));

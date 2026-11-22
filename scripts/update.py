@@ -360,12 +360,12 @@ def main():
 
     (DATA / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
 
-    # situations « À regarder » des 5 dernières séances (+ résultats mesurés sur l'historique, s'ils existent)
+    # situations des 10 dernières séances (l'onglet Signaux n'en montre que 5 ; la page Aujourd'hui garde 2 semaines d'historique) (+ résultats mesurés sur l'historique, s'ils existent)
     try:
         import signals
         stats_f = DATA / "signals_stats.json"
         stats = json.loads(stats_f.read_text(encoding="utf-8")) if stats_f.exists() else None
-        sig = {"updated": summary["updated"], "items": signals.build(allrows), "stats": stats}
+        sig = {"updated": summary["updated"], "items": signals.build(allrows, days=10), "stats": stats}
         (DATA / "signals.json").write_text(json.dumps(sig, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
         print(f"Situations : {len(sig['items'])}")
     except Exception as e:

@@ -956,10 +956,18 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   .td-tag { font-size:11px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:3px 8px; border-radius:7px; }
   .t-up { background:color-mix(in srgb, var(--up) 14%, transparent); color:var(--up); } .t-acc { background:color-mix(in srgb, var(--accent) 12%, transparent); color:var(--accent); }
   .t-zone { background:#fef9c3; color:#a16207; }
+  .td-tap { cursor:pointer; }
+  .td-tap:active { transform:scale(.99); }
+  .td-top { flex-wrap:wrap; gap:6px; justify-content:flex-start; }
+  .td-r { margin:6px 0 0; }
+  .td-r i { font-style:normal; font-weight:700; color:var(--text); }
+  .td-day { margin:22px 4px 8px; font-size:13px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px; }
+  .td-day::first-letter { text-transform:uppercase; }
+  .td-day span { background:var(--chip, rgba(29,78,216,.1)); color:var(--accent); border-radius:10px; padding:1px 8px; font-size:12px; }
   .t-dn { background:color-mix(in srgb, var(--down) 14%, transparent); color:var(--down); }
   .td-card > b { display:block; font-size:16.5px; margin:9px 0 3px; } .td-card p { margin:0; color:var(--muted); font-size:13.5px; line-height:1.45; }
-  .td-spk { position:relative; height:130px; margin:10px 0 2px; border-radius:12px; background:var(--bg); padding:8px 6px 18px; } .td-spk svg { width:100%; height:100%; display:block; }
-  .td-leg { position:absolute; left:8px; bottom:3px; font-size:10.5px; color:var(--muted); } .td-leg i { font-style:normal; font-weight:700; }
+  .td-spk { position:relative; min-height:130px; margin:10px 0 2px; border-radius:12px; background:var(--bg); padding:8px 6px 6px; } .td-spk svg { width:100%; height:110px; display:block; }
+  .td-leg { display:block; margin:4px 2px 0; font-size:10.5px; line-height:1.45; color:var(--muted); } .td-leg i { font-style:normal; font-weight:700; }
   /* listes */
   :root[data-ui="2"] body.ui2-lists:not(.ui2-cards) .bar { display:none; }
   :root[data-ui="2"] #liveBtn, :root[data-ui="2"] #liveMenu,
@@ -1203,7 +1211,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v247</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v248</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5298,7 +5306,7 @@ async function renderSig() {
       "<b>Alertes</b> (vos positions) : repères de prudence ; sur l'historique, elles n'annoncent pas de baisse à elles seules.</p>" +
       "<p>Le passé ne garantit pas l'avenir : la moyenne est tirée par quelques fortes hausses, et environ deux situations sur cinq finissent en perte après 20 séances.</p></details>" : "");
   box.appendChild(intro);
-  const items = sigData.items || [];
+  const items = (sigData.items || []).filter(e => e.age <= 4);              // onglet Signaux : 5 dernières séances (le fichier en garde 10 pour Aujourd'hui)
   // une ligne par valeur : la situation la plus récente
   const pick = (kinds, filter) => {
     const by = new Map();
@@ -5312,7 +5320,7 @@ async function renderSig() {
   renderMomentum(box);
   renderConfluences(box);
   // bascules R⇄S : confirmations (réaction sur R→S, S→R franchie) puis situations à surveiller (contact, test)
-  const fl = (sigFlips && sigFlips.items) || [];
+  const fl = ((sigFlips && sigFlips.items) || []).filter(e => e.age <= 4);
   const flPick = kinds => { const by = new Map(); fl.forEach(e => { if (!kinds.has(e.sig[0].k)) return; const b = by.get(e.sym); if (!b || e.age < b.age) by.set(e.sym, e); }); return [...by.values()].sort((a, b) => a.age - b.age); };
   const flOk = flPick(SIG_FLIP_OK), flWatch = flPick(new Set(["rs_contact", "sr_test"])).filter(e => !flOk.some(x => x.sym === e.sym));
   const hf = document.createElement("div"); hf.className = "pf-sub"; hf.textContent = "Bascules R⇄S confirmées (#" + flOk.length + ")"; box.appendChild(hf);
@@ -6822,13 +6830,14 @@ async function renderUi2List() {
    o.zone : [bas, haut] de votre zone (jaune) · o.ma200 : MM200 bleue · o.rt : chandeliers colorés RSI Trends · o.lab : légende */
 async function ui2Candles(el, sym, o) {
   if (typeof o !== "object" || o === null) o = { boll:true, level:o, col:"#16a34a", lab:"niveau" };
+  const LV = (o.levels || []).concat(o.level != null ? [{ level:o.level, col:o.col, solid:o.solid, lab:o.lab }] : []);
   const info = summary.symbols[sym]; if (!el || !info || !info.file) return;
   let R; try { R = (await getSeries(info)).rows; } catch (e) { return; }
   const n = 45, vis = R.slice(-n), off = R.length - vis.length, W = 330, H = 110;
   const C = R.map(r => r[4]), sma = (p, i) => { if (i < p - 1) return null; let t = 0; for (let k = i - p + 1; k <= i; k++) t += C[k]; return t / p; };
   const sd = i => { const m = sma(50, i); let t = 0; for (let k = i - 49; k <= i; k++) t += (C[k] - m) ** 2; return Math.sqrt(t / 50); };
   let mn = Math.min(...vis.map(r => r[3])), mx = Math.max(...vis.map(r => r[2]));
-  const lv = [o.level, ...(o.zone || [])].filter(v => v != null);
+  const lv = [...LV.map(l => l.level), ...(o.zone || [])].filter(v => v != null);
   if (o.ma200) vis.forEach((_, k) => { const m = sma(200, off + k); if (m != null) lv.push(m); });
   lv.forEach(v => { mn = Math.min(mn, v); mx = Math.max(mx, v); });
   const pad = (mx - mn) * .06; mn -= pad; mx += pad;
@@ -6840,7 +6849,7 @@ async function ui2Candles(el, sym, o) {
   if (o.zone) svg += '<rect x="0" width="' + W + '" y="' + y(o.zone[1]) + '" height="' + Math.max(2, y(o.zone[0]) - y(o.zone[1])) + '" fill="#facc15" opacity=".28"/><line x1="0" x2="' + W + '" y1="' + y(o.zone[1]) + '" y2="' + y(o.zone[1]) + '" stroke="#eab308" stroke-width="1.6"/><line x1="0" x2="' + W + '" y1="' + y(o.zone[0]) + '" y2="' + y(o.zone[0]) + '" stroke="#eab308" stroke-width="1.6"/>';
   if (o.ma200) { const pts = vis.map((_, k) => [X(k), sma(200, off + k)]).filter(p => p[1] != null);
     if (pts.length > 1) svg += '<path d="M' + pts.map(([x, v]) => x.toFixed(1) + "," + y(v)).join("L") + '" fill="none" stroke="#2563eb" stroke-width="2"/>'; }
-  if (o.level != null) svg += '<line x1="0" x2="' + W + '" y1="' + y(o.level) + '" y2="' + y(o.level) + '" stroke="' + (o.col || "#16a34a") + '" stroke-width="1.8"' + (o.solid ? "" : ' stroke-dasharray="5 3"') + "/>";
+  LV.forEach(l => { svg += '<line x1="0" x2="' + W + '" y1="' + y(l.level) + '" y2="' + y(l.level) + '" stroke="' + (l.col || "#16a34a") + '" stroke-width="1.8"' + (l.solid ? "" : ' stroke-dasharray="5 3"') + "/>"; });
   // RSI Trends : RSI 14 (Wilder) sur les clôtures, chandeliers verts / gris / rouges selon les seuils
   let rtc = null;
   if (o.rt) { const N = TREND.len, st = new Array(C.length).fill(0); let g = 0, l = 0;
@@ -6854,8 +6863,8 @@ async function ui2Candles(el, sym, o) {
   if (o.boll) leg.push("Bollinger 50/1");
   if (o.ma200) leg.push('<i style="color:#2563eb">━ MM200</i>');
   if (o.rt) leg.push('<i style="color:#00c853">■</i> vert <i style="color:#9ca3af">■</i> neutre <i style="color:#FF5252">■</i> rouge (RSI Trends)');
-  if (o.zone) leg.push('<i style="color:#ca8a04">▭ ' + esc(o.lab || "zone") + " " + fmt(o.zone[0], info.currency) + " – " + fmt(o.zone[1], info.currency) + "</i>");
-  if (o.level != null) leg.push('<i style="color:' + (o.col || "#16a34a") + '">' + (o.solid ? "━" : "┅") + " " + esc(o.lab || "niveau") + " " + fmt(o.level, info.currency) + "</i>");
+  if (o.zone) leg.push('<i style="color:#ca8a04">▭ ' + esc(o.zlab || o.lab || "zone") + " " + fmt(o.zone[0], info.currency) + " – " + fmt(o.zone[1], info.currency) + "</i>");
+  LV.forEach(l => leg.push('<i style="color:' + (l.col || "#16a34a") + '">' + (l.solid ? "━" : "┅") + " " + esc(l.lab || "niveau") + " " + fmt(l.level, info.currency) + "</i>"));
   el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none">' + svg + "</svg>" + '<span class="td-leg">' + leg.join(" · ") + "</span>";
 }
 /* ===== Signaux et Alertes (nouvelle interface) : mêmes données, mise en page Clarté —
@@ -6988,7 +6997,7 @@ async function renderToday() {
   (alertsData && alertsData.alerts || []).filter(a => a.zone && !alertsSent[a.id]).forEach(a => { const c = last(a.sym); if (!c) return; const dist = Math.abs(a.price / c - 1);
     if (dist <= 0.03) ev.push({ k:"zone", sym:a.sym, tag:"🟨 Votre zone", cls:"t-zone", when:"", title:(a.name || a.sym) + " approche de votre zone", sub:"À " + fmtPct(Math.round(dist * 1000) / 10).replace("+", "") + (a.note ? " · « " + a.note + " »" : ""), level:a.price, w:90 - dist * 100,
       pv:{ zone:(() => { const z = myzData && (myzData.zones || []).find(z => z.id === a.zone); return z ? [z.lo, z.hi] : [a.price * 0.99, a.price]; })(), lab:"votre zone" } }); });
-  ((sigFlips && sigFlips.items) || []).filter(e => e.age === 0 && SIG_FLIP_OK.has(e.sig[0].k)).forEach(e => { const g = e.sig[0], it = ui2Item(e.sym), cur = (summary.symbols[e.sym] || {}).currency;
+  ((sigFlips && sigFlips.items) || []).filter(e => ui2Item(e.sym) && SIG_FLIP_OK.has(e.sig[0].k)).forEach(e => { const g = e.sig[0], it = ui2Item(e.sym), cur = (summary.symbols[e.sym] || {}).currency;
     ev.push({ k:"flip", sym:e.sym, tag:"⇄ Bascule R⇄S confirmée", cls:"t-acc", when:e.date, title:(it ? it.name : e.sym) + " : " + (SIG_CHIP[g.k] || g.k),
       sub:"Niveau " + (g.tf === "S" ? "hebdo" : "jour") + " " + fmt(g.lv, cur) + " · clôture " + fmt(e.close, cur), level:g.lv, w:70,
       pv:{ level:g.lv, col:"#ea580c", solid:true, lab:g.k[0] === "r" ? "ancienne résistance devenue support" : "ancien support devenu résistance" } }); });
@@ -6997,7 +7006,7 @@ async function renderToday() {
     ev.push({ k:"flipw", sym:e.sym, tag:"⇄ R⇄S à surveiller", cls:"t-acc", when:e.date, title:(it ? it.name : e.sym) + (g.k === "rs_contact" ? " teste une ancienne résistance par le dessus" : " bute sur un ancien support"),
       sub:sigText(g), level:g.lv, w:48, pv:{ level:g.lv, col:"#ea580c", solid:true, lab:g.k === "rs_contact" ? "ancienne résistance (support ?)" : "ancien support (résistance ?)" } }); });
   // situations du jour du script des signaux : RSI Trends au vert, MM200 franchie, rebond sur support, cassure de résistance
-  ((sigData && sigData.items) || []).filter(e => e.age === 0 && ui2Item(e.sym)).forEach(e => { const it = ui2Item(e.sym), nm = it ? it.name : e.sym, cur = (summary.symbols[e.sym] || {}).currency;
+  ((sigData && sigData.items) || []).filter(e => ui2Item(e.sym)).forEach(e => { const it = ui2Item(e.sym), nm = it ? it.name : e.sym, cur = (summary.symbols[e.sym] || {}).currency;
     e.sig.forEach(g => {
       const base = { sym:e.sym, when:e.date };
       if (g.k === "vert") ev.push(Object.assign(base, { k:"rt", tag:"🟢 RSI Trends au vert", cls:"t-up", title:nm + " : RSI Trends repasse au vert", sub:"RSI 14 journalier au-dessus de " + TREND.ob + ", cours au-dessus de la MM200 — à garder jusqu'au premier jour rouge", w:66, pv:{ rt:true, lab:"RSI Trends" } }));
@@ -7007,7 +7016,7 @@ async function renderToday() {
       if (g.k === "cassure") ev.push(Object.assign(base, { k:"brk", tag:"🚀 Cassure de résistance", cls:"t-up", title:nm + " casse une résistance", sub:sigText(g), level:g.lv, w:72, pv:{ level:g.lv, col:"#dc2626", lab:"résistance cassée" } }));
     }); });
   // proche d'un support ou d'une résistance journaliers (au moins 2 contacts, à 1,5 % ou moins), sans autre événement sur la valeur
-  { const seen = new Set(ev.map(e => e.sym)), near = [];
+  { const seen = new Set(), near = [];
     cfg.portfolios.filter(p => p.name !== "Market").forEach(p => p.items.forEach(it => { const info = summary.symbols[it.yahoo];
       if (!info || info.pending || seen.has(it.yahoo) || !info.levels || !info.levels.D) return; seen.add(it.yahoo);
       const c = info.last, L = info.levels.D;
@@ -7018,26 +7027,46 @@ async function renderToday() {
         title:it.name + " à " + fmtPct(Math.round((x.price / c - 1) * 1000) / 10).replace("+", "") + " d'une résistance", sub:"Résistance journalière " + fmt(x.price, info.currency) + " (" + x.touches + " contacts) : test possible bientôt", level:x.price, w:42 - (x.price / c - 1) * 100,
         pv:{ level:x.price, col:"#dc2626", lab:"résistance (" + x.touches + " contacts)" } }));
     }));
-    near.sort((a, b) => b.w - a.w).slice(0, 4).forEach(e => ev.push(e)); }
+    near.forEach(e => ev.push(e)); }
   (biaData && biaData.wait || []).filter(w => w.dist <= 0.015).forEach(w => ev.push({ k:"biaw", sym:w.sym, tag:"🏄 Juste sous la résistance", cls:"t-acc", when:"", title:w.name + " à " + fmtPct(Math.round(w.dist * 1000) / 10) + " de sa résistance",
     sub:"Au repos sous " + fmt(w.lo, w.cur) + (w.hi > w.lo * 1.001 ? " – " + fmt(w.hi, w.cur) : "") + " (" + w.n + " contacts) : une alerte Telegram partira à la cassure", level:w.hi, w:60 - w.dist * 100,
     pv:{ boll:true, level:w.hi, col:"#16a34a", lab:"résistance déclencheur" } }));
   if (sigMom && sigMom.top) { const m = sigMom, dd = (Date.now() - new Date((m.asof || "") + "T00:00:00Z")) / 864e5;
     if (dd >= 0 && dd <= 7) ev.push({ k:"mom", tag:"⚡ Momentum", cls:"t-acc", when:"", title:"Nouveau Top 10 Momentum", sub:"Entrées : " + (m.in || []).slice(0, 4).map(x => x.name || x).join(", ") + ((m.out || []).length ? " · Sorties : " + m.out.slice(0, 3).map(x => x.name || x).join(", ") : ""), w:50 }); }
-  ev.sort((a, b) => b.w - a.w);
-  { const one = new Set(); for (let i = 0; i < ev.length; i++) { if (!ev[i].sym) continue; if (one.has(ev[i].sym)) ev.splice(i--, 1); else one.add(ev[i].sym); } }   // une carte par valeur (la plus importante)
-  { const cnt = {}; for (let i = 0; i < ev.length; i++) { const k = ev[i].k + (ev[i].cls === "t-dn" ? "-" : ""); cnt[k] = (cnt[k] || 0) + 1; if (cnt[k] > 4 && !["bia", "zone"].includes(ev[i].k)) ev.splice(i--, 1); } }   // au plus 4 cartes du même genre
-  box.insertAdjacentHTML("beforeend", '<div class="ui2-sec">' + (ev.length ? ev.length + " événement" + (ev.length > 1 ? "s" : "") + " sur vos valeurs" : "Rien de particulier ce soir") + "</div>");
-  ev.slice(0, 12).forEach(e => {
-    const c = document.createElement("div"); c.className = "td-card";
-    c.innerHTML = '<div class="td-top"><span class="td-tag ' + e.cls + '">' + e.tag + '</span><small>' + (e.when ? dOf(e.when).toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"UTC" }) : "") + "</small></div>" +
-      "<b>" + esc(e.title) + "</b><p>" + esc(e.sub) + "</p>" + (e.sym ? '<div class="td-spk"></div>' : "") +
-      '<div class="td-act">' + (e.sym ? '<button class="btn on td-go">Voir le graphique</button>' : '<button class="btn on td-go">Voir</button>') + "</div>";
-    c.querySelector(".td-go").onclick = () => { if (e.sym) ui2Open(e.sym, { bia:e.k === "bia" || e.k === "biaw", ma200:e.k === "mm200", rt:e.k === "rt", sr:["sr", "srn", "brk"].includes(e.k), flip:e.k === "flip" || e.k === "flipw" }); else { prefs.view = "sig"; savePrefs(); render(); } };
-    box.appendChild(c);
-    if (e.sym) ui2Candles(c.querySelector(".td-spk"), e.sym, e.pv || { boll:true, level:e.level, col:"#16a34a", lab:"niveau" });
+  /* fil sur 10 séances : un bloc par jour, une carte par valeur qui regroupe toutes ses raisons ; aperçu avec tous les niveaux concernés */
+  const lastDay = (() => { const ds = Object.values(summary.symbols || {}).filter(v => v && v.date && v.type !== "CRYPTOCURRENCY").map(v => v.date).sort(); return ds[ds.length - 1] || days; })();
+  ev.forEach(e => { if (!e.when) e.when = lastDay; });
+  const byDay = new Map();
+  ev.forEach(e => { if (!byDay.has(e.when)) byDay.set(e.when, new Map()); const m = byDay.get(e.when), key = e.sym || "_" + e.k;
+    if (!m.has(key)) m.set(key, { sym:e.sym, evs:[] }); m.get(key).evs.push(e); });
+  const dayList = [...byDay.keys()].sort().reverse().slice(0, 10);
+  const nCards = dayList.reduce((t, d) => t + byDay.get(d).size, 0);
+  box.insertAdjacentHTML("beforeend", '<div class="ui2-sec">' + (nCards ? nCards + " événement" + (nCards > 1 ? "s" : "") + " sur vos valeurs · 2 dernières semaines" : "Rien de particulier ces derniers jours") + "</div>");
+  dayList.forEach(day => {
+    const cards = [...byDay.get(day).values()].map(g => (g.evs.sort((a, b) => b.w - a.w), g)).sort((a, b) => b.evs[0].w - a.evs[0].w);
+    box.insertAdjacentHTML("beforeend", '<div class="td-day">' + (day === lastDay ? "Dernière séance · " : "") + dOf(day).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", timeZone:"UTC" }) + " <span>" + cards.length + "</span></div>");
+    cards.forEach(g => {
+      const e0 = g.evs[0], it = g.sym ? ui2Item(g.sym) : null, nm = it ? it.name : "";
+      const c = document.createElement("div"); c.className = "td-card td-tap";
+      const strip = t => nm && t.startsWith(nm) ? t.slice(nm.length).replace(/^\s*:?\s*/, "") : t;
+      c.innerHTML = '<div class="td-top">' + [...new Set(g.evs.map(e => '<span class="td-tag ' + e.cls + '">' + e.tag + "</span>"))].join("") + "</div>" +
+        "<b>" + esc(nm || e0.title) + "</b>" +
+        g.evs.map(e => '<p class="td-r">' + (nm ? "<i>" + esc(strip(e.title).replace(/^./, x => x.toUpperCase())) + "</i> — " : "") + esc(e.sub) + "</p>").join("") +
+        (g.sym ? '<div class="td-spk"></div>' : "");
+      const has = k => g.evs.some(e => k.includes(e.k));
+      c.onclick = () => { if (g.sym) ui2Open(g.sym, { bia:has(["bia", "biaw"]), ma200:has(["mm200"]), rt:has(["rt"]), sr:has(["sr", "srn", "brk"]), flip:has(["flip", "flipw"]) }); else { prefs.view = "sig"; savePrefs(); render(); } };
+      box.appendChild(c);
+      if (g.sym) {                                       // aperçu : toutes les raisons de la carte, chacune dans sa couleur
+        const pvs = g.evs.map(e => e.pv || { boll:true, level:e.level, col:"#16a34a", lab:"niveau" }), o = { levels:[] };
+        pvs.forEach(p => { if (p.boll) o.boll = true; if (p.ma200) o.ma200 = true; if (p.rt) o.rt = true; if (p.zone && !o.zone) { o.zone = p.zone; o.zlab = p.lab; }
+          if (p.level != null && !o.levels.some(l => Math.abs(l.level / p.level - 1) < 0.002)) o.levels.push({ level:p.level, col:p.col, solid:p.solid, lab:p.lab }); });
+        const sp = c.querySelector(".td-spk");
+        if (window.IntersectionObserver) { const io = new IntersectionObserver(en => { if (en.some(x => x.isIntersecting)) { io.disconnect(); ui2Candles(sp, g.sym, o); } }, { rootMargin:"600px 0px" }); io.observe(sp); }
+        else ui2Candles(sp, g.sym, o);
+      }
+    });
   });
-  if (!ev.length) box.insertAdjacentHTML("beforeend", '<div class="td-card"><p>Aucune cassure, bascule ou approche de zone ce soir. Les listes et les signaux restent accessibles en bas.</p></div>');
+  if (!nCards) box.insertAdjacentHTML("beforeend", '<div class="td-card"><p>Aucune cassure, bascule ou approche de zone ces deux dernières semaines. Les listes et les signaux restent accessibles en bas.</p></div>');
   box.insertAdjacentHTML("beforeend", '<div class="sig-foot">Calculé après la clôture du ' + esc(days) + ". À vérifier sur le graphique — pas des conseils d'investissement.</div>");
 }
 
