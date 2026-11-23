@@ -1213,7 +1213,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v251</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v252</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4639,7 +4639,15 @@ const pfView = () => prefs.view === "pf";
 const pfOwner = () => prefs.pfOwner === "D" ? "D" : "M";
 const money = (v, cur) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : "") +        // montants : toujours 2 décimales
   v.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }) + (cur && CUR[cur] ? " " + CUR[cur] : "");
+/* redessin du portefeuille (aussi à chaque relevé en direct, toutes les 5 s) sans perdre la position de lecture :
+   la hauteur est gardée pendant le redessin, puis la page revient où elle était */
 async function renderPf() {
+  const box = $("pfView"), y = scrollY, again = !box.hidden && !!box.querySelector(".pf-head") && document.body.classList.contains("pf-mode");   // déjà affiché : simple rafraîchissement
+  if (again && box.offsetHeight) box.style.minHeight = box.offsetHeight + "px";
+  try { await renderPfInner(); }
+  finally { box.style.minHeight = ""; if (again && prefs.view === "pf" && Math.abs(scrollY - y) > 1) scrollTo(0, y); }
+}
+async function renderPfInner() {
   document.body.classList.add("pf-mode");
   const box = $("pfView"); box.hidden = false;
   if (!pfState.loaded) { box.innerHTML = '<div class="msg">Chargement du portefeuille…</div>'; await pfLoad(); }
