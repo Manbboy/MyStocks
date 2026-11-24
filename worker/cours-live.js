@@ -132,7 +132,9 @@ async function yrss(sym) {
   const xml = await r.text(), out = [];
   for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
     const it = m[1], g = tag => { const x = it.match(new RegExp("<" + tag + "[^>]*>([\\s\\S]*?)</" + tag + ">")); return x ? unxml(x[1]) : ""; };
-    out.push({ title: g("title"), link: g("link"), source: "Yahoo Finance", time: Date.parse(g("pubDate")) || 0, lang: "fr" });
+    const link = g("link"); let source = "Yahoo Finance";
+    try { const h = new URL(link).hostname.replace(/^www\./, ""); if (!/yahoo\./.test(h)) source = h; } catch (e) {}
+    out.push({ title: g("title"), link, source, time: Date.parse(g("pubDate")) || 0, lang: "fr" });
   }
   return out;
 }
