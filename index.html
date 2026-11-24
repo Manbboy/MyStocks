@@ -740,6 +740,9 @@
   .myz-in label { font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:4px; }
   .myz-in input { width:96px; font:inherit; font-size:16px; padding:4px 6px; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); }
   #zoneBtn.drawing { background:#facc15; color:#1f2937; border-color:#ca8a04; }
+  .ruler-pill { position:absolute; left:50%; top:46px; transform:translateX(-50%); z-index:6; max-width:calc(100% - 24px); background:var(--card); color:var(--text);
+    border:1.5px solid #2563eb; border-radius:14px; padding:6px 12px; font-size:13px; font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.18); text-align:center; pointer-events:none; }
+  .ruler-pill b.up { color:var(--up); } .ruler-pill b.down { color:var(--down); } .ruler-pill small { color:var(--muted); font-weight:500; }
   .mom-new { margin:4px 0 8px; padding:8px 10px; border-radius:10px; background:color-mix(in srgb, #16a34a 14%, var(--card)); font-size:13px; }
   .mom-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:0 16px; margin:4px 0; }
   .mom-row { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--border); padding:8px 2px; font:inherit; font-size:14px; color:var(--text); cursor:pointer; }
@@ -1213,7 +1216,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v255</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v256</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1278,7 +1281,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
       <button class="mmb" id="tlBtn" aria-pressed="false" title="Obliques : lignes de tendance (supports et résistances en diagonale)">Obl.<span class="mmdots"><i style="background:#f97316;width:12px;transform:rotate(-18deg)"></i></span></button>
       <button class="mmb" id="biaBtn" aria-pressed="false" title="Biarritz : bandes de Bollinger 50/1, résistance déclencheur et cassures">B<span class="mmdots"><i style="background:#0e7490;width:10px;height:10px;border-radius:50%"></i></span></button>
       <button class="mmb" id="manuBtn" aria-pressed="false" title="Manu : les 3 zones d'intervention où le plus d'indicateurs se rejoignent">M<span class="mmdots"><i style="background:#d946ef;width:10px;height:10px;border-radius:50%"></i></span></button>
-      <button class="mmb" id="zoneBtn" aria-pressed="false" title="Mes zones : 1 appui = rectangle, 2 = cercle, 3 = fin du dessin">▭<span class="mmdots"><i style="background:#facc15;width:12px;height:6px;border-radius:2px"></i></span></button>
+      <button class="mmb" id="zoneBtn" aria-pressed="false" title="Mes zones : 1 appui = rectangle, 2 = cercle, 3 = règle (mesure en %), 4 = fin">▭<span class="mmdots"><i style="background:#facc15;width:12px;height:6px;border-radius:2px"></i></span></button>
       <button class="mmb" id="tinoBtn" aria-pressed="false" title="Tino : grandes zones de soutien et oblique longue, sur tout l'historique mensuel (d'après les analyses de Tino, Le Podcast de la Bourse)">Tino<span class="mmdots"><i style="background:#38bdf8;width:12px;height:5px;border-radius:2px"></i><i style="background:#facc15"></i></span></button>
       <button class="mmb" id="flipBtn" aria-pressed="false" title="Bascules de rôle : résistance devenue support (ou l'inverse)">R⇄S<span class="mmdots"><i style="background:var(--res)"></i><i style="background:var(--sup)"></i></span></button>
       <button class="mmb" id="rsiBtn" aria-pressed="false" title="Afficher / masquer le RSI 14">RSI<span class="mmdots"><i style="background:#0ea5e9;width:14px"></i></span></button>
@@ -3029,7 +3032,7 @@ function renderToggles() {
   $("tlBtn").classList.toggle("on", !!prefs.tl); $("tlBtn").setAttribute("aria-pressed", prefs.tl ? "true" : "false");
   $("tinoBtn").classList.toggle("on", !!prefs.tino); $("tinoBtn").setAttribute("aria-pressed", prefs.tino ? "true" : "false");
   $("zoneBtn").classList.toggle("drawing", !!myzDraw); $("zoneBtn").setAttribute("aria-pressed", myzDraw ? "true" : "false");
-  $("zoneBtn").firstChild.nodeValue = myzDraw === "oval" ? "◯" : "▭";
+  $("zoneBtn").firstChild.nodeValue = myzDraw === "oval" ? "◯" : myzDraw === "ruler" ? "📏" : "▭";
   $("biaBtn").classList.toggle("on", !!prefs.bia); $("biaBtn").setAttribute("aria-pressed", prefs.bia ? "true" : "false");
   $("manuBtn").classList.toggle("on", !!prefs.manu); $("manuBtn").setAttribute("aria-pressed", prefs.manu ? "true" : "false");
   $("flipBtn").classList.toggle("on", !!prefs.flip); $("flipBtn").setAttribute("aria-pressed", prefs.flip ? "true" : "false");
@@ -3930,6 +3933,7 @@ function drawDetail(keep) {
 }
 function closeDetail() {
   toggleCfg(false);
+  if (typeof rulerClear === "function" && ruler && (ruler.a || ruler.ser.length)) rulerClear();
   if (typeof ui2Restore !== "undefined" && ui2Restore) { Object.assign(prefs, ui2Restore); ui2Restore = null; savePrefs(); }   // retour à vos indicateurs habituels
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
@@ -7390,6 +7394,7 @@ function myzAxis(iv) {
   return { rows, n, fut, N, T, I };
 }
 function drawMyz() {
+  if (ruler.sym && ruler.sym !== ovSym) rulerClear();       // autre valeur : la mesure disparaît
   myzSeries.forEach(s => { try { ovChart && ovChart.removeSeries(s); } catch (e) {} }); myzSeries = [];
   renderMyzList();
   const iv = prefs.iv || "D";
@@ -7460,8 +7465,9 @@ function renderMyzList() {
   box.innerHTML = "";
   if (myzDraw) { const d = document.createElement("div"); d.className = "sig-intro";
     const what = myzDraw === "oval" ? "du cercle (coin du carré qui l'entoure)" : "du rectangle";
-    d.textContent = (myzFirst ? "Touchez maintenant le coin opposé " + what + "." : "Touchez un premier coin " + what + " sur le graphique.") +
-      " Bouton jaune : 1 appui = rectangle, 2 = cercle, 3 = fin du dessin.";
+    d.textContent = (myzDraw === "ruler" ? "Règle : touchez un point A puis un point B ; l'écart s'affiche en haut du graphique (rien n'est enregistré)."
+      : myzFirst ? "Touchez maintenant le coin opposé " + what + "." : "Touchez un premier coin " + what + " sur le graphique.") +
+      " Bouton jaune : 1 appui = rectangle, 2 = cercle, 3 = règle, 4 = fin.";
     box.appendChild(d); }
   const C = ovItem && ovItem.last, cur = ovItem && ovItem.currency;
   const short = d => dOf(d).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric", timeZone:"UTC" });
@@ -7505,6 +7511,34 @@ function myzRoom() {
   if (r.to < want) ts.setVisibleLogicalRange({ from:r.from + (want - r.to), to:want });
 }
 function myzClearTmp() { myzTmp.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} }); myzTmp = []; }
+/* 📏 Règle : deux points touchés → écart en %, en valeur et en nombre de bougies (rien n'est enregistré) */
+let ruler = { sym:null, a:null, ser:[], lines:[] };
+function rulerClear() {
+  ruler.ser.forEach(s => { try { ovChart.removeSeries(s); } catch (e) {} });
+  ruler.lines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
+  ruler = { sym:null, a:null, ser:[], lines:[] };
+  const p = $("rulerPill"); if (p) p.remove();
+}
+function rulerPill(html) {
+  let p = $("rulerPill");
+  if (!p) { p = document.createElement("div"); p.id = "rulerPill"; p.className = "ruler-pill"; $("ovChart").parentNode.appendChild(p); }
+  p.innerHTML = html;
+}
+function rulerTap(t, lg, price) {
+  const cur = ovItem && ovItem.currency, iv = prefs.iv || "D";
+  if (!ruler.a || ruler.b || ruler.sym !== ovSym) {             // 1er point (ou nouvelle mesure)
+    rulerClear(); ruler.sym = ovSym; ruler.a = { t, lg, price };
+    ruler.lines.push(ovCandles.createPriceLine({ price, color:"#2563eb", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"A" }));
+    rulerPill("📏 Point A " + fmt(price, cur) + " · touchez le point B"); return;
+  }
+  const a = ruler.a, b = ruler.b = { t, lg, price };
+  ruler.lines.push(ovCandles.createPriceLine({ price, color:"#2563eb", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"B" }));
+  const [p, q] = a.t <= b.t ? [a, b] : [b, a];
+  try { ruler.ser.push(addSegment(ovChart, p.t, p.price, q.t, q.price, "#2563eb", 2)); } catch (e) {}
+  const pct = (b.price / a.price - 1) * 100, n = Math.abs(b.lg - a.lg), unit = { D:"séance", W:"semaine", M:"mois", Q:"trimestre" }[iv] || "bougie";
+  rulerPill('📏 A ' + fmt(a.price, cur) + " → B " + fmt(b.price, cur) + ' : <b class="' + (pct >= 0 ? "up" : "down") + '">' + fmtPct(Math.round(pct * 100) / 100) + "</b> (" + (b.price >= a.price ? "+" : "−") + fmt(Math.abs(b.price - a.price), cur) + ")" +
+    (n ? " · " + n + " " + unit + (n > 1 && unit !== "mois" ? "s" : "") : "") + " <small>· touchez pour une nouvelle mesure</small>");
+}
 function myzTap(param) {
   if (!param || !param.point || !ovCandles) return;
   const iv = prefs.iv || "D", A = myzAxis(iv);
@@ -7512,6 +7546,7 @@ function myzTap(param) {
   const lg = param.logical != null ? Math.round(param.logical) : (param.time != null ? A.I(param.time) : null);
   if (price == null || lg == null) return;
   const t = A.T(lg);
+  if (myzDraw === "ruler") return rulerTap(t, lg, price);
   if (!myzFirst) {
     myzFirst = { t, price };
     myzTmp.push(ovCandles.createPriceLine({ price, color:"#ca8a04", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));
@@ -7529,11 +7564,12 @@ function myzTap(param) {
 $("zoneBtn").onclick = async () => {
   if ((prefs.iv || "D") === "I") { toast("Les zones se dessinent en J, S, M ou T.", 2500); return; }
   if (myzEdit) myzEnd();
-  myzDraw = !myzDraw ? "rect" : myzDraw === "rect" ? "oval" : false;       // 1er appui : rectangle, 2e : cercle, 3e : fin
-  myzFirst = null; if (ovCandles) myzClearTmp();
+  myzDraw = !myzDraw ? "rect" : myzDraw === "rect" ? "oval" : myzDraw === "oval" ? "ruler" : false;   // 1er appui : rectangle, 2e : cercle, 3e : règle, 4e : fin
+  myzFirst = null; if (ovCandles) { myzClearTmp(); rulerClear(); }
   renderToggles(); await myzLoad(); drawMyz();
   if (myzDraw) myzRoom();
-  toast(myzDraw === "rect" ? "▭ Rectangle : touchez deux coins opposés." : myzDraw === "oval" ? "◯ Cercle : touchez deux coins opposés du carré qui l'entoure." : "Dessin terminé.", 2600);
+  toast(myzDraw === "rect" ? "▭ Rectangle : touchez deux coins opposés." : myzDraw === "oval" ? "◯ Cercle : touchez deux coins opposés du carré qui l'entoure."
+    : myzDraw === "ruler" ? "📏 Règle : touchez un point A puis un point B pour mesurer l'écart." : "Dessin terminé.", 2600);
 };
 /* ---- Modification d'une zone au doigt : toucher la zone la sélectionne ; glisser au milieu la déplace, glisser une poignée
    (barrette au-dessus, en dessous, à gauche, à droite) déplace ce bord ; « ✓ OK » ou toucher ailleurs enregistre ---- */
