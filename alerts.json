@@ -106,6 +106,18 @@
       "created": 1795455981986
     },
     {
+      "sym": "ABBV",
+      "name": "AbbVie",
+      "op": "above",
+      "price": 302.93,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 301,20–302,93 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (292,29), sans élastique tendu.",
+      "id": "bia-ABBV-302.93-2026-11-05",
+      "created": 1795542022345
+    },
+    {
       "sym": "DIM.PA",
       "name": "Sartorius Stedim Biotech",
       "op": "above",
@@ -142,28 +154,16 @@
       "created": 1795542022345
     },
     {
-      "sym": "ABBV",
-      "name": "AbbVie",
-      "op": "above",
-      "price": 302.93,
-      "bia": true,
-      "auto": true,
-      "label": "Biarritz · résistance 301,20–302,93 · 2 contacts",
-      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (292,26), sans élastique tendu.",
-      "id": "bia-ABBV-302.93-2026-11-05",
-      "created": 1795542022345
-    },
-    {
       "sym": "TSLA",
       "name": "Tesla",
       "op": "above",
       "price": 388.56,
       "bia": true,
       "auto": true,
-      "label": "Biarritz · résistance 384,04–388,56 · 3 contacts",
-      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (391,90), sans élastique tendu.",
-      "id": "bia-TSLA-388.56-2026-09-03",
-      "created": 1795542022345
+      "label": "Biarritz · résistance 386,83–388,56 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (391,92), sans élastique tendu.",
+      "id": "bia-TSLA-388.56-2026-09-25",
+      "created": 1795559873550
     },
     {
       "sym": "RI.PA",
@@ -245,7 +245,7 @@
       "bia": true,
       "auto": true,
       "label": "Biarritz · résistance 1.449,68–1.453,00 · 2 contacts",
-      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (1.383,69), sans élastique tendu.",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (1.383,62), sans élastique tendu.",
       "id": "bia-LLY-1453-2026-10-30",
       "created": 1795542022345
     },
@@ -274,16 +274,16 @@
       "created": 1795542022345
     },
     {
-      "sym": "FDX",
-      "name": "FedEx",
+      "sym": "ELEC.PA",
+      "name": "Électricité de Strasbourg",
       "op": "above",
-      "price": 322.13,
+      "price": 170.2,
       "bia": true,
       "auto": true,
-      "label": "Biarritz · résistance 320,16–322,13 · 3 contacts",
-      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (315,67), sans élastique tendu.",
-      "id": "bia-FDX-322.13-2026-07-09",
-      "created": 1795542022345
+      "label": "Biarritz · résistance 167,60–170,20 · 3 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (165,18), sans élastique tendu.",
+      "id": "bia-ELEC.PA-170.2-2026-08-28",
+      "created": 1795559873550
     },
     {
       "sym": "RI.PA",
@@ -330,17 +330,6 @@
       "created": 1795542022922
     },
     {
-      "sym": "MCD",
-      "name": "McDonald's",
-      "op": "above",
-      "price": 289.1292,
-      "label": "S→R hebdo 283,46 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-MCD-W-SR-283.46-b-2026-11-23",
-      "auto": true,
-      "created": 1795455982339
-    },
-    {
       "sym": "HEIA.AS",
       "name": "Heineken",
       "op": "below",
@@ -363,6 +352,17 @@
       "created": 1795542022922
     },
     {
+      "sym": "MCD",
+      "name": "McDonald's",
+      "op": "above",
+      "price": 289.1292,
+      "label": "S→R hebdo 283,46 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-MCD-W-SR-283.46-b-2026-11-23",
+      "auto": true,
+      "created": 1795455982339
+    },
+    {
       "sym": "SU.PA",
       "name": "Schneider Electric",
       "op": "above",
@@ -370,6 +370,17 @@
       "label": "R→S jour 223,65 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
       "id": "auto-SU.PA-D-RS-223.65-r-2026-11-24",
+      "auto": true,
+      "created": 1795542022922
+    },
+    {
+      "sym": "MSFT",
+      "name": "Microsoft",
+      "op": "above",
+      "price": 501.8,
+      "label": "R→S jour 489,70 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-MSFT-D-RS-489.7-r-2026-11-24",
       "auto": true,
       "created": 1795542022922
     },
@@ -506,17 +517,6 @@
       "created": 1795542022922
     },
     {
-      "sym": "MSFT",
-      "name": "Microsoft",
-      "op": "above",
-      "price": 501.8,
-      "label": "R→S jour 489,70 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-MSFT-D-RS-489.7-r-2026-11-24",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
       "sym": "SW.PA",
       "name": "Sodexo",
       "op": "below",
@@ -583,6 +583,28 @@
       "created": 1795542022922
     },
     {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "below",
+      "price": 496.8012,
+      "label": "R→S hebdo 487,06 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-AMP-W-RS-487.06-c-2026-11-09",
+      "auto": true,
+      "created": 1795542022922
+    },
+    {
+      "sym": "AMP",
+      "name": "Ameriprise Financial",
+      "op": "above",
+      "price": 503.6699,
+      "label": "R→S hebdo 487,06 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-AMP-W-RS-487.06-r-2026-11-23",
+      "auto": true,
+      "created": 1795455982339
+    },
+    {
       "sym": "VU.PA",
       "name": "VusionGroup",
       "op": "above",
@@ -625,28 +647,6 @@
       "id": "auto-VU.PA-D-RS-142.6-r-2026-11-23",
       "auto": true,
       "created": 1795542022922
-    },
-    {
-      "sym": "AMP",
-      "name": "Ameriprise Financial",
-      "op": "below",
-      "price": 496.8012,
-      "label": "R→S hebdo 487,06 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-AMP-W-RS-487.06-c-2026-11-09",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "AMP",
-      "name": "Ameriprise Financial",
-      "op": "above",
-      "price": 503.6699,
-      "label": "R→S hebdo 487,06 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-AMP-W-RS-487.06-r-2026-11-23",
-      "auto": true,
-      "created": 1795455982339
     },
     {
       "sym": "VETO.PA",
@@ -724,6 +724,17 @@
       "id": "auto-CA.PA-W-RS-13.235-c-2026-10-19",
       "auto": true,
       "created": 1795542022922
+    },
+    {
+      "sym": "CA.PA",
+      "name": "Carrefour",
+      "op": "above",
+      "price": 13.79,
+      "label": "R→S hebdo 13,24 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-CA.PA-W-RS-13.235-r-2026-11-23",
+      "auto": true,
+      "created": 1795559874013
     },
     {
       "sym": "CA.PA",
@@ -814,61 +825,6 @@
       "created": 1795542022922
     },
     {
-      "sym": "NFLX",
-      "name": "Netflix",
-      "op": "above",
-      "price": 60.1622,
-      "label": "S→R jour 61,39 · approche",
-      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-NFLX-D-SR-61.39-a-2026-11-24",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "NFLX",
-      "name": "Netflix",
-      "op": "above",
-      "price": 62.6178,
-      "label": "S→R jour 61,39 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-NFLX-D-SR-61.39-b-2026-11-24",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "BABA",
-      "name": "Alibaba",
-      "op": "below",
-      "price": 82.6302,
-      "label": "R→S hebdo 81,01 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-BABA-W-RS-81.01-c-2026-11-23",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "BABA",
-      "name": "Alibaba",
-      "op": "above",
-      "price": 94.38,
-      "label": "R→S hebdo 81,01 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-BABA-W-RS-81.01-r-2026-11-16",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "BABA",
-      "name": "Alibaba",
-      "op": "above",
-      "price": 84.68,
-      "label": "R→S jour 81,01 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-BABA-D-RS-81.01-r-2026-11-20",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
       "sym": "^GSPC",
       "name": "S&P 500",
       "op": "below",
@@ -902,6 +858,28 @@
       "created": 1795542022922
     },
     {
+      "sym": "NFLX",
+      "name": "Netflix",
+      "op": "above",
+      "price": 60.1622,
+      "label": "S→R jour 61,39 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-NFLX-D-SR-61.39-a-2026-11-24",
+      "auto": true,
+      "created": 1795542022922
+    },
+    {
+      "sym": "NFLX",
+      "name": "Netflix",
+      "op": "above",
+      "price": 62.6178,
+      "label": "S→R jour 61,39 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-NFLX-D-SR-61.39-b-2026-11-24",
+      "auto": true,
+      "created": 1795542022922
+    },
+    {
       "sym": "SPIE.PA",
       "name": "SPIE",
       "op": "above",
@@ -920,28 +898,6 @@
       "label": "S→R jour 46,20 · franchie",
       "note": "La résistance S→R est franchie : à confirmer à la clôture.",
       "id": "auto-SPIE.PA-D-SR-46.2-b-2026-11-24",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "EXPE",
-      "name": "Expedia",
-      "op": "above",
-      "price": 246.0976,
-      "label": "S→R jour 251,12 · approche",
-      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-EXPE-D-SR-251.12-a-2026-11-24",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "EXPE",
-      "name": "Expedia",
-      "op": "above",
-      "price": 256.1424,
-      "label": "S→R jour 251,12 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-EXPE-D-SR-251.12-b-2026-11-24",
       "auto": true,
       "created": 1795542022922
     },
@@ -1019,6 +975,50 @@
       "label": "R→S jour 46,40 · contact",
       "note": "Le cours touche le support R→S : surveiller la réaction.",
       "id": "auto-AUB.PA-D-RS-46.4-c-2026-11-24",
+      "auto": true,
+      "created": 1795542022922
+    },
+    {
+      "sym": "NRG.PA",
+      "name": "NRJ Group",
+      "op": "above",
+      "price": 6.076,
+      "label": "S→R hebdo 6,20 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-NRG.PA-W-SR-6.2-a-2026-11-23",
+      "auto": true,
+      "created": 1795559874013
+    },
+    {
+      "sym": "NRG.PA",
+      "name": "NRJ Group",
+      "op": "above",
+      "price": 6.324,
+      "label": "S→R hebdo 6,20 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-NRG.PA-W-SR-6.2-b-2026-11-23",
+      "auto": true,
+      "created": 1795559874013
+    },
+    {
+      "sym": "BABA",
+      "name": "Alibaba",
+      "op": "below",
+      "price": 82.6302,
+      "label": "R→S hebdo 81,01 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-BABA-W-RS-81.01-c-2026-11-23",
+      "auto": true,
+      "created": 1795542022922
+    },
+    {
+      "sym": "BABA",
+      "name": "Alibaba",
+      "op": "above",
+      "price": 94.38,
+      "label": "R→S hebdo 81,01 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-BABA-W-RS-81.01-r-2026-11-16",
       "auto": true,
       "created": 1795542022922
     },
