@@ -1213,7 +1213,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v253</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v254</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -2708,6 +2708,28 @@ function declutter(chart, rows, marks) {
 /* Marqueurs des bascules sur le graphique principal, recalculés à chaque zoom */
 let flipRaw = null;
 /* points de contact : séries de points (une par couleur), posés à la valeur de la ligne ce jour-là */
+/* ronds pleins sur certaines bougies (série personnalisée) */
+class DotRenderer {
+  draw(target, p2c) {
+    const d = this._d; if (!d || !d.bars.length || !d.visibleRange) return;
+    target.useBitmapCoordinateSpace(sc => {
+      const ctx = sc.context, hr = sc.horizontalPixelRatio, vr = sc.verticalPixelRatio, o = this._o || {}, r = (o.radius || 5) * hr;
+      for (let k = d.visibleRange.from; k < d.visibleRange.to; k++) { const b = d.bars[k]; if (!b || b.originalData.value == null) continue;
+        const y = p2c(b.originalData.value); if (y == null || !isFinite(y) || !isFinite(b.x)) continue;
+        ctx.beginPath(); ctx.arc(b.x * hr, y * vr, r, 0, Math.PI * 2); ctx.fillStyle = o.color || "#f59e0b"; ctx.fill();
+        if (o.ring) { ctx.lineWidth = 2 * hr; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.stroke(); } }
+    });
+  }
+  update(d, o) { this._d = d; this._o = o; }
+}
+class DotSeries {
+  constructor() { this._r = new DotRenderer(); }
+  priceValueBuilder(d) { return [d.value]; }
+  isWhitespace(d) { return d.value == null; }
+  renderer() { return this._r; }
+  update(d, o) { this._r.update(d, o); }
+  defaultOptions() { return Object.assign({}, LW.customSeriesDefaultOptions, { color:"#f59e0b", radius:6 }); }
+}
 function drawDots(chart, old, marks, r) {
   old.forEach(x => { try { chart.removeSeries(x); } catch (e) {} });
   const out = [];
@@ -2719,7 +2741,7 @@ function drawDots(chart, old, marks, r) {
     g.times.add(m.time); g.pts.push({ time:m.time, value:m.price });
   });
   groups.forEach(g => {
-    const s = chart.addLineSeries({ color:g.color, lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:r, priceLineVisible:false,
+    const s = chart.addCustomSeries(new DotSeries(), { color:g.color, radius:r, priceLineVisible:false,       // série maison (voir DotSeries)
       lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
     s.setData(g.pts); out.push(s);
   });
@@ -6392,7 +6414,7 @@ function drawTino() {
       tinoSeries.push(s);
     }
     if (x.tgt && x.t.target) {
-      const s = ovChart.addLineSeries({ color:"#facc15", lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:9,
+      const s = ovChart.addCustomSeries(new DotSeries(), { color:"#facc15", radius:9,
         priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
       s.setData([{ time:x.t.target.date > lastT ? x.t.target.date : lastT, value:(x.t.target.lo + x.t.target.hi) / 2 }]);
       tinoSeries.push(s);
@@ -6558,7 +6580,7 @@ function drawManu() {
     band.setData(times.map(t => ({ time:t, value:z.hi })));
     manuSeries.push(band);
     // gros point « M1 » au milieu de la zone, dans les séances à venir
-    const pt = ovChart.addLineSeries({ color:MANU_COL, lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:7, priceLineVisible:false,
+    const pt = ovChart.addCustomSeries(new DotSeries(), { color:MANU_COL, radius:7, priceLineVisible:false,
       lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null });
     pt.setData([{ time:fut[Math.min(fut.length - 1, Math.floor(fut.length / 2))], value:(z.lo + z.hi) / 2 }]);
     pt.createPriceLine({ price:(z.lo + z.hi) / 2, color:"rgba(0,0,0,0)", lineWidth:1, axisLabelVisible:true, title:"M" + (i + 1), axisLabelColor:MANU_COL, axisLabelTextColor:"#fff" });
@@ -7259,9 +7281,10 @@ function drawBia() {
   // cassures passées : la résistance cassée (trait vert) et un rond sur la bougie de cassure
   B.sig.forEach(g => {
     biaSeries.push(addSegment(ovChart, rows[g.R.from][0], g.R.hi, g.t, g.R.hi, "#16a34a", 3));
-    const pt = ovChart.addLineSeries(Object.assign({ color:"#f59e0b", lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:6 }, opt));
-    pt.setData([{ time:g.t, value:g.price }]); biaSeries.push(pt);
   });
+  // ronds orange des cassures : série maison (les « points » de Lightweight Charts remplissaient parfois une grande forme noire hors écran)
+  if (B.sig.length) { try { const pt = ovChart.addCustomSeries(new DotSeries(), Object.assign({ color:"#f59e0b", radius:6, ring:true }, opt));
+    pt.setData(rows.map(r => { const g = B.sig.find(x => x.t === r[0]); return g ? { time:r[0], value:g.price } : { time:r[0] }; })); biaSeries.push(pt); } catch (e) {} }
 }
 function renderBiaList() {
   const box = $("ovBiaList"); if (!box) return;
