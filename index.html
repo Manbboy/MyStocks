@@ -1213,7 +1213,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v252</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v253</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -7208,12 +7208,14 @@ class BiaBandRenderer {
     const d = this._d; if (!d || !d.bars.length || !d.visibleRange) return;
     target.useBitmapCoordinateSpace(sc => {
       const ctx = sc.context, hr = sc.horizontalPixelRatio, vr = sc.verticalPixelRatio, o = this._o;
-      const pts = []; for (let k = d.visibleRange.from; k < d.visibleRange.to; k++) { const b = d.bars[k]; if (b && b.originalData.up != null) pts.push(b); }
+      // seulement les séances dont les deux bords ont une position à l'écran (sinon le tracé reliait des points absents par des diagonales remplies en noir)
+      const pts = []; for (let k = d.visibleRange.from; k < d.visibleRange.to; k++) { const b = d.bars[k]; if (!b || b.originalData.up == null || b.originalData.lo == null || !isFinite(b.x)) continue;
+        const yu = p2c(b.originalData.up), yl = p2c(b.originalData.lo); if (yu == null || yl == null || !isFinite(yu) || !isFinite(yl)) continue; pts.push([b.x * hr, yu * vr, yl * vr]); }
       if (pts.length < 2) return;
       ctx.beginPath();
-      pts.forEach((b, k) => { const x = b.x * hr, y = p2c(b.originalData.up) * vr; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-      for (let k = pts.length - 1; k >= 0; k--) ctx.lineTo(pts[k].x * hr, p2c(pts[k].originalData.lo) * vr);
-      ctx.closePath(); ctx.fillStyle = o.fill; ctx.fill();
+      pts.forEach((q, k) => k ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
+      for (let k = pts.length - 1; k >= 0; k--) ctx.lineTo(pts[k][0], pts[k][2]);
+      ctx.closePath(); ctx.fillStyle = (o && o.fill) || "rgba(14,116,144,.14)"; ctx.fill();
     });
   }
   update(d, o) { this._d = d; this._o = o; }
@@ -7237,7 +7239,7 @@ function drawBia() {
   const B = ovBia, P = BIA.P;
   const opt = { priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false, autoscaleInfoProvider:() => null };
   try {
-    const band = ovChart.addCustomSeries(new BiaBandSeries(), opt);
+    const band = ovChart.addCustomSeries(new BiaBandSeries(), Object.assign({ fill:"rgba(14,116,144,.14)" }, opt));
     band.setData(rows.map((r, i) => B.mid[i] == null ? { time:r[0] } : { time:r[0], up:B.mid[i] + BIA.K * B.sd[i], lo:B.mid[i] - BIA.K * B.sd[i] }));
     biaSeries.push(band);
   } catch (e) {}
