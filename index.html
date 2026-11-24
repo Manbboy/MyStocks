@@ -742,6 +742,13 @@
   #zoneBtn.drawing { background:#facc15; color:#1f2937; border-color:#ca8a04; }
   .ruler-pill { position:absolute; left:50%; top:46px; transform:translateX(-50%); z-index:6; max-width:calc(100% - 24px); background:var(--card); color:var(--text);
     border:1.5px solid #2563eb; border-radius:14px; padding:6px 12px; font-size:13px; font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.18); text-align:center; pointer-events:none; }
+  .ruler-v { position:absolute; z-index:5; width:0; pointer-events:none; }
+  .ruler-v .rv-band { position:absolute; left:-9px; width:18px; top:0; bottom:0; background:rgba(37,99,235,.18); border-left:2px solid #2563eb; border-right:2px solid #2563eb; border-radius:3px; }
+  .ruler-v.down .rv-band { background:rgba(220,38,38,.16); border-color:#dc2626; }
+  .ruler-v .rv-h { position:absolute; left:-17px; width:34px; height:34px; margin-top:-17px; border-radius:50%; border:2px solid #fff; background:#2563eb; color:#fff;
+    font:800 13px/1 inherit; padding:0; pointer-events:auto; touch-action:none; box-shadow:0 2px 8px rgba(0,0,0,.3); cursor:ns-resize; }
+  .ruler-v .rv-h.drag { transform:scale(1.15); }
+  .ruler-v.down .rv-h { background:#dc2626; }
   .ruler-pill b.up { color:var(--up); } .ruler-pill b.down { color:var(--down); } .ruler-pill small { color:var(--muted); font-weight:500; }
   .mom-new { margin:4px 0 8px; padding:8px 10px; border-radius:10px; background:color-mix(in srgb, #16a34a 14%, var(--card)); font-size:13px; }
   .mom-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:0 16px; margin:4px 0; }
@@ -1216,7 +1223,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v256</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v257</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3933,7 +3940,7 @@ function drawDetail(keep) {
 }
 function closeDetail() {
   toggleCfg(false);
-  if (typeof rulerClear === "function" && ruler && (ruler.a || ruler.ser.length)) rulerClear();
+  if (typeof rulerClear === "function" && ruler && ruler.el) rulerClear();
   if (typeof ui2Restore !== "undefined" && ui2Restore) { Object.assign(prefs, ui2Restore); ui2Restore = null; savePrefs(); }   // retour à vos indicateurs habituels
   $("ov").classList.remove("show");
   document.body.style.overflow = "";
@@ -7465,7 +7472,7 @@ function renderMyzList() {
   box.innerHTML = "";
   if (myzDraw) { const d = document.createElement("div"); d.className = "sig-intro";
     const what = myzDraw === "oval" ? "du cercle (coin du carré qui l'entoure)" : "du rectangle";
-    d.textContent = (myzDraw === "ruler" ? "Règle : touchez un point A puis un point B ; l'écart s'affiche en haut du graphique (rien n'est enregistré)."
+    d.textContent = (myzDraw === "ruler" ? "Règle : touchez le graphique pour poser A et B, puis tirez les poignées ; l'écart de A vers B s'affiche en haut du graphique (rien n'est enregistré)."
       : myzFirst ? "Touchez maintenant le coin opposé " + what + "." : "Touchez un premier coin " + what + " sur le graphique.") +
       " Bouton jaune : 1 appui = rectangle, 2 = cercle, 3 = règle, 4 = fin.";
     box.appendChild(d); }
@@ -7511,12 +7518,13 @@ function myzRoom() {
   if (r.to < want) ts.setVisibleLogicalRange({ from:r.from + (want - r.to), to:want });
 }
 function myzClearTmp() { myzTmp.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} }); myzTmp = []; }
-/* 📏 Règle : deux points touchés → écart en %, en valeur et en nombre de bougies (rien n'est enregistré) */
-let ruler = { sym:null, a:null, ser:[], lines:[] };
+/* 📏 Règle verticale : un toucher pose A (au prix touché) et B (un peu au-dessus) sur la même bougie ;
+   on tire les poignées A et B vers le haut ou le bas ; l'écart de A vers B s'affiche en % et en valeur (rien n'est enregistré) */
+let ruler = { sym:null, lg:null, a:null, b:null, lines:[], el:null, raf:0 };
 function rulerClear() {
-  ruler.ser.forEach(s => { try { ovChart.removeSeries(s); } catch (e) {} });
   ruler.lines.forEach(l => { try { ovCandles.removePriceLine(l); } catch (e) {} });
-  ruler = { sym:null, a:null, ser:[], lines:[] };
+  if (ruler.el) ruler.el.remove(); cancelAnimationFrame(ruler.raf);
+  ruler = { sym:null, lg:null, a:null, b:null, lines:[], el:null, raf:0 };
   const p = $("rulerPill"); if (p) p.remove();
 }
 function rulerPill(html) {
@@ -7524,20 +7532,41 @@ function rulerPill(html) {
   if (!p) { p = document.createElement("div"); p.id = "rulerPill"; p.className = "ruler-pill"; $("ovChart").parentNode.appendChild(p); }
   p.innerHTML = html;
 }
+function rulerText() {
+  const cur = ovItem && ovItem.currency, a = ruler.a, b = ruler.b, pct = (b / a - 1) * 100;
+  rulerPill("📏 A " + fmt(a, cur) + " → B " + fmt(b, cur) + ' : <b class="' + (pct >= 0 ? "up" : "down") + '">' + fmtPct(Math.round(pct * 100) / 100) + "</b> (" + (b >= a ? "+" : "−") + fmt(Math.abs(b - a), cur) + ")");
+  try { ruler.lines[0].applyOptions({ price:a }); ruler.lines[1].applyOptions({ price:b }); } catch (e) {}
+}
 function rulerTap(t, lg, price) {
-  const cur = ovItem && ovItem.currency, iv = prefs.iv || "D";
-  if (!ruler.a || ruler.b || ruler.sym !== ovSym) {             // 1er point (ou nouvelle mesure)
-    rulerClear(); ruler.sym = ovSym; ruler.a = { t, lg, price };
-    ruler.lines.push(ovCandles.createPriceLine({ price, color:"#2563eb", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"A" }));
-    rulerPill("📏 Point A " + fmt(price, cur) + " · touchez le point B"); return;
-  }
-  const a = ruler.a, b = ruler.b = { t, lg, price };
-  ruler.lines.push(ovCandles.createPriceLine({ price, color:"#2563eb", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"B" }));
-  const [p, q] = a.t <= b.t ? [a, b] : [b, a];
-  try { ruler.ser.push(addSegment(ovChart, p.t, p.price, q.t, q.price, "#2563eb", 2)); } catch (e) {}
-  const pct = (b.price / a.price - 1) * 100, n = Math.abs(b.lg - a.lg), unit = { D:"séance", W:"semaine", M:"mois", Q:"trimestre" }[iv] || "bougie";
-  rulerPill('📏 A ' + fmt(a.price, cur) + " → B " + fmt(b.price, cur) + ' : <b class="' + (pct >= 0 ? "up" : "down") + '">' + fmtPct(Math.round(pct * 100) / 100) + "</b> (" + (b.price >= a.price ? "+" : "−") + fmt(Math.abs(b.price - a.price), cur) + ")" +
-    (n ? " · " + n + " " + unit + (n > 1 && unit !== "mois" ? "s" : "") : "") + " <small>· touchez pour une nouvelle mesure</small>");
+  rulerClear();
+  const vr = ovCandles.coordinateToPrice(0), vb = ovCandles.coordinateToPrice(($("ovChart").clientHeight || 300) - 40);
+  const step = vr != null && vb != null ? Math.abs(vr - vb) * 0.18 : price * 0.05;
+  Object.assign(ruler, { sym:ovSym, lg, a:price, b:price + step });
+  ruler.lines = [ovCandles.createPriceLine({ price:ruler.a, color:"#2563eb", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"A" }),
+                 ovCandles.createPriceLine({ price:ruler.b, color:"#2563eb", lineWidth:1, lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"B" })];
+  const el = ruler.el = document.createElement("div"); el.className = "ruler-v";
+  el.innerHTML = '<div class="rv-band"></div><button type="button" class="rv-h" data-k="a">A</button><button type="button" class="rv-h" data-k="b">B</button>';
+  const host = $("ovChart"); host.parentNode.appendChild(el);
+  el.querySelectorAll(".rv-h").forEach(h => {
+    h.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); h.setPointerCapture(e.pointerId); h.classList.add("drag");
+      const k = h.dataset.k, top = host.getBoundingClientRect().top;
+      const mv = ev => { const p = ovCandles.coordinateToPrice(ev.clientY - top); if (p != null && p > 0) { ruler[k] = p; rulerText(); } };
+      const up = () => { h.classList.remove("drag"); h.removeEventListener("pointermove", mv); h.removeEventListener("pointerup", up); h.removeEventListener("pointercancel", up); };
+      h.addEventListener("pointermove", mv); h.addEventListener("pointerup", up); h.addEventListener("pointercancel", up);
+    });
+  });
+  const loop = () => {                                         // suit le zoom et le défilement du graphique
+    if (!ruler.el) return;
+    const x = ovChart.timeScale().logicalToCoordinate(ruler.lg), ya = ovCandles.priceToCoordinate(ruler.a), yb = ovCandles.priceToCoordinate(ruler.b);
+    const ox = host.offsetLeft, oy = host.offsetTop;
+    if (x == null || ya == null || yb == null) el.style.display = "none";
+    else { el.style.display = ""; const t = Math.min(ya, yb), hgt = Math.abs(ya - yb);
+      el.style.left = (ox + x) + "px"; el.style.top = (oy + t) + "px"; el.style.height = hgt + "px";
+      const [ha, hb] = el.querySelectorAll(".rv-h"); ha.style.top = (ya - t) + "px"; hb.style.top = (yb - t) + "px";
+      el.classList.toggle("down", ruler.b < ruler.a); }
+    ruler.raf = requestAnimationFrame(loop);
+  };
+  loop(); rulerText();
 }
 function myzTap(param) {
   if (!param || !param.point || !ovCandles) return;
@@ -7569,7 +7598,7 @@ $("zoneBtn").onclick = async () => {
   renderToggles(); await myzLoad(); drawMyz();
   if (myzDraw) myzRoom();
   toast(myzDraw === "rect" ? "▭ Rectangle : touchez deux coins opposés." : myzDraw === "oval" ? "◯ Cercle : touchez deux coins opposés du carré qui l'entoure."
-    : myzDraw === "ruler" ? "📏 Règle : touchez un point A puis un point B pour mesurer l'écart." : "Dessin terminé.", 2600);
+    : myzDraw === "ruler" ? "📏 Règle : touchez le graphique, puis tirez les poignées A et B vers le haut ou le bas." : "Dessin terminé.", 2600);
 };
 /* ---- Modification d'une zone au doigt : toucher la zone la sélectionne ; glisser au milieu la déplace, glisser une poignée
    (barrette au-dessus, en dessous, à gauche, à droite) déplace ce bord ; « ✓ OK » ou toucher ailleurs enregistre ---- */
