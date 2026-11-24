@@ -95,9 +95,13 @@ async function news(url, ctx, cors) {
   const hit = await cache.match(key);
   if (hit) { const r = new Response(hit.body, hit); Object.entries(cors).forEach(([k, v]) => r.headers.set(k, v)); return r; }
   const since = Date.now() - 3 * 864e5;
-  const [fr, en] = await Promise.all([q ? gnews(q).catch(() => []) : [], sym ? ynews(sym).catch(() => []) : []]);
+  // français : flux Yahoo Finance France du symbole (le plus fiable depuis le relais) + Google Actualités ; anglais : recherche Yahoo
+  const [yfr, gfr, en] = await Promise.all([sym ? yrss(sym).catch(() => []) : [], q ? gnews(q).catch(() => []) : [], sym ? ynews(sym).catch(() => []) : []]);
+  const seen = new Set(), fr = [];
+  for (const n of yfr.concat(gfr)) { const k = n.title.toLowerCase().replace(/[^a-z0-9à-ÿ]+/g, " ").trim().slice(0, 60); if (!seen.has(k)) { seen.add(k); fr.push(n); } }
   const pick = list => list.filter(n => n.time >= since && n.title).sort((a, b) => b.time - a.time).slice(0, 8);
-  const res = json({ q, sym, fr: pick(fr), en: pick(en) }, 200, Object.assign({ "Cache-Control": "public, max-age=900" }, cors));   // 15 min
+  const out = { q, sym, fr: pick(fr), en: pick(en) }, found = out.fr.length + out.en.length > 0;
+  const res = json(out, 200, Object.assign({ "Cache-Control": "public, max-age=" + (found ? 900 : 120) }, cors));   // 15 min ; 2 min si rien (nouvel essai rapide)
   ctx.waitUntil(cache.put(key, res.clone()));
   return res;
 }
@@ -118,6 +122,17 @@ async function gnews(q) {
     let title = g("title");
     if (source && title.endsWith(" - " + source)) title = title.slice(0, -(source.length + 3));
     out.push({ title, link: g("link"), source, time: Date.parse(g("pubDate")) || 0, lang: "fr" });
+  }
+  return out;
+}
+// Yahoo Finance France : flux RSS des actualités du symbole, en français (celles de la page « Actualités » de la valeur)
+async function yrss(sym) {
+  const r = await fetch("https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + encodeURIComponent(sym) + "&region=FR&lang=fr-FR", { headers: UA });
+  if (!r.ok) return [];
+  const xml = await r.text(), out = [];
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const it = m[1], g = tag => { const x = it.match(new RegExp("<" + tag + "[^>]*>([\\s\\S]*?)</" + tag + ">")); return x ? unxml(x[1]) : ""; };
+    out.push({ title: g("title"), link: g("link"), source: "Yahoo Finance", time: Date.parse(g("pubDate")) || 0, lang: "fr" });
   }
   return out;
 }

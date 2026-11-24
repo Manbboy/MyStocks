@@ -7,8 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36"
-          echo "== relais"; curl -s -m 20 -H "Origin: https://manbboy.github.io" "https://cours-live.manbboy.workers.dev/news?q=Sanofi&s=SAN.PA" | head -c 1500; echo
-          echo "== yahoo rss fr"; curl -s -m 20 -A "$UA" "https://feeds.finance.yahoo.com/rss/2.0/headline?s=SAN.PA&region=FR&lang=fr-FR" | grep -o "<title>[^<]*</title>\|<pubDate>[^<]*</pubDate>" | head -20
-          echo "== yahoo search"; curl -s -m 20 -A "$UA" "https://query2.finance.yahoo.com/v1/finance/search?q=SAN.PA&quotesCount=0&newsCount=12" | python3 -c "import json,sys;j=json.load(sys.stdin);[print(n.get('title'),n.get('relatedTickers'),n.get('providerPublishTime')) for n in j.get('news',[])]"
-          echo "== google"; curl -s -m 20 -A "$UA" "https://news.google.com/rss/search?q=%22Sanofi%22+(bourse+OR+action+OR+titre+OR+cours+OR+r%C3%A9sultats)+when:3d&hl=fr&gl=FR&ceid=FR:fr" | grep -o "<title>[^<]*</title>" | head -8
+          sleep 90
+          curl -s -m 20 -H "Origin: https://manbboy.github.io" "https://cours-live.manbboy.workers.dev/news?q=Sanofi&s=SAN.PA&v=2" | head -c 1200; echo
+          curl -s -m 20 -H "Origin: https://manbboy.github.io" "https://cours-live.manbboy.workers.dev/news?q=STMicroelectronics&s=STMPA.PA&v=2" | head -c 600; echo
