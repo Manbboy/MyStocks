@@ -118,6 +118,18 @@
       "created": 1795646068000
     },
     {
+      "sym": "RMC.SG",
+      "name": "Rémy Cointreau",
+      "op": "above",
+      "price": 52.35,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 52,00–52,35 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (51,83), sans élastique tendu.",
+      "id": "bia-RMC.SG-52.35-2026-10-19",
+      "created": 1795647776644
+    },
+    {
       "sym": "ZAL.DE",
       "name": "Zalando",
       "op": "above",
@@ -260,18 +272,6 @@
       "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (606,41), sans élastique tendu.",
       "id": "bia-LMT-619.5-2026-08-12",
       "created": 1795628213420
-    },
-    {
-      "sym": "PYPL",
-      "name": "PayPal",
-      "op": "above",
-      "price": 59.99,
-      "bia": true,
-      "auto": true,
-      "label": "Biarritz · résistance 59,47–59,99 · 3 contacts",
-      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (58,37), sans élastique tendu.",
-      "id": "bia-PYPL-59.99-2026-07-29",
-      "created": 1795646068000
     },
     {
       "sym": "MSFT",
@@ -1011,6 +1011,28 @@
       "created": 1795646068596
     },
     {
+      "sym": "RMC.SG",
+      "name": "Rémy Cointreau",
+      "op": "below",
+      "price": 50.3064,
+      "label": "R→S hebdo 49,32 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-RMC.SG-W-RS-49.32-c-2026-11-09",
+      "auto": true,
+      "created": 1795647777259
+    },
+    {
+      "sym": "RMC.SG",
+      "name": "Rémy Cointreau",
+      "op": "above",
+      "price": 51.7,
+      "label": "R→S hebdo 49,32 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-RMC.SG-W-RS-49.32-r-2026-11-23",
+      "auto": true,
+      "created": 1795647777259
+    },
+    {
       "sym": "HEIA.AS",
       "name": "Heineken",
       "op": "below",
@@ -1020,6 +1042,28 @@
       "id": "auto-HEIA.AS-D-RS-80.96-c-2026-11-25",
       "auto": true,
       "created": 1795628213878
+    },
+    {
+      "sym": "XRP-USD",
+      "name": "XRP",
+      "op": "below",
+      "price": 0.9053,
+      "label": "R→S hebdo 0,8875 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-XRP-USD-W-RS-0.8875-c-2026-11-02",
+      "auto": true,
+      "created": 1795647777259
+    },
+    {
+      "sym": "XRP-USD",
+      "name": "XRP",
+      "op": "above",
+      "price": 1.0237,
+      "label": "R→S hebdo 0,8875 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-XRP-USD-W-RS-0.8875-r-2026-11-23",
+      "auto": true,
+      "created": 1795647777259
     },
     {
       "sym": "ZAL.DE",
@@ -1044,28 +1088,6 @@
       "created": 1795628213878
     },
     {
-      "sym": "APAM.AS",
-      "name": "Aperam",
-      "op": "above",
-      "price": 31.752,
-      "label": "S→R jour 32,40 · approche",
-      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
-      "id": "auto-APAM.AS-D-SR-32.4-a-2026-11-25",
-      "auto": true,
-      "created": 1795628213878
-    },
-    {
-      "sym": "APAM.AS",
-      "name": "Aperam",
-      "op": "above",
-      "price": 33.048,
-      "label": "S→R jour 32,40 · franchie",
-      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
-      "id": "auto-APAM.AS-D-SR-32.4-b-2026-11-25",
-      "auto": true,
-      "created": 1795628213878
-    },
-    {
       "sym": "DIM.PA",
       "name": "Sartorius Stedim Biotech",
       "op": "below",
@@ -1075,28 +1097,6 @@
       "id": "auto-DIM.PA-D-RS-203-c-2026-11-25",
       "auto": true,
       "created": 1795628213878
-    },
-    {
-      "sym": "PYPL",
-      "name": "PayPal",
-      "op": "below",
-      "price": 53.346,
-      "label": "R→S hebdo 52,30 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-PYPL-W-RS-52.3-c-2026-11-23",
-      "auto": true,
-      "created": 1795542022922
-    },
-    {
-      "sym": "PYPL",
-      "name": "PayPal",
-      "op": "above",
-      "price": 59.665,
-      "label": "R→S hebdo 52,30 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-PYPL-W-RS-52.3-r-2026-11-16",
-      "auto": true,
-      "created": 1795542022922
     }
   ]
 }
