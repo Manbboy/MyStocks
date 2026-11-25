@@ -907,8 +907,10 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 @media (max-width:699px) {           /* portefeuille sur téléphone : totaux en 2 × 2, en-tête sur une ligne */
   .pf-view .pf-sum, .pf-view .pf-sum.compact { grid-template-columns:repeat(2, minmax(0, 1fr)); }
   .pf-view .pf-sum b { font-size:15px; } .pf-view .pf-sum.compact b { font-size:14px; }
-  .pf-head .btn { white-space:nowrap; padding:6px 10px; font-size:13px; }
-  .pf-head .seg button { padding:6px 13px; }
+  .pf-head { flex-wrap:nowrap; gap:4px; }          /* S24 (≈ 384 px) : tous les boutons sur une seule ligne */
+  .pf-head .btn { white-space:nowrap; padding:6px 7px; font-size:13px; min-width:0; }
+  .pf-head .seg button { padding:6px 10px; }
+  .pf-head .pf-add .lg { display:none; }
 }
   /* appli installée ou écran tactile : pas de barre de défilement blanche sur le bord droit */
   @media (display-mode: standalone), (pointer: coarse) {
@@ -1253,7 +1255,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v275</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v276</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4852,6 +4854,7 @@ async function renderPfInner() {
   lockB.title = "Verrouiller sur cet appareil (oublie le mot de passe)";
   lockB.onclick = () => { setPfPass(""); pfState.data = null; renderPf(); };
   const addB = document.createElement("button"); addB.className = "btn primary"; addB.textContent = "+ Opération";
+  addB.classList.add("pf-add"); addB.innerHTML = '+<span class="lg"> Opération</span>'; addB.title = "Ajouter un achat, une vente ou un stop-loss";
   addB.onclick = () => openTxDlg();
   const cmpB = document.createElement("button"); cmpB.className = "btn" + (prefs.pfCompact ? " on" : "");
   cmpB.textContent = prefs.pfCompact ? "▦" : "≡";            // même icône que dans les autres onglets
