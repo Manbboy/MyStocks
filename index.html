@@ -196,9 +196,9 @@
   .pf-pos .r1 span { font-weight:700; white-space:nowrap; }
   .pf-pos .r2 { font-size:10.5px; line-height:1.4; color:var(--muted); margin-top:2px; letter-spacing:.01em; }
   .pf-pos .r2 span { font-weight:500; }
-  .pf-stops { display:inline-block; margin-top:4px; font-size:12px; line-height:1.45; cursor:pointer; }
+  .pf-stops { display:inline-block; margin-top:3px; font-size:inherit; line-height:1.5; cursor:pointer; }
   .pf-stop-b { margin-top:5px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:12px; padding:3px 9px; font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
-  .pf-st { white-space:nowrap; font-weight:600; } .pf-st.near { color:#d97706; } .pf-st.hit { color:#dc2626; font-weight:800; }
+  .pf-st { white-space:nowrap; font-weight:500; } .pf-st.near { color:#d97706; } .pf-st.hit { color:#dc2626; font-weight:800; }
   .tx-row.st-row { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; margin-bottom:8px; } .st-row .st-x { height:40px; }
   .pf-stop-b.add { font-weight:600; color:var(--muted); border-style:dashed; }
   .pf-stop-b.near { border-color:#f59e0b; background:color-mix(in srgb, #f59e0b 16%, var(--card)); }
@@ -1239,7 +1239,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v263</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v264</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1567,6 +1567,11 @@ async function pfSpark(card, p) {
   let rows; try { rows = (await getSeries(info)).rows.slice(-PF_SPK_N); } catch (e) { return; }
   if (!rows || rows.length < 2) return;
   // échelle sur les 30 clôtures seulement ; un PRU hors de cette plage est posé sur le bord, avec un repère « PRU ▲ / ▼ »
+  rows = rows.slice();
+  /* le dernier point = le cours actuel (en direct pendant la séance) : nouvelle séance → on l'ajoute, sinon il remplace la clôture */
+  if (p.price != null) { const ld = rows[rows.length - 1][0];
+    if (p.dayDate && p.dayDate > ld) rows = rows.slice(1).concat([[p.dayDate, p.price, p.price, p.price, p.price]]);
+    else rows[rows.length - 1] = rows[rows.length - 1].slice(0, 4).concat([p.price]); }
   const W = 100, H = 26, cl = rows.map(r => r[4]), last = p.price != null ? p.price : cl[cl.length - 1];
   let lo = Math.min(...cl), hi = Math.max(...cl); const pad = (hi - lo) * .08 || hi * .01; lo -= pad; hi += pad;
   const k = (H - 4) / ((hi - lo) || 1), y = v => (H - 2 - (Math.max(lo, Math.min(hi, v)) - lo) * k).toFixed(1), XW = W - 10, x = i => (i * XW / (rows.length - 1)).toFixed(1);
