@@ -263,7 +263,7 @@
   .pf-spk .pru-off { position:absolute; left:0; font-size:9.5px; font-weight:700; line-height:1.1; font-style:normal; color:var(--muted); background:var(--card); padding:1px 3px; border-radius:4px; }
   .pf-spk svg { width:100%; height:26px; display:block; overflow:visible; }
   /* carte normale : mini-graphique à droite du texte, plus étroit et plus haut — les variations se voient mieux */
-  .pf-list:not(.compact) .pf-pos { display:grid; grid-template-columns:minmax(0, 1fr) 112px; column-gap:12px; align-items:center; }
+  .pf-list:not(.compact) .pf-pos { display:grid; grid-template-columns:minmax(0, 1fr) 112px; column-gap:12px; align-items:center; align-content:start; }
   .pf-list:not(.compact) .pf-pos > .r1, .pf-list:not(.compact) .pf-pos > .pf-tx { grid-column:1 / -1; }
   .pf-list:not(.compact) .pf-pos > .r2 { grid-column:1; grid-row:2; align-self:start; }
   .pf-list:not(.compact) .pf-pos > .pf-rc { grid-column:2; grid-row:2; align-self:start; }
@@ -1257,7 +1257,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v282</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v283</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4998,8 +4998,11 @@ async function renderPfInner() {
     const key = prefs.pfSort === "eur" ? "_gain" : "_perf";
     const g = B.filter(c => c._cat === k).sort((a, b) => (b[key] ?? -Infinity) - (a[key] ?? -Infinity)); if (!g.length) return;   // meilleur d'abord
     L.insertAdjacentHTML("beforeend", '<div class="pf-sub">' + lab + ' <span>(#' + g.length + ')</span></div>');
-    // lecture de haut en bas, colonne par colonne (comme les autres onglets)
     const cols = pfCols(), rows = Math.ceil(g.length / cols);
+    if (!prefs.pfCompact) {   // vue détaillée (2 colonnes en paysage) : lecture ligne par ligne, 1re en haut à gauche, 2e en haut à droite
+      g.forEach(c => L.appendChild(c));
+      for (let k = g.length; k < rows * cols; k++) L.insertAdjacentHTML("beforeend", '<div class="pf-fill pf-fill2"></div>');
+    } else   // vue compacte : de haut en bas, colonne par colonne (comme les autres onglets)
     for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++) {
       const c = g[q * rows + r];
       if (c) L.appendChild(c); else if (cols > 1) L.insertAdjacentHTML("beforeend", '<div class="pf-fill pf-fill2"></div>');
