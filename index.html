@@ -275,6 +275,7 @@
   .pf-note { margin-top:12px; }
   .imp-list { margin:8px 0 0; padding-left:18px; font-size:13px; line-height:1.5; text-align:left; }
   .imp-list li.skip { color:var(--muted); text-decoration:line-through; }
+  #txFind { margin-bottom:6px; }
   .tx-type { display:flex; flex-wrap:wrap; gap:6px 14px; margin:4px 0 6px; }
   .tx-type label { flex-direction:row !important; align-items:center; gap:6px !important; font-size:15px !important; color:var(--text) !important; margin:0 !important; }
   .tx-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
@@ -1238,7 +1239,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v261</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v262</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1415,8 +1416,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <div class="dlg-bg" id="txDlg">
   <form class="dlg" id="txForm" autocomplete="off">
     <h3><span id="txTitle">Nouvelle opération</span> · portefeuille <span id="txOwner"></span></h3>
-    <div class="tx-type"><label><input type="radio" name="txType" value="A" checked> Achat</label><label><input type="radio" name="txType" value="V"> Vente</label><label id="txSLbl"><input type="radio" name="txType" value="S"> 🛑 Stop-loss</label></div>
-    <label>Valeur<select id="txSym"></select></label>
+    <div class="tx-type"><label><input type="radio" name="txType" value="A" checked> Achat</label><label><input type="radio" name="txType" value="V"> Vente</label><label id="txSLbl"><input type="radio" name="txType" value="S"> Stop-loss</label></div>
+    <label>Valeur<input type="search" id="txFind" placeholder="🔍 Rechercher (nom ou ticker)" autocomplete="off"><select id="txSym"></select></label>
     <div id="txNorm">
     <label>Date<input type="date" id="txDate" required></label>
     <div class="tx-row">
@@ -1522,21 +1523,27 @@ function txStopFill() {
   $("stInfo").textContent = fmt(p.qty, null).replace(/,00$/, "") + " actions · cours " + fmt(p.price, p.cur) + " · PRU " + fmt(p.pru, p.cur);
   const L = pfStops(pfOwner(), p.sym, p.qty); (L.length ? L : [{ q:p.qty, p:null }]).forEach(x => txStopRow(x.q, x.p));
 }
-let txAllOpts = null;
+/* liste des valeurs de la fenêtre « + Opération » : toutes les valeurs (achat / vente) ou les positions ouvertes (stop-loss),
+   filtrée par le champ de recherche (nom ou ticker, sans tenir compte des accents ni des majuscules) */
+let txAll = [], txBase = [];
+const txNorm = t => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+function txOpts(want) {
+  const sel = $("txSym"), cur = want || sel.value, q = txNorm($("txFind").value.trim());
+  const L = q ? txBase.filter(([v, t]) => txNorm(t).includes(q) || txNorm(v).includes(q)) : txBase;
+  sel.innerHTML = "";
+  L.forEach(([v, t]) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); });
+  if (!L.length) { const o = document.createElement("option"); o.value = ""; o.textContent = "Aucune valeur trouvée"; o.disabled = true; sel.appendChild(o); sel.value = ""; }
+  else if (L.some(([v]) => v === cur)) sel.value = cur;
+  if (sel.value !== cur) { updTxEur(); if (!$("txStop").hidden) txStopFill(); }
+}
 function txMode() {
-  const st = document.querySelector('input[name="txType"]:checked').value === "S", sel = $("txSym");
+  const st = document.querySelector('input[name="txType"]:checked').value === "S", sel = $("txSym"), cur = sel.value;
   $("txNorm").hidden = st; $("txStop").hidden = !st;
   ["txDate", "txQty", "txPrice"].forEach(id => $(id).required = !st);
-  if (st) {
-    const cur = sel.value; if (!txAllOpts) txAllOpts = [...sel.options].map(o => [o.value, o.textContent]);
-    const pos = txOpenPos(); sel.innerHTML = "";
-    pos.sort((a, b) => a.name.localeCompare(b.name)).forEach(p => { const o = document.createElement("option"); o.value = p.sym; o.textContent = p.name + (pfStops(pfOwner(), p.sym, p.qty).length ? " 🛑" : ""); sel.appendChild(o); });
-    if (pos.some(p => p.sym === cur)) sel.value = cur;
-    txStopFill(); $("txOk").textContent = "Enregistrer les stops";
-  } else {
-    if (txAllOpts) { const cur = sel.value; sel.innerHTML = ""; txAllOpts.forEach(([v, t]) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); }); sel.value = cur; txAllOpts = null; }
-    $("txOk").textContent = txEdit ? "Enregistrer les modifications" : "Enregistrer";
-  }
+  txBase = st ? txOpenPos().sort((a, b) => a.name.localeCompare(b.name)).map(p => [p.sym, p.name + " (" + p.sym + ")" + (pfStops(pfOwner(), p.sym, p.qty).length ? " · stop" : "")]) : txAll;
+  txOpts(cur);
+  if (st) { txStopFill(); $("txOk").textContent = "Enregistrer les stops"; }
+  else $("txOk").textContent = txEdit ? "Enregistrer les modifications" : "Enregistrer";
 }
 async function submitStops() {
   const own = pfOwner(), sym = $("txSym").value, num = v => v.trim() ? parseFloat(v.replace(/\s/g, "").replace(",", ".")) : null, out = [];
@@ -5045,11 +5052,10 @@ function checkTxList(list, sym) {
   return "";
 }
 function openTxDlg(edit, stopSym) {
-  txEdit = edit || null; txAllOpts = null;
-  const own = pfOwner(), sel = $("txSym"); sel.innerHTML = "";
-  [...allSymbols().values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
-    const o = document.createElement("option"); o.value = it.yahoo; o.textContent = it.name + " (" + it.yahoo + ")"; sel.appendChild(o);
-  });
+  txEdit = edit || null;
+  const own = pfOwner(), sel = $("txSym");
+  txAll = txBase = [...allSymbols().values()].sort((a, b) => a.name.localeCompare(b.name)).map(it => [it.yahoo, it.name + " (" + it.yahoo + ")"]);
+  $("txFind").value = ""; txOpts();
   if (ovItemName && $("ov").classList.contains("show")) { const cur = [...allSymbols().values()].find(i => i.name === ovItemName); if (cur) sel.value = cur.yahoo; }
   $("txOwner").textContent = own;
   $("txTitle").textContent = txEdit ? "Modifier l'opération" : "Nouvelle opération";
@@ -5116,6 +5122,7 @@ $("txSym").addEventListener("change", updTxEur);
 document.querySelectorAll('input[name="txType"]').forEach(r => r.addEventListener("change", () => { $("txErr").textContent = ""; txMode(); updTxEur(); }));
 $("txSym").addEventListener("change", () => { if (!$("txStop").hidden) txStopFill(); });
 $("stAdd").onclick = () => txStopRow(null, null);
+$("txFind").addEventListener("input", () => txOpts());
 function txEurTxt(t, cur) {
   if (cur === "EUR") return "";
   if (+t.eur > 0) return " = " + fmt(+t.eur, "EUR");
