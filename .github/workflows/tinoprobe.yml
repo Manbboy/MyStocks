@@ -1,0 +1,28 @@
+name: tinoprobe
+on:
+  push:
+    paths: [".github/workflows/tinoprobe.yml"]
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install yfinance pandas
+      - run: |
+          python - <<'PY'
+          import yfinance as yf, json
+          syms = "GLE.PA ALKAL.PA DIM.PA ALO.PA PRX.AS ODET.PA SOI.PA ECONB.BR VU.PA OHB.DE TNIE.DE IFX.DE SWP.PA SU.PA RMS.PA GTT.PA BIM.PA NXI.PA BSD.PA EQS.PA BOL.PA LPE.PA NVDA TTWO TSM AMZN INTC WMT DIS".split()
+          out = {}
+          for s in syms:
+              try:
+                  df = yf.Ticker(s).history(period="max", interval="1d", auto_adjust=False)
+                  df = df.reset_index()
+                  out[s] = [[str(r.Date)[:10], float(r.Open), float(r.High), float(r.Low), float(r.Close)] for r in df.itertuples()]
+                  print(s, len(out[s]))
+              except Exception as e:
+                  print(s, "ERR", e)
+          json.dump(out, open("tino_raw.json", "w"))
+          PY
+      - uses: actions/upload-artifact@v4
+        with: { name: tinoraw, path: tino_raw.json }
