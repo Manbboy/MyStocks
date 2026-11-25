@@ -197,6 +197,8 @@
   .pf-pos .r2 { font-size:10.5px; line-height:1.4; color:var(--muted); margin-top:2px; letter-spacing:.01em; }
   .pf-pos .r2 span { font-weight:500; }
   .pf-stop-b { margin-top:5px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:12px; padding:3px 9px; font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .pf-st { white-space:nowrap; font-weight:600; } .pf-st.near { color:#d97706; } .pf-st.hit { color:#dc2626; font-weight:800; }
+  .st-row { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; margin-bottom:8px; } .st-row .st-x { height:40px; }
   .pf-stop-b.add { font-weight:600; color:var(--muted); border-style:dashed; }
   .pf-stop-b.near { border-color:#f59e0b; background:color-mix(in srgb, #f59e0b 16%, var(--card)); }
   .pf-stop-b.hit { border-color:#dc2626; background:#dc2626; color:#fff; }
@@ -252,7 +254,8 @@
   .pf-list:not(.compact) .pf-pos > .pf-spk { grid-column:2; grid-row:2; height:44px; margin:6px 0 0; }
   .pf-list:not(.compact) .pf-pos > .pf-spk svg { height:44px; }
   .pf-list:not(.compact) .pf-pos:not(:has(> .pf-spk)) > .r2 { grid-column:1 / -1; }
-  .pf-list.compact .cp .pf-spk { grid-column:1 / -1; height:22px; margin:3px 0 0; } .pf-list.compact .cp .pf-spk svg { height:22px; }
+  /* vue compacte : mini-graphique ramassé (moins large, plus haut) sous le nom, pour mieux voir les variations */
+  .pf-list.compact .cp .pf-spk { grid-column:1 / -1; justify-self:start; width:min(100%, 104px); height:30px; margin:4px 0 0; } .pf-list.compact .cp .pf-spk svg { height:30px; }
   .pf-list.compact .cp .eu { font-size:11.5px; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
   .pf-warn { background:rgba(234,179,8,.14); border:1px solid rgba(234,179,8,.45); color:var(--text); border-radius:10px; padding:8px 12px; font-size:12.5px; margin-bottom:10px; }
   .pf-tx .dup { font-size:10.5px; font-weight:700; color:#b45309; background:rgba(234,179,8,.18); border-radius:5px; padding:1px 5px; white-space:nowrap; }
@@ -1234,7 +1237,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v259</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v260</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1479,28 +1482,56 @@ function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleStri
 /* Portefeuille : mini-graphique des 30 dernières séances par position ouverte, avec la ligne du prix de revient (PRU)
    en pointillés et un point sur le jour du premier achat s'il tombe dans ces 30 séances */
 const PF_SPK_N = 30;
-/* 🛑 Stop-loss : un prix par valeur et par personne, enregistré dans le portefeuille chiffré (data[M|D].stops[sym]) */
-const pfStop = (own, sym) => { const v = ((pfState.data && pfState.data[own] && pfState.data[own].stops) || {})[sym]; return v > 0 ? +v : null; };
-function pfStopHtml(own, p) {
-  const st = pfStop(own, p.sym);
-  if (!st) return '<br><button type="button" class="pf-stop-b add">🛑 Ajouter un stop-loss</button>';
-  const dist = p.price ? (st / p.price - 1) * 100 : null, atStop = (st - p.pru) * p.qty, atPct = (st / p.pru - 1) * 100;
-  const hit = p.price != null && p.price <= st, near = !hit && dist != null && dist > -3;
-  return '<br><button type="button" class="pf-stop-b' + (hit ? " hit" : near ? " near" : "") + '">🛑 Stop ' + fmt(st, p.cur) + "</button> " +
-    (hit ? '<b class="down">cours sous le stop</b>' : dist != null ? "à " + fmtPct(Math.round(dist * 10) / 10) + " du cours" : "") +
-    ' · au stop : <span class="' + (atStop >= 0 ? "up" : "down") + '">' + money(atStop, p.cur) + " (" + fmtPct(Math.round(atPct * 10) / 10) + ")</span>";
+/* 🛑 Stop-loss : plusieurs paliers par valeur et par personne (quantité × prix), dans le portefeuille chiffré : data[M|D].stops[sym] = [{ q, p }]
+   (un ancien stop enregistré comme simple prix compte pour toute la position) */
+function pfStops(own, sym, qty) {
+  const v = ((pfState.data && pfState.data[own] && pfState.data[own].stops) || {})[sym];
+  const L = Array.isArray(v) ? v : v > 0 ? [{ q:qty || 0, p:+v, all:true }] : [];
+  return L.filter(x => x && x.p > 0).map(x => ({ q:x.all ? qty || 0 : +x.q || 0, p:+x.p })).sort((a, b) => b.p - a.p);
 }
-async function pfStopEdit(own, p) {
-  const cur = pfStop(own, p.sym);
-  const v = prompt("Stop-loss de " + p.name + " (" + own + ") en " + (p.cur === "USD" ? "$" : "€") + "\nCours " + fmt(p.price, p.cur) + " · PRU " + fmt(p.pru, p.cur) + "\n(laisser vide pour retirer le stop)", cur ? String(cur).replace(".", ",") : "");
-  if (v === null) return;
-  const n = v.trim() ? parseFloat(v.replace(/\s/g, "").replace(",", ".")) : null;
-  if (v.trim() && !(n > 0)) { toast("Prix invalide.", 2000); return; }
-  try {
-    await pfSave(d => { d[own] = d[own] || { tx:[] }; d[own].stops = d[own].stops || {}; if (n) d[own].stops[p.sym] = n; else delete d[own].stops[p.sym]; },
-      (n ? "stop-loss " : "stop-loss retiré ") + p.sym);
-    toast(n ? "🛑 Stop-loss enregistré : " + fmt(n, p.cur) : "Stop-loss retiré.", 2200); renderPf();
-  } catch (e) { toast(e.message === "NOTOKEN" || e.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (le même que pour ajouter une opération)." : "Erreur : " + e.message, 3500); }
+const pfStop = (own, sym) => { const L = pfStops(own, sym); return L.length ? L[0].p : null; };   // le plus haut (le premier touché)
+function pfStopHtml(own, p) {
+  const L = pfStops(own, p.sym, p.qty);
+  if (!L.length) return '<br><button type="button" class="pf-stop-b add">🛑 Ajouter un stop-loss</button>';
+  const q = n => fmt(n, null).replace(/,00$/, "");
+  const parts = L.map(x => { const hit = p.price != null && p.price <= x.p, d = p.price ? (x.p / p.price - 1) * 100 : null;
+    return '<span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">' + q(x.q) + " × " + fmt(x.p, p.cur) + (hit ? " ⚠" : d != null ? " (" + fmtPct(Math.round(d * 10) / 10) + ")" : "") + "</span>"; });
+  const cov = L.reduce((t, x) => t + x.q, 0), atStop = L.reduce((t, x) => t + (x.p - p.pru) * x.q, 0), cost = p.pru * cov;
+  return '<br><button type="button" class="pf-stop-b">🛑 Stop' + (L.length > 1 ? "s" : "") + "</button> " + parts.join(" · ") +
+    '<br>si les stops sont touchés : <span class="' + (atStop >= 0 ? "up" : "down") + '">' + money(atStop, p.cur) + (cost ? " (" + fmtPct(Math.round(atStop / cost * 1000) / 10) + ")" : "") + "</span>" +
+    (cov < p.qty - 1e-9 ? " · " + q(p.qty - cov) + " sans stop" : cov > p.qty + 1e-9 ? " · ⚠ stops sur " + q(cov) + " actions pour " + q(p.qty) + " détenues" : "");
+}
+function pfStopEdit(own, p) {
+  let dlg = $("stopDlg");
+  if (!dlg) { dlg = document.createElement("div"); dlg.className = "dlg-bg"; dlg.id = "stopDlg";
+    dlg.innerHTML = '<form class="dlg" autocomplete="off"><h3 id="stTitle"></h3><p class="hint" id="stInfo"></p><div id="stRows"></div>' +
+      '<button type="button" class="btn" id="stAdd">+ Ajouter un palier</button><p class="hint">Un palier = une quantité vendue à un prix de stop. Exemple : 10 actions à 87 € et 10 à 85 €. Laissez vide pour retirer.</p>' +
+      '<p class="err" id="stErr"></p><div class="row"><button type="button" class="btn" id="stNo">Annuler</button><button type="submit" class="btn primary">Enregistrer</button></div></form>';
+    document.body.appendChild(dlg); }
+  const rows = $("stRows"), unit = p.cur === "USD" ? "$" : "€";
+  $("stTitle").textContent = "🛑 Stop-loss · " + p.name + " (" + own + ")";
+  $("stInfo").textContent = fmt(p.qty, null).replace(/,00$/, "") + " actions · cours " + fmt(p.price, p.cur) + " · PRU " + fmt(p.pru, p.cur);
+  const addRow = (q, pr) => { const r = document.createElement("div"); r.className = "tx-row st-row";
+    r.innerHTML = '<label>Quantité<input type="text" inputmode="decimal" class="stQ"></label><label>Prix stop (' + unit + ')<input type="text" inputmode="decimal" class="stP"></label><button type="button" class="btn st-x" aria-label="Retirer ce palier">✕</button>';
+    r.querySelector(".stQ").value = q != null ? String(q).replace(".", ",") : ""; r.querySelector(".stP").value = pr != null ? String(pr).replace(".", ",") : "";
+    r.querySelector(".st-x").onclick = () => r.remove(); rows.appendChild(r); };
+  rows.innerHTML = ""; $("stErr").textContent = "";
+  const L = pfStops(own, p.sym, p.qty); (L.length ? L : [{ q:p.qty, p:null }]).forEach(x => addRow(x.q, x.p));
+  $("stAdd").onclick = () => addRow(null, null);
+  $("stNo").onclick = () => dlg.classList.remove("show");
+  dlg.querySelector("form").onsubmit = async ev => { ev.preventDefault();
+    const num = v => v.trim() ? parseFloat(v.replace(/\s/g, "").replace(",", ".")) : null, out = [];
+    for (const r of rows.querySelectorAll(".st-row")) { const q = num(r.querySelector(".stQ").value), pr = num(r.querySelector(".stP").value);
+      if (q == null && pr == null) continue;
+      if (!(q > 0) || !(pr > 0)) { $("stErr").textContent = "Chaque palier a besoin d'une quantité et d'un prix."; return; }
+      out.push({ q, p:pr }); }
+    try {
+      await pfSave(d => { d[own] = d[own] || { tx:[] }; d[own].stops = d[own].stops || {}; if (out.length) d[own].stops[p.sym] = out; else delete d[own].stops[p.sym]; },
+        "stop-loss " + p.sym + " (" + out.length + ")");
+      dlg.classList.remove("show"); toast(out.length ? "🛑 " + out.length + " stop" + (out.length > 1 ? "s" : "") + " enregistré" + (out.length > 1 ? "s" : "") + "." : "Stops retirés.", 2200); renderPf();
+    } catch (e) { $("stErr").textContent = e.message === "NOTOKEN" || e.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (le même que pour ajouter une opération)." : "Erreur : " + e.message; }
+  };
+  dlg.classList.add("show");
 }
 async function pfSpark(card, p) {
   const box = card.querySelector(".pf-spk"), info = summary.symbols[p.sym];
@@ -1512,12 +1543,12 @@ async function pfSpark(card, p) {
   let lo = Math.min(...cl), hi = Math.max(...cl); const pad = (hi - lo) * .08 || hi * .01; lo -= pad; hi += pad;
   const k = (H - 4) / ((hi - lo) || 1), y = v => (H - 2 - (Math.max(lo, Math.min(hi, v)) - lo) * k).toFixed(1), x = i => (i * W / (rows.length - 1)).toFixed(1);
   const col = last >= p.pru ? "var(--up)" : "var(--down)", out = p.pru > hi ? "▲" : p.pru < lo ? "▼" : "";
-  const st = p.own ? pfStop(p.own, p.sym) : null, stIn = st && st >= lo && st <= hi;
+  const sts = p.own ? pfStops(p.own, p.sym, p.qty).map(x => x.p).filter(v => v >= lo && v <= hi) : [];
   const buys = p.tx.filter(t => t.type === "A").map(t => t.date).sort(), first = buys[0];
   const bi = first ? rows.findIndex(r => r[0] >= first) : -1;
   box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-label="30 dernières séances, ligne du PRU">' +
     '<line x1="0" x2="' + W + '" y1="' + y(p.pru) + '" y2="' + y(p.pru) + '" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2" vector-effect="non-scaling-stroke" opacity="' + (out ? ".35" : ".6") + '"/>' +
-    (stIn ? '<line x1="0" x2="' + W + '" y1="' + y(st) + '" y2="' + y(st) + '" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="4 2" vector-effect="non-scaling-stroke"/>' : "") +
+    sts.map(v => '<line x1="0" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="4 2" vector-effect="non-scaling-stroke"/>').join("") +
     '<polyline fill="none" stroke="' + col + '" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + '"/>' +
     (bi > 0 ? '<circle cx="' + x(bi) + '" cy="' + y(cl[bi]) + '" r="2.6" fill="' + col + '"/>' : "") + "</svg>" +
     (out ? '<i class="pru-off" style="' + (out === "▲" ? "top:-6px" : "bottom:-6px") + '">PRU ' + out + "</i>" : "");
@@ -5117,10 +5148,10 @@ function drawTxMarks() {
       infoEl.insertAdjacentHTML("beforeend", '<span class="pi"><i style="background:' + PF_OWNERS[own].col + '"></i><b>' + own + '</b> ' +
         (open ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " " : "soldée ") +
         '<span class="' + (v >= 0 ? "up" : "down") + '">' + money(v, p.cur) + (pc != null ? " (" + fmtPct(pc) + ")" : "") + "</span>" +
-        (open && pfStop(own, ovSym) ? ' · <b style="color:#dc2626">🛑 ' + fmt(pfStop(own, ovSym), p.cur) + "</b>" : "") + "</span>");
+        (open && pfStops(own, ovSym, p.qty).length ? ' · <b style="color:#dc2626">🛑 ' + pfStops(own, ovSym, p.qty).map(x => fmt(x.p, p.cur)).join(" / ") + "</b>" : "") + "</span>");
     }
-    if (p && p.qty > 0 && pfStop(own, ovSym)) txLines.push(ovCandles.createPriceLine({ price:pfStop(own, ovSym), color:"#dc2626", lineWidth:2,
-      lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"Stop " + own }));
+    if (p && p.qty > 0) pfStops(own, ovSym, p.qty).forEach(x => txLines.push(ovCandles.createPriceLine({ price:x.p, color:"#dc2626", lineWidth:2,
+      lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"Stop " + own + " ×" + fmt(x.q, null).replace(/,00$/, "") })));
     if (p && p.qty > 0) {
       txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
         lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));       // étiquette réduite au prix sur l'axe (le détail est sous le nom)
