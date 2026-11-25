@@ -1239,7 +1239,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v262</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v263</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1504,7 +1504,7 @@ function pfStopHtml(own, p) {
   const parts = L.map(x => { const hit = p.price != null && p.price <= x.p, d = p.price ? (x.p / p.price - 1) * 100 : null;
     return '<span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">' + q(x.q) + " × " + fmt(x.p, p.cur) + (hit ? " ⚠" : d != null ? " (" + fmtPct(Math.round(d * 10) / 10) + ")" : "") + "</span>"; });
   const cov = L.reduce((t, x) => t + x.q, 0), atStop = L.reduce((t, x) => t + (x.p - p.pru) * x.q, 0), cost = p.pru * cov;
-  return '<span class="pf-stops">🛑 ' + parts.join(" · ") +
+  return '<span class="pf-stops">' + parts.map(x => "🛑 " + x).join("<br>") +
     '<br>si touchés : <span class="' + (atStop >= 0 ? "up" : "down") + '">' + money(atStop, p.cur) + (cost ? " (" + fmtPct(Math.round(atStop / cost * 1000) / 10) + ")" : "") + "</span>" +
     (cov < p.qty - 1e-9 ? " · " + q(p.qty - cov) + " sans stop" : cov > p.qty + 1e-9 ? " · ⚠ stops sur " + q(cov) + " pour " + q(p.qty) + " détenues" : "") + "</span>";
 }
@@ -1540,7 +1540,7 @@ function txMode() {
   const st = document.querySelector('input[name="txType"]:checked').value === "S", sel = $("txSym"), cur = sel.value;
   $("txNorm").hidden = st; $("txStop").hidden = !st;
   ["txDate", "txQty", "txPrice"].forEach(id => $(id).required = !st);
-  txBase = st ? txOpenPos().sort((a, b) => a.name.localeCompare(b.name)).map(p => [p.sym, p.name + " (" + p.sym + ")" + (pfStops(pfOwner(), p.sym, p.qty).length ? " · stop" : "")]) : txAll;
+  txBase = st ? txOpenPos().sort((a, b) => a.name.localeCompare(b.name)).map(p => [p.sym, p.name + " (" + p.sym + ")" + (pfStops(pfOwner(), p.sym, p.qty).length ? " 🛑" : "")]) : txAll;
   txOpts(cur);
   if (st) { txStopFill(); $("txOk").textContent = "Enregistrer les stops"; }
   else $("txOk").textContent = txEdit ? "Enregistrer les modifications" : "Enregistrer";
@@ -1569,14 +1569,14 @@ async function pfSpark(card, p) {
   // échelle sur les 30 clôtures seulement ; un PRU hors de cette plage est posé sur le bord, avec un repère « PRU ▲ / ▼ »
   const W = 100, H = 26, cl = rows.map(r => r[4]), last = p.price != null ? p.price : cl[cl.length - 1];
   let lo = Math.min(...cl), hi = Math.max(...cl); const pad = (hi - lo) * .08 || hi * .01; lo -= pad; hi += pad;
-  const k = (H - 4) / ((hi - lo) || 1), y = v => (H - 2 - (Math.max(lo, Math.min(hi, v)) - lo) * k).toFixed(1), x = i => (i * W / (rows.length - 1)).toFixed(1);
+  const k = (H - 4) / ((hi - lo) || 1), y = v => (H - 2 - (Math.max(lo, Math.min(hi, v)) - lo) * k).toFixed(1), XW = W - 10, x = i => (i * XW / (rows.length - 1)).toFixed(1);
   const col = last >= p.pru ? "var(--up)" : "var(--down)", out = p.pru > hi ? "▲" : p.pru < lo ? "▼" : "";
   const sts = p.own ? pfStops(p.own, p.sym, p.qty).map(x => x.p).filter(v => v >= lo && v <= hi) : [];
   const buys = p.tx.filter(t => t.type === "A").map(t => t.date).sort(), first = buys[0];
   const bi = first ? rows.findIndex(r => r[0] >= first) : -1;
   box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-label="30 dernières séances, ligne du PRU">' +
     '<line x1="0" x2="' + W + '" y1="' + y(p.pru) + '" y2="' + y(p.pru) + '" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2" vector-effect="non-scaling-stroke" opacity="' + (out ? ".35" : ".6") + '"/>' +
-    sts.map(v => '<line x1="0" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="4 2" vector-effect="non-scaling-stroke"/>').join("") +
+    sts.map(v => '<line x1="' + (XW + 2) + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#dc2626" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/>').join("") +
     '<polyline fill="none" stroke="' + col + '" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + '"/>' +
     (bi > 0 ? '<circle cx="' + x(bi) + '" cy="' + y(cl[bi]) + '" r="2.6" fill="' + col + '"/>' : "") + "</svg>" +
     (out ? '<i class="pru-off" style="' + (out === "▲" ? "top:-6px" : "bottom:-6px") + '">PRU ' + out + "</i>" : "");
