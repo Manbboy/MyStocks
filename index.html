@@ -1261,7 +1261,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v286</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v287</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1416,7 +1416,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     <label>Portefeuille<select id="fPf"></select></label>
     <label>Symbole Yahoo Finance<input id="fSym" placeholder="ticker, ou tapez le nom : ex. Sanofi" autocapitalize="characters" required></label>
     <div id="fSug" class="f-sug" hidden></div>
-    <p class="hint">Suffixe de la place : .PA Paris · .BR Bruxelles · .AS Amsterdam · .DE Xetra · .MI Milan · rien pour les USA.
+    <p class="hint">Suffixe de la place : .PA Paris · .BR Bruxelles · .AS Amsterdam · .DE Xetra · .SG Stuttgart · .MI Milan · rien pour les USA.
       <a id="fLookup" href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener">Trouver le symbole sur Yahoo Finance</a></p>
     <label>Nom affiché<input id="fName" placeholder="ex. VusionGroup" required></label>
     <div class="tokbox" id="tokBox">
@@ -2045,7 +2045,7 @@ async function ghUpdate(mutate, message) {
   if (!put.ok) throw new Error("Enregistrement refusé par GitHub (" + put.status + ")");
   cfg = cur;
 }
-const TV_EX = { PA:"EURONEXT", AS:"EURONEXT", BR:"EURONEXT", LS:"EURONEXT", IR:"EURONEXT", DE:"XETR", MI:"MIL", L:"LSE", SW:"SIX", MC:"BME" };
+const TV_EX = { SG:"SWB", PA:"EURONEXT", AS:"EURONEXT", BR:"EURONEXT", LS:"EURONEXT", IR:"EURONEXT", DE:"XETR", MI:"MIL", L:"LSE", SW:"SIX", MC:"BME" };
 function tvFromYahoo(sym) {
   const m = sym.match(/^(.+)\.([A-Z]+)$/);
   return m && TV_EX[m[2]] ? TV_EX[m[2]] + ":" + m[1] : sym.replace(/^\^/, "");
@@ -4683,6 +4683,20 @@ document.addEventListener("click", e => { if (!e.target.closest("#ovPick")) clos
 
 /* ===== Onglet « Portefeuille » : achats / ventes de M et D, chiffrés dans positions.enc.json sur GitHub ===== */
 const PF_FILE = "positions.enc.json", PF_PASS = "mes-actions-pf-pass";
+/* changements de ticker dans les opérations chiffrées (faits sur l'appareil, seul à connaître le mot de passe) :
+   Rémy Cointreau suivi sur Stuttgart (RMC.SG) au lieu d'Euronext Paris (RCO.PA) */
+const PF_SYM_MOVES = { "RCO.PA":"RMC.SG" };
+function pfMigrate(d) {
+  let ch = false;
+  Object.values(d || {}).forEach(o => { if (!o || typeof o !== "object") return;
+    (o.tx || []).forEach(t => { if (PF_SYM_MOVES[t.sym]) { t.sym = PF_SYM_MOVES[t.sym]; ch = true; } });
+    if (o.stops) Object.keys(o.stops).forEach(k => { const n = PF_SYM_MOVES[k]; if (n) { if (!o.stops[n]) o.stops[n] = o.stops[k]; delete o.stops[k]; ch = true; } }); });
+  return ch;
+}
+function pfMigrateSave() {
+  if (!pfMigrate(pfState.data) || !getTok()) return;
+  pfSave(() => {}, "changement de ticker : " + Object.entries(PF_SYM_MOVES).map(([a, b]) => a + " → " + b).join(", ")).catch(() => {});
+}
 const PF_OWNERS = { M:{ col:"#0ea5e9" }, D:{ col:"#db2777" } };
 let pfState = { loaded:false, exists:null, data:null, sha:null, err:"" };
 
@@ -4725,7 +4739,7 @@ async function pfLoad() {
     const { env, sha } = await pfFetchEnv();
     pfState.exists = !!env; pfState.sha = sha; pfState.env = env;
     if (env && pfPass()) {
-      try { pfState.data = await pfDecrypt(env, pfPass()); }
+      try { pfState.data = await pfDecrypt(env, pfPass()); pfMigrateSave(); }
       catch (e) { pfState.data = null; setPfPass(""); pfState.err = "Mot de passe incorrect."; }
     }
   } catch (e) { pfState.err = "Impossible de lire le portefeuille : " + e.message; }
@@ -4738,7 +4752,7 @@ async function pfSave(mutate, message) {
   for (let attempt = 0; attempt < 2; attempt++) {
     const { env, sha } = await pfFetchEnv();                       // version la plus récente (l'autre personne a pu enregistrer entre-temps)
     const cur = env ? await pfDecrypt(env, pass) : { M:{ tx:[] }, D:{ tx:[] } };
-    mutate(cur);
+    pfMigrate(cur); mutate(cur);
     const body = { message, branch:"main", content:b64enc(JSON.stringify(await pfEncrypt(cur, pass)) + "\n") };
     if (sha) body.sha = sha;
     const put = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + PF_FILE, { method:"PUT",
@@ -4872,7 +4886,7 @@ async function renderPfInner() {
         try { await pfSave(() => {}, "Portefeuille : création (chiffré)"); toast("Portfolio créé."); renderPf(); }
         catch (err) { setPfPass(""); $("pfErr").textContent = err.message === "NOTOKEN" || err.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide." : err.message; }
       } else {
-        try { pfState.data = await pfDecrypt(pfState.env, p1); setPfPass(p1); pfState.err = ""; renderPf(); }
+        try { pfState.data = await pfDecrypt(pfState.env, p1); setPfPass(p1); pfState.err = ""; pfMigrateSave(); renderPf(); }
         catch (err) { $("pfErr").textContent = "Mot de passe incorrect."; }
       }
     };
@@ -5054,7 +5068,7 @@ function pfCols() {
 }
 /* Groupes de positions : Europe, USA (autre fuseau horaire), trackers, cryptos */
 const PF_CATS = [["eu", "Europe"], ["us", "USA"], ["etf", "Trackers (ETF)"], ["crypto", "Cryptos"], ["other", "Autres"]];
-const EU_SUFFIX = /\.(PA|AS|BR|DE|F|MI|MC|LS|L|IR|SW|VI|ST|HE|CO|OL|WA|PR|AT)$/;
+const EU_SUFFIX = /\.(PA|AS|BR|DE|F|SG|DU|MU|HM|BE|MI|MC|LS|L|IR|SW|VI|ST|HE|CO|OL|WA|PR|AT)$/;
 function pfCat(p) {
   const info = summary.symbols[p.sym] || {}, ty = (info.type || "").toUpperCase(), nm = (p.name || "") + " " + p.sym;
   if (ty === "CRYPTOCURRENCY" || /-(USD|EUR|USDT)$/.test(p.sym)) return "crypto";
@@ -6091,7 +6105,7 @@ const EU_IDX = new Set(["^FCHI", "^GDAXI", "^BFX", "^STOXX50E", "^AEX", "^FTSE",
 function mkGroup(sym) {
   if (/-(USD|EUR|USDT|USDC)$/.test(sym)) return "cry";
   if (/=F$/.test(sym)) return "fut";
-  if (EU_IDX.has(sym) || /\.(PA|DE|BR|AS|MI|MC|L|SW|LS|VI|HE|CO|ST|OL|IR|F)$/.test(sym)) return "eu";
+  if (EU_IDX.has(sym) || /\.(PA|DE|BR|AS|MI|MC|L|SW|LS|VI|HE|CO|ST|OL|IR|F|SG|DU|MU|HM|BE)$/.test(sym)) return "eu";
   return "us";
 }
 function mkState(syms) {
