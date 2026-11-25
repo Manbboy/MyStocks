@@ -1257,7 +1257,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v279</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v280</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4738,7 +4738,7 @@ function allSymbols() {
 function pfPositions(tx) {
   const by = new Map(), feesIn = !!prefs.pruFees;
   tx.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.t || 0) - (b.t || 0)).forEach(t => {
-    const p = by.get(t.sym) || { sym:t.sym, qty:0, cost:0, costF:0, realized:0, soldCost:0, bought:0, fees:0, first:t.date, tx:[], costE:0, realizedE:0, soldCostE:0 };
+    const p = by.get(t.sym) || { sym:t.sym, qty:0, cost:0, costF:0, costN:0, realized:0, soldCost:0, bought:0, fees:0, first:t.date, tx:[], costE:0, realizedE:0, soldCostE:0 };
     const fees = +t.fees || 0;
     p.fees += fees; p.tx.push(t);
     // montant en euros de l'opération : celui de l'avis d'opéré s'il est saisi, sinon converti au taux EUR/USD du jour
@@ -4748,7 +4748,7 @@ function pfPositions(tx) {
     if (eurT == null) p.noE = true;
     if (t.type === "A") {
       const feeE = native > 0 && eurT ? fees * eurT / native : 0;        // frais convertis dans la même proportion que l'opération
-      p.qty += +t.qty; p.costF += t.qty * t.price + fees; p.bought += t.qty * t.price + fees;
+      p.qty += +t.qty; p.costF += t.qty * t.price + fees; p.costN += t.qty * t.price; p.bought += t.qty * t.price + fees;
       if (feesIn) { p.cost += t.qty * t.price + fees; p.costE += eurT || 0; }
       else { p.cost += t.qty * t.price; p.costE += (eurT || 0) - feeE; p.realized -= fees; p.realizedE -= feeE; p.buyFees = (p.buyFees || 0) + fees; }
     } else {
@@ -4756,9 +4756,9 @@ function pfPositions(tx) {
       p.realized += q * t.price - fees - q * avg;
       p.soldCost += q * avg;                     // prix de revient des actions vendues : base du % réalisé
       p.realizedE += (eurT || 0) - q * avgE; p.soldCostE += q * avgE;
-      p.costF -= p.qty > 0 ? q * p.costF / p.qty : 0;
+      p.costF -= p.qty > 0 ? q * p.costF / p.qty : 0; p.costN -= p.qty > 0 ? q * p.costN / p.qty : 0;
       p.cost -= q * avg; p.costE -= q * avgE; p.qty -= q;
-      if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; p.costE = 0; p.costF = 0; }
+      if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; p.costE = 0; p.costF = 0; p.costN = 0; }
     }
     by.set(t.sym, p);
   });
@@ -4766,7 +4766,7 @@ function pfPositions(tx) {
   return [...by.values()].map(p => {
     const info = withLive(p.sym, summary.symbols[p.sym] || {});
     const it = syms.get(p.sym) || { name:p.sym };
-    const price = info.last, pru = p.qty > 0 ? p.cost / p.qty : null, be = p.qty > 0 ? p.costF / p.qty : null;   // be = prix d'équilibre (frais d'achat inclus)
+    const price = info.last, pru = p.qty > 0 ? p.cost / p.qty : null, be = p.qty > 0 ? (2 * p.costF - p.costN) / p.qty : null;   // be = prix d'équilibre : frais d'achat + frais de revente estimés (= mêmes frais que l'achat)
     const value = p.qty > 0 && price != null ? p.qty * price : 0;
     const latent = p.qty > 0 && price != null ? value - p.cost : 0;
     const cur = info.currency || "EUR", now = cur === "EUR" ? 1 : cur === "USD" ? fxNow() : null;
@@ -4971,7 +4971,7 @@ async function renderPfInner() {
       const row = (ty, d, q) => { const r = document.createElement("div"); r.className = "pf-solde";
         r.innerHTML = '<span class="ty so">' + ty + '</span><span class="d">' + d + '</span><span class="q">' + q + "</span>"; return r; };
       const rows = [row("Solde", A(fmt(p.cost, p.cur)), A(fmt(p.qty, null).replace(/,00$/, "")) + " × " + fmtPru(p.pru, p.cur) + ' <span class="pf-muted">(PRU' + (prefs.pruFees ? " frais inclus" : "") + ")</span>" +
-        (!prefs.pruFees && p.be - p.pru > 0.0005 ? ' <span class="pf-muted" style="white-space:nowrap">· équilibre ' + fmtPru(p.be, p.cur) + "</span>" : ""))];
+        (p.be - p.pru > 0.0005 ? ' <span class="pf-muted" style="white-space:nowrap">· équilibre ' + fmtPru(p.be, p.cur) + "</span>" : ""))];
       if (Math.abs(p.realized) > 0.005) rows.push(row("Réalisé", '<span class="' + (p.realized >= 0 ? "up" : "down") + '">' + A(money(p.realized, p.cur)) + "</span>",
         p.realizedPct != null ? '<span class="' + (p.realized >= 0 ? "up" : "down") + '">' + fmtPct(p.realizedPct) + '</span> <span class="pf-muted">sur les ventes' + (prefs.pruFees ? "" : ", frais inclus") + "</span>"
           : '<span class="pf-muted">frais d\'achat</span>'));
