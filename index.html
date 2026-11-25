@@ -192,11 +192,18 @@
   .pf-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:8px; }
   .pf-pos { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; cursor:pointer; }
   .pf-pos.closed { opacity:.7; }
-  .pf-pos .r1 { display:flex; justify-content:space-between; gap:8px; font-size:15px; }
-  .pf-pos .r1 span { font-weight:700; white-space:nowrap; }
+  /* en-tête de carte : 3 colonnes de largeur fixe (nom | cours et variation du jour | résultat depuis l'achat), alignées d'une carte à l'autre */
+  .pf-pos .r1 { display:grid; grid-template-columns:minmax(0, 1fr) 84px 104px; column-gap:6px; align-items:start; font-size:15px; }
+  .pf-pos .r1 .nm { overflow-wrap:anywhere; line-height:1.25; }
+  .pf-pos .r1 > span { display:flex; flex-direction:column; white-space:nowrap; font-variant-numeric:tabular-nums; line-height:1.25; }
+  .pf-pos .r1 i { font-style:normal; }
+  .pf-day { align-items:center; } .pf-day b { font-size:13px; font-weight:600; } .pf-day i { font-size:11.5px; font-weight:600; } .pf-day small { font-size:10px; font-weight:500; color:var(--muted); }
+  .pf-tot { align-items:flex-end; font-weight:700; } .pf-tot b { font-size:15px; } .pf-tot i { font-size:12.5px; }
+  /* stop-loss : icône à gauche, texte qui revient à la ligne sous le texte (jamais sous l'icône) */
+  .pf-sl { display:flex; gap:4px; } .pf-sl > i { font-style:normal; flex:none; }
   .pf-pos .r2 { font-size:10.5px; line-height:1.4; color:var(--muted); margin-top:2px; letter-spacing:.01em; }
   .pf-pos .r2 span { font-weight:500; }
-  .pf-stops { display:inline-block; margin-top:3px; font-size:inherit; line-height:1.5; cursor:pointer; }
+  .pf-stops { display:flex; flex-direction:column; margin-top:3px; font-size:inherit; line-height:1.5; cursor:pointer; }
   .pf-stop-b { margin-top:5px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:12px; padding:3px 9px; font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
   .pf-st { white-space:nowrap; font-weight:500; } .pf-st.near { color:#d97706; } .pf-st.hit { color:#dc2626; font-weight:800; }
   .tx-row.st-row { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; margin-bottom:8px; } .st-row .st-x { height:40px; }
@@ -254,8 +261,6 @@
   .pf-list:not(.compact) .pf-pos > .r2 { grid-column:1; grid-row:2; align-self:start; }
   .pf-list:not(.compact) .pf-pos > .pf-rc { grid-column:2; grid-row:2; align-self:start; }
   .pf-list:not(.compact) .pf-pos > .pf-rc .pf-spk { height:44px; margin:6px 0 0; }
-  .pf-q { text-align:right; font-size:11.5px; white-space:nowrap; font-variant-numeric:tabular-nums; margin-top:3px; color:var(--text); }
-  .pf-q b { font-weight:600; } .pf-q span { font-weight:600; margin-left:3px; }
   .pf-list:not(.compact) .pf-pos > .pf-rc .pf-spk svg { height:44px; }
   .pf-list:not(.compact) .pf-pos:not(:has(> .pf-rc)) > .r2 { grid-column:1 / -1; }
   /* vue compacte : mini-graphique ramassé (moins large, plus haut) sous le nom, pour mieux voir les variations */
@@ -1242,7 +1247,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v268</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v269</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1506,12 +1511,12 @@ function pfStopHtml(own, p) {
   const q = n => fmt(n, null).replace(/,00$/, ""), res = v => '<span class="' + (v >= 0 ? "up" : "down") + '">' + money(v, p.cur) + "</span>";
   // une ligne par palier, avec le résultat de ce palier (par rapport au PRU, hors frais de vente)
   const lines = L.map(x => { const hit = p.price != null && p.price <= x.p, d = p.price ? (x.p / p.price - 1) * 100 : null;
-    return '🛑 <span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">' + q(x.q) + " × " + fmt(x.p, p.cur) + (hit ? " ⚠" : d != null ? " (" + fmtPct(Math.round(d * 10) / 10) + ")" : "") + "</span> → " + res((x.p - p.pru) * x.q); });
+    return '<span class="pf-sl"><i>🛑</i><span><span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">' + q(x.q) + " × " + fmt(x.p, p.cur) + (hit ? " ⚠" : d != null ? " (" + fmtPct(Math.round(d * 10) / 10) + ")" : "") + "</span> → " + res((x.p - p.pru) * x.q) + "</span></span>"; });
   const cov = L.reduce((t, x) => t + x.q, 0), atStop = L.reduce((t, x) => t + (x.p - p.pru) * x.q, 0), cost = p.pru * cov;
   const extra = cov < p.qty - 1e-9 ? q(p.qty - cov) + " actions sans stop" : cov > p.qty + 1e-9 ? "⚠ stops sur " + q(cov) + " actions pour " + q(p.qty) + " détenues" : "";
   if (L.length > 1) lines.push("si tous touchés : " + res(atStop) + (cost ? ' <span class="' + (atStop >= 0 ? "up" : "down") + '">(' + fmtPct(Math.round(atStop / cost * 1000) / 10) + ")</span>" : ""));
   if (extra) lines.push(extra);
-  return '<span class="pf-stops">' + lines.join("<br>") + "</span>";
+  return '<span class="pf-stops">' + lines.map(l => l.startsWith('<span class="pf-sl"') ? l : "<span>" + l + "</span>").join("") + "</span>";
 }
 /* 🛑 édition des paliers : dans la fenêtre « + Opération », 3e choix « Stop-loss » (seules les positions ouvertes sont proposées) */
 function txStopRow(q, pr) {
@@ -4906,8 +4911,10 @@ async function renderPfInner() {
     const c = document.createElement("div"); c.className = "pf-pos" + (p.qty > 0 ? "" : " closed");
     const open = p.qty > 0;
     c.innerHTML =
-      '<div class="r1"><b class="nm"></b><span class="' + (open ? (p.latent >= 0 ? "up" : "down") : (p.realized >= 0 ? "up" : "down")) + '">' +
-        (open ? A(money(p.latent, p.cur)) + (p.latentPct != null ? " · " + fmtPct(p.latentPct) : "") : A(money(p.realized, p.cur)) + (p.realizedPct != null ? " · " + fmtPct(p.realizedPct) : "")) + '</span></div>' +
+      '<div class="r1"><b class="nm"></b>' +
+        (open ? '<span class="pf-day">' + (p.price != null ? "<b>" + fmt(p.price, p.cur) + "</b>" : "") + (p.dayPct != null ? '<i class="' + (p.dayPct >= 0 ? "up" : "down") + '">' + fmtPct(p.dayPct) + " <small>auj.</small></i>" : "") + "</span>" : "<span></span>") +
+        '<span class="pf-tot ' + (open ? (p.latent >= 0 ? "up" : "down") : (p.realized >= 0 ? "up" : "down")) + '">' +
+        (open ? "<b>" + A(money(p.latent, p.cur)) + "</b>" + (p.latentPct != null ? "<i>" + fmtPct(p.latentPct) + "</i>" : "") : "<b>" + A(money(p.realized, p.cur)) + "</b>" + (p.realizedPct != null ? "<i>" + fmtPct(p.realizedPct) + "</i>" : "")) + '</span></div>' +
       '<div class="r2">' + (open
         ? A(fmt(p.qty, null).replace(/,00$/, "")) + " × PRU " + fmt(p.pru, p.cur)
         : "Aucune action détenue") +
@@ -4916,8 +4923,7 @@ async function renderPfInner() {
         : 'réalisé <span class="' + (p.realizedE >= 0 ? "up" : "down") + '">' + A(money(p.realizedE, "EUR")) + (p.realizedPctE != null ? " (" + fmtPct(p.realizedPctE) + ")" : "") + '</span>') : "") + '</div>';
     c.querySelector(".nm").textContent = p.name;
     // à droite : mini-graphique, puis juste dessous le cours actuel et la variation du jour (toujours au même endroit)
-    if (open) c.querySelector(".r1").insertAdjacentHTML("afterend", '<div class="pf-rc"><span class="pf-spk"></span><div class="pf-q">' +
-      (p.price != null ? "<b>" + fmt(p.price, p.cur) + "</b>" : "") + (p.dayPct != null ? ' <span class="' + (p.dayPct >= 0 ? "up" : "down") + '">' + fmtPct(p.dayPct) + "</span>" : "") + "</div></div>");
+    if (open) c.querySelector(".r1").insertAdjacentHTML("afterend", '<div class="pf-rc"><span class="pf-spk"></span></div>');
     if (open && !prefs.pfCompact) c.querySelector(".r2").insertAdjacentHTML("beforeend", pfStopHtml(own, p));
     if (prefs.pfCompact) {
       const v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct, cl = v >= 0 ? "up" : "down";
