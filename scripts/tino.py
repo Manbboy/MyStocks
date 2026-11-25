@@ -24,24 +24,27 @@ def _pivots(rows, k):
     return out
 
 
-P = {"M": {"k": 3, "win": 240, "span": 48, "ext": 36, "hor": 120, "wmax": 1.30, "dwin": 72, "dspan": 12},      # mensuel : 20 ans, oblique sur 4 ans au moins
-     "W": {"k": 4, "win": 260, "span": 39, "ext": 52, "hor": 104, "wmax": 1.20, "dwin": 104, "dspan": 13}}      # hebdomadaire : 5 ans, oblique sur 9 mois au moins
+# mensuel recalé le 26/11/2026 sur 26 analyses de Tino (tools/tino_cal) : sommets / creux plus marquants (5 mois de part et d'autre),
+# zones plus étroites (≤ 12 %), extrêmes regroupés à 7 % près, mèches ET corps des bougies, marge 1 %
+P = {"M": {"k": 5, "win": 240, "span": 48, "ext": 36, "hor": 120, "wmax": 1.12, "dwin": 72, "dspan": 12, "gap": 0.07, "pad": 0.01, "body": True},
+     "W": {"k": 4, "win": 260, "span": 39, "ext": 52, "hor": 104, "wmax": 1.20, "dwin": 104, "dspan": 13, "gap": 0.04, "pad": 0.02, "body": False}}
 
 
-def zones(rows, last, k=3, wmax=1.30):
+def zones(rows, last, k=3, wmax=1.30, gap=None, pad=None, body=None):
     """Zones de prix (lo, hi) : regroupement des extrêmes mensuels (plus hauts des sommets, plus bas des creux) qui se répètent.
     Comme Tino, la zone se cale sur les mèches qui butent au même endroit, pas sur les corps des bougies."""
     if len(rows) < 24:
         return []
+    gap = GAP if gap is None else gap; pad = PAD if pad is None else pad; body = BODY if body is None else body
     piv = _pivots(rows, k)
     pts = [((rows[i][2] if t == "H" else rows[i][3]), rows[i][0], t) for i, t in piv]
-    if BODY:                                   # aussi le corps (haut du corps d'un sommet, bas du corps d'un creux)
+    if body:                                   # aussi le corps (haut du corps d'un sommet, bas du corps d'un creux)
         pts += [((max(rows[i][1], rows[i][4]) if t == "H" else min(rows[i][1], rows[i][4])), rows[i][0], t) for i, t in piv]
     pts.sort()
     clusters = []
     for x, d, t in pts:       # extrêmes à moins de GAP les uns des autres, zone pas plus large que wmax
         c = clusters[-1] if clusters else None
-        if c and x <= c["px"][-1] * (1 + GAP) and x / c["px"][0] <= wmax:
+        if c and x <= c["px"][-1] * (1 + gap) and x / c["px"][0] <= wmax:
             c["px"].append(x); c["piv"].append((d, t, x))
         else:
             clusters.append({"px": [x], "piv": [(d, t, x)]})
@@ -50,7 +53,7 @@ def zones(rows, last, k=3, wmax=1.30):
         n = len({p[0] for p in c["piv"]})          # contacts = pivots distincts
         if n < 2:
             continue
-        lo, hi = c["px"][0] * (1 - PAD), c["px"][-1] * (1 + PAD)
+        lo, hi = c["px"][0] * (1 - pad), c["px"][-1] * (1 + pad)
         if hi / lo < 1 + MINW:                      # épaisseur minimale
             m = (hi + lo) / 2
             lo, hi = m / (1 + MINW / 2), m * (1 + MINW / 2)
@@ -73,7 +76,7 @@ def _is_low(rows, i, k=2):
     """creux local (plus bas des k mois de part et d'autre) : un contact = un creux qui vient sur la droite, pas chaque mois"""
     lo = rows[i][3]
     return all(rows[j][3] >= lo for j in range(max(0, i - k), min(len(rows), i + k + 1)))
-GAP, PAD, MINW, MINSPAN, MINSCORE, NSUP, NEAR_SCORE, BODY = 0.04, 0.02, 0.05, 12, 0, 3, 3.5, False
+GAP, PAD, MINW, MINSPAN, MINSCORE, NSUP, NEAR_SCORE, BODY = 0.04, 0.02, 0.05, 12, 0, 3, 6, False
 
 
 def zones_body(rows, last, k=3, wmax=1.30):
@@ -253,7 +256,7 @@ def analyse(rows, unit="M"):
         return None
     last = rows[-1][4]
     p = P[unit]
-    zs = zones(rows, last, p["k"], p["wmax"])
+    zs = zones(rows, last, p["k"], p["wmax"], p["gap"], p["pad"], p["body"])
     # zones de soutien : les plus solides d'abord (contacts, changement de rôle, durée), sans chevauchement, puis triées par prix
     cand = [z for z in zs if (z["hi"] < last * 0.995 or z["role"] == "in") and z["hi"] >= last * 0.25 and z["span"] >= MINSPAN
             and (z["role"] != "in" or z["n"] >= 4)]
