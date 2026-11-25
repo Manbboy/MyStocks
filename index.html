@@ -161,6 +161,10 @@
   /* barre de boutons du portefeuille figée en haut de l'écran pendant le défilement */
   .pf-head { position:sticky; top:0; z-index:30; background:var(--bg); padding:6px 0; margin-top:-6px; }
   .pf-head.stuck { box-shadow:0 6px 8px -6px rgba(0,0,0,.25); }
+  /* onglet Listes : la 2e barre (Liste · Carte · Graph., tri, ✎) reste figée en haut pendant le défilement ; les onglets des listes défilent normalement */
+  #u2Tools { position:sticky; top:0; z-index:30; background:var(--bg); }
+  #u2Tools .u2-tools { margin:0; padding:6px 0 8px; }
+  #u2Tools.stuck { box-shadow:0 6px 8px -6px rgba(0,0,0,.25); }
   .pf-head .seg button { font-size:15px; font-weight:700; padding:6px 16px; }
   .pf-lock { max-width:420px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
   .pf-lock h3 { margin:0 0 8px; font-size:17px; }
@@ -1264,7 +1268,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v289</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v290</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1612,7 +1616,7 @@ async function pfSpark(card, p) {
   const bi = first ? rows.findIndex(r => r[0] >= first) : -1;
   box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-label="30 dernières séances, ligne du PRU">' +
     '<line x1="0" x2="' + W + '" y1="' + y(p.pru) + '" y2="' + y(p.pru) + '" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2" vector-effect="non-scaling-stroke" opacity="' + (out ? ".35" : ".6") + '"/>' +
-    sts.map(v => '<line x1="' + (XW + 2) + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#dc2626" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/>').join("") +
+    sts.map(v => '<line x1="' + (XW + 2) + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#dc2626" stroke-width="1.2" stroke-opacity=".85" vector-effect="non-scaling-stroke"/>').join("") +
     '<polyline fill="none" stroke="' + col + '" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + '"/>' +
     (bi > 0 ? '<circle cx="' + x(bi) + '" cy="' + y(cl[bi]) + '" r="2.6" fill="' + col + '"/>' : "") + "</svg>" +
     (out ? '<i class="pru-off" style="' + (out === "▲" ? "top:-6px" : "bottom:-6px") + '">PRU ' + out + "</i>" : "");
@@ -6976,6 +6980,8 @@ function ui2Tools() {
     t = document.createElement("div"); t.id = "u2Tools";
     t.innerHTML = '<div class="u2-tools"><div class="u2-seg"></div><span class="u2-sp"></span><button class="u2-edit" id="u2Edit" title="Modifier la liste">✎</button></div>';
     document.querySelector(".bar").before(t);
+    if (window.IntersectionObserver) { const sen = document.createElement("div"); sen.style.height = "1px"; t.before(sen);   // ombre quand la barre est figée
+      new IntersectionObserver(e => t.classList.toggle("stuck", !e[0].isIntersecting)).observe(sen); }
     const cb = document.createElement("button"); cb.id = "u2Combo"; cb.className = "u2-step"; cb.type = "button"; cb.title = "Graphiques par ligne / période";
     cb.onclick = ui2ComboMenu;
     t.querySelector(".u2-sp").replaceWith(cb, $("colsSeg"), $("rangeSeg"), $("sortBtn"));   // vues · « 3 / 1J » · tri · ✎ sur une seule ligne
