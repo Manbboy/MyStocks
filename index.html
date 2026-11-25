@@ -196,9 +196,10 @@
   .pf-pos .r1 span { font-weight:700; white-space:nowrap; }
   .pf-pos .r2 { font-size:10.5px; line-height:1.4; color:var(--muted); margin-top:2px; letter-spacing:.01em; }
   .pf-pos .r2 span { font-weight:500; }
+  .pf-stops { display:inline-block; margin-top:4px; font-size:12px; line-height:1.45; cursor:pointer; }
   .pf-stop-b { margin-top:5px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:12px; padding:3px 9px; font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
   .pf-st { white-space:nowrap; font-weight:600; } .pf-st.near { color:#d97706; } .pf-st.hit { color:#dc2626; font-weight:800; }
-  .st-row { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; margin-bottom:8px; } .st-row .st-x { height:40px; }
+  .tx-row.st-row { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; margin-bottom:8px; } .st-row .st-x { height:40px; }
   .pf-stop-b.add { font-weight:600; color:var(--muted); border-style:dashed; }
   .pf-stop-b.near { border-color:#f59e0b; background:color-mix(in srgb, #f59e0b 16%, var(--card)); }
   .pf-stop-b.hit { border-color:#dc2626; background:#dc2626; color:#fff; }
@@ -274,7 +275,7 @@
   .pf-note { margin-top:12px; }
   .imp-list { margin:8px 0 0; padding-left:18px; font-size:13px; line-height:1.5; text-align:left; }
   .imp-list li.skip { color:var(--muted); text-decoration:line-through; }
-  .tx-type { display:flex; gap:16px; margin:4px 0 6px; }
+  .tx-type { display:flex; flex-wrap:wrap; gap:6px 14px; margin:4px 0 6px; }
   .tx-type label { flex-direction:row !important; align-items:center; gap:6px !important; font-size:15px !important; color:var(--text) !important; margin:0 !important; }
   .tx-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
   .tx-row input { width:100%; min-width:0; box-sizing:border-box; }
@@ -1237,7 +1238,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v260</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v261</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1414,8 +1415,9 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <div class="dlg-bg" id="txDlg">
   <form class="dlg" id="txForm" autocomplete="off">
     <h3><span id="txTitle">Nouvelle opération</span> · portefeuille <span id="txOwner"></span></h3>
-    <div class="tx-type"><label><input type="radio" name="txType" value="A" checked> Achat</label><label><input type="radio" name="txType" value="V"> Vente</label></div>
+    <div class="tx-type"><label><input type="radio" name="txType" value="A" checked> Achat</label><label><input type="radio" name="txType" value="V"> Vente</label><label id="txSLbl"><input type="radio" name="txType" value="S"> 🛑 Stop-loss</label></div>
     <label>Valeur<select id="txSym"></select></label>
+    <div id="txNorm">
     <label>Date<input type="date" id="txDate" required></label>
     <div class="tx-row">
       <label>Quantité<input type="text" inputmode="decimal" id="txQty" required placeholder="10"></label>
@@ -1424,6 +1426,10 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
     </div>
     <label id="txEurBox" hidden><span id="txEurLbl">Montant débité en € (avis d'opéré, facultatif)</span><input type="text" inputmode="decimal" id="txEur" placeholder=""></label>
     <p class="hint">Prix unitaire hors frais, dans la devise de la valeur. Le PRU est calculé automatiquement (frais d'achat inclus).</p>
+    </div>
+    <div id="txStop" hidden><p class="hint" id="stInfo"></p><div id="stRows"></div>
+      <button type="button" class="btn" id="stAdd">+ Ajouter un palier</button>
+      <p class="hint">Un palier = une quantité vendue à un prix de stop. Exemple : 10 actions à 87 € et 10 à 85 €. Videz tous les paliers pour retirer les stops de cette valeur.</p></div>
     <p class="err" id="txErr"></p>
     <div class="row"><button type="button" class="btn" id="txCancel">Annuler</button><button type="submit" class="btn primary" id="txOk">Enregistrer</button></div>
   </form>
@@ -1492,46 +1498,61 @@ function pfStops(own, sym, qty) {
 const pfStop = (own, sym) => { const L = pfStops(own, sym); return L.length ? L[0].p : null; };   // le plus haut (le premier touché)
 function pfStopHtml(own, p) {
   const L = pfStops(own, p.sym, p.qty);
-  if (!L.length) return '<br><button type="button" class="pf-stop-b add">🛑 Ajouter un stop-loss</button>';
+  if (!L.length) return "";
   const q = n => fmt(n, null).replace(/,00$/, "");
   const parts = L.map(x => { const hit = p.price != null && p.price <= x.p, d = p.price ? (x.p / p.price - 1) * 100 : null;
     return '<span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">' + q(x.q) + " × " + fmt(x.p, p.cur) + (hit ? " ⚠" : d != null ? " (" + fmtPct(Math.round(d * 10) / 10) + ")" : "") + "</span>"; });
   const cov = L.reduce((t, x) => t + x.q, 0), atStop = L.reduce((t, x) => t + (x.p - p.pru) * x.q, 0), cost = p.pru * cov;
-  return '<br><button type="button" class="pf-stop-b">🛑 Stop' + (L.length > 1 ? "s" : "") + "</button> " + parts.join(" · ") +
-    '<br>si les stops sont touchés : <span class="' + (atStop >= 0 ? "up" : "down") + '">' + money(atStop, p.cur) + (cost ? " (" + fmtPct(Math.round(atStop / cost * 1000) / 10) + ")" : "") + "</span>" +
-    (cov < p.qty - 1e-9 ? " · " + q(p.qty - cov) + " sans stop" : cov > p.qty + 1e-9 ? " · ⚠ stops sur " + q(cov) + " actions pour " + q(p.qty) + " détenues" : "");
+  return '<span class="pf-stops">🛑 ' + parts.join(" · ") +
+    '<br>si touchés : <span class="' + (atStop >= 0 ? "up" : "down") + '">' + money(atStop, p.cur) + (cost ? " (" + fmtPct(Math.round(atStop / cost * 1000) / 10) + ")" : "") + "</span>" +
+    (cov < p.qty - 1e-9 ? " · " + q(p.qty - cov) + " sans stop" : cov > p.qty + 1e-9 ? " · ⚠ stops sur " + q(cov) + " pour " + q(p.qty) + " détenues" : "") + "</span>";
 }
-function pfStopEdit(own, p) {
-  let dlg = $("stopDlg");
-  if (!dlg) { dlg = document.createElement("div"); dlg.className = "dlg-bg"; dlg.id = "stopDlg";
-    dlg.innerHTML = '<form class="dlg" autocomplete="off"><h3 id="stTitle"></h3><p class="hint" id="stInfo"></p><div id="stRows"></div>' +
-      '<button type="button" class="btn" id="stAdd">+ Ajouter un palier</button><p class="hint">Un palier = une quantité vendue à un prix de stop. Exemple : 10 actions à 87 € et 10 à 85 €. Laissez vide pour retirer.</p>' +
-      '<p class="err" id="stErr"></p><div class="row"><button type="button" class="btn" id="stNo">Annuler</button><button type="submit" class="btn primary">Enregistrer</button></div></form>';
-    document.body.appendChild(dlg); }
-  const rows = $("stRows"), unit = p.cur === "USD" ? "$" : "€";
-  $("stTitle").textContent = "🛑 Stop-loss · " + p.name + " (" + own + ")";
+/* 🛑 édition des paliers : dans la fenêtre « + Opération », 3e choix « Stop-loss » (seules les positions ouvertes sont proposées) */
+function txStopRow(q, pr) {
+  const unit = ((summary.symbols[$("txSym").value] || {}).currency) === "USD" ? "$" : "€";
+  const r = document.createElement("div"); r.className = "tx-row st-row";
+  r.innerHTML = '<label>Quantité<input type="text" inputmode="decimal" class="stQ"></label><label>Prix stop (' + unit + ')<input type="text" inputmode="decimal" class="stP"></label><button type="button" class="btn st-x" aria-label="Retirer ce palier">✕</button>';
+  r.querySelector(".stQ").value = q != null ? String(q).replace(".", ",") : ""; r.querySelector(".stP").value = pr != null ? String(pr).replace(".", ",") : "";
+  r.querySelector(".st-x").onclick = () => r.remove(); $("stRows").appendChild(r);
+}
+function txOpenPos() { const own = pfOwner(); return pfPositions(((pfState.data && pfState.data[own]) || {}).tx || []).filter(p => p.qty > 1e-9); }
+function txStopFill() {
+  const p = txOpenPos().find(x => x.sym === $("txSym").value); $("stRows").innerHTML = "";
+  if (!p) { $("stInfo").textContent = "Aucune action détenue pour cette valeur."; return; }
   $("stInfo").textContent = fmt(p.qty, null).replace(/,00$/, "") + " actions · cours " + fmt(p.price, p.cur) + " · PRU " + fmt(p.pru, p.cur);
-  const addRow = (q, pr) => { const r = document.createElement("div"); r.className = "tx-row st-row";
-    r.innerHTML = '<label>Quantité<input type="text" inputmode="decimal" class="stQ"></label><label>Prix stop (' + unit + ')<input type="text" inputmode="decimal" class="stP"></label><button type="button" class="btn st-x" aria-label="Retirer ce palier">✕</button>';
-    r.querySelector(".stQ").value = q != null ? String(q).replace(".", ",") : ""; r.querySelector(".stP").value = pr != null ? String(pr).replace(".", ",") : "";
-    r.querySelector(".st-x").onclick = () => r.remove(); rows.appendChild(r); };
-  rows.innerHTML = ""; $("stErr").textContent = "";
-  const L = pfStops(own, p.sym, p.qty); (L.length ? L : [{ q:p.qty, p:null }]).forEach(x => addRow(x.q, x.p));
-  $("stAdd").onclick = () => addRow(null, null);
-  $("stNo").onclick = () => dlg.classList.remove("show");
-  dlg.querySelector("form").onsubmit = async ev => { ev.preventDefault();
-    const num = v => v.trim() ? parseFloat(v.replace(/\s/g, "").replace(",", ".")) : null, out = [];
-    for (const r of rows.querySelectorAll(".st-row")) { const q = num(r.querySelector(".stQ").value), pr = num(r.querySelector(".stP").value);
-      if (q == null && pr == null) continue;
-      if (!(q > 0) || !(pr > 0)) { $("stErr").textContent = "Chaque palier a besoin d'une quantité et d'un prix."; return; }
-      out.push({ q, p:pr }); }
-    try {
-      await pfSave(d => { d[own] = d[own] || { tx:[] }; d[own].stops = d[own].stops || {}; if (out.length) d[own].stops[p.sym] = out; else delete d[own].stops[p.sym]; },
-        "stop-loss " + p.sym + " (" + out.length + ")");
-      dlg.classList.remove("show"); toast(out.length ? "🛑 " + out.length + " stop" + (out.length > 1 ? "s" : "") + " enregistré" + (out.length > 1 ? "s" : "") + "." : "Stops retirés.", 2200); renderPf();
-    } catch (e) { $("stErr").textContent = e.message === "NOTOKEN" || e.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (le même que pour ajouter une opération)." : "Erreur : " + e.message; }
-  };
-  dlg.classList.add("show");
+  const L = pfStops(pfOwner(), p.sym, p.qty); (L.length ? L : [{ q:p.qty, p:null }]).forEach(x => txStopRow(x.q, x.p));
+}
+let txAllOpts = null;
+function txMode() {
+  const st = document.querySelector('input[name="txType"]:checked').value === "S", sel = $("txSym");
+  $("txNorm").hidden = st; $("txStop").hidden = !st;
+  ["txDate", "txQty", "txPrice"].forEach(id => $(id).required = !st);
+  if (st) {
+    const cur = sel.value; if (!txAllOpts) txAllOpts = [...sel.options].map(o => [o.value, o.textContent]);
+    const pos = txOpenPos(); sel.innerHTML = "";
+    pos.sort((a, b) => a.name.localeCompare(b.name)).forEach(p => { const o = document.createElement("option"); o.value = p.sym; o.textContent = p.name + (pfStops(pfOwner(), p.sym, p.qty).length ? " 🛑" : ""); sel.appendChild(o); });
+    if (pos.some(p => p.sym === cur)) sel.value = cur;
+    txStopFill(); $("txOk").textContent = "Enregistrer les stops";
+  } else {
+    if (txAllOpts) { const cur = sel.value; sel.innerHTML = ""; txAllOpts.forEach(([v, t]) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); }); sel.value = cur; txAllOpts = null; }
+    $("txOk").textContent = txEdit ? "Enregistrer les modifications" : "Enregistrer";
+  }
+}
+async function submitStops() {
+  const own = pfOwner(), sym = $("txSym").value, num = v => v.trim() ? parseFloat(v.replace(/\s/g, "").replace(",", ".")) : null, out = [];
+  if (!sym) { $("txErr").textContent = "Aucune position ouverte."; return; }
+  for (const r of $("stRows").querySelectorAll(".st-row")) { const q = num(r.querySelector(".stQ").value), pr = num(r.querySelector(".stP").value);
+    if (q == null && pr == null) continue;
+    if (!(q > 0) || !(pr > 0)) { $("txErr").textContent = "Chaque palier a besoin d'une quantité et d'un prix."; return; }
+    out.push({ q, p:pr }); }
+  $("txOk").disabled = true;
+  try {
+    await pfSave(d => { d[own] = d[own] || { tx:[] }; d[own].stops = d[own].stops || {}; if (out.length) d[own].stops[sym] = out; else delete d[own].stops[sym]; },
+      "stop-loss " + sym + " (" + out.length + ")");
+    $("txDlg").classList.remove("show"); toast(out.length ? "🛑 " + out.length + " stop" + (out.length > 1 ? "s" : "") + " enregistré" + (out.length > 1 ? "s" : "") + "." : "Stops retirés.", 2200);
+    if (pfView()) renderPf(); else if ($("ov").classList.contains("show")) drawTxMarks();
+  } catch (e) { $("txErr").textContent = e.message === "NOTOKEN" || e.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (le même que pour ajouter une opération)." : "Erreur : " + e.message; }
+  $("txOk").disabled = false;
 }
 async function pfSpark(card, p) {
   const box = card.querySelector(".pf-spk"), info = summary.symbols[p.sym];
@@ -4897,7 +4918,7 @@ async function renderPfInner() {
       tl.appendChild(row);
     });
     c.appendChild(tl);
-    c.querySelectorAll(".pf-stop-b").forEach(b => b.onclick = ev => { ev.stopPropagation(); pfStopEdit(own, p); });
+    c.querySelectorAll(".pf-stops").forEach(b => b.onclick = ev => { ev.stopPropagation(); openTxDlg(null, p.sym); });
     c.onclick = () => {                         // ouvre le graphique de la valeur, avec les repères d'achat / vente
       const pi = cfg.portfolios.findIndex(pf => pf.items.some(i => i.yahoo === p.sym));
       if (pi < 0 || !summary.symbols[p.sym]) { toast("Ajoutez d'abord cette valeur à un onglet pour voir son graphique.", 2200); return; }
@@ -5023,8 +5044,8 @@ function checkTxList(list, sym) {
   }
   return "";
 }
-function openTxDlg(edit) {
-  txEdit = edit || null;
+function openTxDlg(edit, stopSym) {
+  txEdit = edit || null; txAllOpts = null;
   const own = pfOwner(), sel = $("txSym"); sel.innerHTML = "";
   [...allSymbols().values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
     const o = document.createElement("option"); o.value = it.yahoo; o.textContent = it.name + " (" + it.yahoo + ")"; sel.appendChild(o);
@@ -5043,13 +5064,16 @@ function openTxDlg(edit) {
   } else {
     $("txDate").value = new Date().toISOString().slice(0, 10);
     $("txQty").value = ""; $("txPrice").value = ""; $("txFees").value = ""; $("txEur").value = "";
-    document.querySelector('input[name="txType"][value="A"]').checked = true;
+    document.querySelector('input[name="txType"][value="' + (stopSym ? "S" : "A") + '"]').checked = true;
+    if (stopSym) sel.value = stopSym;
   }
-  updTxEur();
+  $("txSLbl").hidden = !!txEdit;
+  txMode(); updTxEur();
   $("txDlg").classList.add("show");
 }
 async function submitTx(e) {
   e.preventDefault();
+  if (document.querySelector('input[name="txType"]:checked').value === "S") return submitStops();
   const own = pfOwner();
   const edit = txEdit;
   const t = { id:edit ? edit.id : Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:edit ? edit.t : Date.now(),
@@ -5089,7 +5113,9 @@ async function updTxEur() {
 }
 ["txSym", "txDate", "txQty", "txPrice", "txFees"].forEach(id => $(id).addEventListener("input", updTxEur));
 $("txSym").addEventListener("change", updTxEur);
-document.querySelectorAll('input[name="txType"]').forEach(r => r.addEventListener("change", updTxEur));
+document.querySelectorAll('input[name="txType"]').forEach(r => r.addEventListener("change", () => { $("txErr").textContent = ""; txMode(); updTxEur(); }));
+$("txSym").addEventListener("change", () => { if (!$("txStop").hidden) txStopFill(); });
+$("stAdd").onclick = () => txStopRow(null, null);
 function txEurTxt(t, cur) {
   if (cur === "EUR") return "";
   if (+t.eur > 0) return " = " + fmt(+t.eur, "EUR");
