@@ -1239,7 +1239,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v264</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v265</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1573,10 +1573,11 @@ async function pfSpark(card, p) {
     if (p.dayDate && p.dayDate > ld) rows = rows.slice(1).concat([[p.dayDate, p.price, p.price, p.price, p.price]]);
     else rows[rows.length - 1] = rows[rows.length - 1].slice(0, 4).concat([p.price]); }
   const W = 100, H = 26, cl = rows.map(r => r[4]), last = p.price != null ? p.price : cl[cl.length - 1];
-  let lo = Math.min(...cl), hi = Math.max(...cl); const pad = (hi - lo) * .08 || hi * .01; lo -= pad; hi += pad;
+  // l'échelle englobe toujours le PRU et les stops : la ligne pointillée est le vrai PRU et chaque stop a son repère
+  const sts = p.own ? pfStops(p.own, p.sym, p.qty).map(x => x.p) : [];
+  let lo = Math.min(...cl, p.pru, ...sts), hi = Math.max(...cl, p.pru, ...sts); const pad = (hi - lo) * .08 || hi * .01; lo -= pad; hi += pad;
   const k = (H - 4) / ((hi - lo) || 1), y = v => (H - 2 - (Math.max(lo, Math.min(hi, v)) - lo) * k).toFixed(1), XW = W - 10, x = i => (i * XW / (rows.length - 1)).toFixed(1);
-  const col = last >= p.pru ? "var(--up)" : "var(--down)", out = p.pru > hi ? "▲" : p.pru < lo ? "▼" : "";
-  const sts = p.own ? pfStops(p.own, p.sym, p.qty).map(x => x.p).filter(v => v >= lo && v <= hi) : [];
+  const col = last >= p.pru ? "var(--up)" : "var(--down)", out = "";
   const buys = p.tx.filter(t => t.type === "A").map(t => t.date).sort(), first = buys[0];
   const bi = first ? rows.findIndex(r => r[0] >= first) : -1;
   box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-label="30 dernières séances, ligne du PRU">' +
