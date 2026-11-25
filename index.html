@@ -291,6 +291,10 @@
   .imp-list { margin:8px 0 0; padding-left:18px; font-size:13px; line-height:1.5; text-align:left; }
   .imp-list li.skip { color:var(--muted); text-decoration:line-through; }
   #txFind { margin-bottom:6px; }
+  .f-sug { margin:-4px 0 10px; border:1px solid var(--border); border-radius:10px; max-height:230px; overflow:auto; background:var(--card); }
+  .f-sug .u2f-hint { margin:8px 10px; font-size:12.5px; color:var(--muted); }
+  .f-sug-row { display:flex; flex-direction:column; align-items:flex-start; width:100%; text-align:left; border:0; border-bottom:1px solid var(--border); background:none; color:var(--text); padding:7px 10px; cursor:pointer; font:inherit; }
+  .f-sug-row:last-child { border-bottom:0; } .f-sug-row b { font-size:14px; font-weight:600; } .f-sug-row small { font-size:11.5px; color:var(--muted); }
   .tx-type { display:flex; flex-wrap:wrap; gap:6px 14px; margin:4px 0 6px; }
   .tx-type label { flex-direction:row !important; align-items:center; gap:6px !important; font-size:15px !important; color:var(--text) !important; margin:0 !important; }
   .tx-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
@@ -1257,7 +1261,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v285</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v286</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1410,7 +1414,8 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
   <form class="dlg" id="addForm" autocomplete="off">
     <h3>Ajouter une valeur</h3>
     <label>Portefeuille<select id="fPf"></select></label>
-    <label>Symbole Yahoo Finance<input id="fSym" placeholder="ex. VU.PA, AI.PA, AAPL" autocapitalize="characters" required></label>
+    <label>Symbole Yahoo Finance<input id="fSym" placeholder="ticker, ou tapez le nom : ex. Sanofi" autocapitalize="characters" required></label>
+    <div id="fSug" class="f-sug" hidden></div>
     <p class="hint">Suffixe de la place : .PA Paris · .BR Bruxelles · .AS Amsterdam · .DE Xetra · .MI Milan · rien pour les USA.
       <a id="fLookup" href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener">Trouver le symbole sur Yahoo Finance</a></p>
     <label>Nom affiché<input id="fName" placeholder="ex. VusionGroup" required></label>
@@ -2049,12 +2054,35 @@ function openAdd() {
   const sel = $("fPf"); sel.innerHTML = "";
   cfg.portfolios.forEach((p, i) => { const o = document.createElement("option"); o.value = i; o.textContent = p.name; sel.appendChild(o); });
   sel.value = String(prefs.active);
-  $("fSym").value = ""; $("fName").value = ""; $("fErr").textContent = ""; $("fTok").value = "";
+  $("fSym").value = ""; $("fName").value = ""; $("fErr").textContent = ""; $("fTok").value = ""; $("fSug").hidden = true; fSugSeq++;
   $("repoName").textContent = REPO.split("/")[1];
   $("tokBox").classList.toggle("show", !getTok());
   $("addDlg").classList.add("show");
   setTimeout(() => $("fSym").focus(), 50);
 }
+/* suggestions Yahoo Finance dans « Ajouter une valeur » : en tapant un nom (ou un début de ticker) dans l'un des deux champs,
+   la liste de Yahoo s'affiche ; toucher une ligne remplit le symbole et le nom */
+let fSugT = null, fSugSeq = 0, fSugMute = false;
+function fSugRun(raw) {
+  clearTimeout(fSugT); const box = $("fSug"), seq = ++fSugSeq;
+  raw = (raw || "").trim(); if (fSugMute || raw.length < 2) { box.hidden = true; return; }
+  box.hidden = false; box.innerHTML = '<p class="u2f-hint">Recherche sur Yahoo Finance…</p>';
+  fSugT = setTimeout(async () => {
+    let qs = [];
+    try { qs = (await fetch(LIVE_URL + "/find?q=" + encodeURIComponent(raw)).then(r => r.json())).quotes || []; } catch (e) { qs = null; }
+    if (seq !== fSugSeq) return;
+    if (qs === null) { box.innerHTML = '<p class="u2f-hint">Recherche Yahoo indisponible pour le moment.</p>'; return; }
+    if (!qs.length) { box.innerHTML = '<p class="u2f-hint">Aucune action trouvée chez Yahoo Finance.</p>'; return; }
+    box.innerHTML = "";
+    qs.forEach(x => { const r = document.createElement("button"); r.type = "button"; r.className = "f-sug-row";
+      r.innerHTML = "<b>" + esc(x.n) + "</b><small>" + esc(x.s) + (x.x ? " · " + esc(x.x) : "") + (x.t ? " · " + esc(x.t) : "") + "</small>";
+      r.onclick = () => { fSugMute = true; $("fSym").value = x.s; $("fName").value = x.n.replace(/\s+(S\.?A\.?|SE|N\.?V\.?|Inc\.?|Corp\.?|Corporation|plc|AG|Ltd\.?)$/i, "");
+        $("fSym").dispatchEvent(new Event("input")); fSugMute = false; box.hidden = true; };
+      box.appendChild(r); });
+  }, 350);
+}
+$("fSym").addEventListener("input", () => fSugRun($("fSym").value));
+$("fName").addEventListener("input", () => fSugRun($("fName").value));
 $("fName").addEventListener("input", () => { $("fLookup").href = "https://finance.yahoo.com/lookup?s=" + encodeURIComponent($("fName").value || $("fSym").value); });
 $("fSym").addEventListener("input", () => { $("fLookup").href = "https://finance.yahoo.com/lookup?s=" + encodeURIComponent($("fSym").value || $("fName").value); });
 $("tokForget").onclick = e => { e.preventDefault(); setTok(""); $("tokBox").classList.add("show"); toast("Jeton oublié sur cet appareil."); };
@@ -6867,8 +6895,8 @@ function ui2FindRun() {
     qs.forEach(x => {
       const r = document.createElement("div"); r.className = "u2f-row ext";
       r.innerHTML = '<span class="u2f-n"><b>' + esc(x.n) + '</b><small>' + esc(x.s) + (x.x ? " · " + esc(x.x) : "") + (x.t ? " · " + esc(x.t) : "") + '</small></span><button type="button" class="u2f-add">+ Ajouter</button>';
-      r.querySelector(".u2f-add").onclick = () => { ui2FindClose(); openAdd(); $("fSym").value = x.s; $("fName").value = x.n.replace(/\s+(S\.?A\.?|SE|N\.?V\.?|Inc\.?|Corp\.?|Corporation|plc|AG|Ltd\.?)$/i, "");
-        $("fSym").dispatchEvent(new Event("input")); };
+      r.querySelector(".u2f-add").onclick = () => { ui2FindClose(); openAdd(); fSugMute = true; $("fSym").value = x.s; $("fName").value = x.n.replace(/\s+(S\.?A\.?|SE|N\.?V\.?|Inc\.?|Corp\.?|Corporation|plc|AG|Ltd\.?)$/i, "");
+        $("fSym").dispatchEvent(new Event("input")); fSugMute = false; };
       ext.appendChild(r);
     });
   }, 350);
