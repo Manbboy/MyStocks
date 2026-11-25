@@ -1257,7 +1257,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v283</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v284</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1502,8 +1502,8 @@ function fmt(v, cur) {
   const s = v.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:d });
   return cur && CUR[cur] ? s + " " + CUR[cur] : s;
 }
-// PRU : jusqu'à 3 décimales, comme le courtier (83,075 €)
-function fmtPru(v, cur) { if (v == null || isNaN(v)) return "–"; const s = v.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:3 }); return cur && CUR[cur] ? s + " " + CUR[cur] : s; }
+// PRU : 2 décimales sur la page Portefeuille (83,075 € → 83,08 €)
+function fmtPru(v, cur) { if (v == null || isNaN(v)) return "–"; const s = v.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }); return cur && CUR[cur] ? s + " " + CUR[cur] : s; }
 function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleString(NUM_LOC, { minimumFractionDigits:2, maximumFractionDigits:2 }) + "\u202f%"; }
 
 /* Portefeuille : mini-graphique des 30 dernières séances par position ouverte, avec la ligne du prix de revient (PRU)
