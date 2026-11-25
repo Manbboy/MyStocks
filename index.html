@@ -1261,7 +1261,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v287</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v288</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5014,7 +5014,8 @@ async function renderPfInner() {
         r.innerHTML = '<span class="ty so">' + ty + '</span><span class="d">' + d + '</span><span class="q">' + q + "</span>"; return r; };
       const rows = [row("Solde", A(fmt(p.cost, p.cur)), A(fmt(p.qty, null).replace(/,00$/, "")) + " × " + fmtPru(p.pru, p.cur) + ' <span class="pf-muted">(PRU' + (prefs.pruFees ? " frais inclus" : "") + ")</span>" +
         (p.be - p.pru > 0.0005 ? ' <span class="pf-muted" style="white-space:nowrap">· équilibre ' + money(Math.ceil(p.be * 100 - 1e-6) / 100, p.cur).replace(/^\+/, "") + "</span>" : ""))];
-      if (p.tx.some(t => t.type === "V") && Math.abs(p.realized) > 0.005) rows.push(row("Réalisé",   // seulement s'il y a déjà eu une vente '<span class="' + (p.realized >= 0 ? "up" : "down") + '">' + A(money(p.realized, p.cur)) + "</span>",
+      // ligne Réalisé seulement s'il y a déjà eu une vente
+      if (p.tx.some(t => t.type === "V") && Math.abs(p.realized) > 0.005) rows.push(row("Réalisé", '<span class="' + (p.realized >= 0 ? "up" : "down") + '">' + A(money(p.realized, p.cur)) + "</span>",
         p.realizedPct != null ? '<span class="' + (p.realized >= 0 ? "up" : "down") + '">' + fmtPct(p.realizedPct) + '</span> <span class="pf-muted">sur les ventes' + (prefs.pruFees ? "" : ", frais inclus") + "</span>"
           : '<span class="pf-muted">frais d\'achat</span>'));
       rows[rows.length - 1].classList.add("last");
