@@ -2,6 +2,9 @@ name: tinoprobe
 on:
   push:
     paths: [".github/workflows/tinoprobe.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   p:
     runs-on: ubuntu-latest
@@ -24,5 +27,6 @@ jobs:
                   print(s, "ERR", e)
           json.dump(out, open("tino_raw.json", "w"))
           PY
-      - uses: actions/upload-artifact@v4
-        with: { name: tinoraw, path: tino_raw.json }
+      - run: |
+          mkdir pub && cd pub && git init -q && cp ../tino_raw.json . && git add . && git -c user.name=bot -c user.email=bot@x commit -qm raw
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:refs/heads/tinocal
