@@ -196,6 +196,10 @@
   .pf-pos .r1 span { font-weight:700; white-space:nowrap; }
   .pf-pos .r2 { font-size:10.5px; line-height:1.4; color:var(--muted); margin-top:2px; letter-spacing:.01em; }
   .pf-pos .r2 span { font-weight:500; }
+  .pf-stop-b { margin-top:5px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:12px; padding:3px 9px; font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .pf-stop-b.add { font-weight:600; color:var(--muted); border-style:dashed; }
+  .pf-stop-b.near { border-color:#f59e0b; background:color-mix(in srgb, #f59e0b 16%, var(--card)); }
+  .pf-stop-b.hit { border-color:#dc2626; background:#dc2626; color:#fff; }
   .pf-tx { margin-top:8px; border-top:1px solid var(--border); padding-top:6px; display:flex; flex-direction:column; gap:3px; }
   .pf-tx > div { display:flex; align-items:center; gap:8px; font-size:11.5px; }
   .pf-tx .ty { font-weight:700; min-width:44px; } .pf-tx .ty { font-size:11px; padding:1px 7px; border-radius:999px; text-align:center; }   /* achat bleu, vente violet : le vert/rouge reste réservé aux gains/pertes */
@@ -1223,7 +1227,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v257</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v258</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -1468,6 +1472,29 @@ function fmtPct(p) { return p == null ? "" : (p > 0 ? "+" : "") + p.toLocaleStri
 /* Portefeuille : mini-graphique des 30 dernières séances par position ouverte, avec la ligne du prix de revient (PRU)
    en pointillés et un point sur le jour du premier achat s'il tombe dans ces 30 séances */
 const PF_SPK_N = 30;
+/* 🛑 Stop-loss : un prix par valeur et par personne, enregistré dans le portefeuille chiffré (data[M|D].stops[sym]) */
+const pfStop = (own, sym) => { const v = ((pfState.data && pfState.data[own] && pfState.data[own].stops) || {})[sym]; return v > 0 ? +v : null; };
+function pfStopHtml(own, p) {
+  const st = pfStop(own, p.sym);
+  if (!st) return '<br><button type="button" class="pf-stop-b add">🛑 Ajouter un stop-loss</button>';
+  const dist = p.price ? (st / p.price - 1) * 100 : null, atStop = (st - p.pru) * p.qty, atPct = (st / p.pru - 1) * 100;
+  const hit = p.price != null && p.price <= st, near = !hit && dist != null && dist > -3;
+  return '<br><button type="button" class="pf-stop-b' + (hit ? " hit" : near ? " near" : "") + '">🛑 Stop ' + fmt(st, p.cur) + "</button> " +
+    (hit ? '<b class="down">cours sous le stop</b>' : dist != null ? "à " + fmtPct(Math.round(dist * 10) / 10) + " du cours" : "") +
+    ' · au stop : <span class="' + (atStop >= 0 ? "up" : "down") + '">' + money(atStop, p.cur) + " (" + fmtPct(Math.round(atPct * 10) / 10) + ")</span>";
+}
+async function pfStopEdit(own, p) {
+  const cur = pfStop(own, p.sym);
+  const v = prompt("Stop-loss de " + p.name + " (" + own + ") en " + (p.cur === "USD" ? "$" : "€") + "\nCours " + fmt(p.price, p.cur) + " · PRU " + fmt(p.pru, p.cur) + "\n(laisser vide pour retirer le stop)", cur ? String(cur).replace(".", ",") : "");
+  if (v === null) return;
+  const n = v.trim() ? parseFloat(v.replace(/\s/g, "").replace(",", ".")) : null;
+  if (v.trim() && !(n > 0)) { toast("Prix invalide.", 2000); return; }
+  try {
+    await pfSave(d => { d[own] = d[own] || { tx:[] }; d[own].stops = d[own].stops || {}; if (n) d[own].stops[p.sym] = n; else delete d[own].stops[p.sym]; },
+      (n ? "stop-loss " : "stop-loss retiré ") + p.sym);
+    toast(n ? "🛑 Stop-loss enregistré : " + fmt(n, p.cur) : "Stop-loss retiré.", 2200); renderPf();
+  } catch (e) { toast(e.message === "NOTOKEN" || e.message === "BADTOKEN" ? "Jeton GitHub manquant ou invalide (le même que pour ajouter une opération)." : "Erreur : " + e.message, 3500); }
+}
 async function pfSpark(card, p) {
   const box = card.querySelector(".pf-spk"), info = summary.symbols[p.sym];
   if (!box || !info || !info.file) return;
@@ -1478,10 +1505,12 @@ async function pfSpark(card, p) {
   let lo = Math.min(...cl), hi = Math.max(...cl); const pad = (hi - lo) * .08 || hi * .01; lo -= pad; hi += pad;
   const k = (H - 4) / ((hi - lo) || 1), y = v => (H - 2 - (Math.max(lo, Math.min(hi, v)) - lo) * k).toFixed(1), x = i => (i * W / (rows.length - 1)).toFixed(1);
   const col = last >= p.pru ? "var(--up)" : "var(--down)", out = p.pru > hi ? "▲" : p.pru < lo ? "▼" : "";
+  const st = p.own ? pfStop(p.own, p.sym) : null, stIn = st && st >= lo && st <= hi;
   const buys = p.tx.filter(t => t.type === "A").map(t => t.date).sort(), first = buys[0];
   const bi = first ? rows.findIndex(r => r[0] >= first) : -1;
   box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-label="30 dernières séances, ligne du PRU">' +
     '<line x1="0" x2="' + W + '" y1="' + y(p.pru) + '" y2="' + y(p.pru) + '" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2" vector-effect="non-scaling-stroke" opacity="' + (out ? ".35" : ".6") + '"/>' +
+    (stIn ? '<line x1="0" x2="' + W + '" y1="' + y(st) + '" y2="' + y(st) + '" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="4 2" vector-effect="non-scaling-stroke"/>' : "") +
     '<polyline fill="none" stroke="' + col + '" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + cl.map((v, i) => x(i) + "," + y(v)).join(" ") + '"/>' +
     (bi > 0 ? '<circle cx="' + x(bi) + '" cy="' + y(cl[bi]) + '" r="2.6" fill="' + col + '"/>' : "") + "</svg>" +
     (out ? '<i class="pru-off" style="' + (out === "▲" ? "top:-6px" : "bottom:-6px") + '">PRU ' + out + "</i>" : "");
@@ -4810,6 +4839,7 @@ async function renderPfInner() {
         : 'réalisé <span class="' + (p.realizedE >= 0 ? "up" : "down") + '">' + A(money(p.realizedE, "EUR")) + (p.realizedPctE != null ? " (" + fmtPct(p.realizedPctE) + ")" : "") + '</span>') : "") + '</div>';
     c.querySelector(".nm").textContent = p.name;
     if (open) c.querySelector(".r1").insertAdjacentHTML("afterend", '<span class="pf-spk"></span>');
+    if (open && !prefs.pfCompact) c.querySelector(".r2").insertAdjacentHTML("beforeend", pfStopHtml(own, p));
     if (prefs.pfCompact) {
       const v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct, cl = v >= 0 ? "up" : "down";
       c.innerHTML = '<div class="cp"><b class="nm"></b><b class="pc ' + cl + '">' + (pc != null ? fmtPct(pc) : "") + '</b>' +
@@ -4829,6 +4859,7 @@ async function renderPfInner() {
       tl.appendChild(row);
     });
     c.appendChild(tl);
+    c.querySelectorAll(".pf-stop-b").forEach(b => b.onclick = ev => { ev.stopPropagation(); pfStopEdit(own, p); });
     c.onclick = () => {                         // ouvre le graphique de la valeur, avec les repères d'achat / vente
       const pi = cfg.portfolios.findIndex(pf => pf.items.some(i => i.yahoo === p.sym));
       if (pi < 0 || !summary.symbols[p.sym]) { toast("Ajoutez d'abord cette valeur à un onglet pour voir son graphique.", 2200); return; }
@@ -4839,7 +4870,7 @@ async function renderPfInner() {
     c._perf = open ? p.latentPct : p.realizedPct;          // tri par performance dans chaque rubrique (en %)
     c._gain = open ? (p.noE ? p.latent : p.latentE) : (p.noE ? p.realized : p.realizedE);   // … ou en gain (en euros)
     c._cat = pfCat(p); list.push(c);
-    if (open) pfSpark(c, p);
+    if (open) { p.own = own; pfSpark(c, p); }
   });
   const fill = (L, B) => PF_CATS.forEach(([k, lab]) => {
     const key = prefs.pfSort === "eur" ? "_gain" : "_perf";
@@ -5078,8 +5109,11 @@ function drawTxMarks() {
       const open = p.qty > 0, v = open ? p.latent : p.realized, pc = open ? p.latentPct : p.realizedPct;
       infoEl.insertAdjacentHTML("beforeend", '<span class="pi"><i style="background:' + PF_OWNERS[own].col + '"></i><b>' + own + '</b> ' +
         (open ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " " : "soldée ") +
-        '<span class="' + (v >= 0 ? "up" : "down") + '">' + money(v, p.cur) + (pc != null ? " (" + fmtPct(pc) + ")" : "") + "</span></span>");
+        '<span class="' + (v >= 0 ? "up" : "down") + '">' + money(v, p.cur) + (pc != null ? " (" + fmtPct(pc) + ")" : "") + "</span>" +
+        (open && pfStop(own, ovSym) ? ' · <b style="color:#dc2626">🛑 ' + fmt(pfStop(own, ovSym), p.cur) + "</b>" : "") + "</span>");
     }
+    if (p && p.qty > 0 && pfStop(own, ovSym)) txLines.push(ovCandles.createPriceLine({ price:pfStop(own, ovSym), color:"#dc2626", lineWidth:2,
+      lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"Stop " + own }));
     if (p && p.qty > 0) {
       txLines.push(ovCandles.createPriceLine({ price:p.pru, color:PF_OWNERS[own].col, lineWidth:1,
         lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"" }));       // étiquette réduite au prix sur l'axe (le détail est sous le nom)
