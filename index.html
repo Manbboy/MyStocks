@@ -158,6 +158,9 @@
   .sig-none { font-size:13px; color:var(--muted); padding:6px 2px; }
   .sig-foot { font-size:11px; color:var(--muted); text-align:center; margin:12px 0 30px; }
   .pf-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  /* barre de boutons du portefeuille figée en haut de l'écran pendant le défilement */
+  .pf-head { position:sticky; top:0; z-index:30; background:var(--bg); padding:6px 0; margin-top:-6px; }
+  .pf-head.stuck { box-shadow:0 6px 8px -6px rgba(0,0,0,.25); }
   .pf-head .seg button { font-size:15px; font-weight:700; padding:6px 16px; }
   .pf-lock { max-width:420px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
   .pf-lock h3 { margin:0 0 8px; font-size:17px; }
@@ -188,7 +191,7 @@
   .pf-sum span { font-size:12px; color:var(--muted); }
   .pf-sum b { font-size:16px; }
   .pf-head { flex-wrap:wrap; row-gap:6px; }        /* boutons sur 2 lignes si l'écran est étroit (sinon la page déborde à droite) */
-  html, body { overflow-x:hidden; }
+  html, body { overflow-x:hidden; overflow-x:clip; }   /* clip : coupe sans créer de zone de défilement (la barre du portefeuille peut rester figée) */
   .pf-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:8px; }
   .pf-pos { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; cursor:pointer; }
   .pf-pos.closed { opacity:.7; }
@@ -1261,7 +1264,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v288</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v289</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -4861,6 +4864,8 @@ async function renderPfInner() {
   if (!fxRows) await loadFx();
   box.innerHTML = "";
   const head = document.createElement("div"); head.className = "pf-head";
+  if (window.IntersectionObserver) { const sen = document.createElement("div"); sen.style.height = "1px";   // ombre quand la barre est figée
+    new IntersectionObserver(e => head.classList.toggle("stuck", !e[0].isIntersecting)).observe(sen); box.appendChild(sen); }
   head.innerHTML = '<div class="seg" id="pfOwnerSeg"></div><span class="spacer"></span>';
   box.appendChild(head);
   renderSeg("pfOwnerSeg", [["M","M"],["D","D"]], pfOwner(), v => { prefs.pfOwner = v; savePrefs(); renderPf(); });
