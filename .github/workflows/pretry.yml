@@ -1,9 +1,0 @@
-name: pretry
-on:
-  push:
-    paths: [".github/workflows/pretry.yml"]
-jobs:
-  p:
-    runs-on: ubuntu-latest
-    steps:
-      - run: curl -s -m 60 https://cours-live.manbboy.workers.dev/tg/pre-eu
