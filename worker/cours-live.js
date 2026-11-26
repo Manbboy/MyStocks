@@ -60,7 +60,9 @@ export default {
 
   // vérification périodique des alertes
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(checkAlerts(env));
+    // 8 h 30 (Bruxelles) : résumé pré-ouverture Europe ; 9 h 00 (New York) : pré-ouverture Wall Street — à la place des alertes ce tour-là (budget de requêtes)
+    const pre = await preOpen(env);
+    if (!pre) ctx.waitUntil(checkAlerts(env));
   },
 };
 
@@ -253,6 +255,98 @@ async function chart(sym, range, interval) {
   } catch (e) {
     return { sym, error: String(e) };
   }
+}
+
+/* ===== Résumés de pré-ouverture (Telegram), une fois par jour de semaine ===== */
+const HOLD_URL = "https://raw.githubusercontent.com/Manbboy/MyStocks/main/portfolios.json";
+function zoned(tz) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", weekday: "short", hour12: false })
+    .formatToParts(new Date()).map(x => [x.type, x.value]));
+  return { day: p.year + "-" + p.month + "-" + p.day, h: +p.hour % 24, m: +p.minute, wd: p.weekday };
+}
+const pct = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2).replace(".", ",") + " %";
+const num = v => v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const cut = (t, n) => (t.length > n ? t.slice(0, n - 1) + "." : t).padEnd(n);
+async function preOpen(env) {
+  if (!env.TG_TOKEN || !env.ALERTS) return false;
+  const bx = zoned("Europe/Brussels"), ny = zoned("America/New_York");
+  if (["Sat", "Sun"].includes(bx.wd)) return false;
+  const force = await env.ALERTS.get("pre:force");                 // essai manuel : "eu" ou "us"
+  let kind = null;
+  if (bx.h === 8 && bx.m >= 30 && bx.m < 45) kind = "eu";
+  else if (ny.h === 9 && ny.m < 15) kind = "us";
+  if (force) { kind = force; await env.ALERTS.delete("pre:force"); }
+  if (!kind) return false;
+  const flag = "pre:" + kind + ":" + bx.day;
+  if (!force && await env.ALERTS.get(flag)) return false;
+  const chat = await env.ALERTS.get("tg:chat"); if (!chat) return false;
+  let hold = [];
+  try { hold = ((await (await fetch(HOLD_URL + "?t=" + Date.now())).json()).portfolios || []).find(p => p.name === "Hold").items || []; } catch (e) { return false; }
+  const text = kind === "eu" ? await preEU(env, hold, bx) : await preUS(hold, bx, ny);
+  const r = await tg(env, "sendMessage", { chat_id: chat, text, parse_mode: "HTML", disable_web_page_preview: true });
+  if (r.ok) await env.ALERTS.put(flag, "1", { expirationTtl: 3 * 86400 });
+  return true;
+}
+const DAYS = { Mon: "lun.", Tue: "mar.", Wed: "mer.", Thu: "jeu.", Fri: "ven." };
+const dLbl = bx => DAYS[bx.wd] + " " + bx.day.slice(8) + "/" + bx.day.slice(5, 7);
+// ticker allemand (Stuttgart, sinon Francfort) d'une action européenne, trouvé une fois via la recherche Yahoo puis gardé
+async function deTicker(env, it) {
+  if (/\.(SG|F|DE|MU|DU|BE|HM)$/.test(it.yahoo) && !/\.DE$/.test(it.yahoo)) return it.yahoo;
+  const k = "de:" + it.yahoo, got = await env.ALERTS.get(k);
+  if (got !== null) return got || null;
+  let best = "";
+  try {
+    const j = await (await fetch("https://query2.finance.yahoo.com/v1/finance/search?q=" + encodeURIComponent(it.name) + "&quotesCount=20&newsCount=0", { headers: UA })).json();
+    const q = (j.quotes || []).filter(x => x.quoteType === "EQUITY" || x.quoteType === "ETF");
+    best = (q.find(x => x.exchange === "STU") || q.find(x => x.exchange === "FRA") || {}).symbol || "";
+  } catch (e) {}
+  await env.ALERTS.put(k, best, { expirationTtl: 30 * 86400 });
+  return best || null;
+}
+async function preEU(env, hold, bx) {
+  const eu = hold.filter(i => /\.(PA|AS|BR|DE|MI|MC|SG|F)$/.test(i.yahoo));
+  const rows = []; let sum = 0, n = 0;
+  for (const it of eu) {
+    const de = await deTicker(env, it);
+    const [ref, q] = await Promise.all([chart(it.yahoo, "5d", "1d"), de ? chart(de, "1d", "5m") : null]);
+    // clôture de référence : dernière bougie journalière d'avant aujourd'hui (Paris, ou la place suivie)
+    const pb = ref && !ref.error ? ref.bars.filter(b => zonedTs(b[0]) < bx.day) : [];
+    const close = pb.length ? pb[pb.length - 1][4] : null;
+    const today = q && !q.error && q.time && zonedTs(q.time) === bx.day;
+    if (today && close) {
+      const v = (q.price / close - 1) * 100; sum += v; n++;
+      rows.push(cut(it.name, 12) + " " + num(q.price).padStart(8) + " " + pct(v).padStart(8) + "  " + new Date(q.time * 1000).toLocaleTimeString("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }));
+    } else rows.push(cut(it.name, 12) + "        —  pas d'échange");
+  }
+  return "☀️ <b>PRÉ-OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · 08:30 · Paris ouvre à 9 h\n" +
+    "<pre>" + esc(["━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", ...rows, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"].join("\n")) + "</pre>" +
+    eu.length + " valeurs · " + n + " échangées" + (n ? " · tendance " + pct(sum / n) : "") +
+    "\n<i>Cours allemands (Stuttgart / Francfort) vs clôture de la veille, indicatifs : peu de volume avant 9 h.</i>";
+}
+function zonedTs(t) { const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Brussels", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(t * 1000)).map(x => [x.type, x.value])); return p.year + "-" + p.month + "-" + p.day; }
+async function prePost(sym) {        // dernier cours du pré-marché américain (bougies 1 min, heures étendues comprises)
+  try {
+    const d = await (await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1m&includePrePost=true`, { headers: UA })).json();
+    const r = d.chart.result[0], m = r.meta, ts = r.timestamp || [], cl = (r.indicators.quote[0] || {}).close || [];
+    let i = cl.length - 1; while (i >= 0 && cl[i] == null) i--;
+    const reg = m.currentTradingPeriod && m.currentTradingPeriod.regular;
+    const fresh = i >= 0 && (!reg || ts[i] < reg.start) && ts[i] > Date.now() / 1000 - 6 * 3600;
+    return { price: fresh ? cl[i] : null, prev: m.regularMarketPrice ?? m.chartPreviousClose, fut: null };
+  } catch (e) { return { price: null }; }
+}
+async function preUS(hold, bx, ny) {
+  const fut = [["S&P 500 fut.", "ES=F"], ["Nasdaq fut.", "NQ=F"], ["Dow Jones fut.", "YM=F"]];
+  const top = [];
+  for (const [n, s] of fut) { const c = await chart(s, "5d", "1d");
+    top.push(cut(n, 14) + (c && !c.error && c.price ? num(c.price).padStart(10) + " " + pct((c.price / (c.bars.length > 1 ? c.bars[c.bars.length - 2][4] : c.prevClose) - 1) * 100).padStart(8) : "         —")); }
+  const us = hold.filter(i => !/[.\-=^]/.test(i.yahoo));
+  const rows = [];
+  for (const it of us) { const q = await prePost(it.yahoo);
+    rows.push(cut(it.name, 14) + (q.price && q.prev ? num(q.price).padStart(10) + " " + pct((q.price / q.prev - 1) * 100).padStart(8) : "         —  pas d'échange")); }
+  return "🌎 <b>PRÉ-OUVERTURE WALL STREET</b>\n" + dLbl(bx) + " · ouverture dans 30 min\n" +
+    "<pre>" + esc(["━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", ...top, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", ...rows, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"].join("\n")) + "</pre>" +
+    "<i>Pré-marché (et contrats à terme), variation vs clôture d'hier.</i>";
 }
 
 function marketState(m) {
