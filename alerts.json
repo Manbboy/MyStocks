@@ -118,6 +118,18 @@
       "created": 1795646068000
     },
     {
+      "sym": "BIM.PA",
+      "name": "bioMérieux",
+      "op": "above",
+      "price": 93.4,
+      "bia": true,
+      "auto": true,
+      "label": "Biarritz · résistance 92,40–93,40 · 2 contacts",
+      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (92,56), sans élastique tendu.",
+      "id": "bia-BIM.PA-93.4-2026-10-28",
+      "created": 1795672241427
+    },
+    {
       "sym": "RMC.SG",
       "name": "Rémy Cointreau",
       "op": "above",
@@ -262,22 +274,10 @@
       "created": 1795542022345
     },
     {
-      "sym": "LMT",
-      "name": "Lockheed Martin",
-      "op": "above",
-      "price": 619.5,
-      "bia": true,
-      "auto": true,
-      "label": "Biarritz · résistance 610,36–619,50 · 3 contacts",
-      "note": "Étincelle Biarritz possible : confirmer à la clôture au-dessus de la résistance et de la bande de Bollinger haute (606,41), sans élastique tendu.",
-      "id": "bia-LMT-619.5-2026-08-12",
-      "created": 1795628213420
-    },
-    {
       "sym": "MSFT",
       "name": "Microsoft",
       "op": "above",
-      "price": 493.437,
+      "price": 493.44,
       "label": "R→S jour 489,70 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
       "id": "auto-MSFT-D-RS-489.7-r-2026-11-25",
@@ -305,6 +305,17 @@
       "id": "auto-AMP.MI-D-RS-11.18-r-2026-11-25",
       "auto": true,
       "created": 1795628213878
+    },
+    {
+      "sym": "TTWO",
+      "name": "Take-Two Interactive",
+      "op": "above",
+      "price": 233.07,
+      "label": "S→R jour 228,50 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-TTWO-D-SR-228.5-b-2026-11-25",
+      "auto": true,
+      "created": 1795672242039
     },
     {
       "sym": "CS.PA",
@@ -582,6 +593,83 @@
       "created": 1795628213878
     },
     {
+      "sym": "BOL.PA",
+      "name": "Bolloré",
+      "op": "below",
+      "price": 3.5843,
+      "label": "R→S hebdo 3,514 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-BOL.PA-W-RS-3.514-c-2026-11-09",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
+      "sym": "BOL.PA",
+      "name": "Bolloré",
+      "op": "above",
+      "price": 3.638,
+      "label": "R→S hebdo 3,514 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-BOL.PA-W-RS-3.514-r-2026-11-23",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
+      "sym": "BOL.PA",
+      "name": "Bolloré",
+      "op": "above",
+      "price": 3.8436,
+      "label": "S→R hebdo 3,922 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-BOL.PA-W-SR-3.922-a-2026-11-23",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
+      "sym": "BOL.PA",
+      "name": "Bolloré",
+      "op": "above",
+      "price": 4.0004,
+      "label": "S→R hebdo 3,922 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-BOL.PA-W-SR-3.922-b-2026-11-23",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
+      "sym": "PRX.AS",
+      "name": "Prosus",
+      "op": "below",
+      "price": 30.549,
+      "label": "R→S hebdo 29,95 · contact",
+      "note": "Le cours touche le support R→S : surveiller la réaction.",
+      "id": "auto-PRX.AS-W-RS-29.95-c-2026-11-23",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
+      "sym": "PRX.AS",
+      "name": "Prosus",
+      "op": "above",
+      "price": 36.395,
+      "label": "R→S hebdo 29,95 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-PRX.AS-W-RS-29.95-r-2026-11-16",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
+      "sym": "PRX.AS",
+      "name": "Prosus",
+      "op": "above",
+      "price": 31.88,
+      "label": "R→S jour 29,95 · réaction",
+      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
+      "id": "auto-PRX.AS-D-RS-29.95-r-2026-11-20",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
       "sym": "AMUN.PA",
       "name": "Amundi",
       "op": "below",
@@ -805,7 +893,7 @@
       "sym": "AMP",
       "name": "Ameriprise Financial",
       "op": "above",
-      "price": 506.24,
+      "price": 506.27,
       "label": "R→S hebdo 487,06 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
       "id": "auto-AMP-W-RS-487.06-r-2026-11-23",
@@ -978,39 +1066,6 @@
       "created": 1795559874013
     },
     {
-      "sym": "KLAC",
-      "name": "KLA",
-      "op": "below",
-      "price": 131.0159,
-      "label": "R→S hebdo 128,45 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-KLAC-W-RS-128.447-c-2026-11-09",
-      "auto": true,
-      "created": 1795646068596
-    },
-    {
-      "sym": "KLAC",
-      "name": "KLA",
-      "op": "above",
-      "price": 150.86,
-      "label": "R→S hebdo 128,45 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-KLAC-W-RS-128.447-r-2026-11-23",
-      "auto": true,
-      "created": 1795646068596
-    },
-    {
-      "sym": "KLAC",
-      "name": "KLA",
-      "op": "above",
-      "price": 134.265,
-      "label": "R→S jour 128,45 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-KLAC-D-RS-128.447-r-2026-11-25",
-      "auto": true,
-      "created": 1795646068596
-    },
-    {
       "sym": "RMC.SG",
       "name": "Rémy Cointreau",
       "op": "below",
@@ -1029,39 +1084,6 @@
       "label": "R→S hebdo 49,32 · réaction",
       "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
       "id": "auto-RMC.SG-W-RS-49.32-r-2026-11-23",
-      "auto": true,
-      "created": 1795647777259
-    },
-    {
-      "sym": "HEIA.AS",
-      "name": "Heineken",
-      "op": "below",
-      "price": 82.5792,
-      "label": "R→S jour 80,96 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-HEIA.AS-D-RS-80.96-c-2026-11-25",
-      "auto": true,
-      "created": 1795628213878
-    },
-    {
-      "sym": "XRP-USD",
-      "name": "XRP",
-      "op": "below",
-      "price": 0.9053,
-      "label": "R→S hebdo 0,8875 · contact",
-      "note": "Le cours touche le support R→S : surveiller la réaction.",
-      "id": "auto-XRP-USD-W-RS-0.8875-c-2026-11-02",
-      "auto": true,
-      "created": 1795647777259
-    },
-    {
-      "sym": "XRP-USD",
-      "name": "XRP",
-      "op": "above",
-      "price": 1.0237,
-      "label": "R→S hebdo 0,8875 · réaction",
-      "note": "Rebond sur le support R→S : le cours repasse au-dessus du plus haut de la bougie de contact.",
-      "id": "auto-XRP-USD-W-RS-0.8875-r-2026-11-23",
       "auto": true,
       "created": 1795647777259
     },
@@ -1097,6 +1119,28 @@
       "id": "auto-DIM.PA-D-RS-203-c-2026-11-25",
       "auto": true,
       "created": 1795628213878
+    },
+    {
+      "sym": "BIM.PA",
+      "name": "bioMérieux",
+      "op": "above",
+      "price": 100.94,
+      "label": "S→R hebdo 103,00 · approche",
+      "note": "Le cours vient tester par le dessous l'ancien support devenu résistance (S→R).",
+      "id": "auto-BIM.PA-W-SR-103-a-2026-11-23",
+      "auto": true,
+      "created": 1795672242039
+    },
+    {
+      "sym": "BIM.PA",
+      "name": "bioMérieux",
+      "op": "above",
+      "price": 105.06,
+      "label": "S→R hebdo 103,00 · franchie",
+      "note": "La résistance S→R est franchie : à confirmer à la clôture.",
+      "id": "auto-BIM.PA-W-SR-103-b-2026-11-23",
+      "auto": true,
+      "created": 1795672242039
     }
   ]
 }
