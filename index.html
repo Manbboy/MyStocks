@@ -1303,7 +1303,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v300</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v301</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5150,8 +5150,8 @@ function pfFiche(c, own, p, weight) {
       '<div class="pf-fv"><small>Valeur</small><b>' + A(fmt(p.value, p.cur)) + "</b><small>" + (weight != null ? weight.toLocaleString(NUM_LOC, { maximumFractionDigits:1 }) + " % du portef." : "") + "</small></div>" +
       '<span class="pf-spk"></span></div>' +
     '<div class="pf-kpi">' +
-      kpi("Résultat", A(money(p.latent, p.cur)), p.latentPct != null ? fmtPct(p.latentPct) : "", cl(p.latent)) +
-      kpi("Aujourd'hui", A(money(p.dayChg || 0, p.cur)), p.dayPct != null ? fmtPct(p.dayPct) : "", cl(p.dayChg || 0)) + "</div>" +
+      kpi("Résultat", p.latentPct != null ? fmtPct(p.latentPct) : "–", A(money(p.latent, p.cur)), cl(p.latent)) +          // % d'abord, puis le montant
+      kpi("Aujourd'hui", p.dayPct != null ? fmtPct(p.dayPct) : "–", A(money(p.dayChg || 0, p.cur)), cl(p.dayChg || 0)) + "</div>" +
     '<div class="pf-sec"><div class="pf-sh"><span>Position</span></div><div class="pf-grid">' + posT + "</div></div>" +
     '<div class="pf-sec pf-ssl"><div class="pf-sh"><span>Stop-loss</span><span>toucher pour modifier</span></div><table class="pf-stt">' + stT + "</table></div>" +
     '<div class="pf-sec"><div class="pf-sh"><span>Opérations</span></div><table class="pf-ops">' + opT + "</table></div>";
