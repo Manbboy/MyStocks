@@ -1,0 +1,17 @@
+name: preprobe
+on:
+  push:
+    paths: [".github/workflows/preprobe.yml"]
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for s in SAN.PA SNW.F SNW.SG SNW.DE SND.F SND.SG SND.DE RMC.SG RMC.F SU.PA SND.MU; do
+            curl -s -A "Mozilla/5.0" "https://query1.finance.yahoo.com/v8/finance/chart/$s?range=1d&interval=1m" | python3 -c "
+          import sys,json,datetime
+          try:
+              r=json.load(sys.stdin)['chart']['result'][0]; m=r['meta']; ts=r.get('timestamp') or []
+              print('$s', m.get('longName') or m.get('shortName'), m.get('exchangeName'), m.get('currency'), m.get('regularMarketPrice'), datetime.datetime.utcfromtimestamp(m.get('regularMarketTime',0)), 'prev',m.get('chartPreviousClose'), 'bars',len(ts), datetime.datetime.utcfromtimestamp(ts[-1]) if ts else '')
+          except Exception as e: print('$s','ERR',e)"
+          done
