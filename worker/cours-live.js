@@ -326,13 +326,13 @@ async function preEU(env, hold, bx, slot) {
     if (v != null && Math.abs(v) > 25 && !open) { await env.ALERTS.put("de2:" + it.yahoo, "", { expirationTtl: 7 * 86400 }); v = null; q = null; }   // mauvais ticker trouvé : oublié
     if (v != null) {
       sum += v; n++;
-      rows.push(cut(it.name, 12) + " " + num(q.price).padStart(8) + " " + pct(v).padStart(8) + "  " + new Date(q.time * 1000).toLocaleTimeString("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }));
-    } else rows.push(cut(it.name, 12) + "        —  pas d'échange");
+      rows.push(cut(it.name, 12) + num(q.price).padStart(10) + pct(v).padStart(11) + "   " + new Date(q.time * 1000).toLocaleTimeString("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }));
+    } else rows.push(cut(it.name, 12) + "—".padStart(10) + "   pas d'échange");
   }
   const hm = String(slot[0]).padStart(2, "0") + ":" + String(slot[1]).padStart(2, "0");
   return (open ? "🔔☀️ <b>OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · cours de Paris après l'ouverture"
                : "☀️ <b>PRÉ-OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · Paris ouvre à 9 h") + "\n" +
-    "<pre>" + esc(["━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", ...rows, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"].join("\n")) + "</pre>" +
+    "<pre>" + esc([cut("Valeur", 12) + "Cours".padStart(10) + "Var.".padStart(11) + "   Heure", "━".repeat(41), ...rows, "━".repeat(41)].join("\n")) + "</pre>" +
     eu.length + " valeurs · " + n + (open ? " cotées" : " échangées") + (n ? " · tendance " + pct(sum / n) : "") +
     (open ? "\n<i>À comparer avec le message de 08:59.</i>" : "\n<i>Cours allemands (Stuttgart / Francfort) vs clôture de la veille, indicatifs : peu de volume avant 9 h.</i>");
 }
@@ -351,13 +351,13 @@ async function preUS(hold, bx, ny) {
   const fut = [["S&P 500 fut.", "ES=F"], ["Nasdaq fut.", "NQ=F"], ["Dow Jones fut.", "YM=F"]];
   const top = [];
   for (const [n, s] of fut) { const c = await chart(s, "5d", "1d");
-    top.push(cut(n, 14) + (c && !c.error && c.price ? num(c.price).padStart(10) + " " + pct((c.price / (c.bars.length > 1 ? c.bars[c.bars.length - 2][4] : c.prevClose) - 1) * 100).padStart(8) : "         —")); }
+    top.push(cut(n, 14) + (c && !c.error && c.price ? num(c.price).padStart(11) + pct((c.price / (c.bars.length > 1 ? c.bars[c.bars.length - 2][4] : c.prevClose) - 1) * 100).padStart(11) : "—".padStart(11))); }
   const us = hold.filter(i => !/[.\-=^]/.test(i.yahoo));
   const rows = [];
   for (const it of us) { const q = await prePost(it.yahoo);
-    rows.push(cut(it.name, 14) + (q.price && q.prev ? num(q.price).padStart(10) + " " + pct((q.price / q.prev - 1) * 100).padStart(8) : "         —  pas d'échange")); }
+    rows.push(cut(it.name, 14) + (q.price && q.prev ? num(q.price).padStart(11) + pct((q.price / q.prev - 1) * 100).padStart(11) : "—".padStart(11) + "   pas d'échange")); }
   return "🌎 <b>PRÉ-OUVERTURE WALL STREET</b>\n" + dLbl(bx) + " · ouverture dans 30 min\n" +
-    "<pre>" + esc(["━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", ...top, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", ...rows, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"].join("\n")) + "</pre>" +
+    "<pre>" + esc([cut("Valeur", 14) + "Cours".padStart(11) + "Var.".padStart(11), "━".repeat(36), ...top, "━".repeat(36), ...rows, "━".repeat(36)].join("\n")) + "</pre>" +
     "<i>Pré-marché (et contrats à terme), variation vs clôture d'hier.</i>";
 }
 
