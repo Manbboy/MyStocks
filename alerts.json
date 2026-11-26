@@ -1141,6 +1141,17 @@
       "id": "auto-BIM.PA-W-SR-103-b-2026-11-23",
       "auto": true,
       "created": 1795672242039
+    },
+    {
+      "id": "zone-zmwx5aiir-h-2026-11-25",
+      "zone": "zmwx5aiir",
+      "sym": "NVDA",
+      "name": "NVIDIA",
+      "op": "below",
+      "price": 94.6832,
+      "label": "entrée dans ma zone ◯ 75,27 – 94,68 (par le haut)",
+      "note": "",
+      "created": 1795672919235
     }
   ]
 }
