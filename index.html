@@ -213,8 +213,10 @@
   .pf-kpi small { display:block; font-size:10px; color:var(--muted); }
   .pf-kpi b { display:block; font-size:13.5px; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums; }
   .pf-kpi i { font-style:normal; font-size:11.5px; font-weight:600; white-space:nowrap; }
-  .pf-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; }
-  .pf-grid small { display:block; font-size:10px; color:var(--muted); } .pf-grid b { font-size:12.5px; font-weight:500; font-variant-numeric:tabular-nums; }
+  .pf-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:3px 10px; }
+  .pf-grid > div { min-width:0; } .pf-grid small, .pf-grid b { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pf-grid > div:nth-child(3n) { text-align:right; } .pf-grid > div:nth-child(3n+2) { text-align:center; }
+  .pf-grid small { display:block; font-size:10px; color:var(--muted); } .pf-grid b { display:block; font-size:12.5px; font-weight:500; font-variant-numeric:tabular-nums; }
   .pf-grid .pf-em b { font-weight:700; }
   .pf-sec tr.pf-th td { font-size:10px; color:var(--muted); font-weight:400; padding-bottom:1px; }
   .pf-stt { table-layout:fixed; } .pf-stt td:nth-child(1) { width:48%; } .pf-stt td:nth-child(2) { width:22%; }
@@ -1300,7 +1302,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v297</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v298</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5111,8 +5113,9 @@ function pfFiche(c, own, p, weight) {
   const kpi = (lbl, big, sub, k) => '<div><small>' + lbl + '</small><span><b class="' + (k || "") + '">' + big + '</b><i class="' + (k || "pf-muted") + '">' + sub + "</i></span></div>";
   // Position : 4 cases (2 × 2), libellé au-dessus de la valeur, pour ne pas laisser de vide au milieu
   const cell = (l, v, k) => '<div class="' + (k || "") + '"><small>' + l + "</small><b>" + v + "</b></div>";
-  let posT = cell("Quantité", q(p.qty)) + cell("PRU " + (prefs.pruFees ? "(frais inclus)" : "(hors frais)"), fmtPru(p.pru, p.cur)) +
-    cell("Engagé (frais inclus)", A(nm(p.costF))) + cell("Équilibre (frais achat + vente)", nm(be), "pf-em");
+  // une seule rangée de 3 cases : quantité × PRU | engagé | équilibre
+  let posT = cell("Qté × PRU " + (prefs.pruFees ? "(frais incl.)" : "(hors frais)"), q(p.qty) + " × " + fmtPru(p.pru, p.cur)) +
+    cell("Engagé (frais incl.)", A(nm(p.costF))) + cell("Équilibre (2 frais)", nm(be), "pf-em");
   if (p.tx.some(t => t.type === "V") && Math.abs(p.realized) > 0.005)
     posT += cell("Réalisé (ventes, frais inclus)", '<span class="' + cl(p.realized) + '">' + A(money(p.realized, p.cur)) + (p.realizedPct != null ? " · " + fmtPct(p.realizedPct) : "") + "</span>");
   if (p.cur !== "EUR" && !p.noE)
