@@ -220,11 +220,11 @@
   .pf-stt { table-layout:fixed; } .pf-stt td:nth-child(1) { width:48%; } .pf-stt td:nth-child(2) { width:22%; }
   .pf-ops { table-layout:fixed; } .pf-ops td:nth-child(1) { width:38%; } .pf-ops td:nth-child(2) { width:24%; } .pf-ops td:nth-child(3) { width:11%; } .pf-ops td:nth-child(5) { width:44px; }
   .pf-kpi i.pf-muted { font-weight:400; }
-  .pf-sec { margin-top:8px; padding-top:6px; border-top:1px solid var(--border); }
+  .pf-sec { margin-top:8px; padding-top:6px; border-top:1px solid color-mix(in srgb, var(--text) 22%, transparent); }   /* visible aussi sur les cartes teintées (🎨) */
   .pf-sh { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:2px; }
   .pf-sec table { width:100%; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; }
   .pf-sec td { padding:1.5px 0; text-align:right; white-space:nowrap; } .pf-sec td:first-child { text-align:left; }
-  .pf-sec tr.tot td { border-top:1px dashed var(--border); font-weight:700; padding-top:3px; }
+  .pf-sec tr.tot td { border-top:1px dashed color-mix(in srgb, var(--text) 25%, transparent); font-weight:700; padding-top:3px; }
   .pf-sec tr.pf-em td { font-weight:700; }
   .pf-sec .pf-muted { color:var(--muted); font-weight:400; }
   .pf-ops td { padding-left:6px; } .pf-ops td:first-child { padding-left:0; }
@@ -1300,7 +1300,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v296</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v297</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
