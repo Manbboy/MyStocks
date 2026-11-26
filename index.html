@@ -224,6 +224,7 @@
   /* grille commune des 3 blocs (même largeur de colonnes partout) */
   .pf-g5 { table-layout:fixed; } .pf-g5 td:nth-child(1) { width:34%; } .pf-g5 td:nth-child(2) { width:24%; }
   .pf-g5 td:nth-child(3) { width:15%; } .pf-g5 td:nth-child(5) { width:38px; }
+  .pf-slb { display:inline-block; font-size:10.5px; font-weight:700; padding:0 6px; border-radius:5px; color:var(--text); background:color-mix(in srgb, var(--text) 12%, transparent); }   /* étiquette neutre « SL » */
   .pf-g5 tr.pf-em td:first-child { white-space:normal; line-height:1.2; } .pf-g5 td:nth-child(4) { padding-left:12px; }
   .pf-kpi i.pf-muted { font-weight:400; }
   .pf-sec { margin-top:8px; padding-top:6px; border-top:1px solid color-mix(in srgb, var(--text) 22%, transparent); }   /* visible aussi sur les cartes teintées (🎨) */
@@ -1306,7 +1307,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v306</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v307</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5130,12 +5131,12 @@ function pfFiche(c, own, p, weight) {
   let stT = "";
   if (L.length) {
     L.forEach(x => { const d = p.price ? (x.p / p.price - 1) * 100 : null, hit = p.price != null && p.price <= x.p, r = (x.p - p.be) * x.q;
-      stT += tr("", "🛑 Stop " + (L.indexOf(x) + 1), '<span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">' + q(x.q) + " × " + fmt(x.p, null) + "</span>",
+      stT += tr("", '<span class="pf-slb">SL ' + (L.indexOf(x) + 1) + "</span>", '<span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">' + q(x.q) + " × " + fmt(x.p, null) + "</span>",
         hit ? "⚠" : d != null ? (d >= 0 ? "+" : "−") + Math.abs(d).toLocaleString(NUM_LOC, { minimumFractionDigits:1, maximumFractionDigits:1 }) + " %" : "", '<span class="' + cl(r) + '">' + A(money(r, null)) + "</span>"); });
     const cov = L.reduce((t, x) => t + x.q, 0), tot = L.reduce((t, x) => t + (x.p - p.be) * x.q, 0);
     stT = tr("pf-th", "Stop-loss", "qté × prix", "écart", "net si touché") + stT;
     stT += tr("tot", "Couvertes " + q(Math.min(cov, p.qty)) + "/" + q(p.qty) + (cov > p.qty + 1e-9 ? " ⚠" : ""), q(cov), "", '<span class="' + cl(tot) + '">' + A(money(tot, null)) + "</span>");
-  } else stT = '<tr><td colspan="5" class="pf-muted">🛑 Aucun stop-loss · toucher pour en ajouter</td></tr>';
+  } else stT = '<tr><td colspan="5" class="pf-muted"><span class="pf-slb">SL</span> Aucun stop-loss · toucher pour en ajouter</td></tr>';
   // Opérations : quantité × prix · frais · montant (achat : + frais ; vente : − frais)
   let opT = "", nQ = 0, nF = 0, nM = 0, hasV = false;
   p.tx.slice().reverse().forEach((t, i) => { const v = t.type === "V", f = +t.fees || 0, m = t.qty * t.price + (v ? -f : f);
@@ -5388,7 +5389,7 @@ function drawTxMarks() {
       infoEl.insertAdjacentHTML("beforeend", '<span class="pi"><i style="background:' + PF_OWNERS[own].col + '"></i><b>' + own + '</b> ' +
         (open ? fmt(p.qty, null).replace(/,00$/, "") + " × PRU " + fmt(p.pru, p.cur) + " " : "soldée ") +
         '<span class="' + (v >= 0 ? "up" : "down") + '">' + money(v, p.cur) + (pc != null ? " (" + fmtPct(pc) + ")" : "") + "</span>" +
-        (open && pfStops(own, ovSym, p.qty).length ? ' · <b style="color:#dc2626">🛑 ' + pfStops(own, ovSym, p.qty).map(x => fmt(x.p, p.cur)).join(" / ") + "</b>" : "") + "</span>");
+        (open && pfStops(own, ovSym, p.qty).length ? ' · <b>SL ' + pfStops(own, ovSym, p.qty).map(x => fmt(x.p, p.cur)).join(" / ") + "</b>" : "") + "</span>");
     }
     if (p && p.qty > 0) pfStops(own, ovSym, p.qty).forEach(x => txLines.push(ovCandles.createPriceLine({ price:x.p, color:"#dc2626", lineWidth:2,
       lineStyle:LW.LineStyle.Dashed, axisLabelVisible:true, title:"Stop " + own + " ×" + fmt(x.q, null).replace(/,00$/, "") })));
