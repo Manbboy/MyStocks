@@ -397,6 +397,81 @@
           "yahoo": "LOTB.BR",
           "tv": "EURONEXT:LOTB",
           "name": "Lotus Bakeries"
+        },
+        {
+          "yahoo": "ALKAL.PA",
+          "tv": "EURONEXT:ALKAL",
+          "name": "Kalray"
+        },
+        {
+          "yahoo": "PRX.AS",
+          "tv": "EURONEXT:PRX",
+          "name": "Prosus"
+        },
+        {
+          "yahoo": "ODET.PA",
+          "tv": "EURONEXT:ODET",
+          "name": "Compagnie de l'Odet"
+        },
+        {
+          "yahoo": "SOI.PA",
+          "tv": "EURONEXT:SOI",
+          "name": "Soitec"
+        },
+        {
+          "yahoo": "ECONB.BR",
+          "tv": "EURONEXT:ECONB",
+          "name": "Econocom"
+        },
+        {
+          "yahoo": "OHB.DE",
+          "tv": "XETR:OHB",
+          "name": "OHB"
+        },
+        {
+          "yahoo": "TNIE.DE",
+          "tv": "XETR:TNIE",
+          "name": "Tonies"
+        },
+        {
+          "yahoo": "IFX.DE",
+          "tv": "XETR:IFX",
+          "name": "Infineon"
+        },
+        {
+          "yahoo": "SWP.PA",
+          "tv": "EURONEXT:SWP",
+          "name": "Sword Group"
+        },
+        {
+          "yahoo": "BIM.PA",
+          "tv": "EURONEXT:BIM",
+          "name": "bioMérieux"
+        },
+        {
+          "yahoo": "NXI.PA",
+          "tv": "EURONEXT:NXI",
+          "name": "Nexity"
+        },
+        {
+          "yahoo": "BSD.PA",
+          "tv": "EURONEXT:BSD",
+          "name": "Bourse Direct"
+        },
+        {
+          "yahoo": "EQS.PA",
+          "tv": "EURONEXT:EQS",
+          "name": "Equasens"
+        },
+        {
+          "yahoo": "BOL.PA",
+          "tv": "EURONEXT:BOL",
+          "name": "Bolloré"
+        },
+        {
+          "yahoo": "LPE.PA",
+          "tv": "EURONEXT:LPE",
+          "name": "Laurent-Perrier"
         }
       ]
     },
@@ -647,6 +722,31 @@
           "yahoo": "BRK-B",
           "tv": "BRK-B",
           "name": "Berkshire Hathaway"
+        },
+        {
+          "yahoo": "TTWO",
+          "tv": "NASDAQ:TTWO",
+          "name": "Take-Two Interactive"
+        },
+        {
+          "yahoo": "TSM",
+          "tv": "NYSE:TSM",
+          "name": "TSMC"
+        },
+        {
+          "yahoo": "AMZN",
+          "tv": "NASDAQ:AMZN",
+          "name": "Amazon"
+        },
+        {
+          "yahoo": "INTC",
+          "tv": "NASDAQ:INTC",
+          "name": "Intel"
+        },
+        {
+          "yahoo": "WMT",
+          "tv": "NASDAQ:WMT",
+          "name": "Walmart"
         }
       ]
     },
