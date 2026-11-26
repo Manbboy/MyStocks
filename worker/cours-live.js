@@ -183,12 +183,12 @@ async function tgRoute(path, env) {
     if (!chat) return { error: "Telegram n'est pas encore relié." };
     if (await env.ALERTS.get("pre:try")) return { error: "Un essai a déjà été envoyé il y a moins de 5 minutes." };
     await env.ALERTS.put("pre:try", "1", { expirationTtl: 300 });
-    let hold = [];
-    try { hold = ((await (await fetch(HOLD_URL + "?t=" + Date.now())).json()).portfolios || []).find(p => p.name === "Hold").items || []; } catch (e) { return { error: "liste Hold illisible" }; }
+    let L; try { L = await lists(); } catch (e) { return { error: "listes illisibles" }; }
     const bx = zoned("Europe/Brussels"), ny = zoned("America/New_York");
-    const text = "🧪 <i>Essai</i>\n" + (path === "/tg/pre-eu" ? await preEU(env, hold, bx, [Math.min(bx.h, 8), bx.h < 9 ? bx.m : 59]) : await preUS(hold, bx, ny));
-    const r = await tg(env, "sendMessage", { chat_id: chat, text, parse_mode: "HTML", disable_web_page_preview: true });
-    return r.ok ? { ok: true } : { error: r.description };
+    const msgs = path === "/tg/pre-eu" ? await preEU(env, L, bx, [Math.min(bx.h, 8), bx.h < 9 ? bx.m : 59]) : await preUS(L, bx, ny);
+    const res = [];
+    for (let k = 0; k < msgs.length; k++) { const r = await tg(env, "sendMessage", { chat_id: chat, text: (k === 0 ? "🧪 <i>Essai</i>\n" : "") + msgs[k], parse_mode: "HTML", disable_web_page_preview: true }); res.push(r.ok || r.description); }
+    return { ok: true, msgs: msgs.length, res };
   }
   if (path === "/tg/test") {
     if (!chat) return { error: "Telegram n'est pas encore relié (bouton « Relier »)." };
@@ -269,7 +269,8 @@ async function chart(sym, range, interval) {
 }
 
 /* ===== Résumés de pré-ouverture (Telegram), une fois par jour de semaine ===== */
-const PRE_TEST_END = "2026-12-04";      // essai : 5 envois chaque matin jusqu'à cette date incluse
+const PRE_TEST_END = "2026-12-04";
+const DE_URL = "https://raw.githubusercontent.com/Manbboy/MyStocks/main/data/de_tickers.json";      // essai : 5 envois chaque matin jusqu'à cette date incluse
 const HOLD_URL = "https://raw.githubusercontent.com/Manbboy/MyStocks/main/portfolios.json";
 function zoned(tz) {
   const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", weekday: "short", hour12: false })
@@ -297,11 +298,11 @@ async function preOpen(env) {
   const flag = "pre:" + kind + ":" + bx.day + (slot ? ":" + slot.join("h") : "");
   if (!force && await env.ALERTS.get(flag)) return false;
   const chat = await env.ALERTS.get("tg:chat"); if (!chat) return false;
-  let hold = [];
-  try { hold = ((await (await fetch(HOLD_URL + "?t=" + Date.now())).json()).portfolios || []).find(p => p.name === "Hold").items || []; } catch (e) { return false; }
-  const text = kind === "eu" ? await preEU(env, hold, bx, slot || [bx.h, bx.m]) : await preUS(hold, bx, ny);
-  const r = await tg(env, "sendMessage", { chat_id: chat, text, parse_mode: "HTML", disable_web_page_preview: true });
-  if (r.ok) await env.ALERTS.put(flag, "1", { expirationTtl: 3 * 86400 });
+  let L; try { L = await lists(); } catch (e) { return false; }
+  const msgs = kind === "eu" ? await preEU(env, L, bx, slot || [bx.h, bx.m]) : await preUS(L, bx, ny);
+  let ok = true;
+  for (const text of msgs) { const r = await tg(env, "sendMessage", { chat_id: chat, text, parse_mode: "HTML", disable_web_page_preview: true }); ok = ok && r.ok; }
+  if (ok) await env.ALERTS.put(flag, "1", { expirationTtl: 3 * 86400 });
   return true;
 }
 const DAYS = { Mon: "lun.", Tue: "mar.", Wed: "mer.", Thu: "jeu.", Fri: "ven." };
@@ -322,59 +323,94 @@ async function deTicker(env, it) {
   await env.ALERTS.put(k, best, { expirationTtl: 30 * 86400 });
   return best || null;
 }
-async function preEU(env, hold, bx, slot) {
-  const eu = hold.filter(i => /\.(PA|AS|BR|DE|MI|MC|SG|F)$/.test(i.yahoo));
-  const open = slot[0] >= 9;                     // 9 h 05 : cours de Paris (ou de la place suivie) après l'ouverture
-  const rows = []; let sum = 0, n = 0;
-  for (const it of eu.slice().sort((a, b) => a.name.localeCompare(b.name, "fr"))) {
-    const ref = await chart(it.yahoo, "1d", "5m");
-    // clôture de la veille : avant l'ouverture, le dernier cours de la place suivie ; sinon la clôture précédente
-    const close = ref && !ref.error ? (ref.time && zonedTs(ref.time) < bx.day ? ref.price : ref.prevClose) : null;
-    let q = null, de = null;
-    if (open) q = ref && !ref.error && ref.time && zonedTs(ref.time) === bx.day ? ref : null;
-    else { de = await deTicker(env, it); const c = de ? await chart(de, "1d", "5m") : null; q = c && !c.error && c.time && zonedTs(c.time) === bx.day ? c : null; }
-    let v = q && close ? (q.price / close - 1) * 100 : null;
-    if (v != null && Math.abs(v) > 25 && !open) { await env.ALERTS.put("de2:" + it.yahoo, "", { expirationTtl: 7 * 86400 }); v = null; q = null; }   // mauvais ticker trouvé : oublié
-    if (v != null) {
-      sum += v; n++;
-      rows.push(0, cut(it.name, 12) + num(q.price).padStart(10) + pct(v).padStart(11) + "   " + new Date(q.time * 1000).toLocaleTimeString("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }));
-    } else rows.push(1, cut(it.name, 12) + "—".padStart(10) + "—".padStart(11) + "       —");     // aucun échange : un tiret par colonne
+// cours de plusieurs valeurs en une requête (spark Yahoo, 20 par appel) : { sym: meta }
+async function spark(syms, pre) {
+  const out = {};
+  for (let k = 0; k < syms.length; k += 20) {
+    try {
+      const d = await (await fetch("https://query1.finance.yahoo.com/v7/finance/spark?symbols=" + syms.slice(k, k + 20).map(encodeURIComponent).join(",") +
+        "&range=1d&interval=5m" + (pre ? "&includePrePost=true" : ""), { headers: UA })).json();
+      ((d.spark || {}).result || []).forEach(r => { const x = (r.response || [])[0]; if (x) out[r.symbol] = Object.assign({}, x.meta, { ts: x.timestamp || [], cl: ((x.indicators || {}).quote || [{}])[0].close || [] }); });
+    } catch (e) {}
   }
-  // d'abord les valeurs avec un cours (ordre alphabétique), puis celles sans information (ordre alphabétique)
-  const got = [], none = []; for (let i = 0; i < rows.length; i += 2) (rows[i] ? none : got).push(rows[i + 1]);
-  rows.length = 0; rows.push(...got, ...none);
+  return out;
+}
+const hhmm = t => new Date(t * 1000).toLocaleTimeString("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" });
+const LINE = "━".repeat(41);
+const head4 = t => cut(t, 12) + "Cours".padStart(10) + "Var.".padStart(11) + "   Heure";
+const row4 = (n, p, v, t) => cut(n, 12) + (p == null ? "—".padStart(10) + "—".padStart(11) + "       —" : num(p).padStart(10) + pct(v).padStart(11) + "   " + t);
+// une section : titre, puis les valeurs avec un cours (A→Z), puis celles sans information (A→Z)
+function section(title, items) {
+  const s = items.slice().sort((a, b) => a.n.localeCompare(b.n, "fr"));
+  return [head4(title), LINE, ...s.filter(x => x.p != null).map(x => row4(x.n, x.p, x.v, x.t)), ...s.filter(x => x.p == null).map(x => row4(x.n))];
+}
+// découpe en plusieurs messages Telegram si le tableau est trop long (4096 caractères au plus)
+function packMsgs(header, lines, footer) {
+  const msgs = []; let cur = [];
+  const flush = () => { if (cur.length) msgs.push(cur); cur = []; };
+  lines.forEach(l => { if ((cur.join("\n").length + l.length) > 3300) flush(); cur.push(l); }); flush();
+  return msgs.map((m, k) => (k === 0 ? header + "\n" : "<i>(suite " + (k + 1) + "/" + msgs.length + ")</i>\n") + "<pre>" + esc(m.join("\n")) + "</pre>" + (k === msgs.length - 1 ? footer : ""));
+}
+const EUX = /\.(PA|AS|BR|DE|MI|MC|SG|F|LS|IR|VI|HE|CO|ST|OL|SW|L)$/;
+async function lists() {
+  const c = await (await fetch(HOLD_URL + "?t=" + Date.now())).json();
+  const P = n => ((c.portfolios || []).find(p => p.name === n) || {}).items || [];
+  return { hold: P("Hold"), eu: P("EU").concat(P("Others")), us: P("US").concat(P("Others")), cry: P("Crypto") };
+}
+async function preEU(env, L, bx, slot) {
+  const open = slot[0] >= 9;
+  const isEU = i => EUX.test(i.yahoo);
+  const holdEU = L.hold.filter(isEU), hs = new Set(L.hold.map(i => i.yahoo));
+  const rest = []; const seen = new Set(); L.eu.filter(isEU).forEach(i => { if (!hs.has(i.yahoo) && !seen.has(i.yahoo)) { seen.add(i.yahoo); rest.push(i); } });
+  const all = holdEU.concat(rest);
+  let de = {}; try { de = await (await fetch(DE_URL + "?t=" + Date.now())).json(); } catch (e) {}
+  const ref = await spark(all.map(i => i.yahoo));
+  const deSyms = open ? [] : [...new Set(all.map(i => de[i.yahoo]).filter(Boolean))];
+  const ger = deSyms.length ? await spark(deSyms) : {};
+  const val = it => {
+    const r = ref[it.yahoo]; if (!r) return { n: it.name };
+    const close = r.regularMarketTime && zonedTs(r.regularMarketTime) < bx.day ? r.regularMarketPrice : (r.chartPreviousClose ?? r.previousClose);
+    const q = open ? r : ger[de[it.yahoo]];
+    if (!q || !q.regularMarketTime || zonedTs(q.regularMarketTime) !== bx.day || !close) return { n: it.name };
+    const v = (q.regularMarketPrice / close - 1) * 100;
+    if (Math.abs(v) > 25) return { n: it.name };
+    return { n: it.name, p: q.regularMarketPrice, v, t: hhmm(q.regularMarketTime) };
+  };
+  const H = holdEU.map(val), R = rest.map(val);
+  // cryptos : 24 h / 24, variation depuis minuit (UTC)
+  const cs = [...new Set(L.cry.map(i => i.yahoo).concat(L.hold.filter(i => /-(EUR|USD)$/.test(i.yahoo)).map(i => i.yahoo)))];
+  const cq = await spark(cs);
+  const C = cs.map(sy => { const q = cq[sy], it = L.cry.concat(L.hold).find(i => i.yahoo === sy);
+    return q && q.regularMarketPrice ? { n: it.name + (/-EUR$/.test(sy) ? " €" : " $"), p: q.regularMarketPrice, v: (q.regularMarketPrice / q.chartPreviousClose - 1) * 100, t: hhmm(q.regularMarketTime) } : { n: it.name }; });
+  const got = H.concat(R).filter(x => x.p != null), avg = got.length ? got.reduce((t, x) => t + x.v, 0) / got.length : null;
   const hm = String(slot[0]).padStart(2, "0") + ":" + String(slot[1]).padStart(2, "0");
-  return (open ? "🔔☀️ <b>OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · cours de Paris après l'ouverture"
-               : "☀️ <b>PRÉ-OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · Paris ouvre à 9 h") + "\n" +
-    "<pre>" + esc([cut("Valeur", 12) + "Cours".padStart(10) + "Var.".padStart(11) + "   Heure", "━".repeat(41), ...rows, "━".repeat(41)].join("\n")) + "</pre>" +
-    eu.length + " valeurs · " + n + (open ? " cotées" : " échangées") + (n ? " · tendance " + pct(sum / n) : "") +
-    (open ? "\n<i>À comparer avec le message de 08:59.</i>" : "\n<i>Cours allemands (Stuttgart / Francfort) vs clôture de la veille, indicatifs : peu de volume avant 9 h.</i>");
+  const header = open ? "🔔☀️ <b>OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · cours de Paris après l'ouverture"
+                      : "☀️ <b>PRÉ-OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · Paris ouvre à 9 h";
+  const lines = [...section("HOLD", H), "", ...section("EUROPE", R), "", ...section("CRYPTO", C)];
+  const footer = "\n" + all.length + " valeurs · " + got.length + (open ? " cotées" : " échangées") + (avg != null ? " · tendance " + pct(avg) : "") +
+    (open ? "\n<i>À comparer avec le message de 08:59.</i>" : "\n<i>Cours allemands (Stuttgart / Francfort) vs clôture de la veille, indicatifs : peu de volume avant 9 h. Cryptos : depuis minuit.</i>");
+  return packMsgs(header, lines, footer);
 }
 function zonedTs(t) { const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Brussels", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(t * 1000)).map(x => [x.type, x.value])); return p.year + "-" + p.month + "-" + p.day; }
-async function prePost(sym) {        // dernier cours du pré-marché américain (bougies 1 min, heures étendues comprises)
-  try {
-    const d = await (await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1m&includePrePost=true`, { headers: UA })).json();
-    const r = d.chart.result[0], m = r.meta, ts = r.timestamp || [], cl = (r.indicators.quote[0] || {}).close || [];
-    let i = cl.length - 1; while (i >= 0 && cl[i] == null) i--;
-    const reg = m.currentTradingPeriod && m.currentTradingPeriod.regular;
-    const fresh = i >= 0 && (!reg || ts[i] < reg.start) && ts[i] > Date.now() / 1000 - 6 * 3600;
-    return { price: fresh ? cl[i] : null, prev: m.regularMarketPrice ?? m.chartPreviousClose, fut: null };
-  } catch (e) { return { price: null }; }
-}
-async function preUS(hold, bx, ny) {
+async function preUS(L, bx, ny) {
   const fut = [["S&P 500 fut.", "ES=F"], ["Nasdaq fut.", "NQ=F"], ["Dow Jones fut.", "YM=F"]];
-  const top = [];
-  for (const [n, s] of fut) { const c = await chart(s, "5d", "1d");
-    top.push(cut(n, 14) + (c && !c.error && c.price ? num(c.price).padStart(11) + pct((c.price / (c.bars.length > 1 ? c.bars[c.bars.length - 2][4] : c.prevClose) - 1) * 100).padStart(11) : "—".padStart(11))); }
-  const us = hold.filter(i => !/[.\-=^]/.test(i.yahoo)).sort((a, b) => a.name.localeCompare(b.name, "fr"));
-  const got = [], none = [];
-  for (const it of us) { const q = await prePost(it.yahoo);
-    if (q.price && q.prev) got.push(cut(it.name, 14) + num(q.price).padStart(11) + pct((q.price / q.prev - 1) * 100).padStart(11));
-    else none.push(cut(it.name, 14) + "—".padStart(11) + "—".padStart(11)); }
-  const rows = [...got, ...none];
-  return "🌎 <b>PRÉ-OUVERTURE WALL STREET</b>\n" + dLbl(bx) + " · ouverture dans 30 min\n" +
-    "<pre>" + esc([cut("Valeur", 14) + "Cours".padStart(11) + "Var.".padStart(11), "━".repeat(36), ...top, "━".repeat(36), ...rows, "━".repeat(36)].join("\n")) + "</pre>" +
-    "<i>Pré-marché (et contrats à terme), variation vs clôture d'hier.</i>";
+  const isUS = i => !/[.\-=^]/.test(i.yahoo);
+  const holdUS = L.hold.filter(isUS), hs = new Set(L.hold.map(i => i.yahoo));
+  const rest = []; const seen = new Set(); L.us.filter(isUS).forEach(i => { if (!hs.has(i.yahoo) && !seen.has(i.yahoo)) { seen.add(i.yahoo); rest.push(i); } });
+  const q = await spark(fut.map(f => f[1]).concat(holdUS.concat(rest).map(i => i.yahoo)), true);
+  const F = fut.map(([n, s]) => { const r = q[s]; return r && r.regularMarketPrice ? { n, p: r.regularMarketPrice, v: (r.regularMarketPrice / (r.chartPreviousClose ?? r.previousClose) - 1) * 100, t: hhmm(r.regularMarketTime) } : { n }; });
+  const val = it => {     // dernier cours du pré-marché (bougies avant l'ouverture de 15 h 30)
+    const r = q[it.yahoo]; if (!r) return { n: it.name };
+    const reg = r.currentTradingPeriod && r.currentTradingPeriod.regular;
+    let k = r.cl.length - 1; while (k >= 0 && (r.cl[k] == null || (reg && r.ts[k] >= reg.start))) k--;
+    const prev = r.regularMarketPrice;                        // avant l'ouverture : la clôture d'hier
+    if (k < 0 || !prev || r.ts[k] < Date.now() / 1000 - 6 * 3600) return { n: it.name };
+    return { n: it.name, p: r.cl[k], v: (r.cl[k] / prev - 1) * 100, t: hhmm(r.ts[k]) };
+  };
+  const H = holdUS.map(val), R = rest.map(val);
+  const lines = [...section("INDICES", F).slice(0, 2).concat(F.map(x => row4(x.n, x.p, x.v, x.t))), "", ...section("HOLD", H), "", ...section("AMÉRIQUE", R)];
+  return packMsgs("🌎 <b>PRÉ-OUVERTURE WALL STREET</b>\n" + dLbl(bx) + " · ouverture dans 30 min", lines,
+    "\n<i>Pré-marché et contrats à terme, variation vs clôture d'hier.</i>");
 }
 
 function marketState(m) {
