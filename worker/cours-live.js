@@ -327,7 +327,7 @@ async function preEU(env, hold, bx, slot) {
     if (v != null) {
       sum += v; n++;
       rows.push(cut(it.name, 12) + num(q.price).padStart(10) + pct(v).padStart(11) + "   " + new Date(q.time * 1000).toLocaleTimeString("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }));
-    } else rows.push(cut(it.name, 12) + "—".padStart(10) + "   pas d'échange");
+    } else rows.push(cut(it.name, 12) + "—".padStart(10) + "—".padStart(11) + "       —");     // aucun échange : un tiret par colonne
   }
   const hm = String(slot[0]).padStart(2, "0") + ":" + String(slot[1]).padStart(2, "0");
   return (open ? "🔔☀️ <b>OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · cours de Paris après l'ouverture"
@@ -355,7 +355,7 @@ async function preUS(hold, bx, ny) {
   const us = hold.filter(i => !/[.\-=^]/.test(i.yahoo));
   const rows = [];
   for (const it of us) { const q = await prePost(it.yahoo);
-    rows.push(cut(it.name, 14) + (q.price && q.prev ? num(q.price).padStart(11) + pct((q.price / q.prev - 1) * 100).padStart(11) : "—".padStart(11) + "   pas d'échange")); }
+    rows.push(cut(it.name, 14) + (q.price && q.prev ? num(q.price).padStart(11) + pct((q.price / q.prev - 1) * 100).padStart(11) : "—".padStart(11) + "—".padStart(11))); }
   return "🌎 <b>PRÉ-OUVERTURE WALL STREET</b>\n" + dLbl(bx) + " · ouverture dans 30 min\n" +
     "<pre>" + esc([cut("Valeur", 14) + "Cours".padStart(11) + "Var.".padStart(11), "━".repeat(36), ...top, "━".repeat(36), ...rows, "━".repeat(36)].join("\n")) + "</pre>" +
     "<i>Pré-marché (et contrats à terme), variation vs clôture d'hier.</i>";
