@@ -216,11 +216,12 @@ async function checkAlerts(env) {
       if (!hit) continue;
       const chg = c.prevClose ? (c.price / c.prevClose - 1) * 100 : null;
       // une ligne vide entre chaque information : plus lisible sur le téléphone
+      // 1) nom · cours · variation du jour  2) le motif (Biarritz, R→S, zone…)  3) ce qui s'est passé (franchi / passé sous)
       const text = [
-        (a.zone ? "🟨 " : a.bia ? "🏄 " : "🔔 ") + (a.name || sym) + " (" + sym + ")",
+        (a.zone ? "🟨 " : a.bia ? "🏄 " : "🔔 ") + (a.name || sym) + " · " + fmtN(c.price, c.currency) +
+          (chg != null ? " · " + (chg >= 0 ? "+" : "") + chg.toFixed(2).replace(".", ",") + " % auj." : ""),
+        a.label || null,
         (a.op === "above" ? "▲ a franchi " : "▼ est passé sous ") + fmtN(a.price, c.currency),
-        a.label || null,                                  // le motif (R→S, S→R, zone…) sur sa propre ligne
-        "Cours : " + fmtN(c.price, c.currency) + (chg != null ? " (" + (chg >= 0 ? "+" : "") + chg.toFixed(2).replace(".", ",") + " % aujourd'hui)" : ""),
         a.note ? "📝 " + a.note : null,
         SITE + "#sym=" + encodeURIComponent(sym),
       ].filter(Boolean).join("\n\n");
