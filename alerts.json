@@ -1151,7 +1151,18 @@
       "price": 98.7917,
       "label": "entrée dans ma zone ◯ 79,38 – 98,79 (par le haut)",
       "note": "",
-      "created": 1795672924196
+      "created": 1795672929364
+    },
+    {
+      "id": "zone-zmwx5aqfd-h-2026-11-25",
+      "zone": "zmwx5aqfd",
+      "sym": "NVDA",
+      "name": "NVIDIA",
+      "op": "below",
+      "price": 120.96,
+      "label": "entrée dans ma zone ◯ 72,51 – 120,96 (par le haut)",
+      "note": "",
+      "created": 1795672929364
     }
   ]
 }
