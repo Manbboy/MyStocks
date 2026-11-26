@@ -258,6 +258,7 @@ async function chart(sym, range, interval) {
 }
 
 /* ===== Résumés de pré-ouverture (Telegram), une fois par jour de semaine ===== */
+const PRE_TEST_END = "2026-12-04";      // essai : 5 envois chaque matin jusqu'à cette date incluse
 const HOLD_URL = "https://raw.githubusercontent.com/Manbboy/MyStocks/main/portfolios.json";
 function zoned(tz) {
   const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", weekday: "short", hour12: false })
@@ -273,17 +274,21 @@ async function preOpen(env) {
   const bx = zoned("Europe/Brussels"), ny = zoned("America/New_York");
   if (["Sat", "Sun"].includes(bx.wd)) return false;
   const force = await env.ALERTS.get("pre:force");                 // essai manuel : "eu" ou "us"
-  let kind = null;
-  if (bx.h === 8 && bx.m >= 30 && bx.m < 45) kind = "eu";
+  // Europe : 8 h 30 ; en période d'essai (jusqu'au PRE_TEST_END) aussi 8 h 40, 8 h 50, 8 h 59 et 9 h 05 (ouverture de Paris, pour comparer)
+  const test = bx.day <= PRE_TEST_END;
+  const slots = test ? [[8, 30], [8, 40], [8, 50], [8, 59], [9, 5]] : [[8, 30]];
+  let kind = null, slot = null;
+  const sl = slots.find(([h, m]) => bx.h === h && bx.m >= m && bx.m < m + (m === 59 ? 1 : 5));
+  if (sl) { kind = "eu"; slot = sl; }
   else if (ny.h === 9 && ny.m < 15) kind = "us";
   if (force) { kind = force; await env.ALERTS.delete("pre:force"); }
   if (!kind) return false;
-  const flag = "pre:" + kind + ":" + bx.day;
+  const flag = "pre:" + kind + ":" + bx.day + (slot ? ":" + slot.join("h") : "");
   if (!force && await env.ALERTS.get(flag)) return false;
   const chat = await env.ALERTS.get("tg:chat"); if (!chat) return false;
   let hold = [];
   try { hold = ((await (await fetch(HOLD_URL + "?t=" + Date.now())).json()).portfolios || []).find(p => p.name === "Hold").items || []; } catch (e) { return false; }
-  const text = kind === "eu" ? await preEU(env, hold, bx) : await preUS(hold, bx, ny);
+  const text = kind === "eu" ? await preEU(env, hold, bx, slot || [bx.h, bx.m]) : await preUS(hold, bx, ny);
   const r = await tg(env, "sendMessage", { chat_id: chat, text, parse_mode: "HTML", disable_web_page_preview: true });
   if (r.ok) await env.ALERTS.put(flag, "1", { expirationTtl: 3 * 86400 });
   return true;
@@ -293,36 +298,43 @@ const dLbl = bx => DAYS[bx.wd] + " " + bx.day.slice(8) + "/" + bx.day.slice(5, 7
 // ticker allemand (Stuttgart, sinon Francfort) d'une action européenne, trouvé une fois via la recherche Yahoo puis gardé
 async function deTicker(env, it) {
   if (/\.(SG|F|DE|MU|DU|BE|HM)$/.test(it.yahoo) && !/\.DE$/.test(it.yahoo)) return it.yahoo;
-  const k = "de:" + it.yahoo, got = await env.ALERTS.get(k);
+  const k = "de2:" + it.yahoo, got = await env.ALERTS.get(k);
   if (got !== null) return got || null;
   let best = "";
   try {
     const j = await (await fetch("https://query2.finance.yahoo.com/v1/finance/search?q=" + encodeURIComponent(it.name) + "&quotesCount=20&newsCount=0", { headers: UA })).json();
     const q = (j.quotes || []).filter(x => x.quoteType === "EQUITY" || x.quoteType === "ETF");
-    best = (q.find(x => x.exchange === "STU") || q.find(x => x.exchange === "FRA") || {}).symbol || "";
+    const w = it.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[\s-]/)[0];        // le nom doit correspondre (évite un autre titre homonyme)
+    const ok = q.filter(x => (x.longname || x.shortname || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(w));
+    best = (ok.find(x => x.exchange === "STU") || ok.find(x => x.exchange === "FRA") || {}).symbol || "";
   } catch (e) {}
   await env.ALERTS.put(k, best, { expirationTtl: 30 * 86400 });
   return best || null;
 }
-async function preEU(env, hold, bx) {
+async function preEU(env, hold, bx, slot) {
   const eu = hold.filter(i => /\.(PA|AS|BR|DE|MI|MC|SG|F)$/.test(i.yahoo));
+  const open = slot[0] >= 9;                     // 9 h 05 : cours de Paris (ou de la place suivie) après l'ouverture
   const rows = []; let sum = 0, n = 0;
   for (const it of eu) {
-    const de = await deTicker(env, it);
-    const [ref, q] = await Promise.all([chart(it.yahoo, "5d", "1d"), de ? chart(de, "1d", "5m") : null]);
-    // clôture de référence : dernière bougie journalière d'avant aujourd'hui (Paris, ou la place suivie)
-    const pb = ref && !ref.error ? ref.bars.filter(b => zonedTs(b[0]) < bx.day) : [];
-    const close = pb.length ? pb[pb.length - 1][4] : null;
-    const today = q && !q.error && q.time && zonedTs(q.time) === bx.day;
-    if (today && close) {
-      const v = (q.price / close - 1) * 100; sum += v; n++;
+    const ref = await chart(it.yahoo, "1d", "5m");
+    // clôture de la veille : avant l'ouverture, le dernier cours de la place suivie ; sinon la clôture précédente
+    const close = ref && !ref.error ? (ref.time && zonedTs(ref.time) < bx.day ? ref.price : ref.prevClose) : null;
+    let q = null, de = null;
+    if (open) q = ref && !ref.error && ref.time && zonedTs(ref.time) === bx.day ? ref : null;
+    else { de = await deTicker(env, it); const c = de ? await chart(de, "1d", "5m") : null; q = c && !c.error && c.time && zonedTs(c.time) === bx.day ? c : null; }
+    let v = q && close ? (q.price / close - 1) * 100 : null;
+    if (v != null && Math.abs(v) > 25 && !open) { await env.ALERTS.put("de2:" + it.yahoo, "", { expirationTtl: 7 * 86400 }); v = null; q = null; }   // mauvais ticker trouvé : oublié
+    if (v != null) {
+      sum += v; n++;
       rows.push(cut(it.name, 12) + " " + num(q.price).padStart(8) + " " + pct(v).padStart(8) + "  " + new Date(q.time * 1000).toLocaleTimeString("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }));
     } else rows.push(cut(it.name, 12) + "        —  pas d'échange");
   }
-  return "☀️ <b>PRÉ-OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · 08:30 · Paris ouvre à 9 h\n" +
+  const hm = String(slot[0]).padStart(2, "0") + ":" + String(slot[1]).padStart(2, "0");
+  return (open ? "🔔☀️ <b>OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · cours de Paris après l'ouverture"
+               : "☀️ <b>PRÉ-OUVERTURE EUROPE</b>\n" + dLbl(bx) + " · " + hm + " · Paris ouvre à 9 h") + "\n" +
     "<pre>" + esc(["━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", ...rows, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"].join("\n")) + "</pre>" +
-    eu.length + " valeurs · " + n + " échangées" + (n ? " · tendance " + pct(sum / n) : "") +
-    "\n<i>Cours allemands (Stuttgart / Francfort) vs clôture de la veille, indicatifs : peu de volume avant 9 h.</i>";
+    eu.length + " valeurs · " + n + (open ? " cotées" : " échangées") + (n ? " · tendance " + pct(sum / n) : "") +
+    (open ? "\n<i>À comparer avec le message de 08:59.</i>" : "\n<i>Cours allemands (Stuttgart / Francfort) vs clôture de la veille, indicatifs : peu de volume avant 9 h.</i>");
 }
 function zonedTs(t) { const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Brussels", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(t * 1000)).map(x => [x.type, x.value])); return p.year + "-" + p.month + "-" + p.day; }
 async function prePost(sym) {        // dernier cours du pré-marché américain (bougies 1 min, heures étendues comprises)
@@ -357,4 +369,3 @@ function marketState(m) {
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers: Object.assign({ "Content-Type": "application/json; charset=utf-8" }, headers) });
 }
-// relance du déploiement

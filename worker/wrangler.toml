@@ -6,7 +6,7 @@ workers_dev = true
 
 # Vérification des alertes de prix toutes les 5 minutes, du lundi au vendredi, de 7 h à 21 h 59 (heure UTC)
 [triggers]
-crons = ["*/5 7-21 * * MON-FRI"]   # jours en toutes lettres : chez Cloudflare 1 = dimanche
+crons = ["*/5 7-21 * * MON-FRI", "59 7 * * MON-FRI"]   # + 7 h 59 UTC = 8 h 59 à Bruxelles (hiver) : dernier résumé avant l'ouverture   # jours en toutes lettres : chez Cloudflare 1 = dimanche
 
 # Stockage des alertes Telegram (conversation reliée, alertes déjà envoyées) : espace KV « alertes »
 [[kv_namespaces]]
