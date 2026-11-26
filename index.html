@@ -1303,7 +1303,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v302</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v303</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5129,9 +5129,9 @@ function pfFiche(c, own, p, weight) {
       stT += '<tr><td><span class="pf-st' + (hit ? " hit" : d != null && d > -3 ? " near" : "") + '">🛑 ' + q(x.q) + " × " + nm(x.p) + "</span></td>" +
         '<td class="pf-muted">' + (hit ? "⚠ touché" : d != null ? fmtPct(Math.round(d * 10) / 10) : "") + '</td><td class="' + cl(r) + '">' + A(money(r, p.cur)) + "</td></tr>"; });
     const cov = L.reduce((t, x) => t + x.q, 0), tot = L.reduce((t, x) => t + (x.p - p.be) * x.q, 0);
-    stT = '<tr class="pf-th"><td>Quantité × stop</td><td>écart</td><td>net si touché</td></tr>' + stT;
+    stT = '<tr class="pf-th"><td>Quantité × stop-loss</td><td>écart</td><td>net si touché</td></tr>' + stT;
     stT += '<tr class="tot"><td colspan="2">' + q(Math.min(cov, p.qty)) + " / " + q(p.qty) + " actions couvertes" + (cov > p.qty + 1e-9 ? " ⚠" : "") + '</td><td class="' + cl(tot) + '">' + A(money(tot, p.cur)) + "</td></tr>";
-  } else stT = '<tr><td colspan="3" class="pf-muted">Aucun stop · toucher pour en ajouter</td></tr>';
+  } else stT = '<tr><td colspan="3" class="pf-muted">🛑 Aucun stop-loss · toucher pour en ajouter</td></tr>';
   // Opérations : quantité × prix · frais · montant (achat : + frais ; vente : − frais)
   let opT = "", nQ = 0, nF = 0, nM = 0, hasV = false;
   p.tx.slice().reverse().forEach((t, i) => { const v = t.type === "V", f = +t.fees || 0, m = t.qty * t.price + (v ? -f : f);
@@ -5152,9 +5152,9 @@ function pfFiche(c, own, p, weight) {
     '<div class="pf-kpi">' +
       kpi("Valeur · poids dans le portef.", A(fmt(p.value, p.cur)), weight != null ? weight.toLocaleString(NUM_LOC, { maximumFractionDigits:1 }) + " %" : "") +
       kpi("Aujourd'hui", p.dayPct != null ? fmtPct(p.dayPct) : "–", A(money(p.dayChg || 0, p.cur)), cl(p.dayChg || 0)) + "</div>" +
-    '<div class="pf-sec"><div class="pf-sh"><span>Position</span></div><div class="pf-grid">' + posT + "</div></div>" +
-    '<div class="pf-sec pf-ssl"><div class="pf-sh"><span>Stop-loss</span><span>toucher pour modifier</span></div><table class="pf-stt">' + stT + "</table></div>" +
-    '<div class="pf-sec"><div class="pf-sh"><span>Opérations</span></div><table class="pf-ops">' + opT + "</table></div>";
+    '<div class="pf-sec"><div class="pf-grid">' + posT + "</div></div>" +
+    '<div class="pf-sec pf-ssl"><table class="pf-stt">' + stT + "</table></div>" +          // pas de titre : l'en-tête des colonnes suffit
+    '<div class="pf-sec"><table class="pf-ops">' + opT + "</table></div>";
   c.querySelector(".nm").textContent = p.name;
   const txs = p.tx.slice().reverse();
   c.querySelectorAll(".pf-ops tr[data-i]").forEach(r => { const t = txs[+r.dataset.i];
