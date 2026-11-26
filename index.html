@@ -1307,7 +1307,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v307</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v308</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -3379,7 +3379,8 @@ function applyTbRows() {
   const iv = $("ivSeg"), slot = $("ivSlot");
   // nouvelle interface en portrait : 15' J S M T passe sous les flèches ‹ › (en haut à droite), la barre ne garde que les indicateurs
   const qb = [$("quadBtn"), $("qsyncBtn")];                // … suivi du choix 1 / 2 / 4 graphiques (et de la synchro), qui en dépend
-  if (slot && ivInHead()) { if (iv.parentNode !== slot) slot.append(iv, ...qb); }
+  // en haut à droite (aligné à droite) : la synchro se place AVANT 1/2/4, pour que ce bouton ne bouge pas quand elle apparaît (tap-tap-tap au même endroit)
+  if (slot && ivInHead()) { if (iv.parentNode !== slot) slot.append(iv, qb[1], qb[0]); }
   else {
     if (slot && iv.parentNode === slot) { t.prepend(...qb); t.parentNode.insertBefore(iv, t); }
     if (prefs.tbRows === 2) { if (iv.parentNode !== t) t.insertBefore(iv, t.firstChild); }
