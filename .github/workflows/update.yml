@@ -57,6 +57,11 @@ jobs:
       - name: Journal des approches (Aujourd'hui)
         run: node scripts/approach_log.mjs
 
+      # tickers allemands (échanges avant 9 h) pour les résumés Telegram de pré-ouverture : seulement les valeurs nouvelles
+      - name: Tickers allemands (pré-ouverture)
+        continue-on-error: true
+        run: python scripts/de_tickers.py
+
       - name: Enregistrer les nouvelles données
         run: |
           git config user.name "github-actions[bot]"
