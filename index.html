@@ -202,7 +202,7 @@
   /* en-tête de carte : 3 colonnes de largeur fixe (nom | cours et variation du jour | résultat depuis l'achat), alignées d'une carte à l'autre */
   /* fiche d'une position ouverte */
   .pf-list:not(.compact) .pf-pos.pf-fiche { display:block; }
-  .pf-fiche .pf-fh { display:grid; grid-template-columns:minmax(0, 1fr) auto 112px; align-items:center; gap:10px; }
+  .pf-fiche .pf-fh { display:grid; grid-template-columns:minmax(0, 1fr) 112px auto; align-items:center; gap:12px; }   /* nom + cours | graphique | résultat en haut à droite */
   .pf-fv { text-align:right; line-height:1.25; } .pf-fv small { display:block; font-size:10px; color:var(--muted); } .pf-fv b { display:block; font-size:17px; font-variant-numeric:tabular-nums; } .pf-fv i { display:block; font-style:normal; font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
   .pf-fiche .pf-fh .nm { font-size:16px; }
   .pf-fiche .pf-px { font-size:15px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; }
@@ -1303,7 +1303,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v303</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v304</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5147,8 +5147,8 @@ function pfFiche(c, own, p, weight) {
   c.classList.add("pf-fiche");
   c.innerHTML =
     '<div class="pf-fh"><div class="pf-fn"><b class="nm"></b><div class="pf-px">' + (p.price != null ? fmt(p.price, p.cur) : "–") + "</div></div>" +
-      '<div class="pf-fv ' + cl(p.latent) + '"><small>Résultat</small><b>' + (p.latentPct != null ? fmtPct(p.latentPct) : "–") + "</b><i>" + A(money(p.latent, p.cur)) + "</i></div>" +   // l'accent : la performance globale, à côté du graphique
-      '<span class="pf-spk"></span></div>' +
+      '<span class="pf-spk"></span>' +
+      '<div class="pf-fv ' + cl(p.latent) + '"><small>Résultat</small><b>' + (p.latentPct != null ? fmtPct(p.latentPct) : "–") + "</b><i>" + A(money(p.latent, p.cur)) + "</i></div></div>" +   // l'accent : la performance globale, à côté du graphique
     '<div class="pf-kpi">' +
       kpi("Valeur · poids dans le portef.", A(fmt(p.value, p.cur)), weight != null ? weight.toLocaleString(NUM_LOC, { maximumFractionDigits:1 }) + " %" : "") +
       kpi("Aujourd'hui", p.dayPct != null ? fmtPct(p.dayPct) : "–", A(money(p.dayChg || 0, p.cur)), cl(p.dayChg || 0)) + "</div>" +
