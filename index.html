@@ -213,8 +213,8 @@
   .pf-kpi small { display:block; font-size:10px; color:var(--muted); }
   .pf-kpi b { display:block; font-size:13.5px; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums; }
   .pf-kpi i { font-style:normal; font-size:11.5px; font-weight:600; white-space:nowrap; }
-  .pf-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:3px 10px; }
-  .pf-grid > div { min-width:0; } .pf-grid b { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .pf-grid small { line-height:1.2; }
+  .pf-grid { display:grid; grid-template-columns:auto auto auto; justify-content:space-between; gap:3px 8px; }
+  .pf-grid > div { min-width:0; } .pf-grid b, .pf-grid small { white-space:nowrap; } .pf-grid.pf-wrap { grid-template-columns:repeat(3, minmax(0, 1fr)); } .pf-grid.pf-wrap small { white-space:normal; } .pf-grid small { line-height:1.2; }
   .pf-grid { align-items:end; }
   .pf-grid > div:nth-child(3n) { text-align:right; } .pf-grid > div:nth-child(3n+2) { text-align:center; }
   .pf-grid small { display:block; font-size:10px; color:var(--muted); } .pf-grid b { display:block; font-size:12.5px; font-weight:500; font-variant-numeric:tabular-nums; }
@@ -1303,7 +1303,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v299</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v300</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -5116,7 +5116,7 @@ function pfFiche(c, own, p, weight) {
   const cell = (l, v, k) => '<div class="' + (k || "") + '"><small>' + l + "</small><b>" + v + "</b></div>";
   // une seule rangée de 3 cases : quantité × PRU | engagé | équilibre
   let posT = cell("Qté × PRU " + (prefs.pruFees ? "(frais incl.)" : "(hors frais)"), q(p.qty) + " × " + fmtPru(p.pru, p.cur)) +
-    cell("Engagé (frais incl.)", A(nm(p.costF))) + cell("Équilibre (frais achat et vente inclus)", nm(be), "pf-em");
+    cell("Engagé (frais incl.)", A(nm(p.costF))) + cell("Équilibre (frais A et V incl.)", nm(be), "pf-em");
   if (p.tx.some(t => t.type === "V") && Math.abs(p.realized) > 0.005)
     posT += cell("Réalisé (ventes, frais inclus)", '<span class="' + cl(p.realized) + '">' + A(money(p.realized, p.cur)) + (p.realizedPct != null ? " · " + fmtPct(p.realizedPct) : "") + "</span>");
   if (p.cur !== "EUR" && !p.noE)
@@ -5161,6 +5161,7 @@ function pfFiche(c, own, p, weight) {
     r.querySelector(".x").onclick = ev => { ev.stopPropagation(); delTx(own, t, p.name); };
     r.querySelector(".e").onclick = ev => { ev.stopPropagation(); openTxDlg(t); }; });
   c.querySelector(".pf-ssl").onclick = ev => { ev.stopPropagation(); openTxDlg(null, p.sym); };
+  requestAnimationFrame(() => { const g = c.querySelector(".pf-grid"); if (g && g.scrollWidth > g.clientWidth + 1) g.classList.add("pf-wrap"); });   // trop large : libellés sur 2 lignes
 }
 /* nombre de colonnes de la liste des positions (compacte : 2, ou 3 sur grand écran ; détaillée : cartes de 300 px) */
 function pfCols() {
