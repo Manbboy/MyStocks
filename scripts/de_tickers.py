@@ -23,6 +23,12 @@ def chart(sym, rng="5d", iv="5m"):
         r = get(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={rng}&interval={iv}")["chart"]["result"][0]
         return r
     except Exception: return None
+# codes allemands connus pour les grandes valeurs que la recherche Yahoo ne remonte pas (vérifiés par le prix avant d'être gardés)
+HINTS = {"CS.PA": ["AXA"], "BNP.PA": ["BNP"], "OR.PA": ["LOR"], "RMS.PA": ["RMS", "HMI"], "SAP.DE": ["SAP"], "ASML.AS": ["ASME", "ASMF"],
+         "DG.PA": ["SQU"], "EN.PA": ["BYG"], "CA.PA": ["CAR"], "ACA.PA": ["XCA"], "GLE.PA": ["SGE"], "ABI.BR": ["1NBA", "ITK"],
+         "RYA.IR": ["RY4C", "RY4D"], "AMUN.PA": ["AMUN", "1AM"], "SK.PA": ["SEB"], "SPIE.PA": ["2S7"], "STMPA.PA": ["SGM", "SGM0"],
+         "BIM.PA": ["BMX", "BIM"], "GTT.PA": ["2GT", "GTT"], "IWDA.AS": ["EUNL"], "ENGI.PA": ["GZF"], "MT.AS": ["ARRD"], "HEIA.AS": ["HNK1"]}
+SUF = (".F", ".SG", ".BE", ".MU", ".DU", ".HM")
 def pick(sym, name):
     ref = chart(sym, "5d", "1d")
     px = ref and ref["meta"].get("regularMarketPrice")
@@ -36,6 +42,8 @@ def pick(sym, name):
             if x.get("exchange") in EXCH and x.get("quoteType") in ("EQUITY", "ETF") and key in norm(x.get("longname") or x.get("shortname") or ""):
                 cands[s] = x.get("exchange")
         time.sleep(0.25)
+    for b in HINTS.get(sym, []) + [sym.split(".")[0]]:
+        for suf in SUF: cands.setdefault(b + suf, "guess")
     best, bscore = "", None
     for s in cands:
         c = chart(s, "5d", "5m"); time.sleep(0.2)
