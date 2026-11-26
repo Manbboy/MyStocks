@@ -472,6 +472,11 @@
           "yahoo": "LPE.PA",
           "tv": "EURONEXT:LPE",
           "name": "Laurent-Perrier"
+        },
+        {
+          "yahoo": "ALHAF.PA",
+          "tv": "EURONEXT:ALHAF",
+          "name": "Haffner Energy"
         }
       ]
     },
