@@ -1307,7 +1307,7 @@ div.pick.live-menu:not(.it) { position:fixed; width:auto; min-width:220px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Mes actions <span class="ver" id="appVer">v316</span></h1>
+    <h1>Mes actions <span class="ver" id="appVer">v317</span></h1>
     <button class="btn theme-btn" id="themeBtn" title="Thème"></button>
     <button class="btn theme-btn rot-btn" id="rotBtn" hidden title="Rotation de l'écran"></button>
     <p class="sub" id="updated"></p>
@@ -7177,6 +7177,7 @@ async function renderUi2List() {
   const box = document.createElement("div");
   const isMk = pf.name === "Market";
   if (isMk) { const gi = it => MK_GROUPS.findIndex(g => g[0] === mkGroup(it.yahoo)); items = items.map((x, k) => [x, k]).sort((a, b) => gi(a[0].it) - gi(b[0].it) || a[1] - b[1]).map(x => x[0]); }
+  navOrder = { pi, list:items.map(x => x.i) };      // ‹ › du graphique : même ordre que la liste affichée (tri choisi)
   let lastG = null;
   const sep = it => { if (!isMk) return; const g = mkGroup(it.yahoo); if (lastG !== null && g !== lastG) { const d = document.createElement("div"); d.className = "u2-sep"; box.appendChild(d); } lastG = g; };
   if (mode === "list") {
